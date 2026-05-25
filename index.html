@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebQuake</title>
+
+    <link rel="icon" href="/img/epicenter.png" type="image/png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap"
+      rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;500;700&display=swap"
+      rel="stylesheet" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- ── Top bar ─────────────────────────── -->
+      <header id="topbar">
+        <div id="topbar-left">
+          <span class="topbar-title">WebQuake</span>
+          <span class="topbar-sub">地震情報 • Earthquake Information</span>
+        </div>
+        <div id="topbar-right">
+          <span id="status-dot" class="dot-idle"></span>
+          <span id="status-text" class="mono">Idle</span>
+        </div>
+      </header>
+
+      <!-- ── Main layout ────────────────────── -->
+      <div id="layout">
+        <!-- Sidebar toggle button -->
+        <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" aria-label="Toggle sidebar">
+          <span class="toggle-arrow">◀</span>
+        </button>
+
+        <!-- Sidebar -->
+        <aside id="sidebar">
+          <div class="sidebar-section">
+            <ul id="eq-list">
+              <li class="eq-item placeholder">
+                <span class="mono muted">No events loaded</span>
+              </li>
+            </ul>
+          </div>
+        </aside>
+
+        <!-- Map -->
+        <main id="map-container">
+          <div id="map"></div>
+
+          <!-- Report info box at top-left -->
+          <div id="map-info-box" class="map-info-box hidden">
+            <div class="info-box-content">
+              <div class="info-box-header">
+                <div class="info-box-location">
+                  <div class="info-box-location-ja"></div>
+                  <div class="info-box-location-en"></div>
+                </div>
+                <div class="info-box-intensity-container">
+                  <img class="info-box-intensity-img" alt="Intensity" />
+                </div>
+              </div>
+              <div class="info-box-details">
+                <div class="info-box-row">
+                  <span class="info-label">Magnitude</span>
+                  <span class="info-value info-magnitude"></span>
+                </div>
+                <div class="info-box-row">
+                  <span class="info-label">Depth • 深さ</span>
+                  <span class="info-value info-depth"></span>
+                </div>
+                <div class="info-box-row">
+                  <span class="info-label">Coordinates</span>
+                  <span class="info-value info-coordinates mono"></span>
+                </div>
+                <div class="info-box-row">
+                  <span class="info-label">Time • 日時</span>
+                  <span class="info-value info-time mono"></span>
+                </div>
+              </div>
+              <div class="observations-list-wrapper">
+                <div class="observations-list-header">
+                  <span class="observations-list-toggle">▶</span>
+                  <span class="observations-list-label">Observations • 観測</span>
+                </div>
+                <div id="observations-list-container" class="observations-list-container"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hover tooltip -->
+          <div id="area-tooltip" class="hidden">
+            <div class="tooltip-content">
+              <div class="tooltip-code mono"></div>
+              <div class="tooltip-ja"></div>
+              <div class="tooltip-en"></div>
+            </div>
+            <div class="tooltip-intensity-container hidden">
+              <img src="" alt="Intensity" class="tooltip-intensity-img" />
+            </div>
+          </div>
+
+          <!-- Legend -->
+          <div id="map-legend">
+            <div class="legend-title mono">震度 · INTENSITY</div>
+            <div class="legend-items">
+              <div class="legend-item"><img src="/img/shindo/1.png" alt="1" /><span>1</span></div>
+              <div class="legend-item"><img src="/img/shindo/2.png" alt="2" /><span>2</span></div>
+              <div class="legend-item"><img src="/img/shindo/3.png" alt="3" /><span>3</span></div>
+              <div class="legend-item"><img src="/img/shindo/4.png" alt="4" /><span>4</span></div>
+              <div class="legend-item">
+                <img src="/img/shindo/5minus.png" alt="5-" /><span>5弱</span>
+              </div>
+              <div class="legend-item">
+                <img src="/img/shindo/5plus.png" alt="5+" /><span>5強</span>
+              </div>
+              <div class="legend-item">
+                <img src="/img/shindo/6minus.png" alt="6-" /><span>6弱</span>
+              </div>
+              <div class="legend-item">
+                <img src="/img/shindo/6plus.png" alt="6+" /><span>6強</span>
+              </div>
+              <div class="legend-item"><img src="/img/shindo/7.png" alt="7" /><span>7</span></div>
+            </div>
+            <div class="legend-divider"></div>
+            <div class="legend-item epicenter-legend">
+              <img src="/img/epicenter.png" alt="Epicenter" />
+              <span class="mono">震央 · Epicenter</span>
+            </div>
+          </div>
+
+          <!-- Map attribution -->
+          <button id="attribution-btn" class="mono" aria-label="Attribution">ⓘ</button>
+
+          <!-- Attribution popup -->
+          <div id="attribution-popup" class="hidden">
+            <div class="attribution-popup-content">
+              <div class="attribution-popup-header">
+                <span class="mono">Attribution · 出典</span>
+                <button id="attribution-close-btn" aria-label="Close">✕</button>
+              </div>
+              <div class="attribution-popup-body">
+                <p><a href="https://maplibre.org/projects/gl-js/" target="_blank">MapLibre GL JS</a></p>
+                <p>
+                  Japan Meteorological Agency (JMA · 気象庁)<br />
+                  - <a href="https://xml.kishou.go.jp/xmlpull.html" target="_blank">XML Pull</a><br />
+                  - <a href="https://www.data.jma.go.jp/developer/gis.html" target="_blank">GIS Area data</a><br />
+                  -
+                  <a href="https://www.data.jma.go.jp/developer/multilingual.html" target="_blank"
+                    >Area/City names</a
+                  >
+                </p>
+                <p><a href="https://jquake.net/" target="_blank">JQuake (Intensity color scale)</a></p>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

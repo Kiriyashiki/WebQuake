@@ -1,0 +1,8 @@
+/* ── Layout ─────────────────────────────────────────────────────── */
+
+#layout {
+  display: flex;
+  height: 100vh;
+  padding-top: var(--topbar-h);
+  position: relative;
+}

@@ -1,0 +1,7606 @@
+{
+  "0123500": {
+    "japanese": "石狩市",
+    "english": "Ishikari City"
+  },
+  "0130300": {
+    "japanese": "当別町",
+    "english": "Tobetsu Town"
+  },
+  "0130400": {
+    "japanese": "新篠津村",
+    "english": "Shinshinotsu Village"
+  },
+  "0110100": {
+    "japanese": "札幌中央区",
+    "english": "Chuo Ward, Sapporo"
+  },
+  "0110200": {
+    "japanese": "札幌北区",
+    "english": "Kita Ward, Sapporo"
+  },
+  "0110300": {
+    "japanese": "札幌東区",
+    "english": "Higashi Ward, Sapporo"
+  },
+  "0110400": {
+    "japanese": "札幌白石区",
+    "english": "Shiraishi Ward, Sapporo"
+  },
+  "0110500": {
+    "japanese": "札幌豊平区",
+    "english": "Toyohira Ward, Sapporo"
+  },
+  "0110600": {
+    "japanese": "札幌南区",
+    "english": "Minami Ward, Sapporo"
+  },
+  "0110700": {
+    "japanese": "札幌西区",
+    "english": "Nishi Ward, Sapporo"
+  },
+  "0110800": {
+    "japanese": "札幌厚別区",
+    "english": "Atsubetsu Ward, Sapporo"
+  },
+  "0110900": {
+    "japanese": "札幌手稲区",
+    "english": "Teine Ward, Sapporo"
+  },
+  "0111000": {
+    "japanese": "札幌清田区",
+    "english": "Kiyota Ward, Sapporo"
+  },
+  "0121700": {
+    "japanese": "江別市",
+    "english": "Ebetsu City"
+  },
+  "0122400": {
+    "japanese": "千歳市",
+    "english": "Chitose City"
+  },
+  "0123100": {
+    "japanese": "恵庭市",
+    "english": "Eniwa City"
+  },
+  "0123400": {
+    "japanese": "北広島市",
+    "english": "Kitahiroshima City"
+  },
+  "0134600": {
+    "japanese": "八雲町",
+    "english": "Yakumo Town"
+  },
+  "0134700": {
+    "japanese": "長万部町",
+    "english": "Oshamambe Town"
+  },
+  "0120200": {
+    "japanese": "函館市",
+    "english": "Hakodate City"
+  },
+  "0123600": {
+    "japanese": "渡島北斗市",
+    "english": "Hokuto City, Oshima"
+  },
+  "0133700": {
+    "japanese": "七飯町",
+    "english": "Nanae Town"
+  },
+  "0134300": {
+    "japanese": "鹿部町",
+    "english": "Shikabe Town"
+  },
+  "0134500": {
+    "japanese": "渡島森町",
+    "english": "Mori Town, Oshima"
+  },
+  "0133100": {
+    "japanese": "渡島松前町",
+    "english": "Matsumae Town, Oshima"
+  },
+  "0133200": {
+    "japanese": "福島町",
+    "english": "Fukushima Town"
+  },
+  "0133300": {
+    "japanese": "知内町",
+    "english": "Shiriuchi Town"
+  },
+  "0133400": {
+    "japanese": "木古内町",
+    "english": "Kikonai Town"
+  },
+  "0136100": {
+    "japanese": "檜山江差町",
+    "english": "Esashi Town, Hiyama"
+  },
+  "0136200": {
+    "japanese": "上ノ国町",
+    "english": "Kaminokuni Town"
+  },
+  "0136300": {
+    "japanese": "厚沢部町",
+    "english": "Assabu Town"
+  },
+  "0136400": {
+    "japanese": "乙部町",
+    "english": "Otobe Town"
+  },
+  "0137000": {
+    "japanese": "今金町",
+    "english": "Imakane Town"
+  },
+  "0137100": {
+    "japanese": "せたな町",
+    "english": "Setana Town"
+  },
+  "0120300": {
+    "japanese": "小樽市",
+    "english": "Otaru City"
+  },
+  "0140500": {
+    "japanese": "積丹町",
+    "english": "Shakotan Town"
+  },
+  "0140600": {
+    "japanese": "古平町",
+    "english": "Furubira Town"
+  },
+  "0140700": {
+    "japanese": "仁木町",
+    "english": "Niki Town"
+  },
+  "0140800": {
+    "japanese": "余市町",
+    "english": "Yoichi Town"
+  },
+  "0140900": {
+    "japanese": "赤井川村",
+    "english": "Akaigawa Village"
+  },
+  "0139500": {
+    "japanese": "ニセコ町",
+    "english": "Niseko Town"
+  },
+  "0139600": {
+    "japanese": "真狩村",
+    "english": "Makkari Village"
+  },
+  "0139700": {
+    "japanese": "留寿都村",
+    "english": "Rusutsu Village"
+  },
+  "0139800": {
+    "japanese": "喜茂別町",
+    "english": "Kimobetsu Town"
+  },
+  "0139900": {
+    "japanese": "京極町",
+    "english": "Kyogoku Town"
+  },
+  "0140000": {
+    "japanese": "倶知安町",
+    "english": "Kutchan Town"
+  },
+  "0139100": {
+    "japanese": "島牧村",
+    "english": "Shimamaki Village"
+  },
+  "0139200": {
+    "japanese": "寿都町",
+    "english": "Suttsu Town"
+  },
+  "0139300": {
+    "japanese": "黒松内町",
+    "english": "Kuromatsunai Town"
+  },
+  "0139400": {
+    "japanese": "蘭越町",
+    "english": "Rankoshi Town"
+  },
+  "0140100": {
+    "japanese": "共和町",
+    "english": "Kyowa Town"
+  },
+  "0140200": {
+    "japanese": "岩内町",
+    "english": "Iwanai Town"
+  },
+  "0140300": {
+    "japanese": "泊村",
+    "english": "Tomari Village"
+  },
+  "0140400": {
+    "japanese": "神恵内村",
+    "english": "Kamoenai Village"
+  },
+  "0136700": {
+    "japanese": "奥尻町",
+    "english": "Okushiri Town"
+  },
+  "0122800": {
+    "japanese": "深川市",
+    "english": "Fukagawa City"
+  },
+  "0143300": {
+    "japanese": "妹背牛町",
+    "english": "Moseushi Town"
+  },
+  "0143400": {
+    "japanese": "秩父別町",
+    "english": "Chippubetsu Town"
+  },
+  "0143700": {
+    "japanese": "北竜町",
+    "english": "Hokuryu Town"
+  },
+  "0143800": {
+    "japanese": "沼田町",
+    "english": "Numata Town"
+  },
+  "0121600": {
+    "japanese": "芦別市",
+    "english": "Ashibetsu City"
+  },
+  "0121800": {
+    "japanese": "赤平市",
+    "english": "Akabira City"
+  },
+  "0122500": {
+    "japanese": "滝川市",
+    "english": "Takikawa City"
+  },
+  "0122600": {
+    "japanese": "砂川市",
+    "english": "Sunagawa City"
+  },
+  "0122700": {
+    "japanese": "歌志内市",
+    "english": "Utashinai City"
+  },
+  "0142400": {
+    "japanese": "奈井江町",
+    "english": "Naie Town"
+  },
+  "0142500": {
+    "japanese": "上砂川町",
+    "english": "Kamisunagawa Town"
+  },
+  "0143100": {
+    "japanese": "浦臼町",
+    "english": "Urausu Town"
+  },
+  "0143200": {
+    "japanese": "新十津川町",
+    "english": "Shintotsukawa Town"
+  },
+  "0143600": {
+    "japanese": "雨竜町",
+    "english": "Uryu Town"
+  },
+  "0120900": {
+    "japanese": "夕張市",
+    "english": "Yubari City"
+  },
+  "0121000": {
+    "japanese": "岩見沢市",
+    "english": "Iwamizawa City"
+  },
+  "0121500": {
+    "japanese": "美唄市",
+    "english": "Bibai City"
+  },
+  "0122200": {
+    "japanese": "三笠市",
+    "english": "Mikasa City"
+  },
+  "0142300": {
+    "japanese": "南幌町",
+    "english": "Namporo Town"
+  },
+  "0142700": {
+    "japanese": "由仁町",
+    "english": "Yuni Town"
+  },
+  "0142800": {
+    "japanese": "長沼町",
+    "english": "Naganuma Town"
+  },
+  "0142900": {
+    "japanese": "栗山町",
+    "english": "Kuriyama Town"
+  },
+  "0143000": {
+    "japanese": "月形町",
+    "english": "Tsukigata Town"
+  },
+  "0122000": {
+    "japanese": "士別市",
+    "english": "Shibetsu City"
+  },
+  "0122100": {
+    "japanese": "名寄市",
+    "english": "Nayoro City"
+  },
+  "0146400": {
+    "japanese": "和寒町",
+    "english": "Wassamu Town"
+  },
+  "0146500": {
+    "japanese": "剣淵町",
+    "english": "Kembuchi Town"
+  },
+  "0146800": {
+    "japanese": "下川町",
+    "english": "Shimokawa Town"
+  },
+  "0146900": {
+    "japanese": "美深町",
+    "english": "Bifuka Town"
+  },
+  "0147000": {
+    "japanese": "音威子府村",
+    "english": "Otoineppu Village"
+  },
+  "0147100": {
+    "japanese": "上川中川町",
+    "english": "Nakagawa Town, Kamikawa"
+  },
+  "0147200": {
+    "japanese": "幌加内町",
+    "english": "Horokanai Town"
+  },
+  "0120400": {
+    "japanese": "旭川市",
+    "english": "Asahikawa City"
+  },
+  "0145200": {
+    "japanese": "鷹栖町",
+    "english": "Takasu Town"
+  },
+  "0145300": {
+    "japanese": "東神楽町",
+    "english": "Higashikagura Town"
+  },
+  "0145400": {
+    "japanese": "当麻町",
+    "english": "Toma Town"
+  },
+  "0145500": {
+    "japanese": "比布町",
+    "english": "Pippu Town"
+  },
+  "0145600": {
+    "japanese": "愛別町",
+    "english": "Aibetsu Town"
+  },
+  "0145700": {
+    "japanese": "上川地方上川町",
+    "english": "Kamikawa Town, Kamikawa Region"
+  },
+  "0145800": {
+    "japanese": "東川町",
+    "english": "Higashikawa Town"
+  },
+  "0145900": {
+    "japanese": "美瑛町",
+    "english": "Biei Town"
+  },
+  "0122900": {
+    "japanese": "富良野市",
+    "english": "Furano City"
+  },
+  "0146000": {
+    "japanese": "上富良野町",
+    "english": "Kamifurano Town"
+  },
+  "0146100": {
+    "japanese": "中富良野町",
+    "english": "Nakafurano Town"
+  },
+  "0146200": {
+    "japanese": "南富良野町",
+    "english": "Minamifurano Town"
+  },
+  "0146300": {
+    "japanese": "占冠村",
+    "english": "Shimukappu Village"
+  },
+  "0148300": {
+    "japanese": "苫前町",
+    "english": "Tomamae Town"
+  },
+  "0148400": {
+    "japanese": "羽幌町",
+    "english": "Haboro Town"
+  },
+  "0148500": {
+    "japanese": "初山別村",
+    "english": "Shosambetsu Village"
+  },
+  "0148600": {
+    "japanese": "遠別町",
+    "english": "Embetsu Town"
+  },
+  "0148700": {
+    "japanese": "天塩町",
+    "english": "Teshio Town"
+  },
+  "0121200": {
+    "japanese": "留萌市",
+    "english": "Rumoi City"
+  },
+  "0148100": {
+    "japanese": "増毛町",
+    "english": "Mashike Town"
+  },
+  "0148200": {
+    "japanese": "小平町",
+    "english": "Obira Town"
+  },
+  "0121400": {
+    "japanese": "稚内市",
+    "english": "Wakkanai City"
+  },
+  "0151100": {
+    "japanese": "猿払村",
+    "english": "Sarufutsu Village"
+  },
+  "0151600": {
+    "japanese": "豊富町",
+    "english": "Toyotomi Town"
+  },
+  "0152000": {
+    "japanese": "幌延町",
+    "english": "Horonobe Town"
+  },
+  "0151200": {
+    "japanese": "浜頓別町",
+    "english": "Hamatombetsu Town"
+  },
+  "0151300": {
+    "japanese": "中頓別町",
+    "english": "Nakatombetsu Town"
+  },
+  "0151400": {
+    "japanese": "宗谷枝幸町",
+    "english": "Esashi Town, Soya"
+  },
+  "0151700": {
+    "japanese": "礼文町",
+    "english": "Rebun Town"
+  },
+  "0151800": {
+    "japanese": "利尻町",
+    "english": "Rishiri Town"
+  },
+  "0151900": {
+    "japanese": "利尻富士町",
+    "english": "Rishirifuji Town"
+  },
+  "0121100": {
+    "japanese": "網走市",
+    "english": "Abashiri City"
+  },
+  "0154300": {
+    "japanese": "美幌町",
+    "english": "Bihoro Town"
+  },
+  "0154400": {
+    "japanese": "津別町",
+    "english": "Tsubetsu Town"
+  },
+  "0154500": {
+    "japanese": "斜里町",
+    "english": "Shari Town"
+  },
+  "0154600": {
+    "japanese": "清里町",
+    "english": "Kiyosato Town"
+  },
+  "0154700": {
+    "japanese": "小清水町",
+    "english": "Koshimizu Town"
+  },
+  "0156400": {
+    "japanese": "大空町",
+    "english": "Ozora Town"
+  },
+  "0120800": {
+    "japanese": "北見市",
+    "english": "Kitami City"
+  },
+  "0154900": {
+    "japanese": "訓子府町",
+    "english": "Kunneppu Town"
+  },
+  "0155000": {
+    "japanese": "置戸町",
+    "english": "Oketo Town"
+  },
+  "0155200": {
+    "japanese": "佐呂間町",
+    "english": "Saroma Town"
+  },
+  "0121900": {
+    "japanese": "紋別市",
+    "english": "Mombetsu City"
+  },
+  "0155500": {
+    "japanese": "遠軽町",
+    "english": "Engaru Town"
+  },
+  "0155900": {
+    "japanese": "湧別町",
+    "english": "Yubetsu Town"
+  },
+  "0156000": {
+    "japanese": "滝上町",
+    "english": "Takinoue Town"
+  },
+  "0156100": {
+    "japanese": "興部町",
+    "english": "Okoppe Town"
+  },
+  "0156200": {
+    "japanese": "西興部村",
+    "english": "Nishiokoppe Village"
+  },
+  "0156300": {
+    "japanese": "雄武町",
+    "english": "Omu Town"
+  },
+  "0123300": {
+    "japanese": "胆振伊達市",
+    "english": "Date City, Iburi"
+  },
+  "0157100": {
+    "japanese": "豊浦町",
+    "english": "Toyoura Town"
+  },
+  "0157500": {
+    "japanese": "壮瞥町",
+    "english": "Sobetsu Town"
+  },
+  "0158400": {
+    "japanese": "洞爺湖町",
+    "english": "Toyako Town"
+  },
+  "0120500": {
+    "japanese": "室蘭市",
+    "english": "Muroran City"
+  },
+  "0121300": {
+    "japanese": "苫小牧市",
+    "english": "Tomakomai City"
+  },
+  "0123000": {
+    "japanese": "登別市",
+    "english": "Noboribetsu City"
+  },
+  "0157800": {
+    "japanese": "白老町",
+    "english": "Shiraoi Town"
+  },
+  "0158100": {
+    "japanese": "厚真町",
+    "english": "Atsuma Town"
+  },
+  "0158500": {
+    "japanese": "安平町",
+    "english": "Abira Town"
+  },
+  "0158600": {
+    "japanese": "むかわ町",
+    "english": "Mukawa Town"
+  },
+  "0160100": {
+    "japanese": "日高地方日高町",
+    "english": "Hidaka Town, Hidaka Region"
+  },
+  "0160200": {
+    "japanese": "平取町",
+    "english": "Biratori Town"
+  },
+  "0160400": {
+    "japanese": "新冠町",
+    "english": "Niikappu Town"
+  },
+  "0161000": {
+    "japanese": "新ひだか町",
+    "english": "Shinhidaka Town"
+  },
+  "0160700": {
+    "japanese": "浦河町",
+    "english": "Urakawa Town"
+  },
+  "0160800": {
+    "japanese": "様似町",
+    "english": "Samani Town"
+  },
+  "0160900": {
+    "japanese": "えりも町",
+    "english": "Erimo Town"
+  },
+  "0163300": {
+    "japanese": "上士幌町",
+    "english": "Kamishihoro Town"
+  },
+  "0163400": {
+    "japanese": "鹿追町",
+    "english": "Shikaoi Town"
+  },
+  "0163500": {
+    "japanese": "新得町",
+    "english": "Shintoku Town"
+  },
+  "0164700": {
+    "japanese": "足寄町",
+    "english": "Ashoro Town"
+  },
+  "0164800": {
+    "japanese": "陸別町",
+    "english": "Rikubetsu Town"
+  },
+  "0120700": {
+    "japanese": "帯広市",
+    "english": "Obihiro City"
+  },
+  "0163100": {
+    "japanese": "音更町",
+    "english": "Otofuke Town"
+  },
+  "0163200": {
+    "japanese": "士幌町",
+    "english": "Shihoro Town"
+  },
+  "0163600": {
+    "japanese": "十勝清水町",
+    "english": "Shimizu Town, Tokachi"
+  },
+  "0163700": {
+    "japanese": "芽室町",
+    "english": "Memuro Town"
+  },
+  "0164300": {
+    "japanese": "幕別町",
+    "english": "Makubetsu Town"
+  },
+  "0164400": {
+    "japanese": "十勝池田町",
+    "english": "Ikeda Town, Tokachi"
+  },
+  "0164500": {
+    "japanese": "豊頃町",
+    "english": "Toyokoro Town"
+  },
+  "0164600": {
+    "japanese": "本別町",
+    "english": "Hombetsu Town"
+  },
+  "0164900": {
+    "japanese": "浦幌町",
+    "english": "Urahoro Town"
+  },
+  "0163800": {
+    "japanese": "中札内村",
+    "english": "Nakasatsunai Village"
+  },
+  "0163900": {
+    "japanese": "更別村",
+    "english": "Sarabetsu Village"
+  },
+  "0164100": {
+    "japanese": "十勝大樹町",
+    "english": "Taiki Town, Tokachi"
+  },
+  "0164200": {
+    "japanese": "広尾町",
+    "english": "Hiroo Town"
+  },
+  "0166500": {
+    "japanese": "弟子屈町",
+    "english": "Teshikaga Town"
+  },
+  "0120600": {
+    "japanese": "釧路市",
+    "english": "Kushiro City"
+  },
+  "0166100": {
+    "japanese": "釧路町",
+    "english": "Kushiro Town"
+  },
+  "0166200": {
+    "japanese": "厚岸町",
+    "english": "Akkeshi Town"
+  },
+  "0166300": {
+    "japanese": "浜中町",
+    "english": "Hamanaka Town"
+  },
+  "0166400": {
+    "japanese": "標茶町",
+    "english": "Shibecha Town"
+  },
+  "0166700": {
+    "japanese": "鶴居村",
+    "english": "Tsurui Village"
+  },
+  "0166800": {
+    "japanese": "白糠町",
+    "english": "Shiranuka Town"
+  },
+  "0169200": {
+    "japanese": "中標津町",
+    "english": "Nakashibetsu Town"
+  },
+  "0169300": {
+    "japanese": "標津町",
+    "english": "Shibetsu Town"
+  },
+  "0169400": {
+    "japanese": "羅臼町",
+    "english": "Rausu Town"
+  },
+  "0169100": {
+    "japanese": "別海町",
+    "english": "Betsukai Town"
+  },
+  "0122300": {
+    "japanese": "根室市",
+    "english": "Nemuro City"
+  },
+  "0220100": {
+    "japanese": "青森市",
+    "english": "Aomori City"
+  },
+  "0220500": {
+    "japanese": "五所川原市",
+    "english": "Goshogawara City"
+  },
+  "0220900": {
+    "japanese": "つがる市",
+    "english": "Tsugaru City"
+  },
+  "0230100": {
+    "japanese": "平内町",
+    "english": "Hiranai Town"
+  },
+  "0230300": {
+    "japanese": "今別町",
+    "english": "Imabetsu Town"
+  },
+  "0230400": {
+    "japanese": "蓬田村",
+    "english": "Yomogita Village"
+  },
+  "0230700": {
+    "japanese": "外ヶ浜町",
+    "english": "Sotogahama Town"
+  },
+  "0238100": {
+    "japanese": "板柳町",
+    "english": "Itayanagi Town"
+  },
+  "0238400": {
+    "japanese": "鶴田町",
+    "english": "Tsuruta Town"
+  },
+  "0238700": {
+    "japanese": "中泊町",
+    "english": "Nakadomari Town"
+  },
+  "0220200": {
+    "japanese": "弘前市",
+    "english": "Hirosaki City"
+  },
+  "0220400": {
+    "japanese": "黒石市",
+    "english": "Kuroishi City"
+  },
+  "0221000": {
+    "japanese": "平川市",
+    "english": "Hirakawa City"
+  },
+  "0232100": {
+    "japanese": "鰺ヶ沢町",
+    "english": "Ajigasawa Town"
+  },
+  "0232300": {
+    "japanese": "深浦町",
+    "english": "Fukaura Town"
+  },
+  "0234300": {
+    "japanese": "西目屋村",
+    "english": "Nishimeya Village"
+  },
+  "0236100": {
+    "japanese": "藤崎町",
+    "english": "Fujisaki Town"
+  },
+  "0236200": {
+    "japanese": "大鰐町",
+    "english": "Owani Town"
+  },
+  "0236700": {
+    "japanese": "田舎館村",
+    "english": "Inakadate Village"
+  },
+  "0220300": {
+    "japanese": "八戸市",
+    "english": "Hachinohe City"
+  },
+  "0220600": {
+    "japanese": "十和田市",
+    "english": "Towada City"
+  },
+  "0220700": {
+    "japanese": "三沢市",
+    "english": "Misawa City"
+  },
+  "0240100": {
+    "japanese": "野辺地町",
+    "english": "Noheji Town"
+  },
+  "0240200": {
+    "japanese": "七戸町",
+    "english": "Shichinohe Town"
+  },
+  "0240500": {
+    "japanese": "六戸町",
+    "english": "Rokunohe Town"
+  },
+  "0240600": {
+    "japanese": "横浜町",
+    "english": "Yokohama Town"
+  },
+  "0240800": {
+    "japanese": "東北町",
+    "english": "Tohoku Town"
+  },
+  "0241100": {
+    "japanese": "六ヶ所村",
+    "english": "Rokkasho Village"
+  },
+  "0241200": {
+    "japanese": "おいらせ町",
+    "english": "Oirase Town"
+  },
+  "0244100": {
+    "japanese": "三戸町",
+    "english": "Sannohe Town"
+  },
+  "0244200": {
+    "japanese": "五戸町",
+    "english": "Gonohe Town"
+  },
+  "0244300": {
+    "japanese": "田子町",
+    "english": "Takko Town"
+  },
+  "0244500": {
+    "japanese": "青森南部町",
+    "english": "Nanbu Town, Aomori"
+  },
+  "0244600": {
+    "japanese": "階上町",
+    "english": "Hashikami Town"
+  },
+  "0245000": {
+    "japanese": "新郷村",
+    "english": "Shingo Village"
+  },
+  "0220800": {
+    "japanese": "むつ市",
+    "english": "Mutsu City"
+  },
+  "0242300": {
+    "japanese": "大間町",
+    "english": "Oma Town"
+  },
+  "0242400": {
+    "japanese": "東通村",
+    "english": "Higashidori Village"
+  },
+  "0242500": {
+    "japanese": "風間浦村",
+    "english": "Kazamaura Village"
+  },
+  "0242600": {
+    "japanese": "佐井村",
+    "english": "Sai Village"
+  },
+  "0320200": {
+    "japanese": "宮古市",
+    "english": "Miyako City"
+  },
+  "0320700": {
+    "japanese": "久慈市",
+    "english": "Kuji City"
+  },
+  "0348200": {
+    "japanese": "山田町",
+    "english": "Yamada Town"
+  },
+  "0348300": {
+    "japanese": "岩泉町",
+    "english": "Iwaizumi Town"
+  },
+  "0348400": {
+    "japanese": "田野畑村",
+    "english": "Tanohata Village"
+  },
+  "0348500": {
+    "japanese": "普代村",
+    "english": "Fudai Village"
+  },
+  "0350300": {
+    "japanese": "野田村",
+    "english": "Noda Village"
+  },
+  "0350700": {
+    "japanese": "岩手洋野町",
+    "english": "Hirono Town, Iwate"
+  },
+  "0320300": {
+    "japanese": "大船渡市",
+    "english": "Ofunato City"
+  },
+  "0321000": {
+    "japanese": "陸前高田市",
+    "english": "Rikuzentakata City"
+  },
+  "0321100": {
+    "japanese": "釜石市",
+    "english": "Kamaishi City"
+  },
+  "0344100": {
+    "japanese": "住田町",
+    "english": "Sumita Town"
+  },
+  "0346100": {
+    "japanese": "大槌町",
+    "english": "Otsuchi Town"
+  },
+  "0320100": {
+    "japanese": "盛岡市",
+    "english": "Morioka City"
+  },
+  "0321300": {
+    "japanese": "二戸市",
+    "english": "Ninohe City"
+  },
+  "0321400": {
+    "japanese": "八幡平市",
+    "english": "Hachimantai City"
+  },
+  "0321600": {
+    "japanese": "滝沢市",
+    "english": "Takizawa City"
+  },
+  "0330100": {
+    "japanese": "雫石町",
+    "english": "Shizukuishi Town"
+  },
+  "0330200": {
+    "japanese": "葛巻町",
+    "english": "Kuzumaki Town"
+  },
+  "0330300": {
+    "japanese": "岩手町",
+    "english": "Iwate Town"
+  },
+  "0332100": {
+    "japanese": "紫波町",
+    "english": "Shiwa Town"
+  },
+  "0332200": {
+    "japanese": "矢巾町",
+    "english": "Yahaba Town"
+  },
+  "0350100": {
+    "japanese": "軽米町",
+    "english": "Karumai Town"
+  },
+  "0350600": {
+    "japanese": "九戸村",
+    "english": "Kunohe Village"
+  },
+  "0352400": {
+    "japanese": "一戸町",
+    "english": "Ichinohe Town"
+  },
+  "0320500": {
+    "japanese": "花巻市",
+    "english": "Hanamaki City"
+  },
+  "0320600": {
+    "japanese": "北上市",
+    "english": "Kitakami City"
+  },
+  "0320800": {
+    "japanese": "遠野市",
+    "english": "Tono City"
+  },
+  "0320900": {
+    "japanese": "一関市",
+    "english": "Ichinoseki City"
+  },
+  "0321500": {
+    "japanese": "奥州市",
+    "english": "Oshu City"
+  },
+  "0336600": {
+    "japanese": "西和賀町",
+    "english": "Nishiwaga Town"
+  },
+  "0338100": {
+    "japanese": "金ケ崎町",
+    "english": "Kanegasaki Town"
+  },
+  "0340200": {
+    "japanese": "平泉町",
+    "english": "Hiraizumi Town"
+  },
+  "0420500": {
+    "japanese": "気仙沼市",
+    "english": "Kesennuma City"
+  },
+  "0421200": {
+    "japanese": "登米市",
+    "english": "Tome City"
+  },
+  "0421300": {
+    "japanese": "栗原市",
+    "english": "Kurihara City"
+  },
+  "0421500": {
+    "japanese": "大崎市",
+    "english": "Osaki City"
+  },
+  "0444400": {
+    "japanese": "色麻町",
+    "english": "Shikama Town"
+  },
+  "0444500": {
+    "japanese": "宮城加美町",
+    "english": "Kami Town, Miyagi"
+  },
+  "0450100": {
+    "japanese": "涌谷町",
+    "english": "Wakuya Town"
+  },
+  "0450500": {
+    "japanese": "宮城美里町",
+    "english": "Misato Town, Miyagi"
+  },
+  "0460600": {
+    "japanese": "南三陸町",
+    "english": "Minamisanriku Town"
+  },
+  "0420600": {
+    "japanese": "白石市",
+    "english": "Shiroishi City"
+  },
+  "0420700": {
+    "japanese": "名取市",
+    "english": "Natori City"
+  },
+  "0420800": {
+    "japanese": "角田市",
+    "english": "Kakuda City"
+  },
+  "0421100": {
+    "japanese": "岩沼市",
+    "english": "Iwanuma City"
+  },
+  "0430100": {
+    "japanese": "蔵王町",
+    "english": "Zao Town"
+  },
+  "0430200": {
+    "japanese": "七ヶ宿町",
+    "english": "Shichikashuku Town"
+  },
+  "0432100": {
+    "japanese": "大河原町",
+    "english": "Ogawara Town"
+  },
+  "0432200": {
+    "japanese": "村田町",
+    "english": "Murata Town"
+  },
+  "0432300": {
+    "japanese": "柴田町",
+    "english": "Shibata Town"
+  },
+  "0432400": {
+    "japanese": "宮城川崎町",
+    "english": "Kawasaki Town, Miyagi"
+  },
+  "0434100": {
+    "japanese": "丸森町",
+    "english": "Marumori Town"
+  },
+  "0436100": {
+    "japanese": "亘理町",
+    "english": "Watari Town"
+  },
+  "0436200": {
+    "japanese": "山元町",
+    "english": "Yamamoto Town"
+  },
+  "0410100": {
+    "japanese": "仙台青葉区",
+    "english": "Aoba Ward, Sendai"
+  },
+  "0410200": {
+    "japanese": "仙台宮城野区",
+    "english": "Miyagino Ward, Sendai"
+  },
+  "0410300": {
+    "japanese": "仙台若林区",
+    "english": "Wakabayashi Ward, Sendai"
+  },
+  "0410400": {
+    "japanese": "仙台太白区",
+    "english": "Taihaku Ward, Sendai"
+  },
+  "0410500": {
+    "japanese": "仙台泉区",
+    "english": "Izumi Ward, Sendai"
+  },
+  "0420200": {
+    "japanese": "石巻市",
+    "english": "Ishinomaki City"
+  },
+  "0420300": {
+    "japanese": "塩竈市",
+    "english": "Shiogama City"
+  },
+  "0420900": {
+    "japanese": "多賀城市",
+    "english": "Tagajo City"
+  },
+  "0421400": {
+    "japanese": "東松島市",
+    "english": "Higashimatsushima City"
+  },
+  "0421600": {
+    "japanese": "富谷市",
+    "english": "Tomiya City"
+  },
+  "0440100": {
+    "japanese": "松島町",
+    "english": "Matsushima Town"
+  },
+  "0440400": {
+    "japanese": "七ヶ浜町",
+    "english": "Shichigahama Town"
+  },
+  "0440600": {
+    "japanese": "利府町",
+    "english": "Rifu Town"
+  },
+  "0442100": {
+    "japanese": "大和町",
+    "english": "Taiwa Town"
+  },
+  "0442200": {
+    "japanese": "大郷町",
+    "english": "Osato Town"
+  },
+  "0442400": {
+    "japanese": "大衡村",
+    "english": "Ohira Village"
+  },
+  "0458100": {
+    "japanese": "女川町",
+    "english": "Onagawa Town"
+  },
+  "0520200": {
+    "japanese": "能代市",
+    "english": "Noshiro City"
+  },
+  "0520600": {
+    "japanese": "男鹿市",
+    "english": "Oga City"
+  },
+  "0521100": {
+    "japanese": "潟上市",
+    "english": "Katagami City"
+  },
+  "0534600": {
+    "japanese": "藤里町",
+    "english": "Fujisato Town"
+  },
+  "0534800": {
+    "japanese": "三種町",
+    "english": "Mitane Town"
+  },
+  "0534900": {
+    "japanese": "八峰町",
+    "english": "Happou Town"
+  },
+  "0536100": {
+    "japanese": "五城目町",
+    "english": "Gojome Town"
+  },
+  "0536300": {
+    "japanese": "八郎潟町",
+    "english": "Hachirogata Town"
+  },
+  "0536600": {
+    "japanese": "井川町",
+    "english": "Ikawa Town"
+  },
+  "0536800": {
+    "japanese": "大潟村",
+    "english": "Ogata Village"
+  },
+  "0520100": {
+    "japanese": "秋田市",
+    "english": "Akita City"
+  },
+  "0521000": {
+    "japanese": "由利本荘市",
+    "english": "Yurihonjo City"
+  },
+  "0521400": {
+    "japanese": "にかほ市",
+    "english": "Nikaho City"
+  },
+  "0520400": {
+    "japanese": "大館市",
+    "english": "Odate City"
+  },
+  "0520900": {
+    "japanese": "鹿角市",
+    "english": "Kazuno City"
+  },
+  "0521300": {
+    "japanese": "北秋田市",
+    "english": "Kitaakita City"
+  },
+  "0530300": {
+    "japanese": "小坂町",
+    "english": "Kosaka Town"
+  },
+  "0532700": {
+    "japanese": "上小阿仁村",
+    "english": "Kamikoani Village"
+  },
+  "0520300": {
+    "japanese": "横手市",
+    "english": "Yokote City"
+  },
+  "0520700": {
+    "japanese": "湯沢市",
+    "english": "Yuzawa City"
+  },
+  "0521200": {
+    "japanese": "大仙市",
+    "english": "Daisen City"
+  },
+  "0521500": {
+    "japanese": "仙北市",
+    "english": "Semboku City"
+  },
+  "0543400": {
+    "japanese": "秋田美郷町",
+    "english": "Misato Town, Akita"
+  },
+  "0546300": {
+    "japanese": "羽後町",
+    "english": "Ugo Town"
+  },
+  "0546400": {
+    "japanese": "東成瀬村",
+    "english": "Higashinaruse Village"
+  },
+  "0620300": {
+    "japanese": "鶴岡市",
+    "english": "Tsuruoka City"
+  },
+  "0620400": {
+    "japanese": "酒田市",
+    "english": "Sakata City"
+  },
+  "0642600": {
+    "japanese": "三川町",
+    "english": "Mikawa Town"
+  },
+  "0642800": {
+    "japanese": "庄内町",
+    "english": "Shonai Town"
+  },
+  "0646100": {
+    "japanese": "遊佐町",
+    "english": "Yuza Town"
+  },
+  "0620500": {
+    "japanese": "新庄市",
+    "english": "Shinjo City"
+  },
+  "0636100": {
+    "japanese": "山形金山町",
+    "english": "Kaneyama Town, Yamagata"
+  },
+  "0636200": {
+    "japanese": "最上町",
+    "english": "Mogami Town"
+  },
+  "0636300": {
+    "japanese": "舟形町",
+    "english": "Funagata Town"
+  },
+  "0636400": {
+    "japanese": "真室川町",
+    "english": "Mamurogawa Town"
+  },
+  "0636500": {
+    "japanese": "大蔵村",
+    "english": "Okura Village"
+  },
+  "0636600": {
+    "japanese": "鮭川村",
+    "english": "Sakegawa Village"
+  },
+  "0636700": {
+    "japanese": "戸沢村",
+    "english": "Tozawa Village"
+  },
+  "0620100": {
+    "japanese": "山形市",
+    "english": "Yamagata City"
+  },
+  "0620600": {
+    "japanese": "寒河江市",
+    "english": "Sagae City"
+  },
+  "0620700": {
+    "japanese": "上山市",
+    "english": "Kaminoyama City"
+  },
+  "0620800": {
+    "japanese": "村山市",
+    "english": "Murayama City"
+  },
+  "0621000": {
+    "japanese": "天童市",
+    "english": "Tendo City"
+  },
+  "0621100": {
+    "japanese": "東根市",
+    "english": "Higashine City"
+  },
+  "0621200": {
+    "japanese": "尾花沢市",
+    "english": "Obanazawa City"
+  },
+  "0630100": {
+    "japanese": "山辺町",
+    "english": "Yamanobe Town"
+  },
+  "0630200": {
+    "japanese": "中山町",
+    "english": "Nakayama Town"
+  },
+  "0632100": {
+    "japanese": "河北町",
+    "english": "Kahoku Town"
+  },
+  "0632200": {
+    "japanese": "西川町",
+    "english": "Nishikawa Town"
+  },
+  "0632300": {
+    "japanese": "山形朝日町",
+    "english": "Asahi Town, Yamagata"
+  },
+  "0632400": {
+    "japanese": "大江町",
+    "english": "Oe Town"
+  },
+  "0634100": {
+    "japanese": "大石田町",
+    "english": "Oishida Town"
+  },
+  "0620200": {
+    "japanese": "米沢市",
+    "english": "Yonezawa City"
+  },
+  "0620900": {
+    "japanese": "長井市",
+    "english": "Nagai City"
+  },
+  "0621300": {
+    "japanese": "南陽市",
+    "english": "Nanyo City"
+  },
+  "0638100": {
+    "japanese": "高畠町",
+    "english": "Takahata Town"
+  },
+  "0638200": {
+    "japanese": "山形川西町",
+    "english": "Kawanishi Town, Yamagata"
+  },
+  "0640100": {
+    "japanese": "山形小国町",
+    "english": "Oguni Town, Yamagata"
+  },
+  "0640200": {
+    "japanese": "白鷹町",
+    "english": "Shirataka Town"
+  },
+  "0640300": {
+    "japanese": "飯豊町",
+    "english": "Iide Town"
+  },
+  "0720100": {
+    "japanese": "福島市",
+    "english": "Fukushima City"
+  },
+  "0720300": {
+    "japanese": "郡山市",
+    "english": "Koriyama City"
+  },
+  "0720500": {
+    "japanese": "白河市",
+    "english": "Shirakawa City"
+  },
+  "0720700": {
+    "japanese": "須賀川市",
+    "english": "Sukagawa City"
+  },
+  "0721000": {
+    "japanese": "二本松市",
+    "english": "Nihonmatsu City"
+  },
+  "0721100": {
+    "japanese": "田村市",
+    "english": "Tamura City"
+  },
+  "0721300": {
+    "japanese": "福島伊達市",
+    "english": "Date City, Fukushima"
+  },
+  "0721400": {
+    "japanese": "本宮市",
+    "english": "Motomiya City"
+  },
+  "0730100": {
+    "japanese": "桑折町",
+    "english": "Koori Town"
+  },
+  "0730300": {
+    "japanese": "国見町",
+    "english": "Kunimi Town"
+  },
+  "0730800": {
+    "japanese": "川俣町",
+    "english": "Kawamata Town"
+  },
+  "0732200": {
+    "japanese": "大玉村",
+    "english": "Otama Village"
+  },
+  "0734200": {
+    "japanese": "鏡石町",
+    "english": "Kagamiishi Town"
+  },
+  "0734400": {
+    "japanese": "天栄村",
+    "english": "Tenei Village"
+  },
+  "0746100": {
+    "japanese": "西郷村",
+    "english": "Nishigo Village"
+  },
+  "0746400": {
+    "japanese": "泉崎村",
+    "english": "Izumizaki Village"
+  },
+  "0746500": {
+    "japanese": "中島村",
+    "english": "Nakajima Village"
+  },
+  "0746600": {
+    "japanese": "矢吹町",
+    "english": "Yabuki Town"
+  },
+  "0748100": {
+    "japanese": "棚倉町",
+    "english": "Tanagura Town"
+  },
+  "0748200": {
+    "japanese": "矢祭町",
+    "english": "Yamatsuri Town"
+  },
+  "0748300": {
+    "japanese": "塙町",
+    "english": "Hanawa Town"
+  },
+  "0748400": {
+    "japanese": "鮫川村",
+    "english": "Samegawa Village"
+  },
+  "0750100": {
+    "japanese": "石川町",
+    "english": "Ishikawa Town"
+  },
+  "0750200": {
+    "japanese": "玉川村",
+    "english": "Tamakawa Village"
+  },
+  "0750300": {
+    "japanese": "平田村",
+    "english": "Hirata Village"
+  },
+  "0750400": {
+    "japanese": "浅川町",
+    "english": "Asakawa Town"
+  },
+  "0750500": {
+    "japanese": "古殿町",
+    "english": "Furudono Town"
+  },
+  "0752100": {
+    "japanese": "三春町",
+    "english": "Miharu Town"
+  },
+  "0752200": {
+    "japanese": "小野町",
+    "english": "Ono Town"
+  },
+  "0720400": {
+    "japanese": "いわき市",
+    "english": "Iwaki City"
+  },
+  "0720900": {
+    "japanese": "相馬市",
+    "english": "Soma City"
+  },
+  "0721200": {
+    "japanese": "南相馬市",
+    "english": "Minamisoma City"
+  },
+  "0754100": {
+    "japanese": "福島広野町",
+    "english": "Hirono Town, Fukushima"
+  },
+  "0754200": {
+    "japanese": "楢葉町",
+    "english": "Naraha Town"
+  },
+  "0754300": {
+    "japanese": "富岡町",
+    "english": "Tomioka Town"
+  },
+  "0754400": {
+    "japanese": "川内村",
+    "english": "Kawauchi Village"
+  },
+  "0754500": {
+    "japanese": "大熊町",
+    "english": "Okuma Town"
+  },
+  "0754600": {
+    "japanese": "双葉町",
+    "english": "Futaba Town"
+  },
+  "0754700": {
+    "japanese": "浪江町",
+    "english": "Namie Town"
+  },
+  "0754800": {
+    "japanese": "葛尾村",
+    "english": "Katsurao Village"
+  },
+  "0756100": {
+    "japanese": "新地町",
+    "english": "Shinchi Town"
+  },
+  "0756400": {
+    "japanese": "飯舘村",
+    "english": "Iitate Village"
+  },
+  "0720200": {
+    "japanese": "会津若松市",
+    "english": "Aizuwakamatsu City"
+  },
+  "0720800": {
+    "japanese": "喜多方市",
+    "english": "Kitakata City"
+  },
+  "0736200": {
+    "japanese": "下郷町",
+    "english": "Shimogo Town"
+  },
+  "0736400": {
+    "japanese": "檜枝岐村",
+    "english": "Hinoemata Village"
+  },
+  "0736700": {
+    "japanese": "只見町",
+    "english": "Tadami Town"
+  },
+  "0736800": {
+    "japanese": "南会津町",
+    "english": "Minamiaizu Town"
+  },
+  "0740200": {
+    "japanese": "北塩原村",
+    "english": "Kitashiobara Village"
+  },
+  "0740500": {
+    "japanese": "西会津町",
+    "english": "Nishiaizu Town"
+  },
+  "0740700": {
+    "japanese": "磐梯町",
+    "english": "Bandai Town"
+  },
+  "0740800": {
+    "japanese": "猪苗代町",
+    "english": "Inawashiro Town"
+  },
+  "0742100": {
+    "japanese": "会津坂下町",
+    "english": "Aizubange Town"
+  },
+  "0742200": {
+    "japanese": "湯川村",
+    "english": "Yugawa Village"
+  },
+  "0742300": {
+    "japanese": "柳津町",
+    "english": "Yanaizu Town"
+  },
+  "0744400": {
+    "japanese": "三島町",
+    "english": "Mishima Town"
+  },
+  "0744500": {
+    "japanese": "福島金山町",
+    "english": "Kaneyama Town, Fukushima"
+  },
+  "0744600": {
+    "japanese": "福島昭和村",
+    "english": "Showa Village, Fukushima"
+  },
+  "0744700": {
+    "japanese": "会津美里町",
+    "english": "Aizumisato Town"
+  },
+  "0820100": {
+    "japanese": "水戸市",
+    "english": "Mito City"
+  },
+  "0820200": {
+    "japanese": "日立市",
+    "english": "Hitachi City"
+  },
+  "0821200": {
+    "japanese": "常陸太田市",
+    "english": "Hitachiota City"
+  },
+  "0821400": {
+    "japanese": "高萩市",
+    "english": "Takahagi City"
+  },
+  "0821500": {
+    "japanese": "北茨城市",
+    "english": "Kitaibaraki City"
+  },
+  "0821600": {
+    "japanese": "笠間市",
+    "english": "Kasama City"
+  },
+  "0822100": {
+    "japanese": "ひたちなか市",
+    "english": "Hitachinaka City"
+  },
+  "0822500": {
+    "japanese": "常陸大宮市",
+    "english": "Hitachiomiya City"
+  },
+  "0822600": {
+    "japanese": "那珂市",
+    "english": "Naka City"
+  },
+  "0823600": {
+    "japanese": "小美玉市",
+    "english": "Omitama City"
+  },
+  "0830200": {
+    "japanese": "茨城町",
+    "english": "Ibaraki Town"
+  },
+  "0830900": {
+    "japanese": "大洗町",
+    "english": "Oarai Town"
+  },
+  "0831000": {
+    "japanese": "城里町",
+    "english": "Shirosato Town"
+  },
+  "0834100": {
+    "japanese": "東海村",
+    "english": "Tokai Village"
+  },
+  "0836400": {
+    "japanese": "大子町",
+    "english": "Daigo Town"
+  },
+  "0820300": {
+    "japanese": "土浦市",
+    "english": "Tsuchiura City"
+  },
+  "0820400": {
+    "japanese": "茨城古河市",
+    "english": "Koga City, Ibaraki"
+  },
+  "0820500": {
+    "japanese": "石岡市",
+    "english": "Ishioka City"
+  },
+  "0820700": {
+    "japanese": "結城市",
+    "english": "Yuki City"
+  },
+  "0820800": {
+    "japanese": "龍ケ崎市",
+    "english": "Ryugasaki City"
+  },
+  "0821000": {
+    "japanese": "下妻市",
+    "english": "Shimotsuma City"
+  },
+  "0821100": {
+    "japanese": "常総市",
+    "english": "Joso City"
+  },
+  "0821700": {
+    "japanese": "取手市",
+    "english": "Toride City"
+  },
+  "0821900": {
+    "japanese": "牛久市",
+    "english": "Ushiku City"
+  },
+  "0822000": {
+    "japanese": "つくば市",
+    "english": "Tsukuba City"
+  },
+  "0822200": {
+    "japanese": "茨城鹿嶋市",
+    "english": "Kashima City, Ibaraki"
+  },
+  "0822300": {
+    "japanese": "潮来市",
+    "english": "Itako City"
+  },
+  "0822400": {
+    "japanese": "守谷市",
+    "english": "Moriya City"
+  },
+  "0822700": {
+    "japanese": "筑西市",
+    "english": "Chikusei City"
+  },
+  "0822800": {
+    "japanese": "坂東市",
+    "english": "Bando City"
+  },
+  "0822900": {
+    "japanese": "稲敷市",
+    "english": "Inashiki City"
+  },
+  "0823000": {
+    "japanese": "かすみがうら市",
+    "english": "Kasumigaura City"
+  },
+  "0823100": {
+    "japanese": "桜川市",
+    "english": "Sakuragawa City"
+  },
+  "0823200": {
+    "japanese": "神栖市",
+    "english": "Kamisu City"
+  },
+  "0823300": {
+    "japanese": "行方市",
+    "english": "Namegata City"
+  },
+  "0823400": {
+    "japanese": "鉾田市",
+    "english": "Hokota City"
+  },
+  "0823500": {
+    "japanese": "つくばみらい市",
+    "english": "Tsukubamirai City"
+  },
+  "0844200": {
+    "japanese": "美浦村",
+    "english": "Miho Village"
+  },
+  "0844300": {
+    "japanese": "阿見町",
+    "english": "Ami Town"
+  },
+  "0844700": {
+    "japanese": "河内町",
+    "english": "Kawachi Town"
+  },
+  "0852100": {
+    "japanese": "八千代町",
+    "english": "Yachiyo Town"
+  },
+  "0854200": {
+    "japanese": "五霞町",
+    "english": "Goka Town"
+  },
+  "0854600": {
+    "japanese": "境町",
+    "english": "Sakai Town"
+  },
+  "0856400": {
+    "japanese": "利根町",
+    "english": "Tone Town"
+  },
+  "0920600": {
+    "japanese": "日光市",
+    "english": "Nikko City"
+  },
+  "0921000": {
+    "japanese": "大田原市",
+    "english": "Ohtawara City"
+  },
+  "0921100": {
+    "japanese": "矢板市",
+    "english": "Yaita City"
+  },
+  "0921300": {
+    "japanese": "那須塩原市",
+    "english": "Nasushiobara City"
+  },
+  "0938400": {
+    "japanese": "塩谷町",
+    "english": "Shioya Town"
+  },
+  "0940700": {
+    "japanese": "那須町",
+    "english": "Nasu Town"
+  },
+  "0920100": {
+    "japanese": "宇都宮市",
+    "english": "Utsunomiya City"
+  },
+  "0920200": {
+    "japanese": "足利市",
+    "english": "Ashikaga City"
+  },
+  "0920300": {
+    "japanese": "栃木市",
+    "english": "Tochigi City"
+  },
+  "0920400": {
+    "japanese": "佐野市",
+    "english": "Sano City"
+  },
+  "0920500": {
+    "japanese": "鹿沼市",
+    "english": "Kanuma City"
+  },
+  "0920800": {
+    "japanese": "小山市",
+    "english": "Oyama City"
+  },
+  "0920900": {
+    "japanese": "真岡市",
+    "english": "Moka City"
+  },
+  "0921400": {
+    "japanese": "栃木さくら市",
+    "english": "Sakura City, Tochigi"
+  },
+  "0921500": {
+    "japanese": "那須烏山市",
+    "english": "Nasukarasuyama City"
+  },
+  "0921600": {
+    "japanese": "下野市",
+    "english": "Shimotsuke City"
+  },
+  "0930100": {
+    "japanese": "上三川町",
+    "english": "Kaminokawa Town"
+  },
+  "0934200": {
+    "japanese": "益子町",
+    "english": "Mashiko Town"
+  },
+  "0934300": {
+    "japanese": "茂木町",
+    "english": "Motegi Town"
+  },
+  "0934400": {
+    "japanese": "市貝町",
+    "english": "Ichikai Town"
+  },
+  "0934500": {
+    "japanese": "芳賀町",
+    "english": "Haga Town"
+  },
+  "0936100": {
+    "japanese": "壬生町",
+    "english": "Mibu Town"
+  },
+  "0936400": {
+    "japanese": "野木町",
+    "english": "Nogi Town"
+  },
+  "0938600": {
+    "japanese": "高根沢町",
+    "english": "Takanezawa Town"
+  },
+  "0941100": {
+    "japanese": "栃木那珂川町",
+    "english": "Nakagawa Town, Tochigi"
+  },
+  "1020600": {
+    "japanese": "沼田市",
+    "english": "Numata City"
+  },
+  "1042100": {
+    "japanese": "中之条町",
+    "english": "Nakanojo Town"
+  },
+  "1042400": {
+    "japanese": "長野原町",
+    "english": "Naganohara Town"
+  },
+  "1042500": {
+    "japanese": "嬬恋村",
+    "english": "Tsumagoi Village"
+  },
+  "1042600": {
+    "japanese": "草津町",
+    "english": "Kusatsu Town"
+  },
+  "1042800": {
+    "japanese": "群馬高山村",
+    "english": "Takayama Village, Gunma"
+  },
+  "1042900": {
+    "japanese": "東吾妻町",
+    "english": "Higashiagatsuma Town"
+  },
+  "1044300": {
+    "japanese": "片品村",
+    "english": "Katashina Village"
+  },
+  "1044400": {
+    "japanese": "川場村",
+    "english": "Kawaba Village"
+  },
+  "1044800": {
+    "japanese": "群馬昭和村",
+    "english": "Showa Village, Gunma"
+  },
+  "1044900": {
+    "japanese": "みなかみ町",
+    "english": "Minakami Town"
+  },
+  "1020100": {
+    "japanese": "前橋市",
+    "english": "Maebashi City"
+  },
+  "1020200": {
+    "japanese": "高崎市",
+    "english": "Takasaki City"
+  },
+  "1020300": {
+    "japanese": "桐生市",
+    "english": "Kiryu City"
+  },
+  "1020400": {
+    "japanese": "伊勢崎市",
+    "english": "Isesaki City"
+  },
+  "1020500": {
+    "japanese": "太田市",
+    "english": "Ota City"
+  },
+  "1020700": {
+    "japanese": "館林市",
+    "english": "Tatebayashi City"
+  },
+  "1020800": {
+    "japanese": "渋川市",
+    "english": "Shibukawa City"
+  },
+  "1020900": {
+    "japanese": "藤岡市",
+    "english": "Fujioka City"
+  },
+  "1021000": {
+    "japanese": "富岡市",
+    "english": "Tomioka City"
+  },
+  "1021100": {
+    "japanese": "安中市",
+    "english": "Annaka City"
+  },
+  "1021200": {
+    "japanese": "みどり市",
+    "english": "Midori City"
+  },
+  "1034400": {
+    "japanese": "榛東村",
+    "english": "Shinto Village"
+  },
+  "1034500": {
+    "japanese": "吉岡町",
+    "english": "Yoshioka Town"
+  },
+  "1036600": {
+    "japanese": "群馬上野村",
+    "english": "Ueno Village, Gunma"
+  },
+  "1036700": {
+    "japanese": "神流町",
+    "english": "Kanna Town"
+  },
+  "1038200": {
+    "japanese": "下仁田町",
+    "english": "Shimonita Town"
+  },
+  "1038300": {
+    "japanese": "群馬南牧村",
+    "english": "Nanmoku Village, Gunma"
+  },
+  "1038400": {
+    "japanese": "甘楽町",
+    "english": "Kanra Town"
+  },
+  "1046400": {
+    "japanese": "玉村町",
+    "english": "Tamamura Town"
+  },
+  "1052100": {
+    "japanese": "板倉町",
+    "english": "Itakura Town"
+  },
+  "1052200": {
+    "japanese": "群馬明和町",
+    "english": "Meiwa Town, Gunma"
+  },
+  "1052300": {
+    "japanese": "千代田町",
+    "english": "Chiyoda Town"
+  },
+  "1052400": {
+    "japanese": "大泉町",
+    "english": "Oizumi Town"
+  },
+  "1052500": {
+    "japanese": "邑楽町",
+    "english": "Ora Town"
+  },
+  "1120200": {
+    "japanese": "熊谷市",
+    "english": "Kumagaya City"
+  },
+  "1120600": {
+    "japanese": "行田市",
+    "english": "Gyoda City"
+  },
+  "1121000": {
+    "japanese": "加須市",
+    "english": "Kazo City"
+  },
+  "1121100": {
+    "japanese": "本庄市",
+    "english": "Honjo City"
+  },
+  "1121200": {
+    "japanese": "東松山市",
+    "english": "Higashimatsuyama City"
+  },
+  "1121600": {
+    "japanese": "羽生市",
+    "english": "Hanyu City"
+  },
+  "1121700": {
+    "japanese": "鴻巣市",
+    "english": "Kounosu City"
+  },
+  "1121800": {
+    "japanese": "深谷市",
+    "english": "Fukaya City"
+  },
+  "1123200": {
+    "japanese": "久喜市",
+    "english": "Kuki City"
+  },
+  "1134100": {
+    "japanese": "滑川町",
+    "english": "Namegawa Town"
+  },
+  "1134200": {
+    "japanese": "嵐山町",
+    "english": "Ranzan Town"
+  },
+  "1134300": {
+    "japanese": "小川町",
+    "english": "Ogawa Town"
+  },
+  "1134700": {
+    "japanese": "吉見町",
+    "english": "Yoshimi Town"
+  },
+  "1134800": {
+    "japanese": "鳩山町",
+    "english": "Hatoyama Town"
+  },
+  "1134900": {
+    "japanese": "ときがわ町",
+    "english": "Tokigawa Town"
+  },
+  "1136900": {
+    "japanese": "東秩父村",
+    "english": "Higashichichibu Village"
+  },
+  "1138100": {
+    "japanese": "埼玉美里町",
+    "english": "Misato Town, Saitama"
+  },
+  "1138300": {
+    "japanese": "埼玉神川町",
+    "english": "Kamikawa Town, Saitama"
+  },
+  "1138500": {
+    "japanese": "上里町",
+    "english": "Kamisato Town"
+  },
+  "1140800": {
+    "japanese": "寄居町",
+    "english": "Yorii Town"
+  },
+  "1110100": {
+    "japanese": "さいたま西区",
+    "english": "Nishi Ward, Saitama"
+  },
+  "1110200": {
+    "japanese": "さいたま北区",
+    "english": "Kita Ward, Saitama"
+  },
+  "1110300": {
+    "japanese": "さいたま大宮区",
+    "english": "Omiya Ward, Saitama"
+  },
+  "1110400": {
+    "japanese": "さいたま見沼区",
+    "english": "Minuma Ward, Saitama"
+  },
+  "1110500": {
+    "japanese": "さいたま中央区",
+    "english": "Chuo Ward, Saitama"
+  },
+  "1110600": {
+    "japanese": "さいたま桜区",
+    "english": "Sakura Ward, Saitama"
+  },
+  "1110700": {
+    "japanese": "さいたま浦和区",
+    "english": "Urawa Ward, Saitama"
+  },
+  "1110800": {
+    "japanese": "さいたま南区",
+    "english": "Minami Ward, Saitama"
+  },
+  "1110900": {
+    "japanese": "さいたま緑区",
+    "english": "Midori Ward, Saitama"
+  },
+  "1111000": {
+    "japanese": "さいたま岩槻区",
+    "english": "Iwatsuki Ward, Saitama"
+  },
+  "1120100": {
+    "japanese": "川越市",
+    "english": "Kawagoe City"
+  },
+  "1120300": {
+    "japanese": "川口市",
+    "english": "Kawaguchi City"
+  },
+  "1120800": {
+    "japanese": "所沢市",
+    "english": "Tokorozawa City"
+  },
+  "1120900": {
+    "japanese": "飯能市",
+    "english": "Hanno City"
+  },
+  "1121400": {
+    "japanese": "春日部市",
+    "english": "Kasukabe City"
+  },
+  "1121500": {
+    "japanese": "狭山市",
+    "english": "Sayama City"
+  },
+  "1121900": {
+    "japanese": "上尾市",
+    "english": "Ageo City"
+  },
+  "1122100": {
+    "japanese": "草加市",
+    "english": "Soka City"
+  },
+  "1122200": {
+    "japanese": "越谷市",
+    "english": "Koshigaya City"
+  },
+  "1122300": {
+    "japanese": "蕨市",
+    "english": "Warabi City"
+  },
+  "1122400": {
+    "japanese": "戸田市",
+    "english": "Toda City"
+  },
+  "1122500": {
+    "japanese": "入間市",
+    "english": "Iruma City"
+  },
+  "1122700": {
+    "japanese": "朝霞市",
+    "english": "Asaka City"
+  },
+  "1122800": {
+    "japanese": "志木市",
+    "english": "Shiki City"
+  },
+  "1122900": {
+    "japanese": "和光市",
+    "english": "Wako City"
+  },
+  "1123000": {
+    "japanese": "新座市",
+    "english": "Niiza City"
+  },
+  "1123100": {
+    "japanese": "桶川市",
+    "english": "Okegawa City"
+  },
+  "1123300": {
+    "japanese": "北本市",
+    "english": "Kitamoto City"
+  },
+  "1123400": {
+    "japanese": "八潮市",
+    "english": "Yashio City"
+  },
+  "1123500": {
+    "japanese": "富士見市",
+    "english": "Fujimi City"
+  },
+  "1123700": {
+    "japanese": "三郷市",
+    "english": "Misato City"
+  },
+  "1123800": {
+    "japanese": "蓮田市",
+    "english": "Hasuda City"
+  },
+  "1123900": {
+    "japanese": "坂戸市",
+    "english": "Sakado City"
+  },
+  "1124000": {
+    "japanese": "幸手市",
+    "english": "Satte City"
+  },
+  "1124100": {
+    "japanese": "鶴ヶ島市",
+    "english": "Tsurugashima City"
+  },
+  "1124200": {
+    "japanese": "日高市",
+    "english": "Hidaka City"
+  },
+  "1124300": {
+    "japanese": "吉川市",
+    "english": "Yoshikawa City"
+  },
+  "1124500": {
+    "japanese": "ふじみ野市",
+    "english": "Fujimino City"
+  },
+  "1124600": {
+    "japanese": "白岡市",
+    "english": "Shiraoka City"
+  },
+  "1130100": {
+    "japanese": "伊奈町",
+    "english": "Ina Town"
+  },
+  "1132400": {
+    "japanese": "埼玉三芳町",
+    "english": "Miyoshi Town, Saitama"
+  },
+  "1132600": {
+    "japanese": "毛呂山町",
+    "english": "Moroyama Town"
+  },
+  "1132700": {
+    "japanese": "越生町",
+    "english": "Ogose Town"
+  },
+  "1134600": {
+    "japanese": "川島町",
+    "english": "Kawajima Town"
+  },
+  "1144200": {
+    "japanese": "宮代町",
+    "english": "Miyashiro Town"
+  },
+  "1146400": {
+    "japanese": "杉戸町",
+    "english": "Sugito Town"
+  },
+  "1146500": {
+    "japanese": "松伏町",
+    "english": "Matsubushi Town"
+  },
+  "1120700": {
+    "japanese": "秩父市",
+    "english": "Chichibu City"
+  },
+  "1136100": {
+    "japanese": "横瀬町",
+    "english": "Yokoze Town"
+  },
+  "1136200": {
+    "japanese": "皆野町",
+    "english": "Minano Town"
+  },
+  "1136300": {
+    "japanese": "長瀞町",
+    "english": "Nagatoro Town"
+  },
+  "1136500": {
+    "japanese": "小鹿野町",
+    "english": "Ogano Town"
+  },
+  "1220200": {
+    "japanese": "銚子市",
+    "english": "Choshi City"
+  },
+  "1221000": {
+    "japanese": "茂原市",
+    "english": "Mobara City"
+  },
+  "1221300": {
+    "japanese": "東金市",
+    "english": "Togane City"
+  },
+  "1221500": {
+    "japanese": "旭市",
+    "english": "Asahi City"
+  },
+  "1223500": {
+    "japanese": "匝瑳市",
+    "english": "Sosa City"
+  },
+  "1223600": {
+    "japanese": "香取市",
+    "english": "Katori City"
+  },
+  "1223700": {
+    "japanese": "山武市",
+    "english": "Sammu City"
+  },
+  "1223900": {
+    "japanese": "大網白里市",
+    "english": "Oamishirasato City"
+  },
+  "1234200": {
+    "japanese": "神崎町",
+    "english": "Kozaki Town"
+  },
+  "1234700": {
+    "japanese": "多古町",
+    "english": "Tako Town"
+  },
+  "1234900": {
+    "japanese": "東庄町",
+    "english": "Tohnosho Town"
+  },
+  "1240300": {
+    "japanese": "九十九里町",
+    "english": "Kujukuri Town"
+  },
+  "1240900": {
+    "japanese": "芝山町",
+    "english": "Shibayama Town"
+  },
+  "1241000": {
+    "japanese": "横芝光町",
+    "english": "Yokoshibahikari Town"
+  },
+  "1242100": {
+    "japanese": "一宮町",
+    "english": "Ichinomiya Town"
+  },
+  "1242200": {
+    "japanese": "睦沢町",
+    "english": "Mutsuzawa Town"
+  },
+  "1242300": {
+    "japanese": "長生村",
+    "english": "Chosei Village"
+  },
+  "1242400": {
+    "japanese": "白子町",
+    "english": "Shirako Town"
+  },
+  "1242600": {
+    "japanese": "長柄町",
+    "english": "Nagara Town"
+  },
+  "1242700": {
+    "japanese": "長南町",
+    "english": "Chonan Town"
+  },
+  "1210100": {
+    "japanese": "千葉中央区",
+    "english": "Chuo Ward, Chiba"
+  },
+  "1210200": {
+    "japanese": "千葉花見川区",
+    "english": "Hanamigawa Ward, Chiba"
+  },
+  "1210300": {
+    "japanese": "千葉稲毛区",
+    "english": "Inage Ward, Chiba"
+  },
+  "1210400": {
+    "japanese": "千葉若葉区",
+    "english": "Wakaba Ward, Chiba"
+  },
+  "1210500": {
+    "japanese": "千葉緑区",
+    "english": "Midori Ward, Chiba"
+  },
+  "1210600": {
+    "japanese": "千葉美浜区",
+    "english": "Mihama Ward, Chiba"
+  },
+  "1220300": {
+    "japanese": "市川市",
+    "english": "Ichikawa City"
+  },
+  "1220400": {
+    "japanese": "船橋市",
+    "english": "Funabashi City"
+  },
+  "1220700": {
+    "japanese": "松戸市",
+    "english": "Matsudo City"
+  },
+  "1220800": {
+    "japanese": "野田市",
+    "english": "Noda City"
+  },
+  "1221100": {
+    "japanese": "成田市",
+    "english": "Narita City"
+  },
+  "1221200": {
+    "japanese": "千葉佐倉市",
+    "english": "Sakura City, Chiba"
+  },
+  "1221600": {
+    "japanese": "習志野市",
+    "english": "Narashino City"
+  },
+  "1221700": {
+    "japanese": "柏市",
+    "english": "Kashiwa City"
+  },
+  "1221900": {
+    "japanese": "市原市",
+    "english": "Ichihara City"
+  },
+  "1222000": {
+    "japanese": "流山市",
+    "english": "Nagareyama City"
+  },
+  "1222100": {
+    "japanese": "八千代市",
+    "english": "Yachiyo City"
+  },
+  "1222200": {
+    "japanese": "我孫子市",
+    "english": "Abiko City"
+  },
+  "1222400": {
+    "japanese": "鎌ケ谷市",
+    "english": "Kamagaya City"
+  },
+  "1222700": {
+    "japanese": "浦安市",
+    "english": "Urayasu City"
+  },
+  "1222800": {
+    "japanese": "四街道市",
+    "english": "Yotsukaido City"
+  },
+  "1223000": {
+    "japanese": "八街市",
+    "english": "Yachimata City"
+  },
+  "1223100": {
+    "japanese": "印西市",
+    "english": "Inzai City"
+  },
+  "1223200": {
+    "japanese": "白井市",
+    "english": "Shiroi City"
+  },
+  "1223300": {
+    "japanese": "富里市",
+    "english": "Tomisato City"
+  },
+  "1232200": {
+    "japanese": "酒々井町",
+    "english": "Shisui Town"
+  },
+  "1232900": {
+    "japanese": "栄町",
+    "english": "Sakae Town"
+  },
+  "1220500": {
+    "japanese": "館山市",
+    "english": "Tateyama City"
+  },
+  "1220600": {
+    "japanese": "木更津市",
+    "english": "Kisarazu City"
+  },
+  "1221800": {
+    "japanese": "勝浦市",
+    "english": "Katsuura City"
+  },
+  "1222300": {
+    "japanese": "鴨川市",
+    "english": "Kamogawa City"
+  },
+  "1222500": {
+    "japanese": "君津市",
+    "english": "Kimitsu City"
+  },
+  "1222600": {
+    "japanese": "富津市",
+    "english": "Futtsu City"
+  },
+  "1222900": {
+    "japanese": "袖ケ浦市",
+    "english": "Sodegaura City"
+  },
+  "1223400": {
+    "japanese": "南房総市",
+    "english": "Minamiboso City"
+  },
+  "1223800": {
+    "japanese": "いすみ市",
+    "english": "Isumi City"
+  },
+  "1244100": {
+    "japanese": "大多喜町",
+    "english": "Otaki Town"
+  },
+  "1244300": {
+    "japanese": "御宿町",
+    "english": "Onjuku Town"
+  },
+  "1246300": {
+    "japanese": "鋸南町",
+    "english": "Kyonan Town"
+  },
+  "1310100": {
+    "japanese": "東京千代田区",
+    "english": "Chiyoda City, Tokyo"
+  },
+  "1310200": {
+    "japanese": "東京中央区",
+    "english": "Chuo City, Tokyo"
+  },
+  "1310300": {
+    "japanese": "東京港区",
+    "english": "Minato City, Tokyo"
+  },
+  "1310400": {
+    "japanese": "東京新宿区",
+    "english": "Shinjuku City, Tokyo"
+  },
+  "1310500": {
+    "japanese": "東京文京区",
+    "english": "Bunkyo City, Tokyo"
+  },
+  "1310600": {
+    "japanese": "東京台東区",
+    "english": "Taito City, Tokyo"
+  },
+  "1310700": {
+    "japanese": "東京墨田区",
+    "english": "Sumida City, Tokyo"
+  },
+  "1310800": {
+    "japanese": "東京江東区",
+    "english": "Koto City, Tokyo"
+  },
+  "1310900": {
+    "japanese": "東京品川区",
+    "english": "Shinagawa City, Tokyo"
+  },
+  "1311000": {
+    "japanese": "東京目黒区",
+    "english": "Meguro City, Tokyo"
+  },
+  "1311100": {
+    "japanese": "東京大田区",
+    "english": "Ota City, Tokyo"
+  },
+  "1311200": {
+    "japanese": "東京世田谷区",
+    "english": "Setagaya City, Tokyo"
+  },
+  "1311300": {
+    "japanese": "東京渋谷区",
+    "english": "Shibuya City, Tokyo"
+  },
+  "1311400": {
+    "japanese": "東京中野区",
+    "english": "Nakano City, Tokyo"
+  },
+  "1311500": {
+    "japanese": "東京杉並区",
+    "english": "Suginami City, Tokyo"
+  },
+  "1311600": {
+    "japanese": "東京豊島区",
+    "english": "Toshima City, Tokyo"
+  },
+  "1311700": {
+    "japanese": "東京北区",
+    "english": "Kita City, Tokyo"
+  },
+  "1311800": {
+    "japanese": "東京荒川区",
+    "english": "Arakawa City, Tokyo"
+  },
+  "1311900": {
+    "japanese": "東京板橋区",
+    "english": "Itabashi City, Tokyo"
+  },
+  "1312000": {
+    "japanese": "東京練馬区",
+    "english": "Nerima City, Tokyo"
+  },
+  "1312100": {
+    "japanese": "東京足立区",
+    "english": "Adachi City, Tokyo"
+  },
+  "1312200": {
+    "japanese": "東京葛飾区",
+    "english": "Katsushika City, Tokyo"
+  },
+  "1312300": {
+    "japanese": "東京江戸川区",
+    "english": "Edogawa City, Tokyo"
+  },
+  "1320100": {
+    "japanese": "八王子市",
+    "english": "Hachioji City"
+  },
+  "1320200": {
+    "japanese": "立川市",
+    "english": "Tachikawa City"
+  },
+  "1320300": {
+    "japanese": "武蔵野市",
+    "english": "Musashino City"
+  },
+  "1320400": {
+    "japanese": "三鷹市",
+    "english": "Mitaka City"
+  },
+  "1320600": {
+    "japanese": "東京府中市",
+    "english": "Fuchu City, Tokyo"
+  },
+  "1320700": {
+    "japanese": "昭島市",
+    "english": "Akishima City"
+  },
+  "1320800": {
+    "japanese": "調布市",
+    "english": "Chofu City"
+  },
+  "1320900": {
+    "japanese": "町田市",
+    "english": "Machida City"
+  },
+  "1321000": {
+    "japanese": "小金井市",
+    "english": "Koganei City"
+  },
+  "1321100": {
+    "japanese": "小平市",
+    "english": "Kodaira City"
+  },
+  "1321200": {
+    "japanese": "日野市",
+    "english": "Hino City"
+  },
+  "1321300": {
+    "japanese": "東村山市",
+    "english": "Higashimurayama City"
+  },
+  "1321400": {
+    "japanese": "国分寺市",
+    "english": "Kokubunji City"
+  },
+  "1321500": {
+    "japanese": "国立市",
+    "english": "Kunitachi City"
+  },
+  "1321800": {
+    "japanese": "福生市",
+    "english": "Fussa City"
+  },
+  "1321900": {
+    "japanese": "狛江市",
+    "english": "Komae City"
+  },
+  "1322000": {
+    "japanese": "東大和市",
+    "english": "Higashiyamato City"
+  },
+  "1322100": {
+    "japanese": "清瀬市",
+    "english": "Kiyose City"
+  },
+  "1322200": {
+    "japanese": "東久留米市",
+    "english": "Higashikurume City"
+  },
+  "1322300": {
+    "japanese": "武蔵村山市",
+    "english": "Musashimurayama City"
+  },
+  "1322400": {
+    "japanese": "多摩市",
+    "english": "Tama City"
+  },
+  "1322500": {
+    "japanese": "稲城市",
+    "english": "Inagi City"
+  },
+  "1322700": {
+    "japanese": "羽村市",
+    "english": "Hamura City"
+  },
+  "1322900": {
+    "japanese": "西東京市",
+    "english": "Nishitokyo City"
+  },
+  "1330300": {
+    "japanese": "瑞穂町",
+    "english": "Mizuho Town"
+  },
+  "1320500": {
+    "japanese": "青梅市",
+    "english": "Ome City"
+  },
+  "1322800": {
+    "japanese": "あきる野市",
+    "english": "Akiruno City"
+  },
+  "1330500": {
+    "japanese": "日の出町",
+    "english": "Hinode Town"
+  },
+  "1330700": {
+    "japanese": "檜原村",
+    "english": "Hinohara Village"
+  },
+  "1330800": {
+    "japanese": "奥多摩町",
+    "english": "Okutama Town"
+  },
+  "1336400": {
+    "japanese": "神津島村",
+    "english": "Kouzushima Village"
+  },
+  "1336100": {
+    "japanese": "伊豆大島町",
+    "english": "Izu-Oshima Town"
+  },
+  "1336200": {
+    "japanese": "東京利島村",
+    "english": "Toshima Village, Tokyo"
+  },
+  "1336300": {
+    "japanese": "新島村",
+    "english": "Niijima Village"
+  },
+  "1338100": {
+    "japanese": "三宅村",
+    "english": "Miyake Village"
+  },
+  "1338200": {
+    "japanese": "御蔵島村",
+    "english": "Mikurashima Village"
+  },
+  "1340100": {
+    "japanese": "八丈町",
+    "english": "Hachijo Town"
+  },
+  "1340200": {
+    "japanese": "青ヶ島村",
+    "english": "Aogashima Village"
+  },
+  "1342100": {
+    "japanese": "小笠原村",
+    "english": "Ogasawara Village"
+  },
+  "1410100": {
+    "japanese": "横浜鶴見区",
+    "english": "Tsurumi Ward, Yokohama"
+  },
+  "1410200": {
+    "japanese": "横浜神奈川区",
+    "english": "Kanagawa Ward, Yokohama"
+  },
+  "1410300": {
+    "japanese": "横浜西区",
+    "english": "Nishi Ward, Yokohama"
+  },
+  "1410400": {
+    "japanese": "横浜中区",
+    "english": "Naka Ward, Yokohama"
+  },
+  "1410500": {
+    "japanese": "横浜南区",
+    "english": "Minami Ward, Yokohama"
+  },
+  "1410600": {
+    "japanese": "横浜保土ケ谷区",
+    "english": "Hodogaya Ward, Yokohama"
+  },
+  "1410700": {
+    "japanese": "横浜磯子区",
+    "english": "Isogo Ward, Yokohama"
+  },
+  "1410800": {
+    "japanese": "横浜金沢区",
+    "english": "Kanazawa Ward, Yokohama"
+  },
+  "1410900": {
+    "japanese": "横浜港北区",
+    "english": "Kohoku Ward, Yokohama"
+  },
+  "1411000": {
+    "japanese": "横浜戸塚区",
+    "english": "Totsuka Ward, Yokohama"
+  },
+  "1411100": {
+    "japanese": "横浜港南区",
+    "english": "Konan Ward, Yokohama"
+  },
+  "1411200": {
+    "japanese": "横浜旭区",
+    "english": "Asahi Ward, Yokohama"
+  },
+  "1411300": {
+    "japanese": "横浜緑区",
+    "english": "Midori Ward, Yokohama"
+  },
+  "1411400": {
+    "japanese": "横浜瀬谷区",
+    "english": "Seya Ward, Yokohama"
+  },
+  "1411500": {
+    "japanese": "横浜栄区",
+    "english": "Sakae Ward, Yokohama"
+  },
+  "1411600": {
+    "japanese": "横浜泉区",
+    "english": "Izumi Ward, Yokohama"
+  },
+  "1411700": {
+    "japanese": "横浜青葉区",
+    "english": "Aoba Ward, Yokohama"
+  },
+  "1411800": {
+    "japanese": "横浜都筑区",
+    "english": "Tsuzuki Ward, Yokohama"
+  },
+  "1413100": {
+    "japanese": "川崎川崎区",
+    "english": "Kawasaki Ward, Kawasaki"
+  },
+  "1413200": {
+    "japanese": "川崎幸区",
+    "english": "Saiwai Ward, Kawasaki"
+  },
+  "1413300": {
+    "japanese": "川崎中原区",
+    "english": "Nakahara Ward, Kawasaki"
+  },
+  "1413400": {
+    "japanese": "川崎高津区",
+    "english": "Takatsu Ward, Kawasaki"
+  },
+  "1413500": {
+    "japanese": "川崎多摩区",
+    "english": "Tama Ward, Kawasaki"
+  },
+  "1413600": {
+    "japanese": "川崎宮前区",
+    "english": "Miyamae Ward, Kawasaki"
+  },
+  "1413700": {
+    "japanese": "川崎麻生区",
+    "english": "Asao Ward, Kawasaki"
+  },
+  "1420100": {
+    "japanese": "横須賀市",
+    "english": "Yokosuka City"
+  },
+  "1420300": {
+    "japanese": "平塚市",
+    "english": "Hiratsuka City"
+  },
+  "1420400": {
+    "japanese": "鎌倉市",
+    "english": "Kamakura City"
+  },
+  "1420500": {
+    "japanese": "藤沢市",
+    "english": "Fujisawa City"
+  },
+  "1420700": {
+    "japanese": "茅ヶ崎市",
+    "english": "Chigasaki City"
+  },
+  "1420800": {
+    "japanese": "逗子市",
+    "english": "Zushi City"
+  },
+  "1421000": {
+    "japanese": "三浦市",
+    "english": "Miura City"
+  },
+  "1421300": {
+    "japanese": "大和市",
+    "english": "Yamato City"
+  },
+  "1421500": {
+    "japanese": "海老名市",
+    "english": "Ebina City"
+  },
+  "1421600": {
+    "japanese": "座間市",
+    "english": "Zama City"
+  },
+  "1421800": {
+    "japanese": "綾瀬市",
+    "english": "Ayase City"
+  },
+  "1430100": {
+    "japanese": "葉山町",
+    "english": "Hayama Town"
+  },
+  "1432100": {
+    "japanese": "寒川町",
+    "english": "Samukawa Town"
+  },
+  "1434100": {
+    "japanese": "大磯町",
+    "english": "Oiso Town"
+  },
+  "1434200": {
+    "japanese": "二宮町",
+    "english": "Ninomiya Town"
+  },
+  "1415100": {
+    "japanese": "相模原緑区",
+    "english": "Midori Ward, Sagamihara"
+  },
+  "1415200": {
+    "japanese": "相模原中央区",
+    "english": "Chuo Ward, Sagamihara"
+  },
+  "1415300": {
+    "japanese": "相模原南区",
+    "english": "Minami Ward, Sagamihara"
+  },
+  "1420600": {
+    "japanese": "小田原市",
+    "english": "Odawara City"
+  },
+  "1421100": {
+    "japanese": "秦野市",
+    "english": "Hadano City"
+  },
+  "1421200": {
+    "japanese": "厚木市",
+    "english": "Atsugi City"
+  },
+  "1421400": {
+    "japanese": "伊勢原市",
+    "english": "Isehara City"
+  },
+  "1421700": {
+    "japanese": "南足柄市",
+    "english": "Minamiashigara City"
+  },
+  "1436100": {
+    "japanese": "中井町",
+    "english": "Nakai Town"
+  },
+  "1436200": {
+    "japanese": "神奈川大井町",
+    "english": "Oi Town, Kanagawa"
+  },
+  "1436300": {
+    "japanese": "松田町",
+    "english": "Matsuda Town"
+  },
+  "1436400": {
+    "japanese": "山北町",
+    "english": "Yamakita Town"
+  },
+  "1436600": {
+    "japanese": "開成町",
+    "english": "Kaisei Town"
+  },
+  "1438200": {
+    "japanese": "箱根町",
+    "english": "Hakone Town"
+  },
+  "1438300": {
+    "japanese": "真鶴町",
+    "english": "Manazuru Town"
+  },
+  "1438400": {
+    "japanese": "湯河原町",
+    "english": "Yugawara Town"
+  },
+  "1440100": {
+    "japanese": "愛川町",
+    "english": "Aikawa Town"
+  },
+  "1440200": {
+    "japanese": "清川村",
+    "english": "Kiyokawa Village"
+  },
+  "1521600": {
+    "japanese": "糸魚川市",
+    "english": "Itoigawa City"
+  },
+  "1521700": {
+    "japanese": "妙高市",
+    "english": "Myoko City"
+  },
+  "1522200": {
+    "japanese": "上越市",
+    "english": "Joetsu City"
+  },
+  "1520200": {
+    "japanese": "長岡市",
+    "english": "Nagaoka City"
+  },
+  "1520400": {
+    "japanese": "三条市",
+    "english": "Sanjo City"
+  },
+  "1520500": {
+    "japanese": "柏崎市",
+    "english": "Kashiwazaki City"
+  },
+  "1520800": {
+    "japanese": "小千谷市",
+    "english": "Ojiya City"
+  },
+  "1520900": {
+    "japanese": "加茂市",
+    "english": "Kamo City"
+  },
+  "1521000": {
+    "japanese": "十日町市",
+    "english": "Tokamachi City"
+  },
+  "1521100": {
+    "japanese": "見附市",
+    "english": "Mitsuke City"
+  },
+  "1522500": {
+    "japanese": "魚沼市",
+    "english": "Uonuma City"
+  },
+  "1522600": {
+    "japanese": "南魚沼市",
+    "english": "Minamiuonuma City"
+  },
+  "1536100": {
+    "japanese": "田上町",
+    "english": "Tagami Town"
+  },
+  "1540500": {
+    "japanese": "出雲崎町",
+    "english": "Izumozaki Town"
+  },
+  "1546100": {
+    "japanese": "湯沢町",
+    "english": "Yuzawa Town"
+  },
+  "1548200": {
+    "japanese": "津南町",
+    "english": "Tsunan Town"
+  },
+  "1550400": {
+    "japanese": "刈羽村",
+    "english": "Kariwa Village"
+  },
+  "1510100": {
+    "japanese": "新潟北区",
+    "english": "Kita Ward, Niigata"
+  },
+  "1510200": {
+    "japanese": "新潟東区",
+    "english": "Higashi Ward, Niigata"
+  },
+  "1510300": {
+    "japanese": "新潟中央区",
+    "english": "Chuo Ward, Niigata"
+  },
+  "1510400": {
+    "japanese": "新潟江南区",
+    "english": "Konan Ward, Niigata"
+  },
+  "1510500": {
+    "japanese": "新潟秋葉区",
+    "english": "Akiha Ward, Niigata"
+  },
+  "1510600": {
+    "japanese": "新潟南区",
+    "english": "Minami Ward, Niigata"
+  },
+  "1510700": {
+    "japanese": "新潟西区",
+    "english": "Nishi Ward, Niigata"
+  },
+  "1510800": {
+    "japanese": "新潟西蒲区",
+    "english": "Nishikan Ward, Niigata"
+  },
+  "1520600": {
+    "japanese": "新発田市",
+    "english": "Shibata City"
+  },
+  "1521200": {
+    "japanese": "村上市",
+    "english": "Murakami City"
+  },
+  "1521300": {
+    "japanese": "燕市",
+    "english": "Tsubame City"
+  },
+  "1521800": {
+    "japanese": "五泉市",
+    "english": "Gosen City"
+  },
+  "1522300": {
+    "japanese": "阿賀野市",
+    "english": "Agano City"
+  },
+  "1522700": {
+    "japanese": "胎内市",
+    "english": "Tainai City"
+  },
+  "1530700": {
+    "japanese": "聖籠町",
+    "english": "Seiro Town"
+  },
+  "1534200": {
+    "japanese": "弥彦村",
+    "english": "Yahiko Village"
+  },
+  "1538500": {
+    "japanese": "阿賀町",
+    "english": "Aga Town"
+  },
+  "1558100": {
+    "japanese": "関川村",
+    "english": "Sekikawa Village"
+  },
+  "1558600": {
+    "japanese": "粟島浦村",
+    "english": "Awashimaura Village"
+  },
+  "1522400": {
+    "japanese": "佐渡市",
+    "english": "Sado City"
+  },
+  "1620100": {
+    "japanese": "富山市",
+    "english": "Toyama City"
+  },
+  "1620400": {
+    "japanese": "魚津市",
+    "english": "Uozu City"
+  },
+  "1620600": {
+    "japanese": "滑川市",
+    "english": "Namerikawa City"
+  },
+  "1620700": {
+    "japanese": "黒部市",
+    "english": "Kurobe City"
+  },
+  "1632100": {
+    "japanese": "舟橋村",
+    "english": "Funahashi Village"
+  },
+  "1632200": {
+    "japanese": "上市町",
+    "english": "Kamiichi Town"
+  },
+  "1632300": {
+    "japanese": "立山町",
+    "english": "Tateyama Town"
+  },
+  "1634200": {
+    "japanese": "入善町",
+    "english": "Nyuzen Town"
+  },
+  "1634300": {
+    "japanese": "富山朝日町",
+    "english": "Asahi Town, Toyama"
+  },
+  "1620200": {
+    "japanese": "高岡市",
+    "english": "Takaoka City"
+  },
+  "1620500": {
+    "japanese": "氷見市",
+    "english": "Himi City"
+  },
+  "1620800": {
+    "japanese": "砺波市",
+    "english": "Tonami City"
+  },
+  "1620900": {
+    "japanese": "小矢部市",
+    "english": "Oyabe City"
+  },
+  "1621000": {
+    "japanese": "南砺市",
+    "english": "Nanto City"
+  },
+  "1621100": {
+    "japanese": "射水市",
+    "english": "Imizu City"
+  },
+  "1720200": {
+    "japanese": "七尾市",
+    "english": "Nanao City"
+  },
+  "1720400": {
+    "japanese": "輪島市",
+    "english": "Wajima City"
+  },
+  "1720500": {
+    "japanese": "珠洲市",
+    "english": "Suzu City"
+  },
+  "1720700": {
+    "japanese": "羽咋市",
+    "english": "Hakui City"
+  },
+  "1738400": {
+    "japanese": "志賀町",
+    "english": "Shika Town"
+  },
+  "1738600": {
+    "japanese": "宝達志水町",
+    "english": "Hodatsushimizu Town"
+  },
+  "1740700": {
+    "japanese": "中能登町",
+    "english": "Nakanoto Town"
+  },
+  "1746100": {
+    "japanese": "穴水町",
+    "english": "Anamizu Town"
+  },
+  "1746300": {
+    "japanese": "能登町",
+    "english": "Noto Town"
+  },
+  "1720100": {
+    "japanese": "金沢市",
+    "english": "Kanazawa City"
+  },
+  "1720300": {
+    "japanese": "小松市",
+    "english": "Komatsu City"
+  },
+  "1720600": {
+    "japanese": "加賀市",
+    "english": "Kaga City"
+  },
+  "1720900": {
+    "japanese": "かほく市",
+    "english": "Kahoku City"
+  },
+  "1721000": {
+    "japanese": "白山市",
+    "english": "Hakusan City"
+  },
+  "1721100": {
+    "japanese": "能美市",
+    "english": "Nomi City"
+  },
+  "1721200": {
+    "japanese": "野々市市",
+    "english": "Nonoichi City"
+  },
+  "1732400": {
+    "japanese": "川北町",
+    "english": "Kawakita Town"
+  },
+  "1736100": {
+    "japanese": "津幡町",
+    "english": "Tsubata Town"
+  },
+  "1736500": {
+    "japanese": "内灘町",
+    "english": "Uchinada Town"
+  },
+  "1820100": {
+    "japanese": "福井市",
+    "english": "Fukui City"
+  },
+  "1820500": {
+    "japanese": "大野市",
+    "english": "Ono City"
+  },
+  "1820600": {
+    "japanese": "勝山市",
+    "english": "Katsuyama City"
+  },
+  "1820700": {
+    "japanese": "鯖江市",
+    "english": "Sabae City"
+  },
+  "1820800": {
+    "japanese": "あわら市",
+    "english": "Awara City"
+  },
+  "1820900": {
+    "japanese": "越前市",
+    "english": "Echizen City"
+  },
+  "1821000": {
+    "japanese": "福井坂井市",
+    "english": "Sakai City, Fukui"
+  },
+  "1832200": {
+    "japanese": "永平寺町",
+    "english": "Eiheiji Town"
+  },
+  "1838200": {
+    "japanese": "福井池田町",
+    "english": "Ikeda Town, Fukui"
+  },
+  "1840400": {
+    "japanese": "南越前町",
+    "english": "Minamiechizen Town"
+  },
+  "1842300": {
+    "japanese": "越前町",
+    "english": "Echizen Town"
+  },
+  "1820200": {
+    "japanese": "敦賀市",
+    "english": "Tsuruga City"
+  },
+  "1820400": {
+    "japanese": "小浜市",
+    "english": "Obama City"
+  },
+  "1844200": {
+    "japanese": "福井美浜町",
+    "english": "Mihama Town, Fukui"
+  },
+  "1848100": {
+    "japanese": "高浜町",
+    "english": "Takahama Town"
+  },
+  "1848300": {
+    "japanese": "福井おおい町",
+    "english": "Oi Town, Fukui"
+  },
+  "1850100": {
+    "japanese": "福井若狭町",
+    "english": "Wakasa Town, Fukui"
+  },
+  "1920100": {
+    "japanese": "甲府市",
+    "english": "Kofu City"
+  },
+  "1920500": {
+    "japanese": "山梨市",
+    "english": "Yamanashi City"
+  },
+  "1920700": {
+    "japanese": "韮崎市",
+    "english": "Nirasaki City"
+  },
+  "1920800": {
+    "japanese": "南アルプス市",
+    "english": "Minamialps City"
+  },
+  "1920900": {
+    "japanese": "山梨北杜市",
+    "english": "Hokuto City, Yamanashi"
+  },
+  "1921000": {
+    "japanese": "甲斐市",
+    "english": "Kai City"
+  },
+  "1921100": {
+    "japanese": "笛吹市",
+    "english": "Fuefuki City"
+  },
+  "1921300": {
+    "japanese": "甲州市",
+    "english": "Koshu City"
+  },
+  "1921400": {
+    "japanese": "中央市",
+    "english": "Chuo City"
+  },
+  "1934600": {
+    "japanese": "市川三郷町",
+    "english": "Ichikawamisato Town"
+  },
+  "1936400": {
+    "japanese": "早川町",
+    "english": "Hayakawa Town"
+  },
+  "1936500": {
+    "japanese": "身延町",
+    "english": "Minobu Town"
+  },
+  "1936600": {
+    "japanese": "山梨南部町",
+    "english": "Nambu Town, Yamanashi"
+  },
+  "1936800": {
+    "japanese": "富士川町",
+    "english": "Fujikawa Town"
+  },
+  "1938400": {
+    "japanese": "昭和町",
+    "english": "Showa Town"
+  },
+  "1920200": {
+    "japanese": "富士吉田市",
+    "english": "Fujiyoshida City"
+  },
+  "1920400": {
+    "japanese": "都留市",
+    "english": "Tsuru City"
+  },
+  "1920600": {
+    "japanese": "大月市",
+    "english": "Otsuki City"
+  },
+  "1921200": {
+    "japanese": "上野原市",
+    "english": "Uenohara City"
+  },
+  "1942200": {
+    "japanese": "道志村",
+    "english": "Doshi Village"
+  },
+  "1942300": {
+    "japanese": "西桂町",
+    "english": "Nishikatsura Town"
+  },
+  "1942400": {
+    "japanese": "忍野村",
+    "english": "Oshino Village"
+  },
+  "1942500": {
+    "japanese": "山中湖村",
+    "english": "Yamanakako Village"
+  },
+  "1942900": {
+    "japanese": "鳴沢村",
+    "english": "Narusawa Village"
+  },
+  "1943000": {
+    "japanese": "富士河口湖町",
+    "english": "Fujikawaguchiko Town"
+  },
+  "1944200": {
+    "japanese": "小菅村",
+    "english": "Kosuge Village"
+  },
+  "1944300": {
+    "japanese": "丹波山村",
+    "english": "Tabayama Village"
+  },
+  "2020100": {
+    "japanese": "長野市",
+    "english": "Nagano City"
+  },
+  "2020700": {
+    "japanese": "須坂市",
+    "english": "Suzaka City"
+  },
+  "2021100": {
+    "japanese": "中野市",
+    "english": "Nakano City"
+  },
+  "2021200": {
+    "japanese": "大町市",
+    "english": "Omachi City"
+  },
+  "2021300": {
+    "japanese": "飯山市",
+    "english": "Iiyama City"
+  },
+  "2021800": {
+    "japanese": "千曲市",
+    "english": "Chikuma City"
+  },
+  "2048100": {
+    "japanese": "長野池田町",
+    "english": "Ikeda Town, Nagano"
+  },
+  "2048200": {
+    "japanese": "松川村",
+    "english": "Matsukawa Village"
+  },
+  "2048500": {
+    "japanese": "白馬村",
+    "english": "Hakuba Village"
+  },
+  "2048600": {
+    "japanese": "小谷村",
+    "english": "Otari Village"
+  },
+  "2052100": {
+    "japanese": "坂城町",
+    "english": "Sakaki Town"
+  },
+  "2054100": {
+    "japanese": "小布施町",
+    "english": "Obuse Town"
+  },
+  "2054300": {
+    "japanese": "長野高山村",
+    "english": "Takayama Village, Nagano"
+  },
+  "2056100": {
+    "japanese": "山ノ内町",
+    "english": "Yamanouchi Town"
+  },
+  "2056200": {
+    "japanese": "木島平村",
+    "english": "Kijimadaira Village"
+  },
+  "2056300": {
+    "japanese": "野沢温泉村",
+    "english": "Nozawaonsen Village"
+  },
+  "2058300": {
+    "japanese": "信濃町",
+    "english": "Shinano Town"
+  },
+  "2058800": {
+    "japanese": "小川村",
+    "english": "Ogawa Village"
+  },
+  "2059000": {
+    "japanese": "飯綱町",
+    "english": "Iizuna Town"
+  },
+  "2060200": {
+    "japanese": "栄村",
+    "english": "Sakae Village"
+  },
+  "2020200": {
+    "japanese": "松本市",
+    "english": "Matsumoto City"
+  },
+  "2020300": {
+    "japanese": "上田市",
+    "english": "Ueda City"
+  },
+  "2020400": {
+    "japanese": "岡谷市",
+    "english": "Okaya City"
+  },
+  "2020600": {
+    "japanese": "諏訪市",
+    "english": "Suwa City"
+  },
+  "2020800": {
+    "japanese": "小諸市",
+    "english": "Komoro City"
+  },
+  "2021400": {
+    "japanese": "茅野市",
+    "english": "Chino City"
+  },
+  "2021500": {
+    "japanese": "塩尻市",
+    "english": "Shiojiri City"
+  },
+  "2021700": {
+    "japanese": "佐久市",
+    "english": "Saku City"
+  },
+  "2021900": {
+    "japanese": "東御市",
+    "english": "Tomi City"
+  },
+  "2022000": {
+    "japanese": "安曇野市",
+    "english": "Azumino City"
+  },
+  "2030300": {
+    "japanese": "小海町",
+    "english": "Koumi Town"
+  },
+  "2030400": {
+    "japanese": "長野川上村",
+    "english": "Kawakami Village, Nagano"
+  },
+  "2030500": {
+    "japanese": "長野南牧村",
+    "english": "Minamimaki Village, Nagano"
+  },
+  "2030600": {
+    "japanese": "南相木村",
+    "english": "Minamiaiki Village"
+  },
+  "2030700": {
+    "japanese": "北相木村",
+    "english": "Kitaaiki Village"
+  },
+  "2030900": {
+    "japanese": "佐久穂町",
+    "english": "Sakuho Town"
+  },
+  "2032100": {
+    "japanese": "軽井沢町",
+    "english": "Karuizawa Town"
+  },
+  "2032300": {
+    "japanese": "御代田町",
+    "english": "Miyota Town"
+  },
+  "2032400": {
+    "japanese": "立科町",
+    "english": "Tateshina Town"
+  },
+  "2034900": {
+    "japanese": "青木村",
+    "english": "Aoki Village"
+  },
+  "2035000": {
+    "japanese": "長和町",
+    "english": "Nagawa Town"
+  },
+  "2036100": {
+    "japanese": "下諏訪町",
+    "english": "Shimosuwa Town"
+  },
+  "2036200": {
+    "japanese": "富士見町",
+    "english": "Fujimi Town"
+  },
+  "2036300": {
+    "japanese": "原村",
+    "english": "Hara Village"
+  },
+  "2044600": {
+    "japanese": "麻績村",
+    "english": "Omi Village"
+  },
+  "2044800": {
+    "japanese": "生坂村",
+    "english": "Ikusaka Village"
+  },
+  "2045000": {
+    "japanese": "山形村",
+    "english": "Yamagata Village"
+  },
+  "2045100": {
+    "japanese": "朝日村",
+    "english": "Asahi Village"
+  },
+  "2045200": {
+    "japanese": "筑北村",
+    "english": "Chikuhoku Village"
+  },
+  "2020500": {
+    "japanese": "飯田市",
+    "english": "Iida City"
+  },
+  "2020900": {
+    "japanese": "伊那市",
+    "english": "Ina City"
+  },
+  "2021000": {
+    "japanese": "駒ヶ根市",
+    "english": "Komagane City"
+  },
+  "2038200": {
+    "japanese": "辰野町",
+    "english": "Tatsuno Town"
+  },
+  "2038300": {
+    "japanese": "箕輪町",
+    "english": "Minowa Town"
+  },
+  "2038400": {
+    "japanese": "飯島町",
+    "english": "Iijima Town"
+  },
+  "2038500": {
+    "japanese": "南箕輪村",
+    "english": "Minamiminowa Village"
+  },
+  "2038600": {
+    "japanese": "中川村",
+    "english": "Nakagawa Village"
+  },
+  "2038800": {
+    "japanese": "宮田村",
+    "english": "Miyada Village"
+  },
+  "2040200": {
+    "japanese": "松川町",
+    "english": "Matsukawa Town"
+  },
+  "2040300": {
+    "japanese": "長野高森町",
+    "english": "Takamori Town, Nagano"
+  },
+  "2040400": {
+    "japanese": "阿南町",
+    "english": "Anan Town"
+  },
+  "2040700": {
+    "japanese": "阿智村",
+    "english": "Achi Village"
+  },
+  "2040900": {
+    "japanese": "平谷村",
+    "english": "Hiraya Village"
+  },
+  "2041000": {
+    "japanese": "根羽村",
+    "english": "Neba Village"
+  },
+  "2041100": {
+    "japanese": "下條村",
+    "english": "Shimojo Village"
+  },
+  "2041200": {
+    "japanese": "売木村",
+    "english": "Urugi Village"
+  },
+  "2041300": {
+    "japanese": "天龍村",
+    "english": "Tenryu Village"
+  },
+  "2041400": {
+    "japanese": "泰阜村",
+    "english": "Yasuoka Village"
+  },
+  "2041500": {
+    "japanese": "喬木村",
+    "english": "Takagi Village"
+  },
+  "2041600": {
+    "japanese": "豊丘村",
+    "english": "Toyooka Village"
+  },
+  "2041700": {
+    "japanese": "大鹿村",
+    "english": "Oshika Village"
+  },
+  "2042200": {
+    "japanese": "上松町",
+    "english": "Agematsu Town"
+  },
+  "2042300": {
+    "japanese": "南木曽町",
+    "english": "Nagiso Town"
+  },
+  "2042500": {
+    "japanese": "木祖村",
+    "english": "Kiso Village"
+  },
+  "2042900": {
+    "japanese": "王滝村",
+    "english": "Otaki Village"
+  },
+  "2043000": {
+    "japanese": "大桑村",
+    "english": "Okuwa Village"
+  },
+  "2043200": {
+    "japanese": "木曽町",
+    "english": "Kiso Town"
+  },
+  "2120300": {
+    "japanese": "高山市",
+    "english": "Takayama City"
+  },
+  "2121700": {
+    "japanese": "飛騨市",
+    "english": "Hida City"
+  },
+  "2122000": {
+    "japanese": "下呂市",
+    "english": "Gero City"
+  },
+  "2160400": {
+    "japanese": "白川村",
+    "english": "Shirakawa Village"
+  },
+  "2120400": {
+    "japanese": "多治見市",
+    "english": "Tajimi City"
+  },
+  "2120600": {
+    "japanese": "中津川市",
+    "english": "Nakatsugawa City"
+  },
+  "2120800": {
+    "japanese": "瑞浪市",
+    "english": "Mizunami City"
+  },
+  "2121000": {
+    "japanese": "恵那市",
+    "english": "Ena City"
+  },
+  "2121100": {
+    "japanese": "美濃加茂市",
+    "english": "Minokamo City"
+  },
+  "2121200": {
+    "japanese": "土岐市",
+    "english": "Toki City"
+  },
+  "2121400": {
+    "japanese": "可児市",
+    "english": "Kani City"
+  },
+  "2150100": {
+    "japanese": "坂祝町",
+    "english": "Sakahogi Town"
+  },
+  "2150200": {
+    "japanese": "富加町",
+    "english": "Tomika Town"
+  },
+  "2150300": {
+    "japanese": "川辺町",
+    "english": "Kawabe Town"
+  },
+  "2150400": {
+    "japanese": "七宗町",
+    "english": "Hichiso Town"
+  },
+  "2150500": {
+    "japanese": "八百津町",
+    "english": "Yaotsu Town"
+  },
+  "2150600": {
+    "japanese": "白川町",
+    "english": "Shirakawa Town"
+  },
+  "2150700": {
+    "japanese": "東白川村",
+    "english": "Higashishirakawa Village"
+  },
+  "2152100": {
+    "japanese": "御嵩町",
+    "english": "Mitake Town"
+  },
+  "2120100": {
+    "japanese": "岐阜市",
+    "english": "Gifu City"
+  },
+  "2120200": {
+    "japanese": "大垣市",
+    "english": "Ogaki City"
+  },
+  "2120500": {
+    "japanese": "関市",
+    "english": "Seki City"
+  },
+  "2120700": {
+    "japanese": "美濃市",
+    "english": "Mino City"
+  },
+  "2120900": {
+    "japanese": "羽島市",
+    "english": "Hashima City"
+  },
+  "2121300": {
+    "japanese": "各務原市",
+    "english": "Kakamigahara City"
+  },
+  "2121500": {
+    "japanese": "岐阜山県市",
+    "english": "Yamagata City, Gifu"
+  },
+  "2121600": {
+    "japanese": "瑞穂市",
+    "english": "Mizuho City"
+  },
+  "2121800": {
+    "japanese": "本巣市",
+    "english": "Motosu City"
+  },
+  "2121900": {
+    "japanese": "郡上市",
+    "english": "Gujo City"
+  },
+  "2122100": {
+    "japanese": "海津市",
+    "english": "Kaizu City"
+  },
+  "2130200": {
+    "japanese": "岐南町",
+    "english": "Ginan Town"
+  },
+  "2130300": {
+    "japanese": "笠松町",
+    "english": "Kasamatsu Town"
+  },
+  "2134100": {
+    "japanese": "養老町",
+    "english": "Yoro Town"
+  },
+  "2136100": {
+    "japanese": "垂井町",
+    "english": "Tarui Town"
+  },
+  "2136200": {
+    "japanese": "関ケ原町",
+    "english": "Sekigahara Town"
+  },
+  "2138100": {
+    "japanese": "神戸町",
+    "english": "Godo Town"
+  },
+  "2138200": {
+    "japanese": "輪之内町",
+    "english": "Wanouchi Town"
+  },
+  "2138300": {
+    "japanese": "安八町",
+    "english": "Ampachi Town"
+  },
+  "2140100": {
+    "japanese": "揖斐川町",
+    "english": "Ibigawa Town"
+  },
+  "2140300": {
+    "japanese": "大野町",
+    "english": "Ono Town"
+  },
+  "2140400": {
+    "japanese": "岐阜池田町",
+    "english": "Ikeda Town, Gifu"
+  },
+  "2142100": {
+    "japanese": "北方町",
+    "english": "Kitagata Town"
+  },
+  "2220500": {
+    "japanese": "熱海市",
+    "english": "Atami City"
+  },
+  "2220800": {
+    "japanese": "伊東市",
+    "english": "Ito City"
+  },
+  "2221900": {
+    "japanese": "下田市",
+    "english": "Shimoda City"
+  },
+  "2222200": {
+    "japanese": "伊豆市",
+    "english": "Izu City"
+  },
+  "2222500": {
+    "japanese": "伊豆の国市",
+    "english": "Izunokuni City"
+  },
+  "2230100": {
+    "japanese": "東伊豆町",
+    "english": "Higashiizu Town"
+  },
+  "2230200": {
+    "japanese": "河津町",
+    "english": "Kawazu Town"
+  },
+  "2230400": {
+    "japanese": "南伊豆町",
+    "english": "Miamiizu Town"
+  },
+  "2230500": {
+    "japanese": "松崎町",
+    "english": "Matsuzaki Town"
+  },
+  "2230600": {
+    "japanese": "西伊豆町",
+    "english": "Nishiizu Town"
+  },
+  "2232500": {
+    "japanese": "函南町",
+    "english": "Kannami Town"
+  },
+  "2220300": {
+    "japanese": "沼津市",
+    "english": "Numazu City"
+  },
+  "2220600": {
+    "japanese": "三島市",
+    "english": "Mishima City"
+  },
+  "2220700": {
+    "japanese": "富士宮市",
+    "english": "Fujinomiya City"
+  },
+  "2221000": {
+    "japanese": "富士市",
+    "english": "Fuji City"
+  },
+  "2221500": {
+    "japanese": "御殿場市",
+    "english": "Gotemba City"
+  },
+  "2222000": {
+    "japanese": "裾野市",
+    "english": "Susono City"
+  },
+  "2234100": {
+    "japanese": "静岡清水町",
+    "english": "Shimizu Town, Shizuoka"
+  },
+  "2234200": {
+    "japanese": "長泉町",
+    "english": "Nagaizumi Town"
+  },
+  "2234400": {
+    "japanese": "小山町",
+    "english": "Oyama Town"
+  },
+  "2210100": {
+    "japanese": "静岡葵区",
+    "english": "Aoi Ward, Shizuoka"
+  },
+  "2210200": {
+    "japanese": "静岡駿河区",
+    "english": "Suruga Ward, Shizuoka"
+  },
+  "2210300": {
+    "japanese": "静岡清水区",
+    "english": "Shimizu Ward, Shizuoka"
+  },
+  "2220900": {
+    "japanese": "島田市",
+    "english": "Shimada City"
+  },
+  "2221200": {
+    "japanese": "焼津市",
+    "english": "Yaizu City"
+  },
+  "2221400": {
+    "japanese": "藤枝市",
+    "english": "Fujieda City"
+  },
+  "2222600": {
+    "japanese": "牧之原市",
+    "english": "Makinohara City"
+  },
+  "2242400": {
+    "japanese": "吉田町",
+    "english": "Yoshida Town"
+  },
+  "2242900": {
+    "japanese": "川根本町",
+    "english": "Kawanehoncho Town"
+  },
+  "2213100": {
+    "japanese": "浜松中区",
+    "english": "Naka Ward, Hamamatsu"
+  },
+  "2213200": {
+    "japanese": "浜松東区",
+    "english": "Higashi Ward, Hamamatsu"
+  },
+  "2213300": {
+    "japanese": "浜松西区",
+    "english": "Nishi Ward, Hamamatsu"
+  },
+  "2213400": {
+    "japanese": "浜松南区",
+    "english": "Minami Ward, Hamamatsu"
+  },
+  "2213500": {
+    "japanese": "浜松北区",
+    "english": "Kita Ward, Hamamatsu"
+  },
+  "2213600": {
+    "japanese": "浜松浜北区",
+    "english": "Hamakita Ward, Hamamatsu"
+  },
+  "2213700": {
+    "japanese": "浜松天竜区",
+    "english": "Tenryu Ward, Hamamatsu"
+  },
+  "2213800": {
+    "japanese": "浜松中央区",
+    "english": "Chuo Ward, Hamamatsu"
+  },
+  "2213900": {
+    "japanese": "浜松浜名区",
+    "english": "Hamana Ward, Hamamatsu"
+  },
+  "2214000": {
+    "japanese": "浜松天竜区",
+    "english": "Tenryu Ward, Hamamatsu"
+  },
+  "2221100": {
+    "japanese": "磐田市",
+    "english": "Iwata City"
+  },
+  "2221300": {
+    "japanese": "掛川市",
+    "english": "Kakegawa City"
+  },
+  "2221600": {
+    "japanese": "袋井市",
+    "english": "Fukuroi City"
+  },
+  "2222100": {
+    "japanese": "湖西市",
+    "english": "Kosai City"
+  },
+  "2222300": {
+    "japanese": "御前崎市",
+    "english": "Omaezaki City"
+  },
+  "2222400": {
+    "japanese": "菊川市",
+    "english": "Kikugawa City"
+  },
+  "2246100": {
+    "japanese": "静岡森町",
+    "english": "Mori Town, Shizuoka"
+  },
+  "2320100": {
+    "japanese": "豊橋市",
+    "english": "Toyohashi City"
+  },
+  "2320700": {
+    "japanese": "豊川市",
+    "english": "Toyokawa City"
+  },
+  "2321400": {
+    "japanese": "蒲郡市",
+    "english": "Gamagori City"
+  },
+  "2322100": {
+    "japanese": "新城市",
+    "english": "Shinshiro City"
+  },
+  "2323100": {
+    "japanese": "田原市",
+    "english": "Tahara City"
+  },
+  "2356100": {
+    "japanese": "設楽町",
+    "english": "Shitara Town"
+  },
+  "2356200": {
+    "japanese": "東栄町",
+    "english": "Toei Town"
+  },
+  "2356300": {
+    "japanese": "豊根村",
+    "english": "Toyone Village"
+  },
+  "2310100": {
+    "japanese": "名古屋千種区",
+    "english": "Chikusa Ward, Nagoya"
+  },
+  "2310200": {
+    "japanese": "名古屋東区",
+    "english": "Higashi Ward, Nagoya"
+  },
+  "2310300": {
+    "japanese": "名古屋北区",
+    "english": "Kita Ward, Nagoya"
+  },
+  "2310400": {
+    "japanese": "名古屋西区",
+    "english": "Nishi Ward, Nagoya"
+  },
+  "2310500": {
+    "japanese": "名古屋中村区",
+    "english": "Nakamura Ward, Nagoya"
+  },
+  "2310600": {
+    "japanese": "名古屋中区",
+    "english": "Naka Ward, Nagoya"
+  },
+  "2310700": {
+    "japanese": "名古屋昭和区",
+    "english": "Showa Ward, Nagoya"
+  },
+  "2310800": {
+    "japanese": "名古屋瑞穂区",
+    "english": "Mizuho Ward, Nagoya"
+  },
+  "2310900": {
+    "japanese": "名古屋熱田区",
+    "english": "Atsuta Ward, Nagoya"
+  },
+  "2311000": {
+    "japanese": "名古屋中川区",
+    "english": "Nakagawa Ward, Nagoya"
+  },
+  "2311100": {
+    "japanese": "名古屋港区",
+    "english": "Minato Ward, Nagoya"
+  },
+  "2311200": {
+    "japanese": "名古屋南区",
+    "english": "Minami Ward, Nagoya"
+  },
+  "2311300": {
+    "japanese": "名古屋守山区",
+    "english": "Moriyama Ward, Nagoya"
+  },
+  "2311400": {
+    "japanese": "名古屋緑区",
+    "english": "Midori Ward, Nagoya"
+  },
+  "2311500": {
+    "japanese": "名古屋名東区",
+    "english": "Meito Ward, Nagoya"
+  },
+  "2311600": {
+    "japanese": "名古屋天白区",
+    "english": "Tenpaku Ward, Nagoya"
+  },
+  "2320200": {
+    "japanese": "岡崎市",
+    "english": "Okazaki City"
+  },
+  "2320300": {
+    "japanese": "一宮市",
+    "english": "Ichinomiya City"
+  },
+  "2320400": {
+    "japanese": "瀬戸市",
+    "english": "Seto City"
+  },
+  "2320500": {
+    "japanese": "半田市",
+    "english": "Handa City"
+  },
+  "2320600": {
+    "japanese": "春日井市",
+    "english": "Kasugai City"
+  },
+  "2320800": {
+    "japanese": "愛知津島市",
+    "english": "Tsushima City, Aichi"
+  },
+  "2320900": {
+    "japanese": "碧南市",
+    "english": "Hekinan City"
+  },
+  "2321000": {
+    "japanese": "刈谷市",
+    "english": "Kariya City"
+  },
+  "2321100": {
+    "japanese": "豊田市",
+    "english": "Toyota City"
+  },
+  "2321200": {
+    "japanese": "安城市",
+    "english": "Anjo City"
+  },
+  "2321300": {
+    "japanese": "西尾市",
+    "english": "Nishio City"
+  },
+  "2321500": {
+    "japanese": "犬山市",
+    "english": "Inuyama City"
+  },
+  "2321600": {
+    "japanese": "常滑市",
+    "english": "Tokoname City"
+  },
+  "2321700": {
+    "japanese": "愛知江南市",
+    "english": "Konan City, Aichi"
+  },
+  "2321900": {
+    "japanese": "小牧市",
+    "english": "Komaki City"
+  },
+  "2322000": {
+    "japanese": "稲沢市",
+    "english": "Inazawa City"
+  },
+  "2322200": {
+    "japanese": "東海市",
+    "english": "Tokai City"
+  },
+  "2322300": {
+    "japanese": "大府市",
+    "english": "Obu City"
+  },
+  "2322400": {
+    "japanese": "知多市",
+    "english": "Chita City"
+  },
+  "2322500": {
+    "japanese": "知立市",
+    "english": "Chiryu City"
+  },
+  "2322600": {
+    "japanese": "尾張旭市",
+    "english": "Owariasahi City"
+  },
+  "2322700": {
+    "japanese": "高浜市",
+    "english": "Takahama City"
+  },
+  "2322800": {
+    "japanese": "岩倉市",
+    "english": "Iwakura City"
+  },
+  "2322900": {
+    "japanese": "豊明市",
+    "english": "Toyoake City"
+  },
+  "2323000": {
+    "japanese": "日進市",
+    "english": "Nisshin City"
+  },
+  "2323200": {
+    "japanese": "愛西市",
+    "english": "Aisai City"
+  },
+  "2323300": {
+    "japanese": "清須市",
+    "english": "Kiyosu City"
+  },
+  "2323400": {
+    "japanese": "北名古屋市",
+    "english": "Kitanagoya City"
+  },
+  "2323500": {
+    "japanese": "弥富市",
+    "english": "Yatomi City"
+  },
+  "2323600": {
+    "japanese": "愛知みよし市",
+    "english": "Miyoshi City, Aichi"
+  },
+  "2323700": {
+    "japanese": "あま市",
+    "english": "Ama City"
+  },
+  "2323800": {
+    "japanese": "長久手市",
+    "english": "Nagakute City"
+  },
+  "2330200": {
+    "japanese": "東郷町",
+    "english": "Togo Town"
+  },
+  "2334200": {
+    "japanese": "豊山町",
+    "english": "Toyoyama Town"
+  },
+  "2336100": {
+    "japanese": "大口町",
+    "english": "Oguchi Town"
+  },
+  "2336200": {
+    "japanese": "扶桑町",
+    "english": "Fuso Town"
+  },
+  "2342400": {
+    "japanese": "大治町",
+    "english": "Oharu Town"
+  },
+  "2342500": {
+    "japanese": "蟹江町",
+    "english": "Kanie Town"
+  },
+  "2342700": {
+    "japanese": "飛島村",
+    "english": "Tobishima Village"
+  },
+  "2344100": {
+    "japanese": "阿久比町",
+    "english": "Agui Town"
+  },
+  "2344200": {
+    "japanese": "東浦町",
+    "english": "Higashiura Town"
+  },
+  "2344500": {
+    "japanese": "南知多町",
+    "english": "Minamichita Town"
+  },
+  "2344600": {
+    "japanese": "愛知美浜町",
+    "english": "Mihama Town, Aichi"
+  },
+  "2344700": {
+    "japanese": "武豊町",
+    "english": "Taketoyo Town"
+  },
+  "2350100": {
+    "japanese": "幸田町",
+    "english": "Kota Town"
+  },
+  "2420200": {
+    "japanese": "四日市市",
+    "english": "Yokkaichi City"
+  },
+  "2420500": {
+    "japanese": "桑名市",
+    "english": "Kuwana City"
+  },
+  "2420700": {
+    "japanese": "鈴鹿市",
+    "english": "Suzuka City"
+  },
+  "2421000": {
+    "japanese": "亀山市",
+    "english": "Kameyama City"
+  },
+  "2421400": {
+    "japanese": "いなべ市",
+    "english": "Inabe City"
+  },
+  "2430300": {
+    "japanese": "木曽岬町",
+    "english": "Kisosaki Town"
+  },
+  "2432400": {
+    "japanese": "東員町",
+    "english": "Toin Town"
+  },
+  "2434100": {
+    "japanese": "菰野町",
+    "english": "Komono Town"
+  },
+  "2434300": {
+    "japanese": "三重朝日町",
+    "english": "Asahi Town, Mie"
+  },
+  "2434400": {
+    "japanese": "川越町",
+    "english": "Kawagoe Town"
+  },
+  "2420100": {
+    "japanese": "津市",
+    "english": "Tsu City"
+  },
+  "2420400": {
+    "japanese": "松阪市",
+    "english": "Matsusaka City"
+  },
+  "2420800": {
+    "japanese": "名張市",
+    "english": "Nabari City"
+  },
+  "2421600": {
+    "japanese": "伊賀市",
+    "english": "Iga City"
+  },
+  "2444100": {
+    "japanese": "多気町",
+    "english": "Taki Town"
+  },
+  "2444200": {
+    "japanese": "三重明和町",
+    "english": "Meiwa Town, Mie"
+  },
+  "2420300": {
+    "japanese": "伊勢市",
+    "english": "Ise City"
+  },
+  "2420900": {
+    "japanese": "尾鷲市",
+    "english": "Owase City"
+  },
+  "2421100": {
+    "japanese": "鳥羽市",
+    "english": "Toba City"
+  },
+  "2421200": {
+    "japanese": "熊野市",
+    "english": "Kumano City"
+  },
+  "2421500": {
+    "japanese": "志摩市",
+    "english": "Shima City"
+  },
+  "2444300": {
+    "japanese": "大台町",
+    "english": "Odai Town"
+  },
+  "2446100": {
+    "japanese": "玉城町",
+    "english": "Tamaki Town"
+  },
+  "2447000": {
+    "japanese": "度会町",
+    "english": "Watarai Town"
+  },
+  "2447100": {
+    "japanese": "三重大紀町",
+    "english": "Taiki Town, Mie"
+  },
+  "2447200": {
+    "japanese": "南伊勢町",
+    "english": "Minamiise Town"
+  },
+  "2454300": {
+    "japanese": "三重紀北町",
+    "english": "Kihoku Town, Mie"
+  },
+  "2456100": {
+    "japanese": "三重御浜町",
+    "english": "Mihama Town, Mie"
+  },
+  "2456200": {
+    "japanese": "紀宝町",
+    "english": "Kiho Town"
+  },
+  "2520200": {
+    "japanese": "彦根市",
+    "english": "Hikone City"
+  },
+  "2520300": {
+    "japanese": "長浜市",
+    "english": "Nagahama City"
+  },
+  "2521200": {
+    "japanese": "高島市",
+    "english": "Takashima City"
+  },
+  "2521400": {
+    "japanese": "米原市",
+    "english": "Maibara City"
+  },
+  "2542500": {
+    "japanese": "愛荘町",
+    "english": "Aisho Town"
+  },
+  "2544100": {
+    "japanese": "豊郷町",
+    "english": "Toyosato Town"
+  },
+  "2544200": {
+    "japanese": "甲良町",
+    "english": "Kora Town"
+  },
+  "2544300": {
+    "japanese": "多賀町",
+    "english": "Taga Town"
+  },
+  "2520100": {
+    "japanese": "大津市",
+    "english": "Otsu City"
+  },
+  "2520400": {
+    "japanese": "近江八幡市",
+    "english": "Omihachiman City"
+  },
+  "2520600": {
+    "japanese": "草津市",
+    "english": "Kusatsu City"
+  },
+  "2520700": {
+    "japanese": "守山市",
+    "english": "Moriyama City"
+  },
+  "2520800": {
+    "japanese": "栗東市",
+    "english": "Ritto City"
+  },
+  "2520900": {
+    "japanese": "甲賀市",
+    "english": "Koka City"
+  },
+  "2521000": {
+    "japanese": "野洲市",
+    "english": "Yasu City"
+  },
+  "2521100": {
+    "japanese": "湖南市",
+    "english": "Konan City"
+  },
+  "2521300": {
+    "japanese": "東近江市",
+    "english": "Higashiomi City"
+  },
+  "2538300": {
+    "japanese": "滋賀日野町",
+    "english": "Hino Town, Shiga"
+  },
+  "2538400": {
+    "japanese": "竜王町",
+    "english": "Ryuoh Town"
+  },
+  "2620100": {
+    "japanese": "福知山市",
+    "english": "Fukuchiyama City"
+  },
+  "2620200": {
+    "japanese": "舞鶴市",
+    "english": "Maizuru City"
+  },
+  "2620300": {
+    "japanese": "綾部市",
+    "english": "Ayabe City"
+  },
+  "2620500": {
+    "japanese": "宮津市",
+    "english": "Miyazu City"
+  },
+  "2621200": {
+    "japanese": "京丹後市",
+    "english": "Kyotango City"
+  },
+  "2646300": {
+    "japanese": "伊根町",
+    "english": "Ine Town"
+  },
+  "2646500": {
+    "japanese": "与謝野町",
+    "english": "Yosano Town"
+  },
+  "2610100": {
+    "japanese": "京都北区",
+    "english": "Kita Ward, Kyoto"
+  },
+  "2610200": {
+    "japanese": "京都上京区",
+    "english": "Kamigyo Ward, Kyoto"
+  },
+  "2610300": {
+    "japanese": "京都左京区",
+    "english": "Sakyo Ward, Kyoto"
+  },
+  "2610400": {
+    "japanese": "京都中京区",
+    "english": "Nakagyo Ward, Kyoto"
+  },
+  "2610500": {
+    "japanese": "京都東山区",
+    "english": "Higashiyama Ward, Kyoto"
+  },
+  "2610600": {
+    "japanese": "京都下京区",
+    "english": "Shimogyo Ward, Kyoto"
+  },
+  "2610700": {
+    "japanese": "京都南区",
+    "english": "Minami Ward, Kyoto"
+  },
+  "2610800": {
+    "japanese": "京都右京区",
+    "english": "Ukyo Ward, Kyoto"
+  },
+  "2610900": {
+    "japanese": "京都伏見区",
+    "english": "Fushimi Ward, Kyoto"
+  },
+  "2611000": {
+    "japanese": "京都山科区",
+    "english": "Yamashina Ward, Kyoto"
+  },
+  "2611100": {
+    "japanese": "京都西京区",
+    "english": "Nishikyo Ward, Kyoto"
+  },
+  "2620400": {
+    "japanese": "宇治市",
+    "english": "Uji City"
+  },
+  "2620600": {
+    "japanese": "亀岡市",
+    "english": "Kameoka City"
+  },
+  "2620700": {
+    "japanese": "城陽市",
+    "english": "Joyo City"
+  },
+  "2620800": {
+    "japanese": "向日市",
+    "english": "Muko City"
+  },
+  "2620900": {
+    "japanese": "長岡京市",
+    "english": "Nagaokakyo City"
+  },
+  "2621000": {
+    "japanese": "八幡市",
+    "english": "Yawata City"
+  },
+  "2621100": {
+    "japanese": "京田辺市",
+    "english": "Kyotanabe City"
+  },
+  "2621300": {
+    "japanese": "南丹市",
+    "english": "Nantan City"
+  },
+  "2621400": {
+    "japanese": "木津川市",
+    "english": "Kizugawa City"
+  },
+  "2630300": {
+    "japanese": "大山崎町",
+    "english": "Oyamazaki Town"
+  },
+  "2632200": {
+    "japanese": "久御山町",
+    "english": "Kumiyama Town"
+  },
+  "2634300": {
+    "japanese": "井手町",
+    "english": "Ide Town"
+  },
+  "2634400": {
+    "japanese": "宇治田原町",
+    "english": "Ujitawara Town"
+  },
+  "2636400": {
+    "japanese": "笠置町",
+    "english": "Kasagi Town"
+  },
+  "2636500": {
+    "japanese": "和束町",
+    "english": "Wazuka Town"
+  },
+  "2636600": {
+    "japanese": "精華町",
+    "english": "Seika Town"
+  },
+  "2636700": {
+    "japanese": "南山城村",
+    "english": "Minamiyamashiro Village"
+  },
+  "2640700": {
+    "japanese": "京丹波町",
+    "english": "Kyotamba Town"
+  },
+  "2710200": {
+    "japanese": "大阪都島区",
+    "english": "Miyakojima Ward, Osaka"
+  },
+  "2710300": {
+    "japanese": "大阪福島区",
+    "english": "Fukushima Ward, Osaka"
+  },
+  "2710400": {
+    "japanese": "大阪此花区",
+    "english": "Konohana Ward, Osaka"
+  },
+  "2710600": {
+    "japanese": "大阪西区",
+    "english": "Nishi Ward, Osaka"
+  },
+  "2710700": {
+    "japanese": "大阪港区",
+    "english": "Minato Ward, Osaka"
+  },
+  "2710800": {
+    "japanese": "大阪大正区",
+    "english": "Taisho Ward, Osaka"
+  },
+  "2710900": {
+    "japanese": "大阪天王寺区",
+    "english": "Tennoji Ward, Osaka"
+  },
+  "2711100": {
+    "japanese": "大阪浪速区",
+    "english": "Naniwa Ward, Osaka"
+  },
+  "2711300": {
+    "japanese": "大阪西淀川区",
+    "english": "Nishiyodogawa Ward, Osaka"
+  },
+  "2711400": {
+    "japanese": "大阪東淀川区",
+    "english": "Higashiyodogawa Ward, Osaka"
+  },
+  "2711500": {
+    "japanese": "大阪東成区",
+    "english": "Higashinari Ward, Osaka"
+  },
+  "2711600": {
+    "japanese": "大阪生野区",
+    "english": "Ikuno Ward, Osaka"
+  },
+  "2711700": {
+    "japanese": "大阪旭区",
+    "english": "Asahi Ward, Osaka"
+  },
+  "2711800": {
+    "japanese": "大阪城東区",
+    "english": "Jyoto Ward, Osaka"
+  },
+  "2711900": {
+    "japanese": "大阪阿倍野区",
+    "english": "Abeno Ward, Osaka"
+  },
+  "2712000": {
+    "japanese": "大阪住吉区",
+    "english": "Sumiyoshi Ward, Osaka"
+  },
+  "2712100": {
+    "japanese": "大阪東住吉区",
+    "english": "Higashisumiyoshi Ward, Osaka"
+  },
+  "2712200": {
+    "japanese": "大阪西成区",
+    "english": "Nishinari Ward, Osaka"
+  },
+  "2712300": {
+    "japanese": "大阪淀川区",
+    "english": "Yodogawa Ward, Osaka"
+  },
+  "2712400": {
+    "japanese": "大阪鶴見区",
+    "english": "Tsurumi Ward, Osaka"
+  },
+  "2712500": {
+    "japanese": "大阪住之江区",
+    "english": "Suminoe Ward, Osaka"
+  },
+  "2712600": {
+    "japanese": "大阪平野区",
+    "english": "Hirano Ward, Osaka"
+  },
+  "2712700": {
+    "japanese": "大阪北区",
+    "english": "Kita Ward, Osaka"
+  },
+  "2712800": {
+    "japanese": "大阪中央区",
+    "english": "Chuo Ward, Osaka"
+  },
+  "2720300": {
+    "japanese": "豊中市",
+    "english": "Toyonaka City"
+  },
+  "2720400": {
+    "japanese": "池田市",
+    "english": "Ikeda City"
+  },
+  "2720500": {
+    "japanese": "吹田市",
+    "english": "Suita City"
+  },
+  "2720700": {
+    "japanese": "高槻市",
+    "english": "Takatsuki City"
+  },
+  "2720900": {
+    "japanese": "守口市",
+    "english": "Moriguchi City"
+  },
+  "2721000": {
+    "japanese": "枚方市",
+    "english": "Hirakata City"
+  },
+  "2721100": {
+    "japanese": "茨木市",
+    "english": "Ibaraki City"
+  },
+  "2721200": {
+    "japanese": "八尾市",
+    "english": "Yao City"
+  },
+  "2721500": {
+    "japanese": "寝屋川市",
+    "english": "Neyagawa City"
+  },
+  "2721800": {
+    "japanese": "大東市",
+    "english": "Daito City"
+  },
+  "2722000": {
+    "japanese": "箕面市",
+    "english": "Minoh City"
+  },
+  "2722100": {
+    "japanese": "柏原市",
+    "english": "Kashiwara City"
+  },
+  "2722300": {
+    "japanese": "門真市",
+    "english": "Kadoma City"
+  },
+  "2722400": {
+    "japanese": "摂津市",
+    "english": "Settsu City"
+  },
+  "2722700": {
+    "japanese": "東大阪市",
+    "english": "Higashiosaka City"
+  },
+  "2722900": {
+    "japanese": "四條畷市",
+    "english": "Shijonawate City"
+  },
+  "2723000": {
+    "japanese": "交野市",
+    "english": "Katano City"
+  },
+  "2730100": {
+    "japanese": "島本町",
+    "english": "Shimamoto Town"
+  },
+  "2732100": {
+    "japanese": "豊能町",
+    "english": "Toyono Town"
+  },
+  "2732200": {
+    "japanese": "能勢町",
+    "english": "Nose Town"
+  },
+  "2714100": {
+    "japanese": "大阪堺市堺区",
+    "english": "Sakai Ward, Sakai City, Osaka"
+  },
+  "2714200": {
+    "japanese": "大阪堺市中区",
+    "english": "Naka Ward, Sakai City, Osaka"
+  },
+  "2714300": {
+    "japanese": "大阪堺市東区",
+    "english": "Higashi Ward, Sakai City, Osaka"
+  },
+  "2714400": {
+    "japanese": "大阪堺市西区",
+    "english": "Nishi Ward, Sakai City, Osaka"
+  },
+  "2714500": {
+    "japanese": "大阪堺市南区",
+    "english": "Minami Ward, Sakai City, Osaka"
+  },
+  "2714600": {
+    "japanese": "大阪堺市北区",
+    "english": "Kita Ward, Sakai City, Osaka"
+  },
+  "2714700": {
+    "japanese": "大阪堺市美原区",
+    "english": "Mihara Ward, Sakai City, Osaka"
+  },
+  "2720200": {
+    "japanese": "岸和田市",
+    "english": "Kishiwada City"
+  },
+  "2720600": {
+    "japanese": "泉大津市",
+    "english": "Izumiotsu City"
+  },
+  "2720800": {
+    "japanese": "貝塚市",
+    "english": "Kaizuka City"
+  },
+  "2721300": {
+    "japanese": "泉佐野市",
+    "english": "Izumisano City"
+  },
+  "2721400": {
+    "japanese": "富田林市",
+    "english": "Tondabayashi City"
+  },
+  "2721600": {
+    "japanese": "河内長野市",
+    "english": "Kawachinagano City"
+  },
+  "2721700": {
+    "japanese": "松原市",
+    "english": "Matsubara City"
+  },
+  "2721900": {
+    "japanese": "大阪和泉市",
+    "english": "Izumi City, Osaka"
+  },
+  "2722200": {
+    "japanese": "羽曳野市",
+    "english": "Habikino City"
+  },
+  "2722500": {
+    "japanese": "高石市",
+    "english": "Takaishi City"
+  },
+  "2722600": {
+    "japanese": "藤井寺市",
+    "english": "Fujiidera City"
+  },
+  "2722800": {
+    "japanese": "泉南市",
+    "english": "Sennan City"
+  },
+  "2723100": {
+    "japanese": "大阪狭山市",
+    "english": "Osakasayama City"
+  },
+  "2723200": {
+    "japanese": "阪南市",
+    "english": "Hannan City"
+  },
+  "2734100": {
+    "japanese": "忠岡町",
+    "english": "Tadaoka Town"
+  },
+  "2736100": {
+    "japanese": "熊取町",
+    "english": "Kumatori Town"
+  },
+  "2736200": {
+    "japanese": "田尻町",
+    "english": "Tajiri Town"
+  },
+  "2736600": {
+    "japanese": "大阪岬町",
+    "english": "Misaki Town, Osaka"
+  },
+  "2738100": {
+    "japanese": "大阪太子町",
+    "english": "Taishi Town, Osaka"
+  },
+  "2738200": {
+    "japanese": "河南町",
+    "english": "Kanan Town"
+  },
+  "2738300": {
+    "japanese": "千早赤阪村",
+    "english": "Chihayaakasaka Village"
+  },
+  "2820900": {
+    "japanese": "豊岡市",
+    "english": "Toyooka City"
+  },
+  "2822200": {
+    "japanese": "養父市",
+    "english": "Yabu City"
+  },
+  "2822500": {
+    "japanese": "朝来市",
+    "english": "Asago City"
+  },
+  "2858500": {
+    "japanese": "兵庫香美町",
+    "english": "Kami Town, Hyogo"
+  },
+  "2858600": {
+    "japanese": "新温泉町",
+    "english": "Shinonsen Town"
+  },
+  "2810100": {
+    "japanese": "神戸東灘区",
+    "english": "Higashinada Ward, Kobe"
+  },
+  "2810200": {
+    "japanese": "神戸灘区",
+    "english": "Nada Ward, Kobe"
+  },
+  "2810500": {
+    "japanese": "神戸兵庫区",
+    "english": "Hyogo Ward, Kobe"
+  },
+  "2810600": {
+    "japanese": "神戸長田区",
+    "english": "Nagata Ward, Kobe"
+  },
+  "2810700": {
+    "japanese": "神戸須磨区",
+    "english": "Suma Ward, Kobe"
+  },
+  "2810800": {
+    "japanese": "神戸垂水区",
+    "english": "Tarumi Ward, Kobe"
+  },
+  "2810900": {
+    "japanese": "神戸北区",
+    "english": "Kita Ward, Kobe"
+  },
+  "2811000": {
+    "japanese": "神戸中央区",
+    "english": "Chuo Ward, Kobe"
+  },
+  "2811100": {
+    "japanese": "神戸西区",
+    "english": "Nishi Ward, Kobe"
+  },
+  "2820200": {
+    "japanese": "尼崎市",
+    "english": "Amagasaki City"
+  },
+  "2820300": {
+    "japanese": "明石市",
+    "english": "Akashi City"
+  },
+  "2820400": {
+    "japanese": "西宮市",
+    "english": "Nishinomiya City"
+  },
+  "2820600": {
+    "japanese": "芦屋市",
+    "english": "Ashiya City"
+  },
+  "2820700": {
+    "japanese": "伊丹市",
+    "english": "Itami City"
+  },
+  "2821000": {
+    "japanese": "加古川市",
+    "english": "Kakogawa City"
+  },
+  "2821300": {
+    "japanese": "西脇市",
+    "english": "Nishiwaki City"
+  },
+  "2821400": {
+    "japanese": "宝塚市",
+    "english": "Takarazuka City"
+  },
+  "2821500": {
+    "japanese": "三木市",
+    "english": "Miki City"
+  },
+  "2821600": {
+    "japanese": "高砂市",
+    "english": "Takasago City"
+  },
+  "2821700": {
+    "japanese": "川西市",
+    "english": "Kawanishi City"
+  },
+  "2821800": {
+    "japanese": "小野市",
+    "english": "Ono City"
+  },
+  "2821900": {
+    "japanese": "三田市",
+    "english": "Sanda City"
+  },
+  "2822000": {
+    "japanese": "加西市",
+    "english": "Kasai City"
+  },
+  "2822100": {
+    "japanese": "丹波篠山市",
+    "english": "Tanba-sasayama City"
+  },
+  "2822300": {
+    "japanese": "丹波市",
+    "english": "Tamba City"
+  },
+  "2822800": {
+    "japanese": "加東市",
+    "english": "Kato City"
+  },
+  "2830100": {
+    "japanese": "猪名川町",
+    "english": "Inagawa Town"
+  },
+  "2836500": {
+    "japanese": "多可町",
+    "english": "Taka Town"
+  },
+  "2838100": {
+    "japanese": "兵庫稲美町",
+    "english": "Inami Town, Hyogo"
+  },
+  "2838200": {
+    "japanese": "播磨町",
+    "english": "Harima Town"
+  },
+  "2820100": {
+    "japanese": "姫路市",
+    "english": "Himeji City"
+  },
+  "2820800": {
+    "japanese": "相生市",
+    "english": "Aioi City"
+  },
+  "2821200": {
+    "japanese": "赤穂市",
+    "english": "Ako City"
+  },
+  "2822700": {
+    "japanese": "宍粟市",
+    "english": "Shiso City"
+  },
+  "2822900": {
+    "japanese": "たつの市",
+    "english": "Tatsuno City"
+  },
+  "2844200": {
+    "japanese": "市川町",
+    "english": "Ichikawa Town"
+  },
+  "2844300": {
+    "japanese": "福崎町",
+    "english": "Fukusaki Town"
+  },
+  "2844600": {
+    "japanese": "兵庫神河町",
+    "english": "Kamikawa Town, Hyogo"
+  },
+  "2846400": {
+    "japanese": "兵庫太子町",
+    "english": "Taishi Town, Hyogo"
+  },
+  "2848100": {
+    "japanese": "上郡町",
+    "english": "Kamigori Town"
+  },
+  "2850100": {
+    "japanese": "佐用町",
+    "english": "Sayo Town"
+  },
+  "2820500": {
+    "japanese": "洲本市",
+    "english": "Sumoto City"
+  },
+  "2822400": {
+    "japanese": "南あわじ市",
+    "english": "Minamiawaji City"
+  },
+  "2822600": {
+    "japanese": "淡路市",
+    "english": "Awaji City"
+  },
+  "2920100": {
+    "japanese": "奈良市",
+    "english": "Nara City"
+  },
+  "2920200": {
+    "japanese": "大和高田市",
+    "english": "Yamatotakada City"
+  },
+  "2920300": {
+    "japanese": "大和郡山市",
+    "english": "Yamatokoriyama City"
+  },
+  "2920400": {
+    "japanese": "天理市",
+    "english": "Tenri City"
+  },
+  "2920500": {
+    "japanese": "橿原市",
+    "english": "Kashihara City"
+  },
+  "2920600": {
+    "japanese": "桜井市",
+    "english": "Sakurai City"
+  },
+  "2920700": {
+    "japanese": "五條市",
+    "english": "Gojo City"
+  },
+  "2920800": {
+    "japanese": "御所市",
+    "english": "Gose City"
+  },
+  "2920900": {
+    "japanese": "生駒市",
+    "english": "Ikoma City"
+  },
+  "2921000": {
+    "japanese": "香芝市",
+    "english": "Kashiba City"
+  },
+  "2921100": {
+    "japanese": "葛城市",
+    "english": "Katsuragi City"
+  },
+  "2921200": {
+    "japanese": "宇陀市",
+    "english": "Uda City"
+  },
+  "2932200": {
+    "japanese": "山添村",
+    "english": "Yamazoe Village"
+  },
+  "2934200": {
+    "japanese": "平群町",
+    "english": "Heguri Town"
+  },
+  "2934300": {
+    "japanese": "三郷町",
+    "english": "Sango Town"
+  },
+  "2934400": {
+    "japanese": "斑鳩町",
+    "english": "Ikaruga Town"
+  },
+  "2934500": {
+    "japanese": "安堵町",
+    "english": "Ando Town"
+  },
+  "2936100": {
+    "japanese": "奈良川西町",
+    "english": "Kawanishi Town, Nara"
+  },
+  "2936200": {
+    "japanese": "三宅町",
+    "english": "Miyake Town"
+  },
+  "2936300": {
+    "japanese": "田原本町",
+    "english": "Tawaramoto Town"
+  },
+  "2938500": {
+    "japanese": "曽爾村",
+    "english": "Soni Village"
+  },
+  "2938600": {
+    "japanese": "御杖村",
+    "english": "Mitsue Village"
+  },
+  "2940100": {
+    "japanese": "高取町",
+    "english": "Takatori Town"
+  },
+  "2940200": {
+    "japanese": "明日香村",
+    "english": "Asuka Village"
+  },
+  "2942400": {
+    "japanese": "上牧町",
+    "english": "Kammaki Town"
+  },
+  "2942500": {
+    "japanese": "王寺町",
+    "english": "Oji Town"
+  },
+  "2942600": {
+    "japanese": "広陵町",
+    "english": "Koryo Town"
+  },
+  "2942700": {
+    "japanese": "河合町",
+    "english": "Kawai Town"
+  },
+  "2944100": {
+    "japanese": "吉野町",
+    "english": "Yoshino Town"
+  },
+  "2944200": {
+    "japanese": "大淀町",
+    "english": "Oyodo Town"
+  },
+  "2944300": {
+    "japanese": "下市町",
+    "english": "Shimoichi Town"
+  },
+  "2944400": {
+    "japanese": "黒滝村",
+    "english": "Kurotaki Village"
+  },
+  "2944600": {
+    "japanese": "天川村",
+    "english": "Tenkawa Village"
+  },
+  "2944700": {
+    "japanese": "野迫川村",
+    "english": "Nosegawa Village"
+  },
+  "2944900": {
+    "japanese": "十津川村",
+    "english": "Totsukawa Village"
+  },
+  "2945000": {
+    "japanese": "下北山村",
+    "english": "Shimokitayama Village"
+  },
+  "2945100": {
+    "japanese": "上北山村",
+    "english": "Kamikitayama Village"
+  },
+  "2945200": {
+    "japanese": "奈良川上村",
+    "english": "Kawakami Village, Nara"
+  },
+  "2945300": {
+    "japanese": "東吉野村",
+    "english": "Higashiyoshino Village"
+  },
+  "3020100": {
+    "japanese": "和歌山市",
+    "english": "Wakayama City"
+  },
+  "3020200": {
+    "japanese": "海南市",
+    "english": "Kainan City"
+  },
+  "3020300": {
+    "japanese": "橋本市",
+    "english": "Hashimoto City"
+  },
+  "3020400": {
+    "japanese": "有田市",
+    "english": "Arida City"
+  },
+  "3020500": {
+    "japanese": "御坊市",
+    "english": "Gobo City"
+  },
+  "3020800": {
+    "japanese": "紀の川市",
+    "english": "Kinokawa City"
+  },
+  "3020900": {
+    "japanese": "岩出市",
+    "english": "Iwade City"
+  },
+  "3030400": {
+    "japanese": "紀美野町",
+    "english": "Kimino Town"
+  },
+  "3034100": {
+    "japanese": "かつらぎ町",
+    "english": "Katsuragi Town"
+  },
+  "3034300": {
+    "japanese": "九度山町",
+    "english": "Kudoyama Town"
+  },
+  "3034400": {
+    "japanese": "高野町",
+    "english": "Koya Town"
+  },
+  "3036100": {
+    "japanese": "湯浅町",
+    "english": "Yuasa Town"
+  },
+  "3036200": {
+    "japanese": "和歌山広川町",
+    "english": "Hirogawa Town, Wakayama"
+  },
+  "3036600": {
+    "japanese": "有田川町",
+    "english": "Aridagawa Town"
+  },
+  "3038100": {
+    "japanese": "和歌山美浜町",
+    "english": "Mihama Town, Wakayama"
+  },
+  "3038200": {
+    "japanese": "和歌山日高町",
+    "english": "Hidaka Town, Wakayama"
+  },
+  "3038300": {
+    "japanese": "由良町",
+    "english": "Yura Town"
+  },
+  "3039000": {
+    "japanese": "和歌山印南町",
+    "english": "Inami Town, Wakayama"
+  },
+  "3039100": {
+    "japanese": "みなべ町",
+    "english": "Minabe Town"
+  },
+  "3039200": {
+    "japanese": "日高川町",
+    "english": "Hidakagawa Town"
+  },
+  "3020600": {
+    "japanese": "田辺市",
+    "english": "Tanabe City"
+  },
+  "3020700": {
+    "japanese": "新宮市",
+    "english": "Shingu City"
+  },
+  "3040100": {
+    "japanese": "白浜町",
+    "english": "Shirahama Town"
+  },
+  "3040400": {
+    "japanese": "上富田町",
+    "english": "Kamitonda Town"
+  },
+  "3040600": {
+    "japanese": "すさみ町",
+    "english": "Susami Town"
+  },
+  "3042100": {
+    "japanese": "那智勝浦町",
+    "english": "Nachikatsuura Town"
+  },
+  "3042200": {
+    "japanese": "太地町",
+    "english": "Taiji Town"
+  },
+  "3042400": {
+    "japanese": "古座川町",
+    "english": "Kozagawa Town"
+  },
+  "3042700": {
+    "japanese": "北山村",
+    "english": "Kitayama Village"
+  },
+  "3042800": {
+    "japanese": "串本町",
+    "english": "Kushimoto Town"
+  },
+  "3120100": {
+    "japanese": "鳥取市",
+    "english": "Tottori City"
+  },
+  "3130200": {
+    "japanese": "岩美町",
+    "english": "Iwami Town"
+  },
+  "3132500": {
+    "japanese": "鳥取若桜町",
+    "english": "Wakasa Town, Tottori"
+  },
+  "3132800": {
+    "japanese": "智頭町",
+    "english": "Chizu Town"
+  },
+  "3132900": {
+    "japanese": "八頭町",
+    "english": "Yazu Town"
+  },
+  "3120300": {
+    "japanese": "倉吉市",
+    "english": "Kurayoshi City"
+  },
+  "3136400": {
+    "japanese": "三朝町",
+    "english": "Misasa Town"
+  },
+  "3137000": {
+    "japanese": "湯梨浜町",
+    "english": "Yurihama Town"
+  },
+  "3137100": {
+    "japanese": "琴浦町",
+    "english": "Kotoura Town"
+  },
+  "3137200": {
+    "japanese": "北栄町",
+    "english": "Hokuei Town"
+  },
+  "3120200": {
+    "japanese": "米子市",
+    "english": "Yonago City"
+  },
+  "3120400": {
+    "japanese": "境港市",
+    "english": "Sakaiminato City"
+  },
+  "3138400": {
+    "japanese": "日吉津村",
+    "english": "Hiezu Village"
+  },
+  "3138600": {
+    "japanese": "大山町",
+    "english": "Daisen Town"
+  },
+  "3138900": {
+    "japanese": "鳥取南部町",
+    "english": "Nanbu Town, Tottori"
+  },
+  "3139000": {
+    "japanese": "伯耆町",
+    "english": "Hoki Town"
+  },
+  "3140100": {
+    "japanese": "日南町",
+    "english": "Nichinan Town"
+  },
+  "3140200": {
+    "japanese": "鳥取日野町",
+    "english": "Hino Town, Tottori"
+  },
+  "3140300": {
+    "japanese": "江府町",
+    "english": "Kofu Town"
+  },
+  "3220100": {
+    "japanese": "松江市",
+    "english": "Matsue City"
+  },
+  "3220300": {
+    "japanese": "出雲市",
+    "english": "Izumo City"
+  },
+  "3220600": {
+    "japanese": "安来市",
+    "english": "Yasugi City"
+  },
+  "3220900": {
+    "japanese": "雲南市",
+    "english": "Unnan City"
+  },
+  "3234300": {
+    "japanese": "奥出雲町",
+    "english": "Okuizumo Town"
+  },
+  "3238600": {
+    "japanese": "飯南町",
+    "english": "Iinan Town"
+  },
+  "3220200": {
+    "japanese": "浜田市",
+    "english": "Hamada City"
+  },
+  "3220400": {
+    "japanese": "益田市",
+    "english": "Masuda City"
+  },
+  "3220500": {
+    "japanese": "大田市",
+    "english": "Ohda City"
+  },
+  "3220700": {
+    "japanese": "江津市",
+    "english": "Gotsu City"
+  },
+  "3244100": {
+    "japanese": "川本町",
+    "english": "Kawamoto Town"
+  },
+  "3244800": {
+    "japanese": "島根美郷町",
+    "english": "Misato Town, Shimane"
+  },
+  "3244900": {
+    "japanese": "邑南町",
+    "english": "Onan Town"
+  },
+  "3250100": {
+    "japanese": "津和野町",
+    "english": "Tsuwano Town"
+  },
+  "3250500": {
+    "japanese": "吉賀町",
+    "english": "Yoshika Town"
+  },
+  "3252500": {
+    "japanese": "海士町",
+    "english": "Ama Town"
+  },
+  "3252600": {
+    "japanese": "西ノ島町",
+    "english": "Nishinoshima Town"
+  },
+  "3252700": {
+    "japanese": "知夫村",
+    "english": "Chibu Village"
+  },
+  "3252800": {
+    "japanese": "隠岐の島町",
+    "english": "Okinoshima Town"
+  },
+  "3320300": {
+    "japanese": "津山市",
+    "english": "Tsuyama City"
+  },
+  "3321000": {
+    "japanese": "新見市",
+    "english": "Niimi City"
+  },
+  "3321400": {
+    "japanese": "真庭市",
+    "english": "Maniwa City"
+  },
+  "3321500": {
+    "japanese": "美作市",
+    "english": "Mimasaka City"
+  },
+  "3358600": {
+    "japanese": "新庄村",
+    "english": "Shinjo Village"
+  },
+  "3360600": {
+    "japanese": "鏡野町",
+    "english": "Kagamino Town"
+  },
+  "3362200": {
+    "japanese": "勝央町",
+    "english": "Shoo Town"
+  },
+  "3362300": {
+    "japanese": "奈義町",
+    "english": "Nagi Town"
+  },
+  "3364300": {
+    "japanese": "西粟倉村",
+    "english": "Nishiawakura Village"
+  },
+  "3366300": {
+    "japanese": "久米南町",
+    "english": "Kumenan Town"
+  },
+  "3366600": {
+    "japanese": "岡山美咲町",
+    "english": "Misaki Ward, Okayama"
+  },
+  "3310100": {
+    "japanese": "岡山北区",
+    "english": "Kita Ward, Okayama"
+  },
+  "3310200": {
+    "japanese": "岡山中区",
+    "english": "Naka Ward, Okayama"
+  },
+  "3310300": {
+    "japanese": "岡山東区",
+    "english": "Higashi Ward, Okayama"
+  },
+  "3310400": {
+    "japanese": "岡山南区",
+    "english": "Minami Ward, Okayama"
+  },
+  "3320200": {
+    "japanese": "倉敷市",
+    "english": "Kurashiki City"
+  },
+  "3320400": {
+    "japanese": "玉野市",
+    "english": "Tamano City"
+  },
+  "3320500": {
+    "japanese": "笠岡市",
+    "english": "Kasaoka City"
+  },
+  "3320700": {
+    "japanese": "井原市",
+    "english": "Ibara City"
+  },
+  "3320800": {
+    "japanese": "総社市",
+    "english": "Soja City"
+  },
+  "3320900": {
+    "japanese": "高梁市",
+    "english": "Takahashi City"
+  },
+  "3321100": {
+    "japanese": "備前市",
+    "english": "Bizen City"
+  },
+  "3321200": {
+    "japanese": "瀬戸内市",
+    "english": "Setouchi City"
+  },
+  "3321300": {
+    "japanese": "赤磐市",
+    "english": "Akaiwa City"
+  },
+  "3321600": {
+    "japanese": "浅口市",
+    "english": "Asakuchi City"
+  },
+  "3334600": {
+    "japanese": "和気町",
+    "english": "Wake Town"
+  },
+  "3342300": {
+    "japanese": "早島町",
+    "english": "Hayashima Town"
+  },
+  "3344500": {
+    "japanese": "里庄町",
+    "english": "Satosho Town"
+  },
+  "3346100": {
+    "japanese": "矢掛町",
+    "english": "Yakage Town"
+  },
+  "3368100": {
+    "japanese": "吉備中央町",
+    "english": "Kibichuo Town"
+  },
+  "3420900": {
+    "japanese": "広島三次市",
+    "english": "Miyoshi City, Hiroshima"
+  },
+  "3421000": {
+    "japanese": "庄原市",
+    "english": "Shobara City"
+  },
+  "3421400": {
+    "japanese": "安芸高田市",
+    "english": "Akitakata City"
+  },
+  "3436800": {
+    "japanese": "安芸太田町",
+    "english": "Akiota Town"
+  },
+  "3436900": {
+    "japanese": "北広島町",
+    "english": "Kitahiroshima Town"
+  },
+  "3420400": {
+    "japanese": "三原市",
+    "english": "Mihara City"
+  },
+  "3420500": {
+    "japanese": "尾道市",
+    "english": "Onomichi City"
+  },
+  "3420700": {
+    "japanese": "福山市",
+    "english": "Fukuyama City"
+  },
+  "3420800": {
+    "japanese": "広島府中市",
+    "english": "Fuchu City, Hiroshima"
+  },
+  "3446200": {
+    "japanese": "世羅町",
+    "english": "Sera Town"
+  },
+  "3454500": {
+    "japanese": "神石高原町",
+    "english": "Jinsekikogen Town"
+  },
+  "3410100": {
+    "japanese": "広島中区",
+    "english": "Naka Ward, Hiroshima"
+  },
+  "3410200": {
+    "japanese": "広島東区",
+    "english": "Higashi Ward, Hiroshima"
+  },
+  "3410300": {
+    "japanese": "広島南区",
+    "english": "Minami Ward, Hiroshima"
+  },
+  "3410400": {
+    "japanese": "広島西区",
+    "english": "Nishi Ward, Hiroshima"
+  },
+  "3410500": {
+    "japanese": "広島安佐南区",
+    "english": "Asaminami Ward, Hiroshima"
+  },
+  "3410600": {
+    "japanese": "広島安佐北区",
+    "english": "Asakita Ward, Hiroshima"
+  },
+  "3410700": {
+    "japanese": "広島安芸区",
+    "english": "Aki Ward, Hiroshima"
+  },
+  "3410800": {
+    "japanese": "広島佐伯区",
+    "english": "Saeki Ward, Hiroshima"
+  },
+  "3420200": {
+    "japanese": "呉市",
+    "english": "Kure City"
+  },
+  "3420300": {
+    "japanese": "竹原市",
+    "english": "Takehara City"
+  },
+  "3421100": {
+    "japanese": "大竹市",
+    "english": "Otake City"
+  },
+  "3421200": {
+    "japanese": "東広島市",
+    "english": "Higashihiroshima City"
+  },
+  "3421300": {
+    "japanese": "廿日市市",
+    "english": "Hatsukaichi City"
+  },
+  "3421500": {
+    "japanese": "江田島市",
+    "english": "Etajima City"
+  },
+  "3430200": {
+    "japanese": "府中町",
+    "english": "Fuchu Town"
+  },
+  "3430400": {
+    "japanese": "海田町",
+    "english": "Kaita Town"
+  },
+  "3430700": {
+    "japanese": "熊野町",
+    "english": "Kumano Town"
+  },
+  "3430900": {
+    "japanese": "坂町",
+    "english": "Saka Town"
+  },
+  "3443100": {
+    "japanese": "大崎上島町",
+    "english": "Osakikamijima Town"
+  },
+  "3620100": {
+    "japanese": "徳島市",
+    "english": "Tokushima City"
+  },
+  "3620200": {
+    "japanese": "鳴門市",
+    "english": "Naruto City"
+  },
+  "3620300": {
+    "japanese": "小松島市",
+    "english": "Komatsushima City"
+  },
+  "3620500": {
+    "japanese": "吉野川市",
+    "english": "Yoshinogawa City"
+  },
+  "3620600": {
+    "japanese": "阿波市",
+    "english": "Awa City"
+  },
+  "3620700": {
+    "japanese": "美馬市",
+    "english": "Mima City"
+  },
+  "3620800": {
+    "japanese": "徳島三好市",
+    "english": "Miyoshi City, Tokushima"
+  },
+  "3632100": {
+    "japanese": "佐那河内村",
+    "english": "Sanagochi Village"
+  },
+  "3634100": {
+    "japanese": "石井町",
+    "english": "Ishii Town"
+  },
+  "3634200": {
+    "japanese": "神山町",
+    "english": "Kamiyama Town"
+  },
+  "3640100": {
+    "japanese": "松茂町",
+    "english": "Matsushige Town"
+  },
+  "3640200": {
+    "japanese": "北島町",
+    "english": "Kitajima Town"
+  },
+  "3640300": {
+    "japanese": "藍住町",
+    "english": "Aizumi Town"
+  },
+  "3640400": {
+    "japanese": "板野町",
+    "english": "Itano Town"
+  },
+  "3640500": {
+    "japanese": "上板町",
+    "english": "Kamiita Town"
+  },
+  "3646800": {
+    "japanese": "つるぎ町",
+    "english": "Tsurugi Town"
+  },
+  "3648900": {
+    "japanese": "東みよし町",
+    "english": "Higashimiyoshi Town"
+  },
+  "3620400": {
+    "japanese": "阿南市",
+    "english": "Anan City"
+  },
+  "3630100": {
+    "japanese": "勝浦町",
+    "english": "Katsuura Town"
+  },
+  "3630200": {
+    "japanese": "上勝町",
+    "english": "Kamikatsu Town"
+  },
+  "3636800": {
+    "japanese": "那賀町",
+    "english": "Naka Town"
+  },
+  "3638300": {
+    "japanese": "牟岐町",
+    "english": "Mugi Town"
+  },
+  "3638700": {
+    "japanese": "美波町",
+    "english": "Minami Town"
+  },
+  "3638800": {
+    "japanese": "海陽町",
+    "english": "Kaiyo Town"
+  },
+  "3720100": {
+    "japanese": "高松市",
+    "english": "Takamatsu City"
+  },
+  "3720600": {
+    "japanese": "さぬき市",
+    "english": "Sanuki City"
+  },
+  "3720700": {
+    "japanese": "東かがわ市",
+    "english": "Higashikagawa City"
+  },
+  "3732200": {
+    "japanese": "土庄町",
+    "english": "Tonosho Town"
+  },
+  "3732400": {
+    "japanese": "小豆島町",
+    "english": "Shodoshima Town"
+  },
+  "3734100": {
+    "japanese": "三木町",
+    "english": "Miki Town"
+  },
+  "3736400": {
+    "japanese": "直島町",
+    "english": "Naoshima Town"
+  },
+  "3720200": {
+    "japanese": "丸亀市",
+    "english": "Marugame City"
+  },
+  "3720300": {
+    "japanese": "坂出市",
+    "english": "Sakaide City"
+  },
+  "3720400": {
+    "japanese": "善通寺市",
+    "english": "Zentsuji City"
+  },
+  "3720500": {
+    "japanese": "観音寺市",
+    "english": "Kanonji City"
+  },
+  "3720800": {
+    "japanese": "三豊市",
+    "english": "Mitoyo City"
+  },
+  "3738600": {
+    "japanese": "宇多津町",
+    "english": "Utazu Town"
+  },
+  "3738700": {
+    "japanese": "綾川町",
+    "english": "Ayagawa Town"
+  },
+  "3740300": {
+    "japanese": "琴平町",
+    "english": "Kotohira Town"
+  },
+  "3740400": {
+    "japanese": "多度津町",
+    "english": "Tadotsu Town"
+  },
+  "3740600": {
+    "japanese": "まんのう町",
+    "english": "Manno Town"
+  },
+  "3820200": {
+    "japanese": "今治市",
+    "english": "Imabari City"
+  },
+  "3820500": {
+    "japanese": "新居浜市",
+    "english": "Niihama City"
+  },
+  "3820600": {
+    "japanese": "西条市",
+    "english": "Saijo City"
+  },
+  "3821300": {
+    "japanese": "四国中央市",
+    "english": "Shikokuchuo City"
+  },
+  "3835600": {
+    "japanese": "上島町",
+    "english": "Kamijima Town"
+  },
+  "3820100": {
+    "japanese": "松山市",
+    "english": "Matsuyama City"
+  },
+  "3821000": {
+    "japanese": "伊予市",
+    "english": "Iyo City"
+  },
+  "3821500": {
+    "japanese": "東温市",
+    "english": "Toon City"
+  },
+  "3838600": {
+    "japanese": "久万高原町",
+    "english": "Kumakogen Town"
+  },
+  "3840100": {
+    "japanese": "愛媛松前町",
+    "english": "Masaki Town, Ehime"
+  },
+  "3840200": {
+    "japanese": "砥部町",
+    "english": "Tobe Town"
+  },
+  "3820300": {
+    "japanese": "宇和島市",
+    "english": "Uwajima City"
+  },
+  "3820400": {
+    "japanese": "八幡浜市",
+    "english": "Yawatahama City"
+  },
+  "3820700": {
+    "japanese": "大洲市",
+    "english": "Ozu City"
+  },
+  "3821400": {
+    "japanese": "西予市",
+    "english": "Seiyo City"
+  },
+  "3842200": {
+    "japanese": "内子町",
+    "english": "Uchiko Town"
+  },
+  "3844200": {
+    "japanese": "伊方町",
+    "english": "Ikata Town"
+  },
+  "3848400": {
+    "japanese": "松野町",
+    "english": "Matsuno Town"
+  },
+  "3848800": {
+    "japanese": "愛媛鬼北町",
+    "english": "Kihoku Town, Ehime"
+  },
+  "3850600": {
+    "japanese": "愛南町",
+    "english": "Ainan Town"
+  },
+  "3920200": {
+    "japanese": "室戸市",
+    "english": "Muroto City"
+  },
+  "3920300": {
+    "japanese": "安芸市",
+    "english": "Aki City"
+  },
+  "3930100": {
+    "japanese": "東洋町",
+    "english": "Toyo Town"
+  },
+  "3930200": {
+    "japanese": "奈半利町",
+    "english": "Nahari Town"
+  },
+  "3930300": {
+    "japanese": "田野町",
+    "english": "Tano Town"
+  },
+  "3930400": {
+    "japanese": "安田町",
+    "english": "Yasuda Town"
+  },
+  "3930500": {
+    "japanese": "北川村",
+    "english": "Kitagawa Village"
+  },
+  "3930600": {
+    "japanese": "馬路村",
+    "english": "Umaji Village"
+  },
+  "3930700": {
+    "japanese": "芸西村",
+    "english": "Geisei Village"
+  },
+  "3920100": {
+    "japanese": "高知市",
+    "english": "Kochi City"
+  },
+  "3920400": {
+    "japanese": "南国市",
+    "english": "Nankoku City"
+  },
+  "3920500": {
+    "japanese": "土佐市",
+    "english": "Tosa City"
+  },
+  "3920600": {
+    "japanese": "須崎市",
+    "english": "Susaki City"
+  },
+  "3921100": {
+    "japanese": "高知香南市",
+    "english": "Konan City, Kochi"
+  },
+  "3921200": {
+    "japanese": "香美市",
+    "english": "Kami City"
+  },
+  "3934100": {
+    "japanese": "本山町",
+    "english": "Motoyama Town"
+  },
+  "3934400": {
+    "japanese": "大豊町",
+    "english": "Otoyo Town"
+  },
+  "3936300": {
+    "japanese": "土佐町",
+    "english": "Tosa Town"
+  },
+  "3936400": {
+    "japanese": "大川村",
+    "english": "Okawa Village"
+  },
+  "3938600": {
+    "japanese": "いの町",
+    "english": "Ino Town"
+  },
+  "3938700": {
+    "japanese": "仁淀川町",
+    "english": "Niyodogawa Town"
+  },
+  "3940200": {
+    "japanese": "佐川町",
+    "english": "Sakawa Town"
+  },
+  "3940300": {
+    "japanese": "越知町",
+    "english": "Ochi Town"
+  },
+  "3941000": {
+    "japanese": "日高村",
+    "english": "Hidaka Village"
+  },
+  "3920800": {
+    "japanese": "宿毛市",
+    "english": "Sukumo City"
+  },
+  "3920900": {
+    "japanese": "土佐清水市",
+    "english": "Tosashimizu City"
+  },
+  "3921000": {
+    "japanese": "四万十市",
+    "english": "Shimanto City"
+  },
+  "3940100": {
+    "japanese": "中土佐町",
+    "english": "Nakatosa Town"
+  },
+  "3940500": {
+    "japanese": "梼原町",
+    "english": "Yusuhara Town"
+  },
+  "3941100": {
+    "japanese": "高知津野町",
+    "english": "Tsuno Town, Kochi"
+  },
+  "3941200": {
+    "japanese": "四万十町",
+    "english": "Shimanto Town"
+  },
+  "3942400": {
+    "japanese": "大月町",
+    "english": "Otsuki Town"
+  },
+  "3942700": {
+    "japanese": "三原村",
+    "english": "Mihara Village"
+  },
+  "3942800": {
+    "japanese": "黒潮町",
+    "english": "Kuroshio Town"
+  },
+  "3520400": {
+    "japanese": "萩市",
+    "english": "Hagi City"
+  },
+  "3521100": {
+    "japanese": "長門市",
+    "english": "Nagato City"
+  },
+  "3521300": {
+    "japanese": "美祢市",
+    "english": "Mine City"
+  },
+  "3550200": {
+    "japanese": "阿武町",
+    "english": "Abu Town"
+  },
+  "3520100": {
+    "japanese": "下関市",
+    "english": "Shimonoseki City"
+  },
+  "3520200": {
+    "japanese": "宇部市",
+    "english": "Ube City"
+  },
+  "3521600": {
+    "japanese": "山陽小野田市",
+    "english": "Sanyo Onoda City"
+  },
+  "3520800": {
+    "japanese": "岩国市",
+    "english": "Iwakuni City"
+  },
+  "3521000": {
+    "japanese": "光市",
+    "english": "Hikari City"
+  },
+  "3521200": {
+    "japanese": "柳井市",
+    "english": "Yanai City"
+  },
+  "3530500": {
+    "japanese": "周防大島町",
+    "english": "Suo-oshima Town"
+  },
+  "3532100": {
+    "japanese": "和木町",
+    "english": "Waki Town"
+  },
+  "3534100": {
+    "japanese": "上関町",
+    "english": "Kaminoseki Town"
+  },
+  "3534300": {
+    "japanese": "田布施町",
+    "english": "Tabuse Town"
+  },
+  "3534400": {
+    "japanese": "平生町",
+    "english": "Hirao Town"
+  },
+  "3520300": {
+    "japanese": "山口市",
+    "english": "Yamaguchi City"
+  },
+  "3520600": {
+    "japanese": "防府市",
+    "english": "Hofu City"
+  },
+  "3520700": {
+    "japanese": "下松市",
+    "english": "Kudamatsu City"
+  },
+  "3521500": {
+    "japanese": "周南市",
+    "english": "Shunan City"
+  },
+  "4013100": {
+    "japanese": "福岡東区",
+    "english": "Higashi Ward, Fukuoka"
+  },
+  "4013200": {
+    "japanese": "福岡博多区",
+    "english": "Hakata Ward, Fukuoka"
+  },
+  "4013300": {
+    "japanese": "福岡中央区",
+    "english": "Chuo Ward, Fukuoka"
+  },
+  "4013400": {
+    "japanese": "福岡南区",
+    "english": "Minami Ward, Fukuoka"
+  },
+  "4013500": {
+    "japanese": "福岡西区",
+    "english": "Nishi Ward, Fukuoka"
+  },
+  "4013600": {
+    "japanese": "福岡城南区",
+    "english": "Jonan Ward, Fukuoka"
+  },
+  "4013700": {
+    "japanese": "福岡早良区",
+    "english": "Sawara Ward, Fukuoka"
+  },
+  "4021700": {
+    "japanese": "筑紫野市",
+    "english": "Chikushino City"
+  },
+  "4021800": {
+    "japanese": "春日市",
+    "english": "Kasuga City"
+  },
+  "4021900": {
+    "japanese": "大野城市",
+    "english": "Onojo City"
+  },
+  "4022000": {
+    "japanese": "宗像市",
+    "english": "Munakata City"
+  },
+  "4022100": {
+    "japanese": "太宰府市",
+    "english": "Dazaifu City"
+  },
+  "4022300": {
+    "japanese": "福岡古賀市",
+    "english": "Koga City, Fukuoka"
+  },
+  "4022400": {
+    "japanese": "福津市",
+    "english": "Fukutsu City"
+  },
+  "4023000": {
+    "japanese": "糸島市",
+    "english": "Itoshima City"
+  },
+  "4023100": {
+    "japanese": "那珂川市",
+    "english": "Nakagawa City"
+  },
+  "4034100": {
+    "japanese": "宇美町",
+    "english": "Umi Town"
+  },
+  "4034200": {
+    "japanese": "篠栗町",
+    "english": "Sasaguri Town"
+  },
+  "4034300": {
+    "japanese": "志免町",
+    "english": "Shime Town"
+  },
+  "4034400": {
+    "japanese": "須恵町",
+    "english": "Sue Town"
+  },
+  "4034500": {
+    "japanese": "新宮町",
+    "english": "Shingu Town"
+  },
+  "4034800": {
+    "japanese": "久山町",
+    "english": "Hisayama Town"
+  },
+  "4034900": {
+    "japanese": "粕屋町",
+    "english": "Kasuya Town"
+  },
+  "4010100": {
+    "japanese": "北九州門司区",
+    "english": "Moji Ward, Kitakyushu"
+  },
+  "4010300": {
+    "japanese": "北九州若松区",
+    "english": "Wakamatsu Ward, Kitakyushu"
+  },
+  "4010500": {
+    "japanese": "北九州戸畑区",
+    "english": "Tobata Ward, Kitakyushu"
+  },
+  "4010600": {
+    "japanese": "北九州小倉北区",
+    "english": "Kokurakita Ward, Kitakyushu"
+  },
+  "4010700": {
+    "japanese": "北九州小倉南区",
+    "english": "Kokuramimami Ward, Kitakyushu"
+  },
+  "4010800": {
+    "japanese": "北九州八幡東区",
+    "english": "Yahatahigashi Ward, Kitakyushu"
+  },
+  "4010900": {
+    "japanese": "北九州八幡西区",
+    "english": "Yahatanishi Ward, Kitakyushu"
+  },
+  "4021300": {
+    "japanese": "行橋市",
+    "english": "Yukuhashi City"
+  },
+  "4021400": {
+    "japanese": "豊前市",
+    "english": "Buzen City"
+  },
+  "4021500": {
+    "japanese": "中間市",
+    "english": "Nakama City"
+  },
+  "4038100": {
+    "japanese": "芦屋町",
+    "english": "Ashiya Town"
+  },
+  "4038200": {
+    "japanese": "水巻町",
+    "english": "Mizumaki Town"
+  },
+  "4038300": {
+    "japanese": "岡垣町",
+    "english": "Okagaki Town"
+  },
+  "4038400": {
+    "japanese": "遠賀町",
+    "english": "Onga Town"
+  },
+  "4062100": {
+    "japanese": "苅田町",
+    "english": "Kanda Town"
+  },
+  "4062500": {
+    "japanese": "みやこ町",
+    "english": "Miyako Town"
+  },
+  "4064200": {
+    "japanese": "吉富町",
+    "english": "Yoshitomi Town"
+  },
+  "4064600": {
+    "japanese": "上毛町",
+    "english": "Koge Town"
+  },
+  "4064700": {
+    "japanese": "築上町",
+    "english": "Chikujo Town"
+  },
+  "4020400": {
+    "japanese": "直方市",
+    "english": "Nogata City"
+  },
+  "4020500": {
+    "japanese": "飯塚市",
+    "english": "Iizuka City"
+  },
+  "4020600": {
+    "japanese": "田川市",
+    "english": "Tagawa City"
+  },
+  "4022600": {
+    "japanese": "宮若市",
+    "english": "Miyawaka City"
+  },
+  "4022700": {
+    "japanese": "嘉麻市",
+    "english": "Kama City"
+  },
+  "4040100": {
+    "japanese": "小竹町",
+    "english": "Kotake Town"
+  },
+  "4040200": {
+    "japanese": "鞍手町",
+    "english": "Kurate Town"
+  },
+  "4042100": {
+    "japanese": "桂川町",
+    "english": "Keisen Town"
+  },
+  "4060100": {
+    "japanese": "香春町",
+    "english": "Kawara Town"
+  },
+  "4060200": {
+    "japanese": "添田町",
+    "english": "Soeda Town"
+  },
+  "4060400": {
+    "japanese": "糸田町",
+    "english": "Itoda Town"
+  },
+  "4060500": {
+    "japanese": "福岡川崎町",
+    "english": "Kawasaki Town, Fukuoka"
+  },
+  "4060800": {
+    "japanese": "大任町",
+    "english": "Oto Town"
+  },
+  "4060900": {
+    "japanese": "赤村",
+    "english": "Aka Village"
+  },
+  "4061000": {
+    "japanese": "福智町",
+    "english": "Fukuchi Town"
+  },
+  "4020200": {
+    "japanese": "大牟田市",
+    "english": "Omuta City"
+  },
+  "4020300": {
+    "japanese": "久留米市",
+    "english": "Kurume City"
+  },
+  "4020700": {
+    "japanese": "柳川市",
+    "english": "Yanagawa City"
+  },
+  "4021000": {
+    "japanese": "八女市",
+    "english": "Yame City"
+  },
+  "4021100": {
+    "japanese": "筑後市",
+    "english": "Chikugo City"
+  },
+  "4021200": {
+    "japanese": "大川市",
+    "english": "Okawa City"
+  },
+  "4021600": {
+    "japanese": "小郡市",
+    "english": "Ogori City"
+  },
+  "4022500": {
+    "japanese": "うきは市",
+    "english": "Ukiha City"
+  },
+  "4022800": {
+    "japanese": "朝倉市",
+    "english": "Asakura City"
+  },
+  "4022900": {
+    "japanese": "みやま市",
+    "english": "Miyama City"
+  },
+  "4044700": {
+    "japanese": "筑前町",
+    "english": "Chikuzen Town"
+  },
+  "4044800": {
+    "japanese": "東峰村",
+    "english": "Toho Village"
+  },
+  "4050300": {
+    "japanese": "大刀洗町",
+    "english": "Tachiarai Town"
+  },
+  "4052200": {
+    "japanese": "大木町",
+    "english": "Oki Town"
+  },
+  "4054400": {
+    "japanese": "福岡広川町",
+    "english": "Hirokawa Town, Fukuoka"
+  },
+  "4120200": {
+    "japanese": "唐津市",
+    "english": "Karatsu City"
+  },
+  "4120500": {
+    "japanese": "伊万里市",
+    "english": "Imari City"
+  },
+  "4138700": {
+    "japanese": "玄海町",
+    "english": "Genkai Town"
+  },
+  "4140100": {
+    "japanese": "有田町",
+    "english": "Arita Town"
+  },
+  "4120100": {
+    "japanese": "佐賀市",
+    "english": "Saga City"
+  },
+  "4120300": {
+    "japanese": "鳥栖市",
+    "english": "Tosu City"
+  },
+  "4120400": {
+    "japanese": "多久市",
+    "english": "Taku City"
+  },
+  "4120600": {
+    "japanese": "武雄市",
+    "english": "Takeo City"
+  },
+  "4120700": {
+    "japanese": "佐賀鹿島市",
+    "english": "Kashima City, Saga"
+  },
+  "4120800": {
+    "japanese": "小城市",
+    "english": "Ogi City"
+  },
+  "4120900": {
+    "japanese": "嬉野市",
+    "english": "Ureshino City"
+  },
+  "4121000": {
+    "japanese": "神埼市",
+    "english": "Kanzaki City"
+  },
+  "4132700": {
+    "japanese": "吉野ヶ里町",
+    "english": "Yoshinogari Town"
+  },
+  "4134100": {
+    "japanese": "基山町",
+    "english": "Kiyama Town"
+  },
+  "4134500": {
+    "japanese": "上峰町",
+    "english": "Kamimine Town"
+  },
+  "4134600": {
+    "japanese": "みやき町",
+    "english": "Miyaki Town"
+  },
+  "4142300": {
+    "japanese": "大町町",
+    "english": "Omachi Town"
+  },
+  "4142400": {
+    "japanese": "江北町",
+    "english": "Kohoku Town"
+  },
+  "4142500": {
+    "japanese": "白石町",
+    "english": "Shiroishi Town"
+  },
+  "4144100": {
+    "japanese": "太良町",
+    "english": "Tara Town"
+  },
+  "4220201": {
+    "japanese": "佐世保市",
+    "english": "Sasebo City"
+  },
+  "4220700": {
+    "japanese": "平戸市",
+    "english": "Hirado City"
+  },
+  "4220800": {
+    "japanese": "松浦市",
+    "english": "Matsuura City"
+  },
+  "4232100": {
+    "japanese": "東彼杵町",
+    "english": "Higashisonogi Town"
+  },
+  "4232200": {
+    "japanese": "川棚町",
+    "english": "Kawatana Town"
+  },
+  "4232300": {
+    "japanese": "波佐見町",
+    "english": "Hasami Town"
+  },
+  "4239100": {
+    "japanese": "佐々町",
+    "english": "Saza Town"
+  },
+  "4220100": {
+    "japanese": "長崎市",
+    "english": "Nagasaki City"
+  },
+  "4220400": {
+    "japanese": "諫早市",
+    "english": "Isahaya City"
+  },
+  "4220500": {
+    "japanese": "大村市",
+    "english": "Omura City"
+  },
+  "4221200": {
+    "japanese": "西海市",
+    "english": "Saikai City"
+  },
+  "4230700": {
+    "japanese": "長与町",
+    "english": "Nagayo Town"
+  },
+  "4230800": {
+    "japanese": "時津町",
+    "english": "Togitsu Town"
+  },
+  "4220300": {
+    "japanese": "島原市",
+    "english": "Shimabara City"
+  },
+  "4221300": {
+    "japanese": "雲仙市",
+    "english": "Unzen City"
+  },
+  "4221400": {
+    "japanese": "南島原市",
+    "english": "Minamishimabara City"
+  },
+  "4220900": {
+    "japanese": "長崎対馬市",
+    "english": "Tsushima City, Nagasaki"
+  },
+  "4221000": {
+    "japanese": "壱岐市",
+    "english": "Iki City"
+  },
+  "4220202": {
+    "japanese": "佐世保市宇久島",
+    "english": "Ukujima, Sasebo City"
+  },
+  "4221100": {
+    "japanese": "五島市",
+    "english": "Goto City"
+  },
+  "4238300": {
+    "japanese": "小値賀町",
+    "english": "Ojika Town"
+  },
+  "4241100": {
+    "japanese": "新上五島町",
+    "english": "Shinkamigoto Town"
+  },
+  "4321400": {
+    "japanese": "阿蘇市",
+    "english": "Aso City"
+  },
+  "4342300": {
+    "japanese": "南小国町",
+    "english": "Minamioguni Town"
+  },
+  "4342400": {
+    "japanese": "熊本小国町",
+    "english": "Oguni Town, Kumamoto"
+  },
+  "4342500": {
+    "japanese": "産山村",
+    "english": "Ubuyama Village"
+  },
+  "4342800": {
+    "japanese": "熊本高森町",
+    "english": "Takamori Town, Kumamoto"
+  },
+  "4343300": {
+    "japanese": "南阿蘇村",
+    "english": "Minamiaso Village"
+  },
+  "4310100": {
+    "japanese": "熊本中央区",
+    "english": "Chuo Ward, Kumamoto"
+  },
+  "4310200": {
+    "japanese": "熊本東区",
+    "english": "Higashi Ward, Kumamoto"
+  },
+  "4310300": {
+    "japanese": "熊本西区",
+    "english": "Nishi Ward, Kumamoto"
+  },
+  "4310400": {
+    "japanese": "熊本南区",
+    "english": "Minami Ward, Kumamoto"
+  },
+  "4310500": {
+    "japanese": "熊本北区",
+    "english": "Kita Ward, Kumamoto"
+  },
+  "4320200": {
+    "japanese": "八代市",
+    "english": "Yatsushiro City"
+  },
+  "4320400": {
+    "japanese": "荒尾市",
+    "english": "Arao City"
+  },
+  "4320600": {
+    "japanese": "玉名市",
+    "english": "Tamana City"
+  },
+  "4320800": {
+    "japanese": "山鹿市",
+    "english": "Yamaga City"
+  },
+  "4321000": {
+    "japanese": "菊池市",
+    "english": "Kikuchi City"
+  },
+  "4321100": {
+    "japanese": "宇土市",
+    "english": "Uto City"
+  },
+  "4321300": {
+    "japanese": "宇城市",
+    "english": "Uki City"
+  },
+  "4321600": {
+    "japanese": "合志市",
+    "english": "Koshi City"
+  },
+  "4334800": {
+    "japanese": "熊本美里町",
+    "english": "Misato Town, Kumamoto"
+  },
+  "4336400": {
+    "japanese": "玉東町",
+    "english": "Gyokuto Town"
+  },
+  "4336700": {
+    "japanese": "南関町",
+    "english": "Nankan Town"
+  },
+  "4336800": {
+    "japanese": "長洲町",
+    "english": "Nagasu Town"
+  },
+  "4336900": {
+    "japanese": "和水町",
+    "english": "Nagomi Town"
+  },
+  "4340300": {
+    "japanese": "大津町",
+    "english": "Ozu Town"
+  },
+  "4340400": {
+    "japanese": "菊陽町",
+    "english": "Kikuyo Town"
+  },
+  "4343200": {
+    "japanese": "西原村",
+    "english": "Nishihara Village"
+  },
+  "4344100": {
+    "japanese": "御船町",
+    "english": "Mifune Town"
+  },
+  "4344200": {
+    "japanese": "嘉島町",
+    "english": "Kashima Town"
+  },
+  "4344300": {
+    "japanese": "益城町",
+    "english": "Mashiki Town"
+  },
+  "4344400": {
+    "japanese": "甲佐町",
+    "english": "Kosa Town"
+  },
+  "4344700": {
+    "japanese": "山都町",
+    "english": "Yamato Town"
+  },
+  "4346800": {
+    "japanese": "氷川町",
+    "english": "Hikawa Town"
+  },
+  "4320300": {
+    "japanese": "人吉市",
+    "english": "Hitoyoshi City"
+  },
+  "4350100": {
+    "japanese": "錦町",
+    "english": "Nishiki Town"
+  },
+  "4350500": {
+    "japanese": "多良木町",
+    "english": "Taragi Town"
+  },
+  "4350600": {
+    "japanese": "湯前町",
+    "english": "Yunomae Town"
+  },
+  "4350700": {
+    "japanese": "水上村",
+    "english": "Mizukami Village"
+  },
+  "4351000": {
+    "japanese": "相良村",
+    "english": "Sagara Village"
+  },
+  "4351100": {
+    "japanese": "五木村",
+    "english": "Itsuki Village"
+  },
+  "4351200": {
+    "japanese": "山江村",
+    "english": "Yamae Village"
+  },
+  "4351300": {
+    "japanese": "球磨村",
+    "english": "Kuma Village"
+  },
+  "4351400": {
+    "japanese": "あさぎり町",
+    "english": "Asagiri Town"
+  },
+  "4320500": {
+    "japanese": "水俣市",
+    "english": "Minamata City"
+  },
+  "4321200": {
+    "japanese": "上天草市",
+    "english": "Kamiamakusa City"
+  },
+  "4321500": {
+    "japanese": "天草市",
+    "english": "Amakusa City"
+  },
+  "4348200": {
+    "japanese": "芦北町",
+    "english": "Ashikita Town"
+  },
+  "4348400": {
+    "japanese": "津奈木町",
+    "english": "Tsunagi Town"
+  },
+  "4353100": {
+    "japanese": "苓北町",
+    "english": "Reihoku Town"
+  },
+  "4420300": {
+    "japanese": "中津市",
+    "english": "Nakatsu City"
+  },
+  "4420900": {
+    "japanese": "豊後高田市",
+    "english": "Bungotakada City"
+  },
+  "4421100": {
+    "japanese": "宇佐市",
+    "english": "Usa City"
+  },
+  "4421400": {
+    "japanese": "国東市",
+    "english": "Kunisaki City"
+  },
+  "4432200": {
+    "japanese": "姫島村",
+    "english": "Himeshima Village"
+  },
+  "4420100": {
+    "japanese": "大分市",
+    "english": "Oita City"
+  },
+  "4420200": {
+    "japanese": "別府市",
+    "english": "Beppu City"
+  },
+  "4420600": {
+    "japanese": "臼杵市",
+    "english": "Usuki City"
+  },
+  "4420700": {
+    "japanese": "津久見市",
+    "english": "Tsukumi City"
+  },
+  "4421000": {
+    "japanese": "杵築市",
+    "english": "Kitsuki City"
+  },
+  "4421300": {
+    "japanese": "由布市",
+    "english": "Yufu City"
+  },
+  "4434100": {
+    "japanese": "日出町",
+    "english": "Hiji Town"
+  },
+  "4420500": {
+    "japanese": "佐伯市",
+    "english": "Saiki City"
+  },
+  "4421200": {
+    "japanese": "豊後大野市",
+    "english": "Bungo Ohno City"
+  },
+  "4420400": {
+    "japanese": "日田市",
+    "english": "Hita City"
+  },
+  "4420800": {
+    "japanese": "竹田市",
+    "english": "Taketa City"
+  },
+  "4446100": {
+    "japanese": "九重町",
+    "english": "Kokonoe Town"
+  },
+  "4446200": {
+    "japanese": "玖珠町",
+    "english": "Kusu Town"
+  },
+  "4520300": {
+    "japanese": "延岡市",
+    "english": "Nobeoka City"
+  },
+  "4520600": {
+    "japanese": "日向市",
+    "english": "Hyuga City"
+  },
+  "4520800": {
+    "japanese": "西都市",
+    "english": "Saito City"
+  },
+  "4540100": {
+    "japanese": "高鍋町",
+    "english": "Takanabe Town"
+  },
+  "4540200": {
+    "japanese": "新富町",
+    "english": "Shintomi Town"
+  },
+  "4540400": {
+    "japanese": "木城町",
+    "english": "Kijo Town"
+  },
+  "4540500": {
+    "japanese": "川南町",
+    "english": "Kawaminami Town"
+  },
+  "4540600": {
+    "japanese": "宮崎都農町",
+    "english": "Tsuno Town, Miyazaki"
+  },
+  "4542100": {
+    "japanese": "門川町",
+    "english": "Kadogawa Town"
+  },
+  "4540300": {
+    "japanese": "西米良村",
+    "english": "Nishimera Village"
+  },
+  "4542900": {
+    "japanese": "諸塚村",
+    "english": "Morotsuka Village"
+  },
+  "4543000": {
+    "japanese": "椎葉村",
+    "english": "Shiiba Village"
+  },
+  "4543100": {
+    "japanese": "宮崎美郷町",
+    "english": "Misato Town, Miyazaki"
+  },
+  "4544100": {
+    "japanese": "高千穂町",
+    "english": "Takachiho Town"
+  },
+  "4544200": {
+    "japanese": "日之影町",
+    "english": "Hinokage Town"
+  },
+  "4544300": {
+    "japanese": "五ヶ瀬町",
+    "english": "Gokase Town"
+  },
+  "4520100": {
+    "japanese": "宮崎市",
+    "english": "Miyazaki City"
+  },
+  "4520400": {
+    "japanese": "日南市",
+    "english": "Nichinan City"
+  },
+  "4520700": {
+    "japanese": "串間市",
+    "english": "Kushima City"
+  },
+  "4538200": {
+    "japanese": "国富町",
+    "english": "Kunitomi Town"
+  },
+  "4538300": {
+    "japanese": "綾町",
+    "english": "Aya Town"
+  },
+  "4520200": {
+    "japanese": "都城市",
+    "english": "Miyakonojo City"
+  },
+  "4520500": {
+    "japanese": "小林市",
+    "english": "Kobayashi City"
+  },
+  "4520900": {
+    "japanese": "えびの市",
+    "english": "Ebino City"
+  },
+  "4534100": {
+    "japanese": "三股町",
+    "english": "Mimata Town"
+  },
+  "4536100": {
+    "japanese": "高原町",
+    "english": "Takaharu Town"
+  },
+  "4620100": {
+    "japanese": "鹿児島市",
+    "english": "Kagoshima City"
+  },
+  "4620400": {
+    "japanese": "枕崎市",
+    "english": "Makurazaki City"
+  },
+  "4620600": {
+    "japanese": "阿久根市",
+    "english": "Akune City"
+  },
+  "4620800": {
+    "japanese": "鹿児島出水市",
+    "english": "Izumi City, Kagoshima"
+  },
+  "4621000": {
+    "japanese": "指宿市",
+    "english": "Ibusuki City"
+  },
+  "4621501": {
+    "japanese": "薩摩川内市",
+    "english": "Satsumasendai City"
+  },
+  "4621600": {
+    "japanese": "日置市",
+    "english": "Hioki City"
+  },
+  "4621800": {
+    "japanese": "霧島市",
+    "english": "Kirishima City"
+  },
+  "4621900": {
+    "japanese": "いちき串木野市",
+    "english": "Ichikikushikino City"
+  },
+  "4622000": {
+    "japanese": "南さつま市",
+    "english": "Minamisatsuma City"
+  },
+  "4622300": {
+    "japanese": "南九州市",
+    "english": "Minamikyushu City"
+  },
+  "4622400": {
+    "japanese": "伊佐市",
+    "english": "Isa City"
+  },
+  "4622500": {
+    "japanese": "姶良市",
+    "english": "Aira City"
+  },
+  "4639200": {
+    "japanese": "さつま町",
+    "english": "Satsuma Town"
+  },
+  "4640400": {
+    "japanese": "長島町",
+    "english": "Nagashima Town"
+  },
+  "4645200": {
+    "japanese": "湧水町",
+    "english": "Yusui Town"
+  },
+  "4620300": {
+    "japanese": "鹿屋市",
+    "english": "Kanoya City"
+  },
+  "4621400": {
+    "japanese": "垂水市",
+    "english": "Tarumizu City"
+  },
+  "4621700": {
+    "japanese": "曽於市",
+    "english": "Soo City"
+  },
+  "4622100": {
+    "japanese": "志布志市",
+    "english": "Shibushi City"
+  },
+  "4646800": {
+    "japanese": "大崎町",
+    "english": "Osaki Town"
+  },
+  "4648200": {
+    "japanese": "東串良町",
+    "english": "Higashikushira Town"
+  },
+  "4649000": {
+    "japanese": "錦江町",
+    "english": "Kinko Town"
+  },
+  "4649100": {
+    "japanese": "南大隅町",
+    "english": "Minamiosumi Town"
+  },
+  "4649200": {
+    "japanese": "肝付町",
+    "english": "Kimotsuki Town"
+  },
+  "4630400": {
+    "japanese": "鹿児島十島村",
+    "english": "Toshima Village, Kagoshima"
+  },
+  "4621502": {
+    "japanese": "薩摩川内市甑島",
+    "english": "Koshikishima, Satsumasendai City "
+  },
+  "4621300": {
+    "japanese": "西之表市",
+    "english": "Nishinoomote City"
+  },
+  "4630300": {
+    "japanese": "三島村",
+    "english": "Mishima Village"
+  },
+  "4650100": {
+    "japanese": "中種子町",
+    "english": "Nakatane Town"
+  },
+  "4650200": {
+    "japanese": "南種子町",
+    "english": "Minamitane Town"
+  },
+  "4650500": {
+    "japanese": "屋久島町",
+    "english": "Yakushima Town"
+  },
+  "4622200": {
+    "japanese": "奄美市",
+    "english": "Amami City"
+  },
+  "4652300": {
+    "japanese": "大和村",
+    "english": "Yamato Village"
+  },
+  "4652400": {
+    "japanese": "宇検村",
+    "english": "Uken Village"
+  },
+  "4652500": {
+    "japanese": "瀬戸内町",
+    "english": "Setouchi Town"
+  },
+  "4652700": {
+    "japanese": "龍郷町",
+    "english": "Tatsugo Town"
+  },
+  "4652900": {
+    "japanese": "喜界町",
+    "english": "Kikai Town"
+  },
+  "4653000": {
+    "japanese": "徳之島町",
+    "english": "Tokunoshima Town"
+  },
+  "4653100": {
+    "japanese": "天城町",
+    "english": "Amagi Town"
+  },
+  "4653200": {
+    "japanese": "伊仙町",
+    "english": "Isen Town"
+  },
+  "4653300": {
+    "japanese": "和泊町",
+    "english": "Wadomari Town"
+  },
+  "4653400": {
+    "japanese": "知名町",
+    "english": "China Town"
+  },
+  "4653500": {
+    "japanese": "与論町",
+    "english": "Yoron Town"
+  },
+  "4720900": {
+    "japanese": "名護市",
+    "english": "Nago City"
+  },
+  "4730100": {
+    "japanese": "国頭村",
+    "english": "Kunigami Village"
+  },
+  "4730200": {
+    "japanese": "大宜味村",
+    "english": "Ogimi Village"
+  },
+  "4730300": {
+    "japanese": "東村",
+    "english": "Higashi Village"
+  },
+  "4730600": {
+    "japanese": "今帰仁村",
+    "english": "Nakijin Village"
+  },
+  "4730800": {
+    "japanese": "本部町",
+    "english": "Motobu Town"
+  },
+  "4731100": {
+    "japanese": "恩納村",
+    "english": "Onna Village"
+  },
+  "4731300": {
+    "japanese": "宜野座村",
+    "english": "Ginoza Village"
+  },
+  "4731400": {
+    "japanese": "金武町",
+    "english": "Kin Town"
+  },
+  "4731500": {
+    "japanese": "伊江村",
+    "english": "Ie Village"
+  },
+  "4735500": {
+    "japanese": "粟国村",
+    "english": "Aguni Village"
+  },
+  "4735900": {
+    "japanese": "伊平屋村",
+    "english": "Iheya Village"
+  },
+  "4736000": {
+    "japanese": "伊是名村",
+    "english": "Izena Village"
+  },
+  "4720100": {
+    "japanese": "那覇市",
+    "english": "Naha City"
+  },
+  "4720500": {
+    "japanese": "宜野湾市",
+    "english": "Ginowan City"
+  },
+  "4720800": {
+    "japanese": "浦添市",
+    "english": "Urasoe City"
+  },
+  "4721000": {
+    "japanese": "糸満市",
+    "english": "Itoman City"
+  },
+  "4721100": {
+    "japanese": "沖縄市",
+    "english": "Okinawa City"
+  },
+  "4721200": {
+    "japanese": "豊見城市",
+    "english": "Tomigusuku City"
+  },
+  "4721300": {
+    "japanese": "うるま市",
+    "english": "Uruma City"
+  },
+  "4721500": {
+    "japanese": "南城市",
+    "english": "Nanjo City"
+  },
+  "4732400": {
+    "japanese": "読谷村",
+    "english": "Yomitan Village"
+  },
+  "4732500": {
+    "japanese": "嘉手納町",
+    "english": "Kadena Town"
+  },
+  "4732600": {
+    "japanese": "北谷町",
+    "english": "Chatan Town"
+  },
+  "4732700": {
+    "japanese": "北中城村",
+    "english": "Kitanakagusuku Village"
+  },
+  "4732800": {
+    "japanese": "中城村",
+    "english": "Nakagusuku Village"
+  },
+  "4732900": {
+    "japanese": "西原町",
+    "english": "Nishihara Town"
+  },
+  "4734800": {
+    "japanese": "与那原町",
+    "english": "Yonabaru Town"
+  },
+  "4735000": {
+    "japanese": "南風原町",
+    "english": "Haebaru Town"
+  },
+  "4735300": {
+    "japanese": "渡嘉敷村",
+    "english": "Tokashiki Village"
+  },
+  "4735400": {
+    "japanese": "座間味村",
+    "english": "Zamami Village"
+  },
+  "4735600": {
+    "japanese": "渡名喜村",
+    "english": "Tonaki Village"
+  },
+  "4736200": {
+    "japanese": "八重瀬町",
+    "english": "Yaese Town"
+  },
+  "4736100": {
+    "japanese": "久米島町",
+    "english": "Kumejima Town"
+  },
+  "4735700": {
+    "japanese": "南大東村",
+    "english": "Minamidaito Village"
+  },
+  "4735800": {
+    "japanese": "北大東村",
+    "english": "Kitadaito Village"
+  },
+  "4721400": {
+    "japanese": "宮古島市",
+    "english": "Miyakojima City"
+  },
+  "4737500": {
+    "japanese": "多良間村",
+    "english": "Tarama Village"
+  },
+  "4720700": {
+    "japanese": "石垣市",
+    "english": "Ishigaki City"
+  },
+  "4738200": {
+    "japanese": "与那国町",
+    "english": "Yonaguni Town"
+  },
+  "4738100": {
+    "japanese": "竹富町",
+    "english": "Taketomi Town"
+  }
+}

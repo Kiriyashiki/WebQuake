@@ -1,0 +1,370 @@
+11;北海道地方;ほっかいどうちほう;Hokkaido Region
+12;東北地方;とうほくちほう;Tohoku Region
+13;北陸地方;ほくりくちほう;Hokuriku Region
+14;関東甲信地方;かんとうこうしんちほう;Kanto Koshin Region
+15;小笠原地方;おがさわらちほう;Ogasawara Region
+16;東海地方;とうかいちほう;Tokai Region
+17;近畿地方;きんきちほう;Kinki Region
+18;中国地方;ちゅうごくちほう;Chugoku Region
+19;四国地方;しこくちほう;Shikoku Region
+20;九州地方;きゅうしゅうちほう;Kyushu Region
+21;沖縄地方;おきなわちほう;Okinawa Region
+100;石狩地方北部;いしかりちほうほくぶ;Northern Part of Ishikari
+101;石狩地方中部;いしかりちほうちゅうぶ;Central Part of Ishikari
+102;石狩地方南部;いしかりちほうなんぶ;Southern Part of Ishikari
+105;渡島地方北部;おしまちほうほくぶ;Northern Part of Oshima
+106;渡島地方東部;おしまちほうひがしぶ;Eastern Part of Oshima
+107;渡島地方西部;おしまちほうにしぶ;Western Part of Oshima
+110;檜山地方;ひやまちほう;Hiyama Region
+115;後志地方北部;しりべしちほうほくぶ;Northern Shiribeshi
+116;後志地方東部;しりべしちほうひがしぶ;Eastern Shiribeshi
+117;後志地方西部;しりべしちほうにしぶ;Western Shiribeshi
+119;北海道奥尻島;ほっかいどうおくしりとう;Hokkaido Okushiri Island
+120;空知地方北部;そらちちほうほくぶ;Northern Part of Sorachi
+121;空知地方中部;そらちちほうちゅうぶ;Central Part of Sorachi
+122;空知地方南部;そらちちほうなんぶ;Southern Part of Sorachi
+125;上川地方北部;かみかわちほうほくぶ;Northern Part of Kamikawa
+126;上川地方中部;かみかわちほうちゅうぶ;Central Part of Kamikawa
+127;上川地方南部;かみかわちほうなんぶ;Southern Part of Kamikawa
+130;留萌地方中北部;るもいちほうちゅうほくぶ;Northern Central Rumoi
+131;留萌地方南部;るもいちほうなんぶ;Southern Part of Rumoi
+135;宗谷地方北部;そうやちほうほくぶ;Northern Part of Soya
+136;宗谷地方南部;そうやちほうなんぶ;Southern Part of Soya
+139;北海道利尻礼文;ほっかいどうりしりれぶん;Hokkaido Rishiri Ribun Island 
+140;網走地方;あばしりちほう;Abashiri Region
+141;北見地方;きたみちほう;Kitami Region
+142;紋別地方;もんべつちほう;Mombetsu Region
+145;胆振地方西部;いぶりちほうにしぶ;Western Part of Iburi
+146;胆振地方中東部;いぶりちほうちゅうとうぶ;Central Eastern Iburi
+150;日高地方西部;ひだかちほうにしぶ;Western Part of Hidaka
+151;日高地方中部;ひだかちほうちゅうぶ;Central Part of Hidaka
+152;日高地方東部;ひだかちほうひがしぶ;Eastern Part of Hidaka
+155;十勝地方北部;とかちちほうほくぶ;Northern Part of Tokachi
+156;十勝地方中部;とかちちほうちゅうぶ;Central Part of Tokachi
+157;十勝地方南部;とかちちほうなんぶ;Southern Part of Tokachi
+160;釧路地方北部;くしろちほうほくぶ;Northern Part of Kushiro
+161;釧路地方中南部;くしろちほうちゅうなんぶ;Southern Central Kushiro
+165;根室地方北部;ねむろちほうほくぶ;Northern Part of Nemuro
+166;根室地方中部;ねむろちほうちゅうぶ;Central Part of Nemuro
+167;根室地方南部;ねむろちほうなんぶ;Southern Part of Nemuro
+180;北海道南西沖;ほっかいどうなんせいおき;Off South-Western Coast of Hokkaido
+181;北海道西方沖;ほっかいどうせいほうおき;Off Western Coast of Hokkaido
+182;石狩湾;いしかりわん;Ishikari Bay
+183;北海道北西沖;ほっかいどうほくせいおき;Off North-Western Coast of Hokkaido
+184;宗谷海峡;そうやかいきょう;Soya Strait
+186;国後島付近;くなしりとうふきん;Sea near Kunashiri Island
+187;択捉島付近;えとろふとうふきん;Sea near Etorofu Island
+188;北海道東方沖;ほっかいどうとうほうおき;Off Eastern Coast of Hokkaido
+189;根室半島南東沖;ねむろはんとうなんとうおき;Off South-Eastern Coast of Nemuro Peninsula
+190;釧路沖;くしろおき;Off the Coast of Kushiro
+191;十勝沖;とかちおき;Off the Coast of Tokachi
+192;浦河沖;うらかわおき;Off the Coast of Urakawa
+193;苫小牧沖;とまこまいおき;Off the Coast of Tomakomai
+194;内浦湾;うちうらわん;Uchiura Bay
+195;宗谷東方沖;そうやとうほうおき;Off the Coast of Soya
+196;網走沖;あばしりおき;Off the Coast of Abashiri
+197;択捉島南東沖;えとろふとうなんとうおき;Off South-Eastern Coast of Etorofu
+200;青森県津軽北部;あおもりけんつがるほくぶ;Aomori Pref. Northern Part of Tsugaru
+201;青森県津軽南部;あおもりけんつがるなんぶ;Aomori Pref. Southern Part of Tsugaru
+202;青森県三八上北地方;あおもりけんさんぱちかみきたちほう;Aomori Pref. Sampachi-Kamikita Region
+203;青森県下北地方;あおもりけんしもきたちほう;Aomori Pref. Shimokita Region
+210;岩手県沿岸北部;いわてけんえんがんほくぶ;Northern Coastal Part of Iwate Pref.
+211;岩手県沿岸南部;いわてけんえんがんなんぶ;Southern Coastal Part of Iwate Pref.
+212;岩手県内陸北部;いわてけんないりくほくぶ;Northern Inland Part of Iwate Pref.
+213;岩手県内陸南部;いわてけんないりくなんぶ;Southern Inland Part of Iwate Pref.
+220;宮城県北部;みやぎけんほくぶ;Northern Part of Miyagi Pref.
+221;宮城県南部;みやぎけんなんぶ;Southern Part of Miyagi Pref.
+222;宮城県中部;みやぎけんちゅうぶ;Central Part of Miyagi Pref.
+230;秋田県沿岸北部;あきたけんえんがんほくぶ;Northern Coastal Part of Akita Pref.
+231;秋田県沿岸南部;あきたけんえんがんなんぶ;Southern Coastal Part of Akita Pref.
+232;秋田県内陸北部;あきたけんないりくほくぶ;Northern Inland Part of Akita Pref.
+233;秋田県内陸南部;あきたけんないりくなんぶ;Southern Inland Part of Akita Pref.
+240;山形県庄内地方;やまがたけんしょうないちほう;Yamagata Pref. Shonai Region
+241;山形県最上地方;やまがたけんもがみちほう;Yamagata Pref. Mogami Region
+242;山形県村山地方;やまがたけんむらやまちほう;Yamagata Pref. Murayama Region
+243;山形県置賜地方;やまがたけんおきたまちほう;Yamagata Pref. Okitama Region
+250;福島県中通り;ふくしまけんなかどおり;Fukushima Pref. Nakadoori Region
+251;福島県浜通り;ふくしまけんはまどおり;Fukushima Pref. Hamadoori Region
+252;福島県会津;ふくしまけんあいづ;Fukushima Pref. Aizu Region
+280;津軽海峡;つがるかいきょう;Tsugaru Strait
+281;山形県沖;やまがたけんおき;Off the Coast of Yamagata Pref.
+282;秋田県沖;あきたけんおき;Off the Coast of Akita Pref
+283;青森県西方沖;あおもりけんせいほうおき;Off Western Coast of Aomori Pref.
+284;陸奥湾;むつわん;Mutsu Bay
+285;青森県東方沖;あおもりけんとうほうおき;Off Eastern Coast of Aomori Pref.
+286;岩手県沖;いわてけんおき;Off the Coast of Iwate Pref.
+287;宮城県沖;みやぎけんおき;Off the Coast of Miyagi Pref.
+288;三陸沖;さんりくおき;Off the Sanriku Coast
+289;福島県沖;ふくしまけんおき;Off the Coast of Fukushima Pref.
+300;茨城県北部;いばらきけんほくぶ;Northern Part of Ibaraki Pref.
+301;茨城県南部;いばらきけんなんぶ;Southern Part of Ibaraki Pref.
+309;千葉県南東沖;ちばけんなんとうおき;Off South-Eastern of Chiba Pref.
+310;栃木県北部;とちぎけんほくぶ;Northern Part of Tochigi Pref.
+311;栃木県南部;とちぎけんなんぶ;Southern Part of Tochigi Pref.
+320;群馬県北部;ぐんまけんほくぶ;Northern Part of Gumma Pref.
+321;群馬県南部;ぐんまけんなんぶ;Southern Part of Gunma Pref.
+330;埼玉県北部;さいたまけんほくぶ;Northern Part of Saitama Pref.
+331;埼玉県南部;さいたまけんなんぶ;Southern Part of Saitama Pref.
+332;埼玉県秩父地方;さいたまけんちちぶちほう;Saitama Pref. Chichibu Region
+340;千葉県北東部;ちばけんほくとうぶ;North-Eastern Part of Chiba Pref.
+341;千葉県北西部;ちばけんほくせいぶ;North-Western Part of Chiba Pref.
+342;千葉県南部;ちばけんなんぶ;Southern Part of Chiba Pref.
+349;房総半島南方沖;ぼうそうはんとうなんぽうおき;Off the Coast of Boso Peninsula
+350;東京都２３区;とうきょうとにじゅうさんく;Tokyo 23 Wards
+351;東京都多摩東部;とうきょうとたまひがしぶ;Tokyo Eastern Tama Region
+352;東京都多摩西部;とうきょうとたまにしぶ;Tokyo Western Tama Region
+354;神津島;こうづしま;Kozushima Island
+355;伊豆大島;いずおおしま;Izu Oshima Island
+356;新島;にいじま;Niijima Island
+357;三宅島;みやけじま;Miyakejima Island
+358;八丈島;はちじょうじま;Hachijojima Island
+359;小笠原;おがさわら;Ogasawara Island
+360;神奈川県東部;かながわけんひがしぶ;Eastern Part of Kanagawa Pref.
+361;神奈川県西部;かながわけんにしぶ;Western Part of Kanagawa Pref.
+370;新潟県上越地方;にいがたけんじょうえつちほう;Niigata Pref. Joetsu Region
+371;新潟県中越地方;にいがたけんちゅうえつちほう;Niigata Pref. Chuetsu Region
+372;新潟県下越地方;にいがたけんかえつちほう;Niigata Pref. Kaetsu Region
+375;新潟県佐渡;にいがたけんさど;Niigata Pref. Sado Island
+378;新潟県下越沖;にいがたけんかえつおき;Off the Coast of Niigata Pref. Kaetsu
+379;新潟県上中越沖;にいがたけんじょうちゅうえつおき;Off the Coast of Niigata Pref. Jochuetsu
+380;富山県東部;とやまけんひがしぶ;Eastern Part of Toyama Pref.
+381;富山県西部;とやまけんにしぶ;Western Part of Toyama Pref.
+390;石川県能登地方;いしかわけんのとちほう;Ishikawa Pref. Noto Region
+391;石川県加賀地方;いしかわけんかがちほう;Ishikawa Pref. Kaga Region
+400;福井県嶺北;ふくいけんれいほく;Fukui Pref. Reihoku Region
+401;福井県嶺南;ふくいけんれいなん;Fukui Pref. Reinan Region
+411;山梨県中・西部;やまなしけんちゅう・せいぶ;Western-Central Yamanashi Pref
+412;山梨県東部・富士五湖;やまなしけんひがしぶ・ふじごこ;Eastern Yamanashi Pref. Fujigoko
+420;長野県北部;ながのけんほくぶ;Northern Part of Nagano Pref.
+421;長野県中部;ながのけんちゅうぶ;Central Part of Nagano Pref.
+422;長野県南部;ながのけんなんぶ;Southern Part of Nagano Pref.
+430;岐阜県飛騨地方;ぎふけんひだちほう;Gifu Pref. Hida Region
+431;岐阜県美濃東部;ぎふけんみのひがしぶ;Gifu Pref. Eastern Part of Mino
+432;岐阜県美濃中西部;ぎふけんみのちゅうせいぶ;Gifu Pref. Western-Central Part of Mino
+440;静岡県伊豆地方;しずおかけんいずちほう;Shizuoka Pref. Izu Region
+441;静岡県東部;しずおかけんひがしぶ;Eastern Part of Shizuoka Pref.
+442;静岡県中部;しずおかけんちゅうぶ;Central Part of Shizuoka Pref.
+443;静岡県西部;しずおかけんにしぶ;Western Part of Shizuoka Pref.
+450;愛知県東部;あいちけんひがしぶ;Eastern Part of Aichi Pref.
+451;愛知県西部;あいちけんにしぶ;Western Part of Aichi Pref.
+460;三重県北部;みえけんほくぶ;Northern Part of Mie Pref.
+461;三重県中部;みえけんちゅうぶ;Central Part of Mie Pref.
+462;三重県南部;みえけんなんぶ;Southern Part of Mie Pref.
+469;三重県南東沖;みえけんなんとうおき;Off South-Eastern Coast of Mie Pref.
+471;茨城県沖;いばらきけんおき;Off the Coast of Ibaraki Pref.
+472;関東東方沖;かんとうとうほうおき;Off Eastern Coast of Kanto
+473;千葉県東方沖;ちばけんとうほうおき;Off Eastern Coast of Chiba Pref.
+475;八丈島東方沖;はちじょうじまとうほうおき;Off Eastern Coast of Hachijojima Island
+476;八丈島近海;はちじょうじまきんかい;Sea near Hachijojima Island
+477;東京湾;とうきょうわん;Tokyo Bay
+478;相模湾;さがみわん;Sagami Bay
+480;伊豆大島近海;いずおおしまきんかい;Sea near Izu Oshima Island 
+481;伊豆半島東方沖;いずはんとうとうほうおき;Off Eastern Coast of Izu Peninsula
+482;三宅島近海;みやけじまきんかい;Sea near Miyakejima Island
+483;新島・神津島近海;にいじま・こうづしまきんかい;Sea near Niijima and Kozu Island
+485;駿河湾;するがわん;Suruga Bay
+486;駿河湾南方沖;するがわんなんぽうおき;South of Suruga Bay
+487;遠州灘;えんしゅうなだ;Enshu-nada Sea
+489;三河湾;みかわわん;Mikawa Bay
+490;伊勢湾;いせわん;Ise Bay
+492;若狭湾;わかさわん;Wakasa Bay
+493;福井県沖;ふくいけんおき;Off Fukui Pref.
+494;石川県西方沖;いしかわけんせいほうおき;Off Western Coast of Ishikawa Pref.
+495;能登半島沖;のとはんとうおき;Off the Coast of Noto Peninsula
+497;富山湾;とやまわん;Toyama Bay
+498;佐渡付近;さどふきん;Sea near Sado Island
+499;東海道南方沖;とうかいどうなんぽうおき;Off Southern Coast of Tokaido
+500;滋賀県北部;しがけんほくぶ;Northern Part of Shiga Pref.
+501;滋賀県南部;しがけんなんぶ;Southern Part of Shiga Pref.
+510;京都府北部;きょうとふほくぶ;Northern Part of Kyoto Pref.
+511;京都府南部;きょうとふなんぶ;Southern Part of Kyoto Pref.
+520;大阪府北部;おおさかふほくぶ;Northern Part of Osaka Pref.
+521;大阪府南部;おおさかふなんぶ;Southern Part of Osaka Pref.
+530;兵庫県北部;ひょうごけんほくぶ;Northern Part of Hyogo Pref.
+531;兵庫県南東部;ひょうごけんなんとうぶ;South Eastern Part of Hyogo Pref.
+532;兵庫県南西部;ひょうごけんなんせいぶ;South Western Part of Hyogo Pref.
+535;兵庫県淡路島;ひょうごけんあわじしま;Hyogo Pref. Awaji Island
+540;奈良県;ならけん;Nara Pref.
+550;和歌山県北部;わかやまけんほくぶ;Northern Part of Wakayama Pref.
+551;和歌山県南部;わかやまけんなんぶ;Southern Part of Wakayama Pref.
+560;鳥取県東部;とっとりけんひがしぶ;Eastern Part of Tottori Pref.
+562;鳥取県中部;とっとりけんちゅうぶ;Central Part of Tottori Pref.
+563;鳥取県西部;とっとりけんにしぶ;Western Part of Tottori Pref.
+570;島根県東部;しまねけんひがしぶ;Eastern Part of Shimane Pref.
+571;島根県西部;しまねけんにしぶ;Western Part of Shimane Pref.
+575;島根県隠岐;しまねけんおき;Shimane Pref. Oki Islands
+580;岡山県北部;おかやまけんほくぶ;Northern Part of Okayama Pref.
+581;岡山県南部;おかやまけんなんぶ;Southern Part of Okayama Pref.
+590;広島県北部;ひろしまけんほくぶ;Northern Part of Hiroshima Pref.
+591;広島県南東部;ひろしまけんなんとうぶ;South-Eastern Hiroshima Pref.
+592;広島県南西部;ひろしまけんなんせいぶ;South-Western Hiroshima Pref.
+600;徳島県北部;とくしまけんほくぶ;Northern Part of Tokushima Pref.
+601;徳島県南部;とくしまけんなんぶ;Southern Part of Tokushima Pref.
+610;香川県東部;かがわけんひがしぶ;Eastern Part of Kagawa Pref.
+611;香川県西部;かがわけんにしぶ;Western Part of  Kagawa Pref.
+620;愛媛県東予;えひめけんとうよ;Ehime Pref. Toyo Region
+621;愛媛県中予;えひめけんちゅうよ;Ehime Pref. Chuyo Region
+622;愛媛県南予;えひめけんなんよ;Ehime Pref. Nanyo Region
+630;高知県東部;こうちけんひがしぶ;Eastern Part of Kochi Pref.
+631;高知県中部;こうちけんちゅうぶ;Central Part of Kochi Pref.
+632;高知県西部;こうちけんにしぶ;Western Part of Kochi Pref.
+673;土佐湾;とさわん;Tosa Bay
+674;紀伊水道;きいすいどう;Kii Channel
+675;大阪湾;おおさかわん;Osaka Bay
+676;播磨灘;はりまなだ;Harima Sea
+677;瀬戸内海中部;せとないかいちゅうぶ;Central Seto Inland Sea
+678;安芸灘;あきなだ;Aki-nada Sea
+679;周防灘;すおうなだ;Suo-nada Sea
+680;伊予灘;いよなだ;Iyo-nada Sea
+681;豊後水道;ぶんごすいどう;Bungo Channel
+682;山口県北西沖;やまぐちけんほくせいおき;Off North-Western Coast of Yamaguchi Pref.
+683;島根県沖;しまねけんおき;Off the Coast of Shimane Pref.
+684;鳥取県沖;とっとりけんおき;Off the Coast of Tottori Pref.
+685;隠岐島近海;おきしまきんかい;Seas near Oki Islands
+686;兵庫県北方沖;ひょうごけんほっぽうおき;Off Northern Coast of Hyogo Pref.
+687;京都府沖;きょうとふおき;Off the Coast of Kyoto Pref.
+688;淡路島付近;あわじしまふきん;Sea near Awaji Island
+689;和歌山県南方沖;わかやまけんなんぽうおき;Off South of Wakayama Pref.
+700;山口県北部;やまぐちけんほくぶ;Northern Part of Yamaguchi Pref.
+702;山口県西部;やまぐちけんにしぶ;Western Part of Yamaguchi Pref.
+703;山口県東部;やまぐちけんひがしぶ;Eastern Part of Yamaguchi Pref.
+704;山口県中部;やまぐちけんちゅうぶ;Central Part of Yamaguchi Pref.
+710;福岡県福岡地方;ふくおかけんふくおかちほう;Fukuoka Pref. Fukuoka Region
+711;福岡県北九州地方;ふくおかけんきたきゅうしゅうちほう;Fukuoka Pref. Kitakyushu Region
+712;福岡県筑豊地方;ふくおかけんちくほうちほう;Fukuoka Pref. Chikuho Region
+713;福岡県筑後地方;ふくおかけんちくごちほう;Fukuoka Pref. Chikugo Region
+720;佐賀県北部;さがけんほくぶ;Northern Part of Saga Pref.
+721;佐賀県南部;さがけんなんぶ;Southern Part of Saga Pref.
+730;長崎県北部;ながさきけんほくぶ;Northern Part of Nagasaki Pref.
+731;長崎県南西部;ながさきけんなんせいぶ;South-Western Part of Nagasaki Pref.
+732;長崎県島原半島;ながさきけんしまばらはんとう;Nagasaki Pref. Shimabara Peninsula
+735;長崎県対馬;ながさきけんつしま;Nagasaki Pref. Tsushima Island
+736;長崎県壱岐;ながさきけんいき;Nagasaki Pref. Iki Island Region
+737;長崎県五島;ながさきけんごとう;Nagasaki Pref. Goto Islands Region
+740;熊本県阿蘇地方;くまもとけんあそちほう;Kumamoto Pref. Aso Region
+741;熊本県熊本地方;くまもとけんくまもとちほう;Kumamoto Pref. Kumamoto Region
+742;熊本県球磨地方;くまもとけんくまちほう;Kumamoto Pref. Kuma Region
+743;熊本県天草・芦北地方;くまもとけんあまくさ・あしきたちほう;Kumamoto Pref. Amakusa-Ashikita
+750;大分県北部;おおいたけんほくぶ;Northern Part of Oita Pref.
+751;大分県中部;おおいたけんちゅうぶ;Central Part of Oita Pref.
+752;大分県南部;おおいたけんなんぶ;Southern Part of Oita Pref.
+753;大分県西部;おおいたけんにしぶ;Western Part of Oita Pref.
+760;宮崎県北部平野部;みやざきけんほくぶへいやぶ;Miyazaki Pref. Northern Heiyabu
+761;宮崎県北部山沿い;みやざきけんほくぶやまぞい;Miyazaki Pref. Northern Yamazoi
+762;宮崎県南部平野部;みやざきけんなんぶへいやぶ;Miyazaki Pref. Southern Heiyabu
+763;宮崎県南部山沿い;みやざきけんなんぶやまぞい;Miyazaki Pref. Southern Yamazoi
+770;鹿児島県薩摩地方;かごしまけんさつまちほう;Kagoshima Pref. Satsuma Region
+771;鹿児島県大隅地方;かごしまけんおおすみちほう;Kagoshima Pref. Osumi Region
+774;鹿児島県十島村;かごしまけんとしまむら;Kagoshima Pref. Toshima Islands
+775;鹿児島県甑島;かごしまけんこしきじま;Kagoshima Pref. Koshikijima Islands
+776;鹿児島県種子島;かごしまけんたねがしま;Kagoshima Pref. Tanegashima Islands
+777;鹿児島県屋久島;かごしまけんやくしま;Kagoshima Pref. Yakushima Islands Region
+778;鹿児島県奄美北部;かごしまけんあまみほくぶ;Kagoshima Pref. Northern Part of Amami
+779;鹿児島県奄美南部;かごしまけんあまみなんぶ;Kagoshima Pref. Southern Part of Amami
+783;五島列島近海;ごとうれっとうきんかい;Sea near Goto Islands
+784;天草灘;あまくさなだ;Amakusa Sea
+785;有明海;ありあけかい;Ariake Sea
+786;橘湾;たちばなわん;Tachibana Bay
+787;鹿児島湾;かごしまわん;Kagoshima Bay
+790;種子島近海;たねがしまきんかい;Sea near Tanegashima
+791;日向灘;ひゅうがなだ;Hyuga Sea
+793;奄美大島近海;あまみおおしまきんかい;Sea near Amami Island
+795;壱岐・対馬近海;いき・つしまきんかい;Sea near Iki and Tsushima Islands
+796;福岡県北西沖;ふくおかけんほくせいおき;Off North-Western Coast of Fukuoka Pref.
+797;薩摩半島西方沖;さつまはんとうせいほうおき;Off Western Coast of Satsuma Peninsula
+798;トカラ列島近海;とかられっとうきんかい;Sea near Tokara Islands
+799;奄美大島北西沖;あまみおおしまほくせいおき;Off North-Western Coast of Amami Island
+800;沖縄県本島北部;おきなわけんほんとうほくぶ;Northern Part of Okinawa Main Island
+801;沖縄県本島中南部;おきなわけんほんとうちゅうなんぶ;South-Central Okinawa Main Island
+802;沖縄県久米島;おきなわけんくめじま;Okinawa Pref. Kume Island
+804;沖縄県宮古島;おきなわけんみやこじま;Okinawa Pref. Miyako Island
+805;沖縄県石垣島;おきなわけんいしがきじま;Okinawa Pref. Ishigaki Island
+806;沖縄県与那国島;おきなわけんよなぐにじま;Okinawa Pref. Yonaguni Island
+807;沖縄県西表島;おきなわけんいりおもてじま;Okinawa Pref. Iriomote Island
+820;大隅半島東方沖;おおすみはんとうとうほうおき;Off Eastern Coast of Osumi Peninsula
+821;九州地方南東沖;きゅうしゅうちほうなんとうおき;Off South-Eastern Coast of Kyushu 
+822;種子島南東沖;たねがしまなんとうおき;Off the Coast of Tanegashima
+823;奄美大島北東沖;あまみおおしまほくとうおき;Off North-Eastern Coast of Amami Island
+850;沖縄本島近海;おきなわほんとうきんかい;Sea near Okinawa Main Island
+851;南大東島近海;みなみだいとうじまきんかい;Sea near Southern Daito Islands
+852;沖縄本島南方沖;おきなわほんとうなんぽうおき;Off the Coast of Okinawa Main Island
+853;宮古島近海;みやこじまきんかい;Sea near Miyako Island
+854;石垣島近海;いしがきじまきんかい;Sea near Ishigaki Island
+855;石垣島南方沖;いしがきじまなんぽうおき;Off Southern Coast of Ishigaki Island
+856;西表島付近;いりおもてじまふきん;Sea near Iriomote Island
+857;与那国島近海;よなぐにじまきんかい;Sea near Yonaguni Island
+858;沖縄本島北西沖;おきなわほんとうほくせいおき;Off North-Western Coast of Okinawa Main Island
+859;宮古島北西沖;みやこじまほくせいおき;Off North-Western Coast of Miyako Island
+860;石垣島北西沖;いしがきじまほくせいおき;Off North-Western Coast of Ishigakijima
+900;台湾付近;たいわんふきん;Near Taiwan
+901;東シナ海;ひがししなかい;Eastern Chinese Sea
+902;四国沖;しこくおき;Off the Coast of Shikoku
+903;鳥島近海;とりしまきんかい;Sea near Torishima Island
+904;鳥島東方沖;とりしまとうほうおき;Off the Coast of Torishima
+905;オホーツク海南部;おほーつくかいなんぶ;South Okhotsk Sea
+906;サハリン西方沖;さはりんせいほうおき;Off the Western Coast of Sakhalin
+907;日本海北部;にほんかいほくぶ;North Sea of Japan 
+908;日本海中部;にほんかいちゅうぶ;Central Sea of Japan
+909;日本海西部;にほんかいせいぶ;West Sea of Japan
+911;父島近海;ちちじまきんかい;Sea near Chichijima Island
+912;千島列島;ちしまれっとう;Kuril Islands
+913;千島列島南東沖;ちしまれっとうなんとうおき;Off South-Eastern Coast of Kuril Islands
+914;北海道南東沖;ほっかいどうなんとうおき;Off South-Eastern Coast of Hokkaido
+915;東北地方東方沖;とうほくちほうとうほうおき;Off Eastern Coast of Tohoku
+916;小笠原諸島西方沖;おがさわらしょとうせいほうおき;Off Western Coast of Ogasawara Islands
+917;硫黄島近海;いおうとうきんかい;Sea near Iwo Jima Islands
+918;小笠原諸島東方沖;おがさわらしょとうとうほうおき;Off Eastern Coast of Ogasawara Islands
+919;南海道南方沖;なんかいどうなんぽうおき;Off Southern Coast of Nankaido
+920;薩南諸島東方沖;さつなんしょとうとうほうおき;Off Eastern Coast of Satsunan Islands
+921;本州南方沖;ほんしゅうなんぽうおき;Off South-Eastern Coast of Honshu
+922;サハリン南部付近;さはりんなんぶふきん;Sea near Southern Part of Sakhalin
+930;北西太平洋;ほくせいたいへいよう;North-Western Pacific Ocean
+932;マリアナ諸島;まりあなしょとう;Mariana Islands
+933;黄海;こうかい;Yellow Sea
+934;朝鮮半島南部;ちょうせんはんとうなんぶ;Southern Part of Korean Peninsula
+935;朝鮮半島北部;ちょうせんはんとうほくぶ;Northern Part of Korean Peninsula
+936;中国東北部;ちゅうごくとうほくぶ;North-Eastern Part of China
+937;ウラジオストク付近;うらじおすとくふきん;Sea near Vladivostok
+938;シベリア南部;しべりあなんぶ;Southern Siberia
+939;サハリン近海;さはりんきんかい;Sea of Sakhalin
+940;アリューシャン列島;ありゅーしゃんれっとう;Aleutian Islands
+941;カムチャツカ半島付近;かむちゃつかはんとうふきん;Near the Kamchatka Peninsula
+942;北米西部;ほくべいせいぶ;Western Part of North America
+943;北米中部;ほくべいちゅうぶ;Central Part of North America
+944;北米東部;ほくべいとうぶ;Eastern Part of North America
+945;中米;ちゅうべい;Central America
+946;南米西部;なんべいせいぶ;Western Part of South America
+947;南米中部;なんべいちゅうぶ;Central Part of South America
+948;南米東部;なんべいとうぶ;Eastern Part of South America
+949;北東太平洋;ほくとうたいへいよう;North-Eastern Pacific Ocean
+950;南太平洋;みなみたいへいよう;Southern Pacific Ocean
+951;インドシナ半島付近;いんどしなはんとうふきん;Near the Indochinese Peninsula
+952;フィリピン付近;ふぃりぴんふきん;Near the Philippines
+953;インドネシア付近;いんどねしあふきん;Near Indonesia
+954;グアム付近;ぐあむふきん;Near Guam
+955;ニューギニア付近;にゅーぎにあふきん;Near New Guinea
+956;ニュージーランド付近;にゅーじーらんどふきん;Near New Zealand
+957;オーストラリア付近;おーすとらりあふきん;Near Australia
+958;シベリア付近;しべりあふきん;Near Siberia
+959;ロシア西部;ろしあせいぶ;Western Part of Russia
+960;ロシア中部;ろしあちゅうぶ;Central Part of Russia
+961;ロシア東部;ろしあとうぶ;Eastern Part of Russia
+962;中央アジア;ちゅうおうあじあ;Central Part of Asia
+963;中国西部;ちゅうごくせいぶ;Western Part of China
+964;中国中部;ちゅうごくちゅうぶ;Central Part of China
+965;中国東部;ちゅうごくとうぶ;Eastern Part of China
+966;インド付近;いんどふきん;Near India
+967;インド洋;いんどよう;Indian Ocean
+968;中東;ちゅうとう;Middle East
+969;ヨーロッパ西部;よーろっぱせいぶ;Western Part of Europe
+970;ヨーロッパ中部;よーろっぱちゅうぶ;Central Part of Europe
+971;ヨーロッパ東部;よーろっぱとうぶ;Eastern Part of Europe
+972;地中海;ちちゅうかい;Mediterranean Sea
+973;アフリカ西部;あふりかせいぶ;Western Part of Africa
+974;アフリカ中部;あふりかちゅうぶ;Central Part of Africa
+975;アフリカ東部;あふりかとうぶ;Eastern Part of Africa
+976;北大西洋;きたたいせいよう;Northern Atlantic Ocean
+977;南大西洋;みなみたいせいよう;Southern Atlantic Ocean
+978;北極付近;ほっきょくふきん;Near the North Pole
+979;南極付近;なんきょくふきん;Near the South Pole
+999;遠地;えんち;Distant

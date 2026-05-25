@@ -1,0 +1,73 @@
+/* ── Map Legend ──────────────────────────────────────────────────── */
+
+#map-legend {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  background: rgba(11, 16, 24, 0.85);
+  border: 1px solid var(--border-hi);
+  border-radius: 4px;
+  padding: 10px 12px;
+  backdrop-filter: blur(8px);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+
+.legend-title {
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.legend-items {
+  display: flex;
+  gap: 6px;
+}
+
+.legend-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-item img {
+  width: 20px;
+  height: 20px;
+  image-rendering: auto;
+  border-radius: 2px;
+}
+
+.legend-item span {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.legend-divider {
+  height: 1px;
+  background: var(--border-hi);
+  margin: 2px 0;
+}
+
+.epicenter-legend {
+  flex-direction: row;
+  justify-content: center;
+  gap: 8px;
+}
+
+.epicenter-legend img {
+  width: 18px;
+  height: 18px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.epicenter-legend span {
+  font-size: 11px;
+  color: var(--text-dim);
+}

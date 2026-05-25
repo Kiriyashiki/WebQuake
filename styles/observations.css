@@ -1,0 +1,216 @@
+/* ── Observations List ──────────────────────────────────────────── */
+
+.observations-list-wrapper {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+}
+
+.observations-list-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.observations-list-header:hover {
+  background: rgba(240, 165, 0, 0.08);
+}
+
+.observations-list-toggle {
+  color: var(--accent2);
+  font-size: 11px;
+  width: 12px;
+  display: inline-block;
+  text-align: center;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.observations-list-toggle.rotated {
+  transform: rotate(90deg);
+}
+
+.observations-list-label {
+  color: var(--accent2);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.observations-list-container {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 400px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-hi) transparent;
+  font-size: 12px;
+  transition: max-height 0.2s ease, opacity 0.2s ease, padding 0.2s ease;
+}
+
+.observations-list-container.collapsed {
+  max-height: 0;
+  overflow: hidden;
+  padding: 0;
+  opacity: 0;
+}
+
+/* Mobile: collapse observations list by default */
+@media (max-width: 768px) {
+  .observations-list-container.collapsed {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0;
+    opacity: 0;
+  }
+}
+
+.observations-intensity-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.observations-intensity-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 3px 3px 0 0;
+  transition: background 0.15s;
+  user-select: none;
+}
+
+.observations-intensity-header:hover {
+  background: rgba(240, 165, 0, 0.08);
+}
+
+.observations-toggle {
+  color: var(--accent2);
+  font-size: 11px;
+  width: 12px;
+  display: inline-block;
+  text-align: center;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.observations-intensity-label {
+  color: var(--accent2);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.observations-intensity-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 12px;
+  transition: max-height 0.2s ease, opacity 0.2s ease;
+}
+
+.observations-intensity-content.collapsed {
+  display: none;
+}
+
+/* ── Observation items (prefectures, areas, cities) ─────────────── */
+
+.observation-pref {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 4px 0;
+}
+
+.observation-area {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-left: 12px;
+  padding: 2px 0;
+}
+
+.observation-city {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-left: 12px;
+  padding: 1px 0;
+}
+
+.observation-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 6px;
+  row-gap: 2px;
+}
+
+.observation-ja {
+  color: var(--text);
+  font-weight: 500;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.pref-row .observation-ja {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.area-row .observation-ja {
+  color: var(--text-dim);
+}
+
+.city-row .observation-ja {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.observation-dot {
+  color: var(--border-hi);
+  font-weight: bold;
+}
+
+.observation-en {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.pref-row .observation-en {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.area-row .observation-en {
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.city-row .observation-en {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.observation-icon {
+  color: var(--border-hi);
+  font-size: 9px;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.observation-text-en {
+  color: inherit;
+  font-family: var(--font-mono);
+}

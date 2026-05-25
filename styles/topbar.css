@@ -1,0 +1,59 @@
+/* ── Top bar ────────────────────────────────────────────────────── */
+
+#topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--topbar-h);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: rgba(7, 11, 15, 0.92);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+
+#topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.topbar-title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #e2eaf4;
+}
+
+.topbar-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 300;
+  color: var(--text-dim);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-left: 1px solid var(--border-hi);
+  padding-left: 14px;
+  line-height: 1;
+}
+
+#topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.dot-idle  { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); }
+.dot-live  { width: 6px; height: 6px; border-radius: 50%; background: #30d158; }
+.dot-error { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.dot-loading {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent2);
+}

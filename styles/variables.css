@@ -1,0 +1,58 @@
+/* ── CSS Variables & Root Styles ────────────────────────────────── */
+
+:root {
+  /* Palette */
+  --bg:         #070b0f;
+  --bg-panel:   #0b1018;
+  --bg-panel2:  #0f1520;
+  --border:     #1a2535;
+  --border-hi:  #243044;
+
+  --text:       #f7f7f7;
+  --text-dim:   #b0c1d6;
+  --text-muted: #6281a9;
+
+  --accent:     #e84c3d;   /* seismic red */
+  --accent2:    #f0a500;   /* amber – hover glow */
+  --accent-dim: rgba(232, 76, 61, 0.12);
+
+  --ocean:      #060a0e;
+  --land:       #0e1620;
+  --japan:      #111d2c;
+  --japan-hi:   rgba(240, 165, 0, 0.22);
+  --japan-line: #1e2e44;
+
+  /* Typography */
+  --font-display: 'M PLUS 1P', 'Syne', sans-serif;
+  --font-mono:    'IBM Plex Mono', 'M PLUS 1P', monospace;
+
+  /* Layout */
+  --topbar-h:    52px;
+  --sidebar-w:   360px;
+}
+
+html, body, #app {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-display);
+}
+
+a {
+  text-decoration: underline;
+  color: var(--text-muted);
+}
+
+/* ── Ruby text styling ──────────────────────────────────────────── */
+
+ruby {
+  ruby-align: center;
+}
+
+rt {
+  font-size: 0.6em;
+  font-weight: 500;
+  color: var(--text-muted);
+}

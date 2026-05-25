@@ -1,0 +1,88 @@
+/* ── Area Hover Tooltip & Markers ────────────────────────────────── */
+
+#area-tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 50;
+  padding: 10px 14px 11px;
+  background: rgba(11, 16, 24, 0.95);
+  border: 1px solid var(--border-hi);
+  border-top: 2px solid var(--accent2);
+  border-radius: 4px;
+  backdrop-filter: blur(8px);
+  min-width: 160px;
+  width: max-content;
+  box-shadow: 0 4px 24px rgba(0,0,0,.6);
+  transform: translate(14px, -50%);
+  transition: opacity 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+#area-tooltip.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tooltip-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.tooltip-code {
+  display: none;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--accent2);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  transition: color 0.1s;
+}
+
+.tooltip-ja {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 3px;
+}
+
+.tooltip-en {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.tooltip-intensity-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.tooltip-intensity-container.hidden {
+  display: none;
+}
+
+.tooltip-intensity-img {
+  width: 40px;
+  height: 40px;
+  image-rendering: auto;
+  border-radius: 2px;
+}
+
+/* ── Epicenter marker ───────────────────────────────────────────── */
+
+.epicenter-marker {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.epicenter-marker img {
+  width: 32px;
+  height: 32px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}

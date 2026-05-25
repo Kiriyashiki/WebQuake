@@ -1,0 +1,216 @@
+import "../styles/index.css";
+import { formatTimeJST, INTENSITY_CONFIG } from "./constants.js";
+import { createRubyHtml, loadAreaCodes, loadPrefectureCodes } from "./areaCodes.js";
+import { initMap, highlightObservations, displayEpicenter, clearEpicenter, displayAllEpicenters, clearAllEpicenters } from "./map.js";
+import { fetchEarthquakeReports } from "./parseReports.js";
+import { initSidebar } from "./sidebarUI.js";
+import { renderObservationsList } from "./observationsList.js";
+
+async function boot() {
+  // Load area code name mappings
+  let areaCodes = new Map();
+  try {
+    areaCodes = await loadAreaCodes();
+    console.info(`[eq-viewer] Loaded ${areaCodes.size} area code entries.`);
+  } catch (err) {
+    console.warn("[eq-viewer] Could not load area codes CSV:", err.message);
+  }
+
+  // Load prefecture code name mappings
+  let prefectureCodes = new Map();
+  try {
+    prefectureCodes = await loadPrefectureCodes();
+    console.info(`[eq-viewer] Loaded ${prefectureCodes.size} prefecture code entries.`);
+  } catch (err) {
+    console.warn("[eq-viewer] Could not load prefecture codes CSV:", err.message);
+  }
+
+  // Boot the map
+  const mapEl = document.getElementById("map");
+  const map = initMap(mapEl, areaCodes);
+
+  // Setup sidebar toggle button
+  const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+  const sidebar = document.getElementById('sidebar');
+  const toggleArrow = sidebarToggleBtn?.querySelector('.toggle-arrow');
+  if (sidebarToggleBtn) {
+    sidebarToggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('hidden');
+      sidebarToggleBtn.classList.toggle('closed');
+      toggleArrow?.classList.toggle('rotated');
+    });
+  }
+
+  // Setup attribution modal
+  const attributionBtn = document.getElementById('attribution-btn');
+  const attributionPopup = document.getElementById('attribution-popup');
+  const attributionCloseBtn = document.getElementById('attribution-close-btn');
+
+  if (attributionBtn && attributionPopup) {
+    attributionBtn.addEventListener('click', () => {
+      attributionPopup.classList.toggle('hidden');
+    });
+
+    if (attributionCloseBtn) {
+      attributionCloseBtn.addEventListener('click', () => {
+        attributionPopup.classList.add('hidden');
+      });
+    }
+  }
+
+  // Initialize sidebar with earthquake reports
+  const onReportSelect = (report) => {
+    console.log('[eq-viewer] Selected report:', report.eventId, report.hypocenterJa);
+    
+    // Clear all initial epicenters when a report is opened
+    clearAllEpicenters(map);
+    
+    // Show info box on map
+    _displayMapInfoBox(report);
+    
+    // Highlight areas on map based on observation intensity
+    highlightObservations(map, report.observations);
+    
+    // Display epicenter marker
+    if (report.coordinates) {
+      displayEpicenter(map, report.coordinates);
+    } else {
+      clearEpicenter(map);
+    }
+  };
+
+  // Fetch initial reports
+  _updateStatus('loading');
+  try {
+    const reports = await fetchEarthquakeReports(areaCodes);
+    initSidebar(reports, onReportSelect);
+    
+    // Display all epicenters on the map initially
+    displayAllEpicenters(map, reports);
+    
+    _updateStatus('live');
+  } catch (err) {
+    console.error('[eq-viewer] Failed to fetch initial reports:', err);
+    _updateStatus('error');
+  }
+
+  // Expose for later modules / debugging
+  globalThis.__eqMap = map;
+  globalThis.__areaCodes = areaCodes;
+  globalThis.__prefectureCodes = prefectureCodes;
+}
+
+/**
+ * Updates the status indicator in the top-right.
+ */
+function _updateStatus(state) {
+  const dot = document.getElementById('status-dot');
+  const text = document.getElementById('status-text');
+
+  if (dot) {
+    dot.className = `dot-${state}`;
+  }
+  if (text) {
+    const labels = {
+      'idle': 'Idle',
+      'loading': 'Loading…',
+      'live': 'Loaded',
+      'error': 'Error',
+    };
+    text.textContent = labels[state] || 'Unknown';
+  }
+}
+
+/**
+ * Displays report information in the top-left info box on the map.
+ * Shows magnitude, depth, coordinates, time, intensity, and observations list.
+ */
+function _displayMapInfoBox(report) {
+  const infoBox = document.getElementById('map-info-box');
+  if (!infoBox) return;
+
+  // Populate location
+  const locationJa = infoBox.querySelector('.info-box-location-ja');
+  const locationEn = infoBox.querySelector('.info-box-location-en');
+  const intensityImg = infoBox.querySelector('.info-box-intensity-img');
+  const magnitude = infoBox.querySelector('.info-magnitude');
+  const depth = infoBox.querySelector('.info-depth');
+  const coordinates = infoBox.querySelector('.info-coordinates');
+  const timeEl = infoBox.querySelector('.info-time');
+
+  if (locationJa) locationJa.innerHTML = createRubyHtml(report.hypocenterJa, report.hypocenterKana) || '不明';
+  if (locationEn) locationEn.textContent = report.hypocenterEn || 'Unknown';
+
+  // Set intensity image
+  if (intensityImg) {
+    const intensityConfig = INTENSITY_CONFIG[report.maxIntensity] || INTENSITY_CONFIG['1'];
+    intensityImg.src = `/img/shindo/${intensityConfig.img}`;
+    intensityImg.alt = `Intensity ${report.maxIntensity}`;
+  }
+
+  // Populate details
+  if (magnitude) {
+    magnitude.textContent = typeof report.magnitude === 'number' ? 'M ' + report.magnitude.toFixed(1) : '--';
+  }
+
+  if (depth) {
+    depth.textContent = typeof report.depth === 'number' ? `${report.depth.toFixed(0)} km` : '--';
+  }
+
+  if (coordinates && report.coordinates) {
+    const { latitude, longitude } = report.coordinates;
+    coordinates.textContent = `${latitude.toFixed(1)} ; ${longitude.toFixed(1)}`;
+  } else if (coordinates) {
+    coordinates.textContent = '--';
+  }
+
+  if (timeEl) {
+    timeEl.textContent = report.originTime ? formatTimeJST(report.originTime * 1000) + ' ごろ': '--';
+  }
+
+  // Render observations list
+  const observationsContainer = infoBox.querySelector('#observations-list-container');
+  if (observationsContainer && report.observations) {
+    renderObservationsList(
+      observationsContainer,
+      report.observations,
+      globalThis.__areaCodes || new Map(),
+      globalThis.__prefectureCodes || new Map()
+    );
+  }
+
+  // Setup observations list toggle
+  const observationsWrapper = infoBox.querySelector('.observations-list-wrapper');
+  if (observationsWrapper) {
+    const header = observationsWrapper.querySelector('.observations-list-header');
+    const toggle = observationsWrapper.querySelector('.observations-list-toggle');
+    const container = observationsWrapper.querySelector('.observations-list-container');
+    
+    if (header && toggle && container) {
+      // Set initial state: collapsed on mobile, expanded on desktop
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        container.classList.add('collapsed');
+        toggle.classList.remove('rotated');
+      } else {
+        container.classList.remove('collapsed');
+        toggle.classList.add('rotated');
+      }
+      
+      // Remove any existing listeners by cloning and replacing
+      const newHeader = header.cloneNode(true);
+      header.parentNode.replaceChild(newHeader, header);
+      
+      // Toggle functionality
+      newHeader.addEventListener('click', () => {
+        container.classList.toggle('collapsed');
+        toggle.classList.toggle('rotated');
+      });
+    }
+  }
+
+  // Show the info box
+  infoBox.classList.remove('hidden');
+}
+
+boot().catch(console.error);
