@@ -4,7 +4,7 @@ Webapp that displays information from earthquake reports published by the Japan 
 
 ![Main app view](./extra/main.png)
 
-Live at https://webquake.hainaut.xyz
+Live at [webquake.hainaut.xyz](https://webquake.hainaut.xyz?utm_source=github)
 
 ## Features
 
