@@ -1,7 +1,7 @@
 import "../styles/index.css";
 import { formatTimeJST, INTENSITY_CONFIG } from "./constants.js";
 import { createRubyHtml, loadAreaCodes, loadPrefectureCodes, loadCityNames } from "./areaCodes.js";
-import { initMap, highlightObservations, displayEpicenter, clearEpicenter, displayAllEpicenters, clearAllEpicenters, updateCityAreasVisibility } from "./map.js";
+import { initMap, highlightObservations, displayEpicenter, clearEpicenter, displayAllEpicenters, clearAllEpicenters, updateCityAreasVisibility, fitBoundsToObservations } from "./map.js";
 import { fetchEarthquakeReports } from "./parseReports.js";
 import { initSidebar, updateSidebarLoading, initLiveModeToggle, initAutoOpenToggle, initCityAreasToggle, addReportToSidebar, updateReportInSidebar, getReportById, getAutoOpenState, getCityAreasState } from "./sidebarUI.js";
 import { renderObservationsList } from "./observationsList.js";
@@ -33,6 +33,18 @@ async function boot() {
     console.info(`[eq-viewer] Loaded ${cityNames.size} city names.`);
   } catch (err) {
     console.warn("[eq-viewer] Could not load city.json:", err.message);
+  }
+
+  // Load feature bounds
+  let featureBounds = null;
+  try {
+    const res = await fetch('/bounds.json');
+    if (res.ok) {
+      featureBounds = await res.json();
+      console.info(`[eq-viewer] Loaded feature bounds.`);
+    }
+  } catch (err) {
+    console.warn("[eq-viewer] Could not load bounds.json:", err.message);
   }
 
   // Boot the map
@@ -80,10 +92,18 @@ async function boot() {
     
     // Highlight areas on map based on observation intensity
     highlightObservations(map, report.observations);
+    const boundsFitted = fitBoundsToObservations(map, report.observations, featureBounds, getCityAreasState(), report.coordinates);
     
     // Display epicenter marker
     if (report.coordinates) {
       displayEpicenter(map, report.coordinates);
+      if (!boundsFitted) {
+        map.flyTo({
+          center: [report.coordinates.longitude, report.coordinates.latitude],
+          zoom: 6,
+          essential: true,
+        });
+      }
     } else {
       clearEpicenter(map);
     }
@@ -148,8 +168,16 @@ async function boot() {
                 console.log('[eq-viewer] Reloading active report on map');
                 _displayMapInfoBox(report);
                 highlightObservations(map, report.observations);
+                const boundsFitted = fitBoundsToObservations(map, report.observations, featureBounds, getCityAreasState(), report.coordinates);
                 if (report.coordinates) {
                   displayEpicenter(map, report.coordinates);
+                  if (!boundsFitted) {
+                    map.flyTo({
+                      center: [report.coordinates.longitude, report.coordinates.latitude],
+                      zoom: 6,
+                      essential: true,
+                    });
+                  }
                 } else {
                   clearEpicenter(map);
                 }

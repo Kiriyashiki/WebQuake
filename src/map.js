@@ -282,7 +282,7 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
     center: [137, 37.5], // Centre on Japan
     zoom: 4.4,
     minZoom: 2,
-    maxZoom: 14,
+    maxZoom: 10,
     attributionControl: false,
     pitchWithRotate: false,
   });
@@ -432,12 +432,69 @@ export function highlightObservations(map, observations) {
  * @returns {maplibregl.Marker|null}
  */
 export function displayEpicenter(map, coordinates) {
-  map.flyTo({
-    center: [coordinates.longitude, coordinates.latitude],
-    zoom: 6,
-    essential: true,
-  });
   return addEpicenterMarker(map, coordinates);
+}
+
+/**
+ * Fits the map bounds to all observation areas with intensity 1 or higher.
+ * @param {maplibregl.Map} map
+ * @param {Array|null} observations
+ * @param {Object} featureBounds - The loaded bounds.json object
+ * @param {boolean} useCityAreas
+ * @param {{latitude: number, longitude: number}} [coordinates]
+ */
+export function fitBoundsToObservations(map, observations, featureBounds, useCityAreas, coordinates) {
+  if (!map.isStyleLoaded() || !observations || !featureBounds) return;
+
+  let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+  let hasBounds = false;
+
+  for (const pref of observations) {
+    for (const area of pref.areas) {
+      if (useCityAreas) {
+        for (const city of area.cities) {
+          if (Number.parseInt(city.maxInt, 10) >= 1) {
+            const cityId = String(city.code).padStart(7, "0");
+            const bounds = featureBounds.cities[cityId];
+            if (bounds) {
+              if (bounds[0] < minLng) minLng = bounds[0];
+              if (bounds[1] < minLat) minLat = bounds[1];
+              if (bounds[2] > maxLng) maxLng = bounds[2];
+              if (bounds[3] > maxLat) maxLat = bounds[3];
+              hasBounds = true;
+            }
+          }
+        }
+      } else if (Number.parseInt(area.maxInt, 10) >= 1) {
+          const bounds = featureBounds.forecast[area.code];
+          if (bounds) {
+            if (bounds[0] < minLng) minLng = bounds[0];
+            if (bounds[1] < minLat) minLat = bounds[1];
+            if (bounds[2] > maxLng) maxLng = bounds[2];
+            if (bounds[3] > maxLat) maxLat = bounds[3];
+            hasBounds = true;
+          }
+        }
+    }
+  }
+
+  if (coordinates && typeof coordinates.longitude === "number" && typeof coordinates.latitude === "number") {
+    if (coordinates.longitude < minLng) minLng = coordinates.longitude;
+    if (coordinates.latitude < minLat) minLat = coordinates.latitude;
+    if (coordinates.longitude > maxLng) maxLng = coordinates.longitude;
+    if (coordinates.latitude > maxLat) maxLat = coordinates.latitude;
+    hasBounds = true;
+  }
+
+  if (hasBounds) {
+    map.fitBounds([[minLng, minLat], [maxLng, maxLat]], {
+      padding: 50,
+      essential: true,
+      maxZoom: 8
+    });
+  }
+  
+  return hasBounds;
 }
 
 /**
