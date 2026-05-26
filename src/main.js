@@ -3,8 +3,9 @@ import { formatTimeJST, INTENSITY_CONFIG } from "./constants.js";
 import { createRubyHtml, loadAreaCodes, loadPrefectureCodes } from "./areaCodes.js";
 import { initMap, highlightObservations, displayEpicenter, clearEpicenter, displayAllEpicenters, clearAllEpicenters } from "./map.js";
 import { fetchEarthquakeReports } from "./parseReports.js";
-import { initSidebar, updateSidebarLoading } from "./sidebarUI.js";
+import { initSidebar, updateSidebarLoading, initLiveModeToggle, initAutoOpenToggle, addReportToSidebar, updateReportInSidebar, getReportById, getAutoOpenState } from "./sidebarUI.js";
 import { renderObservationsList } from "./observationsList.js";
+import { startLivePolling, stopLivePolling } from "./liveMode.js";
 
 async function boot() {
   // Load area code name mappings
@@ -92,6 +93,74 @@ async function boot() {
     displayAllEpicenters(map, reports);
     
     _updateStatus('live');
+
+    // Initialize live mode and auto-open toggles
+    initLiveModeToggle((isEnabled) => {
+      if (isEnabled) {
+        console.log('[eq-viewer] Live mode enabled');
+        let mostRecentNewReport = null;
+
+        startLivePolling(areaCodes, {
+          onNewEntry: (entry, report) => {
+            console.log('[eq-viewer] New entry:', report.eventId);
+            const added = addReportToSidebar(report, onReportSelect);
+            if (added && report.coordinates) {
+              // Add new epicenter to map
+              displayEpicenter(map, report.coordinates);
+
+              // Track most recent new report for auto-open
+              if (
+                !mostRecentNewReport ||
+                (report.originTime || 0) > (mostRecentNewReport.originTime || 0)
+              ) {
+                mostRecentNewReport = report;
+              }
+
+              // Auto-open the most recent new report if enabled
+              if (getAutoOpenState() && mostRecentNewReport) {
+                console.log('[eq-viewer] Auto-opening report:', mostRecentNewReport.eventId);
+                const item = document.querySelector(
+                  `[data-event-id="${mostRecentNewReport.eventId}"]`
+                );
+                if (item) {
+                  item.classList.remove('active');
+                  item.click();
+                }
+              }
+            }
+          },
+          onUpdatedEntry: (entry, report) => {
+            console.log('[eq-viewer] Updated entry:', report.eventId);
+            const updated = updateReportInSidebar(report, onReportSelect);
+            if (updated) {
+              // If the report is currently displayed on the map, refresh it
+              const activeItem = document.querySelector('.eq-item.active');
+              if (activeItem && activeItem.dataset.eventId === report.eventId) {
+                console.log('[eq-viewer] Reloading active report on map');
+                _displayMapInfoBox(report);
+                highlightObservations(map, report.observations);
+                if (report.coordinates) {
+                  displayEpicenter(map, report.coordinates);
+                } else {
+                  clearEpicenter(map);
+                }
+              }
+            }
+          },
+          onError: (err) => {
+            console.warn('[eq-viewer] Live polling error:', err);
+          }
+        });
+      } else {
+        console.log('[eq-viewer] Live mode disabled');
+        stopLivePolling();
+      }
+    });
+
+    // Initialize auto-open toggle
+    initAutoOpenToggle((isEnabled) => {
+      console.log('[eq-viewer] Auto-open:', isEnabled ? 'enabled' : 'disabled');
+    });
   } catch (err) {
     console.error('[eq-viewer] Failed to fetch initial reports:', err);
     _updateStatus('error');

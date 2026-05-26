@@ -29,6 +29,9 @@ export const MAP_COLORS = {
   hoverFill: "rgba(240, 165, 0, 0.18)",
 };
 
+// Live Mode interval
+export const POLL_INTERVAL = 60000;
+
 /**
  * Helper to convert a hex color to rgba with specified opacity.
  * @param {string} hex - Hex color (e.g., "#FF0000")
