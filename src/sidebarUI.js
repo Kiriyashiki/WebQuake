@@ -163,12 +163,44 @@ export function initAutoOpenToggle(onToggle) {
 }
 
 /**
+ * Initializes the city areas toggle and sets up its event listener.
+ * @param {Function} onToggle - Callback(enabled) when toggle state changes
+ */
+export function initCityAreasToggle(onToggle) {
+  const toggleEl = document.getElementById("city-areas-toggle");
+  if (!toggleEl) return;
+
+  // Load saved state from localStorage, default to true
+  const savedState = localStorage.getItem("city-areas-enabled") === "true";
+  toggleEl.checked = savedState;
+
+  // Set initial callback
+  if (onToggle) onToggle(savedState);
+
+  // Listen for changes
+  toggleEl.addEventListener("change", (e) => {
+    const isEnabled = e.target.checked;
+    localStorage.setItem("city-areas-enabled", isEnabled ? "true" : "false");
+    if (onToggle) onToggle(isEnabled);
+  });
+}
+
+/**
  * Gets the current auto-open state.
  * @returns {boolean} Whether auto-open is enabled
  */
 export function getAutoOpenState() {
   const toggleEl = document.getElementById("auto-open-toggle");
   return toggleEl ? toggleEl.checked : false;
+}
+
+/**
+ * Gets the current city areas state.
+ * @returns {boolean} Whether city areas are enabled
+ */
+export function getCityAreasState() {
+  const toggleEl = document.getElementById("city-areas-toggle");
+  return toggleEl ? toggleEl.checked : true;
 }
 
 /**

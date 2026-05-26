@@ -86,3 +86,59 @@
   height: 32px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
+
+/* ── Generic Tooltip ───────────────────────────────────────────── */
+
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  background: rgba(11, 16, 24, 0.95);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: normal;
+  width: max-content;
+  max-width: 160px;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+  border: 1px solid var(--border-hi);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-4px);
+}
+
+/* Sidebar Footer Tooltip Positioning Tweaks to Prevent Spilling */
+.sidebar-footer .live-mode-toggle:first-child[data-tooltip]::after {
+  left: 0;
+  transform: translateX(0) translateY(-8px);
+}
+.sidebar-footer .live-mode-toggle:first-child[data-tooltip]:hover::after {
+  transform: translateX(0) translateY(-4px);
+}
+
+.sidebar-footer .live-mode-toggle:last-child[data-tooltip]::after {
+  left: auto;
+  right: 0;
+  transform: translateX(0) translateY(-8px);
+}
+.sidebar-footer .live-mode-toggle:last-child[data-tooltip]:hover::after {
+  transform: translateX(0) translateY(-4px);
+}

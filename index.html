@@ -47,15 +47,20 @@
             </ul>
           </div>
           <div class="sidebar-footer">
-            <label class="live-mode-toggle" title="Enable live polling for new/updated entries">
+            <label class="live-mode-toggle" data-tooltip="Enable live polling for new/updated reports • 新規•更新された報告のリアルタイム取得を有効にする">
               <input type="checkbox" id="live-mode-toggle" />
               <span class="toggle-switch"></span>
-              <span class="toggle-label">Live Mode</span>
+              <span class="toggle-label">Live<br>ライブ</span>
             </label>
-            <label class="live-mode-toggle auto-open-toggle" title="Automatically open the most recent new report">
+            <label class="live-mode-toggle auto-open-toggle" data-tooltip="Automatically open newly recieved reports • 新しく受信したレポートを自動的に開く">
               <input type="checkbox" id="auto-open-toggle" />
               <span class="toggle-switch"></span>
-              <span class="toggle-label">Auto-open</span>
+              <span class="toggle-label">Auto<br>自動</span>
+            </label>
+            <label class="live-mode-toggle city-areas-toggle" data-tooltip="Use city areas for intensity display (May impact performance) • 震度表示には市町村エリアを使用します（パフォーマンスに影響を与える可能性があります）">
+              <input type="checkbox" id="city-areas-toggle" checked />
+              <span class="toggle-switch"></span>
+              <span class="toggle-label">Cities<br>市町村</span>
             </label>
           </div>
         </aside>

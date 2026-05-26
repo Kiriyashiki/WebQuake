@@ -239,7 +239,7 @@
   gap: 10px;
   cursor: pointer;
   user-select: none;
-  padding: 8px 12px;
+  padding: 4px 8px;
   border-radius: 5px;
   border: 1px solid var(--border);
   background: var(--bg-panel2);

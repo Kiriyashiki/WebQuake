@@ -7,7 +7,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { INTENSITY_CONFIG, MAP_COLORS, buildIntensityColorExpression } from "./constants.js";
 
 // ─── Build the MapLibre style object ────────────────────────────────────────
-function buildStyle() {
+function buildStyle(useCityAreas = true) {
   const C = MAP_COLORS;
   
   return {
@@ -27,6 +27,11 @@ function buildStyle() {
       prefectures: {
         type: "geojson",
         data: "/prefectures.geojson",
+      },
+      cities: {
+        type: "geojson",
+        data: "/municipalities.geojson",
+        promoteId: "regioncode",
       },
     },
     layers: [
@@ -68,6 +73,16 @@ function buildStyle() {
         },
       },
       {
+        id: "cities-base",
+        type: "fill",
+        source: "cities",
+        layout: { visibility: useCityAreas ? 'visible' : 'none' },
+        paint: {
+          "fill-color": "transparent",
+          "fill-antialias": false,
+        },
+      },
+      {
         id: "prefecture-line",
         type: "line",
         source: "prefectures",
@@ -80,6 +95,7 @@ function buildStyle() {
         id: "forecast-fill",
         type: "fill",
         source: "forecast_areas",
+        layout: { visibility: !useCityAreas ? 'visible' : 'none' },
         paint: {
           "fill-color": [
             "case",
@@ -103,6 +119,50 @@ function buildStyle() {
         },
       },
       {
+        id: "cities-fill",
+        type: "fill",
+        source: "cities",
+        layout: { visibility: useCityAreas ? 'visible' : 'none' },
+        paint: {
+          "fill-color": [
+            "case",
+            ["boolean", ["feature-state", "highlighted"], false],
+            [
+              "case",
+              ["boolean", ["feature-state", "hover"], false],
+              [
+                "coalesce",
+                buildIntensityColorExpression(false),
+                "transparent",
+              ],
+              buildIntensityColorExpression(true),
+            ],
+            "transparent",
+          ],
+          "fill-antialias": true,
+        },
+      },
+      {
+        id: "cities-line",
+        type: "line",
+        source: "cities",
+        layout: { visibility: useCityAreas ? 'visible' : 'none' },
+        paint: {
+          "line-color": [
+            "case",
+            ["boolean", ["feature-state", "highlighted"], false],
+            buildIntensityColorExpression(false, "#172538"),
+            ["case", ["boolean", ["feature-state", "hover"], false], C.japanLine, "#172538"],
+          ],
+          "line-width": [
+            "case",
+            ["boolean", ["feature-state", "highlighted"], false],
+            0.4,
+            ["case", ["boolean", ["feature-state", "hover"], false], 1.2, 0.4],
+          ],
+        },
+      },
+      {
         id: "forecast-line",
         type: "line",
         source: "forecast_areas",
@@ -116,7 +176,7 @@ function buildStyle() {
           "line-width": [
             "case",
             ["boolean", ["feature-state", "highlighted"], false],
-            1.2,
+            1,
             ["case", ["boolean", ["feature-state", "hover"], false], 1.4, 0.7],
           ],
         },
@@ -126,9 +186,9 @@ function buildStyle() {
 }
 
 // ─── Tooltip helpers ─────────────────────────────────────────────────────────
-function showTooltip(tooltip, x, y, code, info, intensity = null) {
+function showTooltip(tooltip, x, y, code, info, intensity = null, isCity = false) {
   const codeEl = tooltip.querySelector(".tooltip-code");
-  codeEl.textContent = `AREA ${code}`;
+  codeEl.textContent = isCity ? `CITY ${code}` : `AREA ${code}`;
   tooltip.querySelector(".tooltip-ja").textContent = info?.ja ?? "—";
   tooltip.querySelector(".tooltip-en").textContent = info?.en ?? "";
 
@@ -211,12 +271,14 @@ function removeEpicenterMarker(map) {
 /**
  * @param {HTMLElement} container  - The #map element.
  * @param {Map<number, {ja:string, en:string}>} areaCodes
+ * @param {Map<string, {ja:string, en:string}>} cityNames
+ * @param {Function} getUseCityAreas - Returns current state of city areas toggle
  * @returns {maplibregl.Map}
  */
-export function initMap(container, areaCodes) {
+export function initMap(container, areaCodes, cityNames, getUseCityAreas = () => true) {
   const map = new maplibregl.Map({
     container,
-    style: buildStyle(),
+    style: buildStyle(getUseCityAreas()),
     center: [137, 37.5], // Centre on Japan
     zoom: 4.4,
     minZoom: 2,
@@ -232,62 +294,93 @@ export function initMap(container, areaCodes) {
   map.on("load", () => {
     const canvas = map.getCanvas();
 
-    // ── Mouse move on forecast areas ──────────────────────────────────────
-    map.on("mousemove", "forecast-base", (e) => {
-      canvas.style.cursor = "crosshair";
+    const layers = ["forecast-base", "cities-base"];
 
-      const feature = e.features[0];
-      if (!feature) return;
+    layers.forEach(layerName => {
+      const isCityLayer = layerName === "cities-base";
+      const sourceName = isCityLayer ? "cities" : "forecast_areas";
 
-      const newId = feature.id; // promoted from 'code' property
-      if (newId === hoveredId) {
-        // Just update tooltip position with current intensity
-        const state = map.getFeatureState({ source: "forecast_areas", id: newId });
+      // ── Mouse move on areas ──────────────────────────────────────
+      map.on("mousemove", layerName, (e) => {
+        if (isCityLayer !== getUseCityAreas()) return;
+
+        canvas.style.cursor = "crosshair";
+
+        const feature = e.features[0];
+        if (!feature) return;
+
+        const newId = feature.id; // promoted from property
+        if (newId === hoveredId) {
+          // Just update tooltip position with current intensity
+          const state = map.getFeatureState({ source: sourceName, id: newId });
+          showTooltip(
+            tooltip,
+            e.originalEvent.clientX - container.getBoundingClientRect().left,
+            e.originalEvent.clientY - container.getBoundingClientRect().top,
+            newId,
+            isCityLayer ? cityNames?.get(String(newId)) : areaCodes.get(Number(newId)),
+            state?.intensity,
+            isCityLayer
+          );
+          return;
+        }
+
+        // Clear old hover state
+        if (hoveredId !== null) {
+          map.setFeatureState({ source: sourceName, id: hoveredId }, { hover: false });
+        }
+
+        hoveredId = newId;
+
+        map.setFeatureState({ source: sourceName, id: hoveredId }, { hover: true });
+
+        const state = map.getFeatureState({ source: sourceName, id: hoveredId });
         showTooltip(
           tooltip,
           e.originalEvent.clientX - container.getBoundingClientRect().left,
           e.originalEvent.clientY - container.getBoundingClientRect().top,
-          newId,
-          areaCodes.get(Number(newId)),
+          hoveredId,
+          isCityLayer ? cityNames?.get(String(hoveredId)) : areaCodes.get(Number(hoveredId)),
           state?.intensity,
+          isCityLayer
         );
-        return;
-      }
+      });
 
-      // Clear old hover state
-      if (hoveredId !== null) {
-        map.setFeatureState({ source: "forecast_areas", id: hoveredId }, { hover: false });
-      }
+      // ── Mouse leave ──────────────────────────────────────────────────────
+      map.on("mouseleave", layerName, () => {
+        if (isCityLayer !== getUseCityAreas()) return;
+        
+        canvas.style.cursor = "";
 
-      hoveredId = newId;
+        if (hoveredId !== null) {
+          map.setFeatureState({ source: sourceName, id: hoveredId }, { hover: false });
+          hoveredId = null;
+        }
 
-      map.setFeatureState({ source: "forecast_areas", id: hoveredId }, { hover: true });
-
-      const state = map.getFeatureState({ source: "forecast_areas", id: hoveredId });
-      showTooltip(
-        tooltip,
-        e.originalEvent.clientX - container.getBoundingClientRect().left,
-        e.originalEvent.clientY - container.getBoundingClientRect().top,
-        hoveredId,
-        areaCodes.get(Number(hoveredId)),
-        state?.intensity,
-      );
-    });
-
-    // ── Mouse leave ──────────────────────────────────────────────────────
-    map.on("mouseleave", "forecast-base", () => {
-      canvas.style.cursor = "";
-
-      if (hoveredId !== null) {
-        map.setFeatureState({ source: "forecast_areas", id: hoveredId }, { hover: false });
-        hoveredId = null;
-      }
-
-      hideTooltip(tooltip);
+        hideTooltip(tooltip);
+      });
     });
   });
 
   return map;
+}
+
+/**
+ * Updates the visibility of city areas vs forecast areas layers.
+ * @param {maplibregl.Map} map 
+ * @param {boolean} useCityAreas 
+ */
+export function updateCityAreasVisibility(map, useCityAreas) {
+  if (!map.isStyleLoaded()) return;
+
+  const visibility = useCityAreas ? 'visible' : 'none';
+  const invVisibility = !useCityAreas ? 'visible' : 'none';
+
+  map.setLayoutProperty("cities-base", "visibility", visibility);
+  map.setLayoutProperty("cities-fill", "visibility", visibility);
+  map.setLayoutProperty("cities-line", "visibility", visibility);
+  
+  map.setLayoutProperty("forecast-fill", "visibility", invVisibility);
 }
 
 /**
@@ -311,12 +404,23 @@ export function highlightObservations(map, observations) {
 
   for (const pref of observations) {
     for (const area of pref.areas) {
-      const id = area.code;
+      // Highlight forecast areas
+      const areaId = area.code;
       map.setFeatureState(
-        { source: "forecast_areas", id },
+        { source: "forecast_areas", id: areaId },
         { highlighted: true, intensity: area.maxInt },
       );
-      highlightObservations._active.push({ source: "forecast_areas", id });
+      highlightObservations._active.push({ source: "forecast_areas", id: areaId });
+
+      // Highlight city areas
+      for (const city of area.cities) {
+        const cityId = String(city.code).padStart(7, "0");
+        map.setFeatureState(
+          { source: "cities", id: cityId },
+          { highlighted: true, intensity: city.maxInt },
+        );
+        highlightObservations._active.push({ source: "cities", id: cityId });
+      }
     }
   }
 }

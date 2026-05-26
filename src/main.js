@@ -1,9 +1,9 @@
 import "../styles/index.css";
 import { formatTimeJST, INTENSITY_CONFIG } from "./constants.js";
-import { createRubyHtml, loadAreaCodes, loadPrefectureCodes } from "./areaCodes.js";
-import { initMap, highlightObservations, displayEpicenter, clearEpicenter, displayAllEpicenters, clearAllEpicenters } from "./map.js";
+import { createRubyHtml, loadAreaCodes, loadPrefectureCodes, loadCityNames } from "./areaCodes.js";
+import { initMap, highlightObservations, displayEpicenter, clearEpicenter, displayAllEpicenters, clearAllEpicenters, updateCityAreasVisibility } from "./map.js";
 import { fetchEarthquakeReports } from "./parseReports.js";
-import { initSidebar, updateSidebarLoading, initLiveModeToggle, initAutoOpenToggle, addReportToSidebar, updateReportInSidebar, getReportById, getAutoOpenState } from "./sidebarUI.js";
+import { initSidebar, updateSidebarLoading, initLiveModeToggle, initAutoOpenToggle, initCityAreasToggle, addReportToSidebar, updateReportInSidebar, getReportById, getAutoOpenState, getCityAreasState } from "./sidebarUI.js";
 import { renderObservationsList } from "./observationsList.js";
 import { startLivePolling, stopLivePolling } from "./liveMode.js";
 
@@ -26,9 +26,18 @@ async function boot() {
     console.warn("[eq-viewer] Could not load prefecture codes CSV:", err.message);
   }
 
+  // Load city name mappings
+  let cityNames = new Map();
+  try {
+    cityNames = await loadCityNames();
+    console.info(`[eq-viewer] Loaded ${cityNames.size} city names.`);
+  } catch (err) {
+    console.warn("[eq-viewer] Could not load city.json:", err.message);
+  }
+
   // Boot the map
   const mapEl = document.getElementById("map");
-  const map = initMap(mapEl, areaCodes);
+  const map = initMap(mapEl, areaCodes, cityNames, getCityAreasState);
 
   // Setup sidebar toggle button
   const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
@@ -160,6 +169,12 @@ async function boot() {
     // Initialize auto-open toggle
     initAutoOpenToggle((isEnabled) => {
       console.log('[eq-viewer] Auto-open:', isEnabled ? 'enabled' : 'disabled');
+    });
+
+    // Initialize city areas toggle
+    initCityAreasToggle((isEnabled) => {
+      console.log('[eq-viewer] City areas:', isEnabled ? 'enabled' : 'disabled');
+      updateCityAreasVisibility(map, isEnabled);
     });
   } catch (err) {
     console.error('[eq-viewer] Failed to fetch initial reports:', err);
