@@ -9,20 +9,22 @@ Live at [webquake.hainaut.xyz](https://webquake.hainaut.xyz?utm_source=github)
 ## Features
 
 - List of part earthquakes (up to 7 days old)
-- Description of the earthquake (Mangitude, Intensity,Date and Time, etc.)
-- On map visualization of the epicenter, and recorded intensity by area
+- Description of the earthquake (Mangitude, Intensity, Date and Time, etc.)
+- On map visualization of the epicenter, and recorded intensity by area/city
 - Full list of localities sorted by their recorded intensity
 - Bilingual setup (Japanese and English)
+- Live mode to pull new reports and open them automatically
 
 ## Dev
 
-This project uses Vite.js with NodeJS, and is written in vanilla JavaScript.
+This project uses Vite.js with NodeJS, and is written in vanilla JavaScript.<br>
+The prefered package manager is pnpm.
 
 ### Build
 
 ```bash
-npm install
-npm run build
+pnpm install
+pnpm run build
 ```
 ## Links
 
