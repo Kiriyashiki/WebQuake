@@ -3,7 +3,7 @@ import { formatTimeJST, INTENSITY_CONFIG } from "./constants.js";
 import { createRubyHtml, loadAreaCodes, loadPrefectureCodes } from "./areaCodes.js";
 import { initMap, highlightObservations, displayEpicenter, clearEpicenter, displayAllEpicenters, clearAllEpicenters } from "./map.js";
 import { fetchEarthquakeReports } from "./parseReports.js";
-import { initSidebar } from "./sidebarUI.js";
+import { initSidebar, updateSidebarLoading } from "./sidebarUI.js";
 import { renderObservationsList } from "./observationsList.js";
 
 async function boot() {
@@ -81,8 +81,11 @@ async function boot() {
 
   // Fetch initial reports
   _updateStatus('loading');
+  updateSidebarLoading(0, '...');
   try {
-    const reports = await fetchEarthquakeReports(areaCodes);
+    const reports = await fetchEarthquakeReports(areaCodes, (processed, total) => {
+      updateSidebarLoading(processed, total);
+    });
     initSidebar(reports, onReportSelect);
     
     // Display all epicenters on the map initially

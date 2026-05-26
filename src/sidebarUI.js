@@ -34,6 +34,22 @@ export function initSidebar(reports, onReportSelect) {
 }
 
 /**
+ * Updates the sidebar to show loading progress.
+ * @param {number|string} processed - Number of reports processed
+ * @param {number|string} total - Total number of reports to process
+ */
+export function updateSidebarLoading(processed, total) {
+  const eqList = document.getElementById("eq-list");
+  if (!eqList) return;
+
+  eqList.innerHTML = `
+    <li class="eq-item placeholder">
+      <span class="mono muted">Loading... ${processed}/${total} reports fetched</span>
+    </li>
+  `;
+}
+
+/**
  * Creates a DOM element for a single earthquake report.
  * Displays: intensity (image + colored border), magnitude, hypocenter name, time
  */

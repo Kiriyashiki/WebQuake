@@ -12,34 +12,45 @@ import { FEED_URL_LATEST, FEED_URL_HISTORY, TEST_REPORT_URL, doTestReport } from
  * @param {Map} areaCodes - Area code name mappings from areaCodes.js
  * @returns {Promise<Array>} Array of parsed reports
  */
-export async function fetchEarthquakeReports(areaCodes = new Map()) {
+export async function fetchEarthquakeReports(areaCodes = new Map(), onProgress = null) {
   const seenEventIds = new Set();
   const reports = [];
 
   try {
     // Fetch latest feed first (with CORS mode)
     const latestEntries = await _fetchFeedEntries(FEED_URL_LATEST);
-    for (const entry of latestEntries) {
-      const report = await _processEntry(entry, areaCodes, seenEventIds);
-      if (report) reports.push(report);
-    }
-
     // Then fetch history feed (may have duplicates)
     const historyEntries = await _fetchFeedEntries(FEED_URL_HISTORY);
-    for (const entry of historyEntries) {
+
+    // Combine and filter for target reports
+    const targetEntries = [...latestEntries, ...historyEntries].filter(
+      entry => entry.title === '震源・震度に関する情報' && entry.link
+    );
+
+    let processedCount = 0;
+    const totalCount = targetEntries.length + (doTestReport ? 1 : 0);
+
+    if (onProgress) onProgress(processedCount, totalCount);
+
+    for (const entry of targetEntries) {
       const report = await _processEntry(entry, areaCodes, seenEventIds);
       if (report) reports.push(report);
+      
+      processedCount++;
+      if (onProgress) onProgress(processedCount, totalCount);
     }
 
     // ──── TEST MODE: Fetch test report ────────────────────────────────
     if (doTestReport) {
-    try {
-      const testReport = await _fetchTestReport(TEST_REPORT_URL, areaCodes, seenEventIds);
-      if (testReport) reports.push(testReport);
-    } catch (err) {
-      console.warn('Test report fetch failed:', err.message);
+      try {
+        const testReport = await _fetchTestReport(TEST_REPORT_URL, areaCodes, seenEventIds);
+        if (testReport) reports.push(testReport);
+      } catch (err) {
+        console.warn('Test report fetch failed:', err.message);
+      }
+      processedCount++;
+      if (onProgress) onProgress(processedCount, totalCount);
     }
-  }
     // ──────────────────────────────────────────────────────────────────
 
   } catch (err) {
