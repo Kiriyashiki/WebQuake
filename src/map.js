@@ -374,7 +374,7 @@ export function updateCityAreasVisibility(map, useCityAreas) {
   if (!map.isStyleLoaded()) return;
 
   const visibility = useCityAreas ? 'visible' : 'none';
-  const invVisibility = !useCityAreas ? 'visible' : 'none';
+  const invVisibility = useCityAreas ? 'none' : 'visible';
 
   map.setLayoutProperty("cities-base", "visibility", visibility);
   map.setLayoutProperty("cities-fill", "visibility", visibility);

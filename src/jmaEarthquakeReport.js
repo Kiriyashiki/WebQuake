@@ -1,6 +1,7 @@
 /**
  * JMAEarthquakeReport
  * Parses a JMA "震源・震度に関する情報" XML report string into structured data.
+ * Also supports JSON format "震源・震度情報" via the fromJSON static factory method.
  */
 class JMAEarthquakeReport {
   /**
@@ -23,6 +24,26 @@ class JMAEarthquakeReport {
     this.coordinates   = this._parseCoordinates();
     this.depth         = this._parseDepth();
     this.observations  = this._parseObservations();
+  }
+
+  /**
+   * Factory method to create a JMAEarthquakeReport from JSON data.
+   * @param {Object} jsonData - Parsed JSON object from JMA API
+   * @returns {JMAEarthquakeReport}
+   */
+  static fromJSON(jsonData) {
+    const report = Object.create(JMAEarthquakeReport.prototype);
+    
+    report.eventId       = report._parseEventIdFromJson(jsonData);
+    report.originTime    = report._parseOriginTimeFromJson(jsonData);
+    report.hypocenterCode = report._parseHypocenterCodeFromJson(jsonData);
+    report.magnitude     = report._parseMagnitudeFromJson(jsonData);
+    report.maxIntensity  = report._parseMaxIntensityFromJson(jsonData);
+    report.coordinates   = report._parseCoordinatesFromJson(jsonData);
+    report.depth         = report._parseDepthFromJson(jsonData);
+    report.observations  = report._parseObservationsFromJson(jsonData);
+    
+    return report;
   }
 
   // ─── Private helpers ──────────────────────────────────────────────────────
@@ -98,7 +119,7 @@ class JMAEarthquakeReport {
     if (!raw) return null;
     // Pattern: ±DD.D±DDD.D±DDDDD/
     // We capture lat and lon here; depth sign is handled in _parseDepth.
-    const match = raw.match(/^([+-]\d+\.?\d*)([+-]\d+\.?\d*)([+-]\d+\.?\d*)\/$/);
+    const match = /^([+-]\d+\.?\d*)([+-]\d+\.?\d*)([+-]\d+\.?\d*)\/$/u.exec(raw);
     if (!match) return null;
     return {
       latitude:  Number.parseFloat(match[1]),
@@ -114,7 +135,7 @@ class JMAEarthquakeReport {
   _parseDepth() {
     const raw = this._getCoordinateRaw();
     if (!raw) return null;
-    const match = raw.match(/^([+-]\d+\.?\d*)([+-]\d+\.?\d*)([+-]\d+\.?\d*)\/$/);
+    const match = /^([+-]\d+\.?\d*)([+-]\d+\.?\d*)([+-]\d+\.?\d*)\/$/u.exec(raw);
     if (!match) return null;
     const depthMetres = Number.parseFloat(match[3]);
     // Negative metres = underground; return positive km value.
@@ -201,6 +222,105 @@ class JMAEarthquakeReport {
       depth:          this.depth,
       observations:   this.observations,
     };
+  }
+
+  // ─── JSON Parsing Methods ─────────────────────────────────────────────────
+
+  /** Parse EventID from JSON Head.EventID */
+  _parseEventIdFromJson(jsonData) {
+    return jsonData?.Head?.EventID || null;
+  }
+
+  /** Parse origin time from JSON Body.Earthquake.OriginTime */
+  _parseOriginTimeFromJson(jsonData) {
+    const raw = jsonData?.Body?.Earthquake?.OriginTime;
+    if (!raw) return null;
+    const ms = Date.parse(raw);
+    return Number.isNaN(ms) ? null : Math.floor(ms / 1000);
+  }
+
+  /** Parse hypocenter code from JSON Body.Earthquake.Hypocenter.Area.Code */
+  _parseHypocenterCodeFromJson(jsonData) {
+    const code = jsonData?.Body?.Earthquake?.Hypocenter?.Area?.Code;
+    if (!code) return null;
+    return Number.parseInt(code, 10);
+  }
+
+  /** Parse magnitude from JSON Body.Earthquake.Magnitude */
+  _parseMagnitudeFromJson(jsonData) {
+    const mag = jsonData?.Body?.Earthquake?.Magnitude;
+    if (!mag) return null;
+    const v = Number.parseFloat(mag);
+    return Number.isNaN(v) ? null : v;
+  }
+
+  /** Parse max intensity from JSON Body.Intensity.Observation.MaxInt */
+  _parseMaxIntensityFromJson(jsonData) {
+    return jsonData?.Body?.Intensity?.Observation?.MaxInt || null;
+  }
+
+  /** Parse coordinates from JSON Body.Earthquake.Hypocenter.Area.Coordinate */
+  _parseCoordinatesFromJson(jsonData) {
+    const raw = jsonData?.Body?.Earthquake?.Hypocenter?.Area?.Coordinate;
+    if (!raw) return null;
+    // Pattern: ±DD.D±DDD.D±DDDDD/
+    const match = /^([+-]\d+\.?\d*)([+-]\d+\.?\d*)([+-]\d+\.?\d*)\/$/u.exec(raw);
+    if (!match) return null;
+    return {
+      latitude:  Number.parseFloat(match[1]),
+      longitude: Number.parseFloat(match[2]),
+    };
+  }
+
+  /** Parse depth from JSON Body.Earthquake.Hypocenter.Area.Coordinate */
+  _parseDepthFromJson(jsonData) {
+    const raw = jsonData?.Body?.Earthquake?.Hypocenter?.Area?.Coordinate;
+    if (!raw) return null;
+    const match = /^([+-]\d+\.?\d*)([+-]\d+\.?\d*)([+-]\d+\.?\d*)\/$/u.exec(raw);
+    if (!match) return null;
+    const depthMetres = Number.parseFloat(match[3]);
+    return Math.abs(depthMetres) / 1000;
+  }
+
+  /** Parse observations from JSON Body.Intensity.Observation.Pref */
+  _parseObservationsFromJson(jsonData) {
+    const prefArray = jsonData?.Body?.Intensity?.Observation?.Pref;
+    if (!prefArray || !Array.isArray(prefArray)) return [];
+
+    const result = [];
+    for (const pref of prefArray) {
+      const prefEntry = {
+        code:   Number.parseInt(pref.Code, 10),
+        name:   pref.Name || null,
+        maxInt: pref.MaxInt || null,
+        areas:  [],
+      };
+
+      const areaArray = pref.Area || [];
+      for (const area of areaArray) {
+        const areaEntry = {
+          code:   Number.parseInt(area.Code, 10),
+          name:   area.Name || null,
+          maxInt: area.MaxInt || null,
+          cities: [],
+        };
+
+        const cityArray = area.City || [];
+        for (const city of cityArray) {
+          areaEntry.cities.push({
+            code:   Number.parseInt(city.Code, 10),
+            name:   city.Name || null,
+            maxInt: city.MaxInt || null,
+          });
+        }
+
+        prefEntry.areas.push(areaEntry);
+      }
+
+      result.push(prefEntry);
+    }
+
+    return result;
   }
 }
 

@@ -1,8 +1,6 @@
 // ─── API Feed URLs ──────────────────────────────────────────────────────────
-export const FEED_URL_LATEST = 'https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml';
-export const FEED_URL_HISTORY = 'https://www.data.jma.go.jp/developer/xml/feed/eqvol_l.xml';
-export const TEST_REPORT_URL = 'https://www.data.jma.go.jp/developer/xml/data/20260515112753_0_VXSE53_010000.xml';
-export const doTestReport = false;
+export const FEED_URL_LATEST = 'https://www.jma.go.jp/bosai/quake/data/list.json';
+export const FEED_DATA_BASE_URL = 'https://www.jma.go.jp/bosai/quake/data/';
 
 // ─── Intensity Configuration (JMA Shindo Scale) ──────────────────────────────
 export const INTENSITY_CONFIG = {

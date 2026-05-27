@@ -187,7 +187,7 @@ async function boot() {
           onError: (err) => {
             console.warn('[eq-viewer] Live polling error:', err);
           }
-        });
+        }, reports);
       } else {
         console.log('[eq-viewer] Live mode disabled');
         stopLivePolling();

@@ -1,13 +1,13 @@
 /**
- * Fetches and parses JMA earthquake reports from the official feeds.
+ * Fetches and parses JMA earthquake reports from the official JSON feed.
  * Handles duplicate detection and provides parsed report data.
  */
 
 import JMAEarthquakeReport from './jmaEarthquakeReport.js';
-import { FEED_URL_LATEST, FEED_URL_HISTORY, TEST_REPORT_URL, doTestReport } from './constants.js';
+import { FEED_URL_LATEST, FEED_DATA_BASE_URL } from './constants.js';
 
 /**
- * Fetches and parses earthquake reports from both feeds.
+ * Fetches and parses earthquake reports from the JSON feed.
  * Returns array of parsed reports sorted by origin time (newest first).
  * @param {Map} areaCodes - Area code name mappings from areaCodes.js
  * @returns {Promise<Array>} Array of parsed reports
@@ -17,42 +17,32 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onProgress =
   const reports = [];
 
   try {
-    // Fetch latest feed first (with CORS mode)
-    const latestEntries = await _fetchFeedEntries(FEED_URL_LATEST);
-    // Then fetch history feed (may have duplicates)
-    const historyEntries = await _fetchFeedEntries(FEED_URL_HISTORY);
+    // Fetch JSON feed
+    const feedEntries = await _fetchFeedEntries(FEED_URL_LATEST);
 
-    // Combine and filter for target reports
-    const targetEntries = [...latestEntries, ...historyEntries].filter(
-      entry => entry.title === '震源・震度に関する情報' && entry.link
+    // Filter for target reports (震源・震度情報 only)
+    const targetEntries = feedEntries.filter(
+      entry => entry.ttl === '震源・震度情報' && entry.json
     );
 
     let processedCount = 0;
-    const totalCount = targetEntries.length + (doTestReport ? 1 : 0);
+    const totalCount = targetEntries.length;
 
     if (onProgress) onProgress(processedCount, totalCount);
 
-    for (const entry of targetEntries) {
-      const report = await _processEntry(entry, areaCodes, seenEventIds);
-      if (report) reports.push(report);
+    // Process entries in batches of up to 3 in parallel
+    for (let i = 0; i < targetEntries.length; i += 3) {
+      const batch = targetEntries.slice(i, i + 3);
+      const batchPromises = batch.map(entry => _processEntry(entry, areaCodes, seenEventIds));
+      const batchResults = await Promise.all(batchPromises);
       
-      processedCount++;
-      if (onProgress) onProgress(processedCount, totalCount);
-    }
-
-    // ──── TEST MODE: Fetch test report ────────────────────────────────
-    if (doTestReport) {
-      try {
-        const testReport = await _fetchTestReport(TEST_REPORT_URL, areaCodes, seenEventIds);
-        if (testReport) reports.push(testReport);
-      } catch (err) {
-        console.warn('Test report fetch failed:', err.message);
+      for (const report of batchResults) {
+        if (report) reports.push(report);
+        
+        processedCount++;
+        if (onProgress) onProgress(processedCount, totalCount);
       }
-      processedCount++;
-      if (onProgress) onProgress(processedCount, totalCount);
     }
-    // ──────────────────────────────────────────────────────────────────
-
   } catch (err) {
     console.error('Failed to fetch reports:', err);
   }
@@ -65,9 +55,8 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onProgress =
 // ─── Private helpers ──────────────────────────────────────────────────────
 
 /**
- * Fetches and parses a feed XML, returning array of entry objects.
- * Each entry has { title, id, link, content, updated }.
- * Uses CORS mode to work with external feeds.
+ * Fetches and parses the JSON feed, returning array of entry objects.
+ * Each entry has { eid, rdt, ttl, ift, ser, at, anm, maxi, json, ... }
  */
 async function _fetchFeedEntries(feedUrl) {
   try {
@@ -81,36 +70,14 @@ async function _fetchFeedEntries(feedUrl) {
       throw new Error(`Feed fetch failed: ${feedUrl} (${res.status})`);
     }
 
-    const text = await res.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(text, 'application/xml');
-
-    const parseError = doc.querySelector('parsererror');
-    if (parseError) {
-      throw new Error(`Feed XML parse error: ${parseError.textContent}`);
+    const data = await res.json();
+    
+    // The feed is an array of entries
+    if (!Array.isArray(data)) {
+      throw new TypeError('Feed is not an array');
     }
 
-    const entries = [];
-    for (const entry of doc.getElementsByTagName('entry')) {
-      const title = entry.getElementsByTagName('title')[0]?.textContent?.trim() || '';
-      const id = entry.getElementsByTagName('id')[0]?.textContent?.trim() || '';
-      const updated = entry.getElementsByTagName('updated')[0]?.textContent?.trim() || '';
-      
-      // Get link href (type="application/xml")
-      let link = '';
-      for (const l of entry.getElementsByTagName('link')) {
-        if (l.getAttribute('type') === 'application/xml') {
-          link = l.getAttribute('href') || '';
-          break;
-        }
-      }
-
-      const content = entry.getElementsByTagName('content')[0]?.textContent?.trim() || '';
-
-      entries.push({ title, id, updated, link, content });
-    }
-
-    return entries;
+    return data;
   } catch (err) {
     console.error(`Error fetching feed ${feedUrl}:`, err);
     throw err;
@@ -118,31 +85,32 @@ async function _fetchFeedEntries(feedUrl) {
 }
 
 /**
- * Processes a single feed entry: checks if it's VXSE53, fetches the XML report,
- * parses it, and returns a display-ready report object.
+ * Processes a single feed entry: checks if it's the target report type,
+ * fetches the JSON report, parses it, and returns a display-ready report object.
  * Skips if already seen (by event ID).
  */
 async function _processEntry(entry, areaCodes, seenEventIds) {
-  // Check if this is a VXSE53 entry (震源・震度に関する情報)
-  if (entry.title !== '震源・震度に関する情報' || !entry.link) {
+  // Check if this is a target entry (震源・震度情報)
+  if (entry.ttl !== '震源・震度情報' || !entry.json) {
     return null;
   }
 
   try {
-    // Fetch the actual earthquake report XML with CORS mode
-    const res = await fetch(entry.link, {
+    // Fetch the actual earthquake report JSON
+    const reportUrl = FEED_DATA_BASE_URL + entry.json;
+    const res = await fetch(reportUrl, {
       method: 'GET',
       mode: 'cors',
       cache: 'no-cache'
     });
 
     if (!res.ok) {
-      console.warn(`Failed to fetch report: ${entry.link} (${res.status})`);
+      console.warn(`Failed to fetch report: ${reportUrl} (${res.status})`);
       return null;
     }
 
-    const xmlText = await res.text();
-    const jmaReport = new JMAEarthquakeReport(xmlText);
+    const jsonData = await res.json();
+    const jmaReport = JMAEarthquakeReport.fromJSON(jsonData);
 
     // Skip if we've already seen this event
     if (seenEventIds.has(jmaReport.eventId)) {
@@ -171,67 +139,12 @@ async function _processEntry(entry, areaCodes, seenEventIds) {
       observations: jmaReport.observations,
       // Store original JMA report for reference
       jmaReport,
+      // Store feed entry metadata for live mode tracking
+      feedRdt: entry.rdt,
+      feedJson: entry.json,
     };
   } catch (err) {
-    console.warn('Error processing entry:', entry.id, err.message);
-    return null;
-  }
-}
-
-/**
- * Fetches and processes a single test report XML URL.
- * Used only for testing/development
- * 
- * @param {string} reportUrl - Direct URL to a JMA earthquake report XML
- * @param {Map} areaCodes - Area code name mappings
- * @param {Set} seenEventIds - Set of already-seen event IDs to prevent duplicates
- * @returns {Promise<Object|null>} Parsed report object or null if error
- */
-async function _fetchTestReport(reportUrl, areaCodes, seenEventIds) {
-  try {
-    const res = await fetch(reportUrl, {
-      method: 'GET',
-      mode: 'cors',
-      cache: 'no-cache'
-    });
-
-    if (!res.ok) {
-      console.warn(`Test report fetch failed: ${reportUrl} (${res.status})`);
-      return null;
-    }
-
-    const xmlText = await res.text();
-    const jmaReport = new JMAEarthquakeReport(xmlText);
-
-    // Skip if we've already seen this event
-    if (seenEventIds.has(jmaReport.eventId)) {
-      return null;
-    }
-    seenEventIds.add(jmaReport.eventId);
-
-    // Get hypocenter name from area codes
-    const hypocenterCodeEntry = areaCodes.get(jmaReport.hypocenterCode) || {};
-    const hypocenterJa = hypocenterCodeEntry.ja || '不明';
-    const hypocenterKana = hypocenterCodeEntry.kana || 'ふめい';
-    const hypocenterEn = hypocenterCodeEntry.en || 'Unknown';
-
-    // Build display-ready report object
-    return {
-      eventId: jmaReport.eventId,
-      originTime: jmaReport.originTime,
-      magnitude: jmaReport.magnitude,
-      maxIntensity: jmaReport.maxIntensity,
-      hypocenterCode: jmaReport.hypocenterCode,
-      hypocenterJa,
-      hypocenterKana,
-      hypocenterEn,
-      coordinates: jmaReport.coordinates,
-      depth: jmaReport.depth,
-      observations: jmaReport.observations,
-      jmaReport,
-    };
-  } catch (err) {
-    console.warn('Error fetching test report:', err.message);
+    console.warn('Error processing entry:', entry.eid, err.message);
     return null;
   }
 }

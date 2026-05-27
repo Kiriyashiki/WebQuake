@@ -1,17 +1,18 @@
 /**
- * Live mode controller: Polls the latest feed for new/updated earthquake entries.
- * Compares entries by their 'updated' timestamp and triggers callbacks for changes.
+ * Live mode controller: Polls the latest JSON feed for new/updated earthquake entries.
+ * Compares entries by their 'rdt' timestamp and triggers callbacks for changes.
  */
 
-import { FEED_URL_LATEST, POLL_INTERVAL } from "./constants.js";
+import { FEED_URL_LATEST, FEED_DATA_BASE_URL, POLL_INTERVAL } from "./constants.js";
 
 /**
  * Tracks the last seen entries with their updated timestamps.
- * Map of eventId -> { updated: ISO string, linkUrl: string }
+ * Map of eventId -> { rdt: ISO string, jsonFile: string }
  */
 let _trackedEntries = new Map();
 
 let _pollingIntervalId = null;
+let _pollingTimeoutId = null;
 
 /**
  * Starts live mode polling.
@@ -21,8 +22,9 @@ let _pollingIntervalId = null;
  *   - onNewEntry(entry, report): Called when a new entry is detected
  *   - onUpdatedEntry(entry, report): Called when an entry is updated
  *   - onError(err): Called if polling fails
+ * @param {Array} initialReports - Initial reports already loaded (for tracking purposes)
  */
-export function startLivePolling(areaCodes, callbacks = {}) {
+export function startLivePolling(areaCodes, callbacks = {}, initialReports = []) {
   if (_pollingIntervalId !== null) {
     console.warn("[live-mode] Polling already active");
     return;
@@ -30,12 +32,23 @@ export function startLivePolling(areaCodes, callbacks = {}) {
 
   console.log("[live-mode] Starting polling...");
 
-  // Do initial poll immediately
-  _pollLatestFeed(areaCodes, callbacks);
+  // Initialize tracked entries with initial reports
+  for (const report of initialReports) {
+    if (report.eventId && report.feedRdt && report.feedJson) {
+      _trackedEntries.set(report.eventId, {
+        rdt: report.feedRdt,
+        jsonFile: report.feedJson,
+      });
+    }
+  }
 
-  // Then set up interval polling
-  _pollingIntervalId = setInterval(() => {
+  // Delay first poll by POLL_INTERVAL, then set up interval polling
+  _pollingTimeoutId = setTimeout(() => {
+    _pollingTimeoutId = null;
     _pollLatestFeed(areaCodes, callbacks);
+    _pollingIntervalId = setInterval(() => {
+      _pollLatestFeed(areaCodes, callbacks);
+    }, POLL_INTERVAL);
   }, POLL_INTERVAL);
 }
 
@@ -43,11 +56,15 @@ export function startLivePolling(areaCodes, callbacks = {}) {
  * Stops live mode polling.
  */
 export function stopLivePolling() {
+  if (_pollingTimeoutId !== null) {
+    clearTimeout(_pollingTimeoutId);
+    _pollingTimeoutId = null;
+  }
   if (_pollingIntervalId !== null) {
     clearInterval(_pollingIntervalId);
     _pollingIntervalId = null;
-    console.log("[live-mode] Polling stopped");
   }
+  console.log("[live-mode] Polling stopped");
 }
 
 /**
@@ -55,7 +72,7 @@ export function stopLivePolling() {
  * @returns {boolean}
  */
 export function isPolling() {
-  return _pollingIntervalId !== null;
+  return _pollingTimeoutId !== null || _pollingIntervalId !== null;
 }
 
 // ─── Private helpers ──────────────────────────────────────────────────────
@@ -67,17 +84,16 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
   try {
     const entries = await _fetchFeedEntries(FEED_URL_LATEST);
 
-    // Filter for VXSE53 entries only
+    // Filter for target entries only (震源・震度情報)
     const targetEntries = entries.filter(
       (entry) =>
-        entry.title === "震源・震度に関する情報" &&
-        entry.link &&
-        entry.updated
+        entry.ttl === "震源・震度情報" &&
+        entry.json &&
+        entry.rdt
     );
 
     for (const entry of targetEntries) {
-      // Parse event ID from link URL or id field
-      const eventId = _extractEventIdFromEntry(entry);
+      const eventId = entry.eid;
       if (!eventId) continue;
 
       const trackedEntry = _trackedEntries.get(eventId);
@@ -86,8 +102,8 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
         // NEW ENTRY
         console.log("[live-mode] New entry detected:", eventId);
         _trackedEntries.set(eventId, {
-          updated: entry.updated,
-          linkUrl: entry.link,
+          rdt: entry.rdt,
+          jsonFile: entry.json,
         });
 
         // Fetch and parse the report
@@ -95,12 +111,12 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
         if (report && callbacks.onNewEntry) {
           callbacks.onNewEntry(entry, report);
         }
-      } else if (entry.updated !== trackedEntry.updated) {
+      } else if (entry.rdt !== trackedEntry.rdt) {
         // UPDATED ENTRY
         console.log("[live-mode] Updated entry detected:", eventId);
         _trackedEntries.set(eventId, {
-          updated: entry.updated,
-          linkUrl: entry.link,
+          rdt: entry.rdt,
+          jsonFile: entry.json,
         });
 
         // Fetch and parse the updated report
@@ -116,9 +132,11 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
   }
 }
 
+// ─── Private helpers ──────────────────────────────────────────────────────
+
 /**
- * Fetches and parses a feed XML, returning array of entry objects.
- * Each entry has { title, id, link, content, updated }.
+ * Fetches and parses the JSON feed, returning array of entry objects.
+ * Each entry has { eid, rdt, ttl, ift, ser, at, anm, maxi, json, ... }
  */
 async function _fetchFeedEntries(feedUrl) {
   try {
@@ -132,40 +150,14 @@ async function _fetchFeedEntries(feedUrl) {
       throw new Error(`Feed fetch failed: ${feedUrl} (${res.status})`);
     }
 
-    const text = await res.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(text, "application/xml");
-
-    const parseError = doc.querySelector("parsererror");
-    if (parseError) {
-      throw new Error(`Feed XML parse error: ${parseError.textContent}`);
+    const data = await res.json();
+    
+    // The feed is an array of entries
+    if (!Array.isArray(data)) {
+      throw new TypeError("Feed is not an array");
     }
 
-    const entries = [];
-    for (const entry of doc.getElementsByTagName("entry")) {
-      const title =
-        entry.getElementsByTagName("title")[0]?.textContent?.trim() || "";
-      const id =
-        entry.getElementsByTagName("id")[0]?.textContent?.trim() || "";
-      const updated =
-        entry.getElementsByTagName("updated")[0]?.textContent?.trim() || "";
-
-      // Get link href (type="application/xml")
-      let link = "";
-      for (const l of entry.getElementsByTagName("link")) {
-        if (l.getAttribute("type") === "application/xml") {
-          link = l.getAttribute("href") || "";
-          break;
-        }
-      }
-
-      const content =
-        entry.getElementsByTagName("content")[0]?.textContent?.trim() || "";
-
-      entries.push({ title, id, updated, link, content });
-    }
-
-    return entries;
+    return data;
   } catch (err) {
     console.error(`Error fetching feed ${feedUrl}:`, err);
     throw err;
@@ -173,14 +165,9 @@ async function _fetchFeedEntries(feedUrl) {
 }
 
 /**
- * Extracts event ID from a feed entry (from the XML report filename in the link).
- * Example: https://...20260525081825_0_VXSE53_010000.xml -> "20260525081825"
+ * Fetches and parses a single report entry.
+ * Returns a parsed report object with observations, or null if error.
  */
-function _extractEventIdFromEntry(entry) {
-  if (!entry.link) return null;
-  const match = entry.link.match(/(\d{14})_0_VXSE53_/);
-  return match ? match[1] : null;
-}
 
 /**
  * Fetches and parses a single report entry.
@@ -191,7 +178,8 @@ async function _fetchAndParseEntry(entry, areaCodes) {
     // Import here to avoid circular dependency
     const JMAEarthquakeReport = (await import("./jmaEarthquakeReport.js")).default;
 
-    const res = await fetch(entry.link, {
+    const reportUrl = FEED_DATA_BASE_URL + entry.json;
+    const res = await fetch(reportUrl, {
       method: "GET",
       mode: "cors",
       cache: "no-cache",
@@ -199,13 +187,13 @@ async function _fetchAndParseEntry(entry, areaCodes) {
 
     if (!res.ok) {
       console.warn(
-        `[live-mode] Failed to fetch report: ${entry.link} (${res.status})`
+        `[live-mode] Failed to fetch report: ${reportUrl} (${res.status})`
       );
       return null;
     }
 
-    const xmlText = await res.text();
-    const jmaReport = new JMAEarthquakeReport(xmlText);
+    const jsonData = await res.json();
+    const jmaReport = JMAEarthquakeReport.fromJSON(jsonData);
 
     // Get hypocenter name from area codes
     const hypocenterCodeEntry = areaCodes.get(jmaReport.hypocenterCode) || {};
@@ -227,9 +215,12 @@ async function _fetchAndParseEntry(entry, areaCodes) {
       depth: jmaReport.depth,
       observations: jmaReport.observations,
       jmaReport,
+      // Store feed entry metadata for tracking
+      feedRdt: entry.rdt,
+      feedJson: entry.json,
     };
   } catch (err) {
-    console.warn("[live-mode] Error processing entry:", entry.id, err.message);
+    console.warn("[live-mode] Error processing entry:", entry.eid, err.message);
     return null;
   }
 }

@@ -8,7 +8,7 @@ Live at [webquake.hainaut.xyz](https://webquake.hainaut.xyz?utm_source=github)
 
 ## Features
 
-- List of part earthquakes (up to 7 days old)
+- List of part earthquakes (up to 30 days old)
 - Description of the earthquake (Mangitude, Intensity, Date and Time, etc.)
 - On map visualization of the epicenter, and recorded intensity by area/city
 - Full list of localities sorted by their recorded intensity
@@ -31,7 +31,7 @@ pnpm run build
 ### Attribution · Sources
 
 - [Japan Meteorological Agency (JMA · 気象庁)](https://www.jma.go.jp/jma/index.html)<br>
-    - <a href="https://xml.kishou.go.jp/xmlpull.html">XML Pull</a>: Earthquake reports XML feed
+    - <a href="https://www.jma.go.jp/bosai/">Bosai · 防災情報</a>: Earthquake reports json feed
     - <a href="https://www.data.jma.go.jp/developer/gis.html">GIS Area data</a>: Map data of prefectures/forecast areas
     - <a href="https://www.data.jma.go.jp/developer/multilingual.html">Area/City names</a>: Name definition of area/city codes
 - <a href="https://jquake.net/">JQuake</a>: Intensity color scale
