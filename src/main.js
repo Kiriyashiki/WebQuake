@@ -132,6 +132,11 @@ async function boot() {
         startLivePolling(areaCodes, {
           onNewEntry: (entry, report) => {
             console.log('[eq-viewer] New entry:', report.eventId);
+            
+            // Play notification sound
+            const audio = new Audio('/sfx/ping.wav');
+            audio.play().catch(err => console.warn('[eq-viewer] Failed to play sound:', err));
+            
             const added = addReportToSidebar(report, onReportSelect);
             if (added && report.coordinates) {
               // Add new epicenter to map
