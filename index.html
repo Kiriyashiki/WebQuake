@@ -47,11 +47,10 @@
             </ul>
           </div>
           <div class="sidebar-footer">
-            <label class="live-mode-toggle" data-tooltip="Enable live polling for new/updated reports • 新規•更新された報告のリアルタイム取得を有効にする">
-              <input type="checkbox" id="live-mode-toggle" />
-              <span class="toggle-switch"></span>
-              <span class="toggle-label">Live<br>ライブ</span>
-            </label>
+            <button id="settings-btn" class="settings-btn" aria-label="Settings and Credits" data-tooltip="Extra settings and data attributions • 出典追加設定とデータ出典">
+              <span class="settings-icon">⚙️</span>
+              <span class="toggle-label">Settings<br>設定</span>
+            </button>
             <label class="live-mode-toggle auto-open-toggle" data-tooltip="Automatically open newly recieved reports • 新しく受信したレポートを自動的に開く">
               <input type="checkbox" id="auto-open-toggle" />
               <span class="toggle-switch"></span>
@@ -150,28 +149,35 @@
             </div>
           </div>
 
-          <!-- Map attribution -->
-          <button id="attribution-btn" class="mono" aria-label="Attribution">ⓘ</button>
-
-          <!-- Attribution popup -->
-          <div id="attribution-popup" class="hidden">
-            <div class="attribution-popup-content">
-              <div class="attribution-popup-header">
-                <span class="mono">Attribution · 出典</span>
-                <button id="attribution-close-btn" aria-label="Close">✕</button>
+          <!-- Settings popup -->
+          <div id="settings-popup" class="hidden">
+            <div class="settings-popup-content">
+              <div class="settings-popup-header">
+                <span class="mono">Settings & Credits · 設定と出典</span>
+                <button id="settings-close-btn" aria-label="Close">✕</button>
               </div>
-              <div class="attribution-popup-body">
-                <p><a href="https://maplibre.org/projects/gl-js/" target="_blank">MapLibre GL JS</a></p>
-                <p>
-                  Japan Meteorological Agency (JMA · 気象庁)<br />
-                  - <a href="https://www.jma.go.jp/bosai/" target="_blank">Bosai · 防災情報</a><br />
-                  - <a href="https://www.data.jma.go.jp/developer/gis.html" target="_blank">GIS Area data</a><br />
-                  -
-                  <a href="https://www.data.jma.go.jp/developer/multilingual.html" target="_blank"
-                    >Area/City names</a
-                  >
-                </p>
-                <p><a href="https://jquake.net/" target="_blank">JQuake (Intensity color scale)</a></p>
+              <div class="settings-popup-body">
+                <div class="settings-section">
+                  <label class="live-mode-toggle popup-setting" data-tooltip="Enable live polling for new/updated reports • 新規•更新された報告のリアルタイム取得を有効にする">
+                    <input type="checkbox" id="live-mode-toggle" />
+                    <span class="toggle-label" style="flex-grow: 1; text-align: left;">Live Mode<br>ライブモード</span>
+                    <span class="toggle-switch"></span>
+                  </label>
+                </div>
+                <div class="settings-divider"></div>
+                <div class="credits-section">
+                  <p><a href="https://maplibre.org/projects/gl-js/" target="_blank">MapLibre GL JS</a></p>
+                  <p>
+                    Japan Meteorological Agency (JMA · 気象庁)<br />
+                    - <a href="https://www.jma.go.jp/bosai/" target="_blank">Bosai · 防災情報</a><br />
+                    - <a href="https://www.data.jma.go.jp/developer/gis.html" target="_blank">GIS Area data</a><br />
+                    -
+                    <a href="https://www.data.jma.go.jp/developer/multilingual.html" target="_blank"
+                      >Area/City names</a
+                    >
+                  </p>
+                  <p><a href="https://jquake.net/" target="_blank">JQuake (Intensity color scale)</a></p>
+                </div>
               </div>
             </div>
           </div>

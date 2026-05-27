@@ -126,19 +126,19 @@
 }
 
 /* Sidebar Footer Tooltip Positioning Tweaks to Prevent Spilling */
-.sidebar-footer .live-mode-toggle:first-child[data-tooltip]::after {
+.sidebar-footer [data-tooltip]:first-child::after {
   left: 0;
   transform: translateX(0) translateY(-8px);
 }
-.sidebar-footer .live-mode-toggle:first-child[data-tooltip]:hover::after {
+.sidebar-footer [data-tooltip]:first-child:hover::after {
   transform: translateX(0) translateY(-4px);
 }
 
-.sidebar-footer .live-mode-toggle:last-child[data-tooltip]::after {
+.sidebar-footer [data-tooltip]:last-child::after {
   left: auto;
   right: 0;
   transform: translateX(0) translateY(-8px);
 }
-.sidebar-footer .live-mode-toggle:last-child[data-tooltip]:hover::after {
+.sidebar-footer [data-tooltip]:last-child:hover::after {
   transform: translateX(0) translateY(-4px);
 }

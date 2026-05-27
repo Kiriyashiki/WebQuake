@@ -279,11 +279,11 @@
   transition: left 0.3s ease;
 }
 
-.live-mode-toggle input[type="checkbox"]:checked + .toggle-switch {
+.live-mode-toggle input[type="checkbox"]:checked ~ .toggle-switch {
   background: #32B464;
 }
 
-.live-mode-toggle input[type="checkbox"]:checked + .toggle-switch::after {
+.live-mode-toggle input[type="checkbox"]:checked ~ .toggle-switch::after {
   left: 16px;
 }
 
@@ -292,4 +292,34 @@
   font-weight: 500;
   color: var(--text);
   white-space: nowrap;
+}
+
+.settings-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel2);
+  transition: all 0.2s ease;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.settings-btn:hover {
+  background: var(--bg-panel);
+  border-color: var(--border-hi);
+}
+
+.settings-btn .settings-icon {
+  font-size: 16px;
+}
+
+.settings-btn .toggle-label {
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
 }

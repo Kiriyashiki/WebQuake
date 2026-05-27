@@ -125,7 +125,12 @@ export function initLiveModeToggle(onToggle) {
   if (!toggleEl) return;
 
   // Load saved state from localStorage
-  const savedState = localStorage.getItem("live-mode-enabled") === "true";
+  let savedState = localStorage.getItem("live-mode-enabled");
+  if (savedState == null) {
+    savedState = true;
+    localStorage.setItem("live-mode-enabled", "true");
+  }
+  savedState = savedState === "true";
   toggleEl.checked = savedState;
 
   // Set initial callback

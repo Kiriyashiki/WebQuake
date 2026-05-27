@@ -63,21 +63,27 @@ async function boot() {
     });
   }
 
-  // Setup attribution modal
-  const attributionBtn = document.getElementById('attribution-btn');
-  const attributionPopup = document.getElementById('attribution-popup');
-  const attributionCloseBtn = document.getElementById('attribution-close-btn');
+  // Setup settings modal
+  const settingsBtn = document.getElementById('settings-btn');
+  const settingsPopup = document.getElementById('settings-popup');
+  const settingsCloseBtn = document.getElementById('settings-close-btn');
 
-  if (attributionBtn && attributionPopup) {
-    attributionBtn.addEventListener('click', () => {
-      attributionPopup.classList.toggle('hidden');
+  if (settingsBtn && settingsPopup) {
+    settingsBtn.addEventListener('click', () => {
+      settingsPopup.classList.toggle('hidden');
     });
 
-    if (attributionCloseBtn) {
-      attributionCloseBtn.addEventListener('click', () => {
-        attributionPopup.classList.add('hidden');
+    if (settingsCloseBtn) {
+      settingsCloseBtn.addEventListener('click', () => {
+        settingsPopup.classList.add('hidden');
       });
     }
+
+    settingsPopup.addEventListener('click', (e) => {
+      if (e.target === settingsPopup) {
+        settingsPopup.classList.add('hidden');
+      }
+    });
   }
 
   // Initialize sidebar with earthquake reports
