@@ -2,7 +2,8 @@
 
 #layout {
   display: flex;
-  height: 100vh;
+  height: 100%;
   padding-top: var(--topbar-h);
   position: relative;
+  box-sizing: border-box;
 }
