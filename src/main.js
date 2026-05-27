@@ -1,9 +1,9 @@
 import "../styles/index.css";
 import { formatTimeJST, INTENSITY_CONFIG } from "./constants.js";
 import { createRubyHtml, loadAreaCodes, loadPrefectureCodes, loadCityNames } from "./areaCodes.js";
-import { initMap, highlightObservations, displayEpicenter, clearEpicenter, displayAllEpicenters, clearAllEpicenters, updateCityAreasVisibility, fitBoundsToObservations } from "./map.js";
+import { initMap, highlightObservations, displayEpicenter, clearEpicenter, displayAllEpicenters, clearAllEpicenters, updateCityAreasVisibility, fitBoundsToObservations, displayHomeMarker, clearHomeMarker } from "./map.js";
 import { fetchEarthquakeReports } from "./parseReports.js";
-import { initSidebar, updateSidebarLoading, initLiveModeToggle, initAutoOpenToggle, initCityAreasToggle, addReportToSidebar, updateReportInSidebar, getReportById, getAutoOpenState, getCityAreasState } from "./sidebarUI.js";
+import { initSidebar, updateSidebarLoading, initLiveModeToggle, initAutoOpenToggle, initCityAreasToggle, initHomeLocationSettings, getHomeLocation, addReportToSidebar, updateReportInSidebar, getAutoOpenState, getCityAreasState } from "./sidebarUI.js";
 import { renderObservationsList } from "./observationsList.js";
 import { startLivePolling, stopLivePolling } from "./liveMode.js";
 
@@ -215,6 +215,23 @@ async function boot() {
       console.log('[eq-viewer] City areas:', isEnabled ? 'enabled' : 'disabled');
       updateCityAreasVisibility(map, isEnabled);
     });
+
+    // Initialize home location settings
+    initHomeLocationSettings(prefectureCodes, cityNames, (homeLocation) => {
+      console.log('[eq-viewer] Home location updated:', homeLocation);
+      
+      if (homeLocation.showMarker) {
+        displayHomeMarker(map, homeLocation.cityCode, featureBounds);
+      } else {
+        clearHomeMarker(map);
+      }
+    });
+
+    // Display initial home marker if enabled
+    const initialHomeLocation = getHomeLocation();
+    if (initialHomeLocation.showMarker) {
+      displayHomeMarker(map, initialHomeLocation.cityCode, featureBounds);
+    }
   } catch (err) {
     console.error('[eq-viewer] Failed to fetch initial reports:', err);
     _updateStatus('error');

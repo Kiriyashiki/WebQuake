@@ -567,3 +567,73 @@ export function clearAllEpicenters(map) {
     map._allEpicenters = [];
   }
 }
+
+// ─── Home Location marker helpers ────────────────────────────────────────────
+/**
+ * Adds or updates the home location marker at the center of a city bounds.
+ * @param {maplibregl.Map} map
+ * @param {string} cityCode - The city code (7-digit string)
+ * @param {Object} featureBounds - The loaded bounds.json object
+ * @returns {maplibregl.Marker|null}
+ */
+function addHomeMarker(map, cityCode, featureBounds) {
+  if (!cityCode || !featureBounds?.cities) {
+    return null;
+  }
+
+  const bounds = featureBounds.cities[cityCode];
+  if (!bounds) {
+    return null;
+  }
+
+  // Calculate center of bounds: [minLng, minLat, maxLng, maxLat]
+  const centerLng = (bounds[0] + bounds[2]) / 2;
+  const centerLat = (bounds[1] + bounds[3]) / 2;
+
+  // Remove existing home marker if any
+  if (map._homeMarker) {
+    map._homeMarker.remove();
+  }
+
+  // Create marker element
+  const markerEl = document.createElement("div");
+  markerEl.className = "home-marker";
+  markerEl.innerHTML = `<img src="/img/home.png" alt="Home" title="Home Location · ホーム場所" />`;
+
+  const marker = new maplibregl.Marker({ element: markerEl })
+    .setLngLat([centerLng, centerLat])
+    .addTo(map);
+
+  map._homeMarker = marker;
+  return marker;
+}
+
+/**
+ * Removes the home location marker from the map.
+ * @param {maplibregl.Map} map
+ */
+function removeHomeMarker(map) {
+  if (map._homeMarker) {
+    map._homeMarker.remove();
+    map._homeMarker = null;
+  }
+}
+
+/**
+ * Display or update the home location marker on the map.
+ * @param {maplibregl.Map} map
+ * @param {string} cityCode - The city code (7-digit string)
+ * @param {Object} featureBounds - The loaded bounds.json object
+ * @returns {maplibregl.Marker|null}
+ */
+export function displayHomeMarker(map, cityCode, featureBounds) {
+  return addHomeMarker(map, cityCode, featureBounds);
+}
+
+/**
+ * Remove the home location marker from the map.
+ * @param {maplibregl.Map} map
+ */
+export function clearHomeMarker(map) {
+  removeHomeMarker(map);
+}

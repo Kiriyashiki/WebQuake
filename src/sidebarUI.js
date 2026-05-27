@@ -251,7 +251,7 @@ export function addReportToSidebar(report, onReportSelect) {
       existingReport &&
       (report.originTime || 0) > (existingReport.originTime || 0)
     ) {
-      eqList.insertBefore(item, existingItem);
+      existingItem.before(item);
       inserted = true;
       break;
     }
@@ -301,4 +301,128 @@ export function updateReportInSidebar(updatedReport, onReportSelect) {
  */
 export function getReportById(eventId) {
   return _currentReports.find((r) => r.eventId === eventId) || null;
+}
+
+/**
+ * Initializes the home location settings with prefecture and city dropdowns.
+ * @param {Map<number, {name, kana, enName}>} prefectureCodes - Prefecture code mappings
+ * @param {Map<string, {ja, en}>} cityNames - City name mappings
+ * @param {Function} onHomeLocationChange - Callback({prefectureCode, cityCode, showMarker}) when settings change
+ */
+export function initHomeLocationSettings(prefectureCodes, cityNames, onHomeLocationChange) {
+  const prefSelectEl = document.getElementById("home-prefecture-select");
+  const citySelectEl = document.getElementById("home-city-select");
+  const markerToggleEl = document.getElementById("home-marker-toggle");
+
+  if (!prefSelectEl || !citySelectEl || !markerToggleEl) return;
+
+  // Load saved home location from localStorage, default to Tokyo Shinjuku (1310400)
+  const savedPref = localStorage.getItem("home-prefecture") || "13";
+  const savedCity = localStorage.getItem("home-city") || "1310400";
+  const savedShowMarker = localStorage.getItem("home-marker-enabled") === "true";
+
+  // Populate prefecture dropdown
+  prefSelectEl.innerHTML = "";
+  for (const [code, info] of Array.from(prefectureCodes.entries()).sort((a, b) => a[0] - b[0])) {
+    const option = document.createElement("option");
+    option.value = code;
+    option.textContent = `${info.name} • ${info.enName}`;
+    prefSelectEl.appendChild(option);
+  }
+  prefSelectEl.value = savedPref;
+
+  // Function to populate city dropdown based on selected prefecture
+  const updateCityOptions = (prefCode) => {
+    const prefixStr = String(prefCode).padStart(2, "0");
+    const citiesInPref = Array.from(cityNames.entries())
+      .filter(([code]) => code.startsWith(prefixStr))
+      .sort((a, b) => a[0].localeCompare(b[0]));
+
+    citySelectEl.innerHTML = "";
+    for (const [code, info] of citiesInPref) {
+      const option = document.createElement("option");
+      option.value = code;
+      option.textContent = `${info.ja} • ${info.en}`;
+      citySelectEl.appendChild(option);
+    }
+
+    // Set city selection to saved value if it still exists, or first available
+    if (savedCity && citiesInPref.some(([code]) => code === savedCity)) {
+      citySelectEl.value = savedCity;
+    } else if (citiesInPref.length > 0) {
+      citySelectEl.value = citiesInPref[0][0];
+    }
+  };
+
+  // Initial city population
+  updateCityOptions(savedPref);
+
+  // Set marker toggle
+  markerToggleEl.checked = savedShowMarker;
+
+  // Handle prefecture change
+  prefSelectEl.addEventListener("change", () => {
+    const prefCode = prefSelectEl.value;
+    localStorage.setItem("home-prefecture", prefCode);
+    updateCityOptions(prefCode);
+
+    if (onHomeLocationChange) {
+      onHomeLocationChange({
+        prefectureCode: Number(prefCode),
+        cityCode: citySelectEl.value,
+        showMarker: markerToggleEl.checked,
+      });
+    }
+  });
+
+  // Handle city change
+  citySelectEl.addEventListener("change", () => {
+    const cityCode = citySelectEl.value;
+    localStorage.setItem("home-city", cityCode);
+
+    if (onHomeLocationChange) {
+      onHomeLocationChange({
+        prefectureCode: Number(prefSelectEl.value),
+        cityCode: cityCode,
+        showMarker: markerToggleEl.checked,
+      });
+    }
+  });
+
+  // Handle marker toggle
+  markerToggleEl.addEventListener("change", () => {
+    const isEnabled = markerToggleEl.checked;
+    localStorage.setItem("home-marker-enabled", isEnabled ? "true" : "false");
+
+    if (onHomeLocationChange) {
+      onHomeLocationChange({
+        prefectureCode: Number(prefSelectEl.value),
+        cityCode: citySelectEl.value,
+        showMarker: isEnabled,
+      });
+    }
+  });
+
+  // Return initial state
+  return {
+    prefectureCode: Number(savedPref),
+    cityCode: savedCity || (citySelectEl.value ? citySelectEl.value : ""),
+    showMarker: savedShowMarker,
+  };
+}
+
+/**
+ * Gets the current home location settings.
+ * @returns {{prefectureCode: number, cityCode: string, showMarker: boolean}}
+ */
+export function getHomeLocation() {
+  const prefSelectEl = document.getElementById("home-prefecture-select");
+  const citySelectEl = document.getElementById("home-city-select");
+  const markerToggleEl = document.getElementById("home-marker-toggle");
+
+  return {
+    prefectureCode: prefSelectEl ? Number(prefSelectEl.value) : 13,
+    cityCode: citySelectEl ? citySelectEl.value : "",
+    showMarker: markerToggleEl ? markerToggleEl.checked : false,
+  };
 }

@@ -87,6 +87,21 @@
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
+/* ── Home Location marker ───────────────────────────────────────── */
+
+.home-marker {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.home-marker img {
+  width: 18px;
+  height: 18px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
 /* ── Generic Tooltip ───────────────────────────────────────────── */
 
 [data-tooltip] {

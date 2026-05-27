@@ -107,6 +107,59 @@
   margin-bottom: 0;
 }
 
+/* ── Home Location Settings ───────────────────────────────────── */
+.home-location-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.home-location-header {
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.home-location-dropdowns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.dropdown-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dropdown-group label {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.dropdown-group select {
+  padding: 6px 8px;
+  background: var(--bg-panel2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dropdown-group select:hover {
+  border-color: var(--border-hi);
+}
+
+.dropdown-group select:focus {
+  outline: none;
+  border-color: var(--border-hi);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
 /* ── Map Info Box ───────────────────────────────────────────────── */
 
 .map-info-box {
