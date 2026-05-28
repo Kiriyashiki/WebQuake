@@ -120,32 +120,47 @@
             </div>
           </div>
 
-          <!-- Legend -->
-          <div id="map-legend">
-            <div class="legend-title mono">震度 · INTENSITY</div>
-            <div class="legend-items">
-              <div class="legend-item"><img src="/img/shindo/1.png" alt="1" /><span>1</span></div>
-              <div class="legend-item"><img src="/img/shindo/2.png" alt="2" /><span>2</span></div>
-              <div class="legend-item"><img src="/img/shindo/3.png" alt="3" /><span>3</span></div>
-              <div class="legend-item"><img src="/img/shindo/4.png" alt="4" /><span>4</span></div>
-              <div class="legend-item">
-                <img src="/img/shindo/5minus.png" alt="5-" /><span>5弱</span>
+          <!-- Bottom-right widgets container -->
+          <div id="map-widgets">
+            <!-- Home Location Intensity Display -->
+            <div id="home-intensity-display" class="hidden">
+              <div class="tooltip-content">
+                <div class="tooltip-code mono">HOME</div>
+                <div class="tooltip-ja"></div>
+                <div class="tooltip-en"></div>
               </div>
-              <div class="legend-item">
-                <img src="/img/shindo/5plus.png" alt="5+" /><span>5強</span>
+              <div class="tooltip-intensity-container hidden">
+                <img src="" alt="Intensity" class="tooltip-intensity-img" />
               </div>
-              <div class="legend-item">
-                <img src="/img/shindo/6minus.png" alt="6-" /><span>6弱</span>
-              </div>
-              <div class="legend-item">
-                <img src="/img/shindo/6plus.png" alt="6+" /><span>6強</span>
-              </div>
-              <div class="legend-item"><img src="/img/shindo/7.png" alt="7" /><span>7</span></div>
             </div>
-            <div class="legend-divider"></div>
-            <div class="legend-item epicenter-legend">
-              <img src="/img/epicenter.png" alt="Epicenter" />
-              <span class="mono">震央 · Epicenter</span>
+
+            <!-- Legend -->
+            <div id="map-legend">
+              <div class="legend-title mono">震度 · INTENSITY</div>
+              <div class="legend-items">
+                <div class="legend-item"><img src="/img/shindo/1.png" alt="1" /><span>1</span></div>
+                <div class="legend-item"><img src="/img/shindo/2.png" alt="2" /><span>2</span></div>
+                <div class="legend-item"><img src="/img/shindo/3.png" alt="3" /><span>3</span></div>
+                <div class="legend-item"><img src="/img/shindo/4.png" alt="4" /><span>4</span></div>
+                <div class="legend-item">
+                  <img src="/img/shindo/5minus.png" alt="5-" /><span>5弱</span>
+                </div>
+                <div class="legend-item">
+                  <img src="/img/shindo/5plus.png" alt="5+" /><span>5強</span>
+                </div>
+                <div class="legend-item">
+                  <img src="/img/shindo/6minus.png" alt="6-" /><span>6弱</span>
+                </div>
+                <div class="legend-item">
+                  <img src="/img/shindo/6plus.png" alt="6+" /><span>6強</span>
+                </div>
+                <div class="legend-item"><img src="/img/shindo/7.png" alt="7" /><span>7</span></div>
+              </div>
+              <div class="legend-divider"></div>
+              <div class="legend-item epicenter-legend">
+                <img src="/img/epicenter.png" alt="Epicenter" />
+                <span class="mono">震央 · Epicenter</span>
+              </div>
             </div>
           </div>
 
@@ -181,6 +196,11 @@
                     <label class="live-mode-toggle popup-setting" data-tooltip="Display a marker at your home location • ホームロケーションにマーカーを表示">
                       <input type="checkbox" id="home-marker-toggle" />
                       <span class="toggle-label" style="flex-grow: 1; text-align: left;">Show Marker<br>マーカー表示</span>
+                      <span class="toggle-switch"></span>
+                    </label>
+                    <label class="live-mode-toggle popup-setting" data-tooltip="Show intensity at your home location when a report is open • レポートが開いてるときホーム場所の震度を表示">
+                      <input type="checkbox" id="home-intensity-toggle" />
+                      <span class="toggle-label" style="flex-grow: 1; text-align: left;">Show Intensity<br>震度表示</span>
                       <span class="toggle-switch"></span>
                     </label>
                   </div>

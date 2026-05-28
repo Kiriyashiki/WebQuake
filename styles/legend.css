@@ -1,15 +1,25 @@
-/* ── Map Legend ──────────────────────────────────────────────────── */
+/* ── Map Widgets Container ───────────────────────────────────── */
 
-#map-legend {
+#map-widgets {
   position: absolute;
   bottom: 14px;
   right: 14px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  align-items: flex-end;
+}
+
+/* ── Map Legend ──────────────────────────────────────────────────── */
+
+#map-legend {
   background: rgba(11, 16, 24, 0.85);
   border: 1px solid var(--border-hi);
   border-radius: 4px;
   padding: 10px 12px;
   backdrop-filter: blur(8px);
-  z-index: 10;
   display: flex;
   flex-direction: column;
   gap: 8px;

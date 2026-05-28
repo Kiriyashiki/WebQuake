@@ -426,3 +426,35 @@ export function getHomeLocation() {
     showMarker: markerToggleEl ? markerToggleEl.checked : false,
   };
 }
+
+/**
+ * Initializes the home intensity toggle and sets up its event listener.
+ * @param {Function} onToggle - Callback(enabled) when toggle state changes
+ */
+export function initHomeIntensityToggle(onToggle) {
+  const toggleEl = document.getElementById("home-intensity-toggle");
+  if (!toggleEl) return;
+
+  // Load saved state from localStorage
+  const savedState = localStorage.getItem("home-intensity-enabled") === "true";
+  toggleEl.checked = savedState;
+
+  // Set initial callback
+  if (onToggle) onToggle(savedState);
+
+  // Listen for changes
+  toggleEl.addEventListener("change", (e) => {
+    const isEnabled = e.target.checked;
+    localStorage.setItem("home-intensity-enabled", isEnabled ? "true" : "false");
+    if (onToggle) onToggle(isEnabled);
+  });
+}
+
+/**
+ * Gets the current home intensity display state.
+ * @returns {boolean} Whether home intensity display is enabled
+ */
+export function getHomeIntensityState() {
+  const toggleEl = document.getElementById("home-intensity-toggle");
+  return toggleEl ? toggleEl.checked : false;
+}

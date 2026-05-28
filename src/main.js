@@ -1,9 +1,9 @@
 import "../styles/index.css";
 import { formatTimeJST, INTENSITY_CONFIG } from "./constants.js";
 import { createRubyHtml, loadAreaCodes, loadPrefectureCodes, loadCityNames } from "./areaCodes.js";
-import { initMap, highlightObservations, displayEpicenter, clearEpicenter, displayAllEpicenters, clearAllEpicenters, updateCityAreasVisibility, fitBoundsToObservations, displayHomeMarker, clearHomeMarker } from "./map.js";
+import { initMap, highlightObservations, displayEpicenter, clearEpicenter, displayAllEpicenters, clearAllEpicenters, updateCityAreasVisibility, fitBoundsToObservations, displayHomeMarker, clearHomeMarker, displayHomeLocationIntensity, hideHomeLocationIntensity } from "./map.js";
 import { fetchEarthquakeReports } from "./parseReports.js";
-import { initSidebar, updateSidebarLoading, initLiveModeToggle, initAutoOpenToggle, initCityAreasToggle, initHomeLocationSettings, getHomeLocation, addReportToSidebar, updateReportInSidebar, getAutoOpenState, getCityAreasState } from "./sidebarUI.js";
+import { initSidebar, updateSidebarLoading, initLiveModeToggle, initAutoOpenToggle, initCityAreasToggle, initHomeLocationSettings, getHomeLocation, addReportToSidebar, updateReportInSidebar, getAutoOpenState, getCityAreasState, initHomeIntensityToggle, getHomeIntensityState } from "./sidebarUI.js";
 import { renderObservationsList } from "./observationsList.js";
 import { startLivePolling, stopLivePolling } from "./liveMode.js";
 
@@ -90,6 +90,9 @@ async function boot() {
   const onReportSelect = (report) => {
     console.log('[eq-viewer] Selected report:', report.eventId, report.hypocenterJa);
     
+    // Store current report in global for settings changes
+    globalThis.__currentReport = report;
+    
     // Clear all initial epicenters when a report is opened
     clearAllEpicenters(map);
     
@@ -112,6 +115,16 @@ async function boot() {
       }
     } else {
       clearEpicenter(map);
+    }
+
+    // Display home location intensity if enabled
+    if (getHomeIntensityState()) {
+      const homeLocation = getHomeLocation();
+      if (homeLocation.cityCode && report.observations) {
+        displayHomeLocationIntensity(homeLocation.cityCode, report.observations, cityNames);
+      }
+    } else {
+      hideHomeLocationIntensity();
     }
   };
 
@@ -177,6 +190,7 @@ async function boot() {
               const activeItem = document.querySelector('.eq-item.active');
               if (activeItem && activeItem.dataset.eventId === report.eventId) {
                 console.log('[eq-viewer] Reloading active report on map');
+                globalThis.__currentReport = report;
                 _displayMapInfoBox(report);
                 highlightObservations(map, report.observations);
                 const boundsFitted = fitBoundsToObservations(map, report.observations, featureBounds, getCityAreasState(), report.coordinates);
@@ -191,6 +205,16 @@ async function boot() {
                   }
                 } else {
                   clearEpicenter(map);
+                }
+
+                // Update home location intensity display if enabled
+                if (getHomeIntensityState()) {
+                  const homeLocation = getHomeLocation();
+                  if (homeLocation.cityCode && report.observations) {
+                    displayHomeLocationIntensity(homeLocation.cityCode, report.observations, cityNames);
+                  }
+                } else {
+                  hideHomeLocationIntensity();
                 }
               }
             }
@@ -224,6 +248,37 @@ async function boot() {
         displayHomeMarker(map, homeLocation.cityCode, featureBounds);
       } else {
         clearHomeMarker(map);
+      }
+
+      // Update home intensity display if a report is currently open
+      const activeItem = document.querySelector('.eq-item.active');
+      if (activeItem) {
+        const activeReport = globalThis.__currentReport;
+        if (activeReport && getHomeIntensityState()) {
+          displayHomeLocationIntensity(homeLocation.cityCode, activeReport.observations, cityNames);
+        } else {
+          hideHomeLocationIntensity();
+        }
+      }
+    });
+
+    // Initialize home intensity toggle
+    initHomeIntensityToggle((isEnabled) => {
+      console.log('[eq-viewer] Home intensity:', isEnabled ? 'enabled' : 'disabled');
+      
+      const activeItem = document.querySelector('.eq-item.active');
+      if (!activeItem || !isEnabled) {
+        hideHomeLocationIntensity();
+        return;
+      }
+
+      // If there's an active report, display the home intensity
+      const activeReport = globalThis.__currentReport;
+      if (activeReport) {
+        const homeLocation = getHomeLocation();
+        if (homeLocation.cityCode) {
+          displayHomeLocationIntensity(homeLocation.cityCode, activeReport.observations, cityNames);
+        }
       }
     });
 

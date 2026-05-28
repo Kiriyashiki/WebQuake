@@ -637,3 +637,115 @@ export function displayHomeMarker(map, cityCode, featureBounds) {
 export function clearHomeMarker(map) {
   removeHomeMarker(map);
 }
+
+// ─── Home Location Intensity Display helpers ────────────────────────────────
+/**
+ * Finds the intensity for a given city code in the observations.
+ * @param {Array} observations - From JMAEarthquakeReport.observations
+ * @param {string} cityCode - The city code (7-digit string)
+ * @returns {string|null} The intensity string (e.g., "5+", "4") or null
+ */
+function findIntensityForCity(observations, cityCode) {
+  if (!observations || !cityCode) return null;
+
+  for (const pref of observations) {
+    for (const area of pref.areas) {
+      for (const city of area.cities) {
+        const cityCodeStr = String(city.code).padStart(7, "0");
+        if (cityCodeStr === cityCode) {
+          return city.maxInt || null;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Finds the city name information for a given city code.
+ * @param {string} cityCode - The city code (7-digit string)
+ * @param {Array} observations - From JMAEarthquakeReport.observations
+ * @param {Map} cityNames - City name mappings
+ * @returns {{ja: string, en: string}|null}
+ */
+function findCityInfoForCode(cityCode, observations, cityNames) {
+  if (!observations || !cityCode) return null;
+
+  // First try to get from cityNames map
+  if (cityNames) {
+    const cityData = cityNames.get(cityCode);
+    if (cityData) {
+      return { ja: cityData.ja, en: cityData.en };
+    }
+  }
+
+  // Fallback to finding in observations
+  for (const pref of observations) {
+    for (const area of pref.areas) {
+      for (const city of area.cities) {
+        const cityCodeStr = String(city.code).padStart(7, "0");
+        if (cityCodeStr === cityCode) {
+          return { ja: city.name, en: city.name };
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Display the home location intensity in a fixed box above the legend.
+ * @param {string} cityCode - The city code (7-digit string)
+ * @param {Array} observations - From JMAEarthquakeReport.observations
+ * @param {Map} cityNames - City name mappings
+ */
+export function displayHomeLocationIntensity(cityCode, observations, cityNames) {
+  const display = document.getElementById("home-intensity-display");
+  if (!display) return;
+
+  const cityInfo = findCityInfoForCode(cityCode, observations, cityNames);
+  if (!cityInfo) {
+    display.classList.add("hidden");
+    return;
+  }
+
+  // Update content
+  display.querySelector(".tooltip-ja").textContent = cityInfo.ja;
+  display.querySelector(".tooltip-en").textContent = cityInfo.en;
+
+  // Update intensity display (may be null if no observation recorded)
+  const intensity = findIntensityForCity(observations, cityCode);
+  const intensityContainer = display.querySelector(".tooltip-intensity-container");
+  
+  if (intensity && INTENSITY_CONFIG[intensity]) {
+    const config = INTENSITY_CONFIG[intensity];
+    const img = intensityContainer.querySelector("img");
+    img.src = `/img/shindo/${config.img}`;
+    img.alt = `Intensity ${intensity}`;
+    img.title = `Intensity: ${intensity}`;
+    intensityContainer.classList.remove("hidden");
+
+    display.style.borderTopColor = config.color;
+    display.querySelector(".tooltip-code").style.color = config.color;
+  } else {
+    // No intensity recorded for this location
+    intensityContainer.classList.add("hidden");
+    const defaultColor = "#1e2e44";
+    display.style.borderTopColor = defaultColor;
+    display.querySelector(".tooltip-code").style.color = defaultColor;
+  }
+
+  display.classList.remove("hidden");
+}
+
+/**
+ * Hide the home location intensity display.
+ */
+export function hideHomeLocationIntensity() {
+  const display = document.getElementById("home-intensity-display");
+  if (display) {
+    display.classList.add("hidden");
+  }
+}
