@@ -1,0 +1,5555 @@
+{
+  "Head": {
+    "EventID": "20160416012505"
+  },
+  "Body": {
+    "Earthquake": {
+      "OriginTime": "2016-04-15T16:25:05.400Z",
+      "Magnitude": "7.3",
+      "Hypocenter": {
+        "Area": {
+          "Code": "741",
+          "Coordinate": "+32.7533+130.762-12000/"
+        }
+      }
+    },
+    "Intensity": {
+      "Observation": {
+        "MaxInt": "7",
+        "Pref": [
+          {
+            "Code": "10",
+            "Name": null,
+            "MaxInt": "1",
+            "Area": [
+              {
+                "Code": "321",
+                "Name": "群馬県南部",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "1020100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1020200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1020400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1020500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1020700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1020800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1021000",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1034400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1046400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1052100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1052200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1052300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1052500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "11",
+            "Name": null,
+            "MaxInt": "2",
+            "Area": [
+              {
+                "Code": "331",
+                "Name": "埼玉県南部",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "1110200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1110400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1110600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1110700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1110900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1111000",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1120100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1121400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1122200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1122300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1122500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1122700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1122900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1123700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1123800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1123900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1124000",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1124100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1124300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1124600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1130100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1144200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1146400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1146500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "330",
+                "Name": "埼玉県北部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "1120200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1121000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1121600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1121700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1123200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1134800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "12",
+            "Name": null,
+            "MaxInt": "1",
+            "Area": [
+              {
+                "Code": "341",
+                "Name": "千葉県北西部",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "1210100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1210200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1210400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1210500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1220300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1220700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1220800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1221600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1222400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1222700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "342",
+                "Name": "千葉県南部",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "1220600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "340",
+                "Name": "千葉県北東部",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "1221000",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1221300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1242100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1242200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1242300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "13",
+            "Name": null,
+            "MaxInt": "1",
+            "Area": [
+              {
+                "Code": "350",
+                "Name": "東京都２３区",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "1310100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1310800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1311100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1311200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1311300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1311500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1311900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1312100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1312200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "351",
+                "Name": "東京都多摩東部",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "1321100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1321400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1322100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "14",
+            "Name": null,
+            "MaxInt": "2",
+            "Area": [
+              {
+                "Code": "360",
+                "Name": "神奈川県東部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "1410400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1413100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1413200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1413300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1413400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1413500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1413600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1413700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1420700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "15",
+            "Name": null,
+            "MaxInt": "1",
+            "Area": [
+              {
+                "Code": "372",
+                "Name": "新潟県下越",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "1510800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "371",
+                "Name": "新潟県中越",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "1520400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1521100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1550400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "370",
+                "Name": "新潟県上越",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "1522200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "16",
+            "Name": null,
+            "MaxInt": "2",
+            "Area": [
+              {
+                "Code": "380",
+                "Name": "富山県東部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "1620100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1620400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1620600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1632100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1632200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1632300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "381",
+                "Name": "富山県西部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "1620200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1620500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1620800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1620900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1621000",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1621100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "17",
+            "Name": null,
+            "MaxInt": "2",
+            "Area": [
+              {
+                "Code": "391",
+                "Name": "石川県加賀",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "1720100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1720300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1720600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1720900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1736100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "390",
+                "Name": "石川県能登",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "1720500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1720700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1746300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "18",
+            "Name": null,
+            "MaxInt": "2",
+            "Area": [
+              {
+                "Code": "400",
+                "Name": "福井県嶺北",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "1820100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1820500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1820600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1820700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1820800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1820900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1821000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              },
+              {
+                "Code": "401",
+                "Name": "福井県嶺南",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "1820200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1844200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1848100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1850100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "19",
+            "Name": null,
+            "MaxInt": "2",
+            "Area": [
+              {
+                "Code": "411",
+                "Name": "山梨県中・西部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "1920100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1920800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1920900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1921000",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "1921100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1921400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1936800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1938400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              },
+              {
+                "Code": "412",
+                "Name": "山梨県東部・富士五湖",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "1942400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1942500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "1943000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "20",
+            "Name": null,
+            "MaxInt": "2",
+            "Area": [
+              {
+                "Code": "420",
+                "Name": "長野県北部",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "2020100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2021100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2021200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2021800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2048200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2056200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2059000",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "421",
+                "Name": "長野県中部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "2020200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2020300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2020400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2020600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2021400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2021500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2021700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2021900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2022000",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2032100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2032300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2032400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2036100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2036200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2036300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2044600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2044800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2045000",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2045200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "422",
+                "Name": "長野県南部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "2020500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2020900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2038200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2038300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2038400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2038500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2038800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2040200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2040300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2040400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2040700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2040900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2041000",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2041100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2041400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2041500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2041600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2043200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "21",
+            "Name": null,
+            "MaxInt": "2",
+            "Area": [
+              {
+                "Code": "432",
+                "Name": "岐阜県美濃中西部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "2120100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2120200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2120900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2121600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2121800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2121900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2122100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2130300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2134100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2136100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2138100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2138200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2138300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2140100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2140300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "431",
+                "Name": "岐阜県美濃東部",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "2120600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "22",
+            "Name": null,
+            "MaxInt": "2",
+            "Area": [
+              {
+                "Code": "442",
+                "Name": "静岡県中部",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "2210100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2210300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2220900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2221200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2221400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2222600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "443",
+                "Name": "静岡県西部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "2213800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2213900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2221100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2221300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2221600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2222100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2222300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2222400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2246100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "441",
+                "Name": "静岡県東部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "2220300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2220600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2220700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2221000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2221500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2234100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2234200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "440",
+                "Name": "静岡県伊豆",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "2222500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "23",
+            "Name": null,
+            "MaxInt": "3",
+            "Area": [
+              {
+                "Code": "451",
+                "Name": "愛知県西部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "2310100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2310200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2310300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2310400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2310500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2310600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2310700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2310800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2310900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2311000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2311100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2311200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2311300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2311400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2311500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2311600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2320300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2320500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2320800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2320900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2321000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2321100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2321200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2321300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2321600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2322000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2322200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2322300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2322400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2322500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2322600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2322700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2322900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2323000",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2323200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2323300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2323400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2323500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2323600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2323700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2330200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2342400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2342500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2342700",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "2344100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2344200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2344500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2344700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              },
+              {
+                "Code": "450",
+                "Name": "愛知県東部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "2320100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2320700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2322100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2323100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "24",
+            "Name": null,
+            "MaxInt": "2",
+            "Area": [
+              {
+                "Code": "461",
+                "Name": "三重県中部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "2420100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2420400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2421600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "460",
+                "Name": "三重県北部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "2420200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2420700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2421000",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2430300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "462",
+                "Name": "三重県南部",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "2421200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2421500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2454300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "25",
+            "Name": null,
+            "MaxInt": "2",
+            "Area": [
+              {
+                "Code": "501",
+                "Name": "滋賀県南部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "2520100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2520400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2520600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2520700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2520800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2520900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2521000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2521300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2538300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2538400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              },
+              {
+                "Code": "500",
+                "Name": "滋賀県北部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "2520200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2520300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2521200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2542500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "26",
+            "Name": null,
+            "MaxInt": "2",
+            "Area": [
+              {
+                "Code": "511",
+                "Name": "京都府南部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "2610200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2610400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2610600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2610700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2610800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2610900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2620400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2620600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2620700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2620800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2620900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2621000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2621100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2621300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2621400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2630300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2634300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2634400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2636600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2640700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "510",
+                "Name": "京都府北部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "2620100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2620200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2620300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2620500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2621200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2646500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "27",
+            "Name": null,
+            "MaxInt": "3",
+            "Area": [
+              {
+                "Code": "520",
+                "Name": "大阪府北部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "2710200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2710300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "2710400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "2710700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2710800",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "2710900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2711300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "2711400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2711500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2711600",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "2711700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2711800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2711900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2712000",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "2712100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2712200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2712300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2712400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2712500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2712600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2712700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2712800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2720300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "2720400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2720500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2720700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2721000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2721100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2721200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2721500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2722000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2722100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2722300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2722400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2722700",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "2722900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2723000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              },
+              {
+                "Code": "521",
+                "Name": "大阪府南部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "2714100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2714200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2714300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2714400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2714500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2714600",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "2714700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2720200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2720600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2720800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2721300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2721400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2721600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2721700",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "2721900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2722200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2722500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2722600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2722800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2723100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2723200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2736100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2736200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "2738100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "28",
+            "Name": null,
+            "MaxInt": "3",
+            "Area": [
+              {
+                "Code": "531",
+                "Name": "兵庫県南東部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "2810100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2810500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2810600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2811000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2811100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2820200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "2820400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2820600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2820700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2821000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2821400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2821500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2821600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2821700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2821900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2822100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2822800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2838100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2838200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              },
+              {
+                "Code": "532",
+                "Name": "兵庫県南西部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "2820100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2820800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2821200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2822700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2822900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2848100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2850100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "535",
+                "Name": "兵庫県淡路島",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "2820500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2822400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "2822600",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              },
+              {
+                "Code": "530",
+                "Name": "兵庫県北部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "2820900",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "2822500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2858500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2858600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "29",
+            "Name": null,
+            "MaxInt": "2",
+            "Area": [
+              {
+                "Code": "540",
+                "Name": "奈良県",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "2920100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2920200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2920300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2920400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2920600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2920700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2920800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2921000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2921100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2921200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2934400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2934500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2936100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2936300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2942400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2942600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2942700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "2944100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2944200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2944300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2944400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2944600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2945200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "2945300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "30",
+            "Name": null,
+            "MaxInt": "2",
+            "Area": [
+              {
+                "Code": "550",
+                "Name": "和歌山県北部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "3020100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3020200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3020300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3020400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3020500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3020800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3020900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3030400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3034100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3034300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3034400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3036100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3036600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3038100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3038200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3038300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3039000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3039100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3039200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              },
+              {
+                "Code": "551",
+                "Name": "和歌山県南部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "3020600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3020700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3040100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3040400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3042200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3042400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3042800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "31",
+            "Name": null,
+            "MaxInt": "4",
+            "Area": [
+              {
+                "Code": "560",
+                "Name": "鳥取県東部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "3120100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3130200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3132500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3132800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3132900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "563",
+                "Name": "鳥取県西部",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "3120200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3120400",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3138400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3138600",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3138900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3139000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3140100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3140200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3140300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "562",
+                "Name": "鳥取県中部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "3120300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3136400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3137000",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3137100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3137200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "32",
+            "Name": null,
+            "MaxInt": "4",
+            "Area": [
+              {
+                "Code": "570",
+                "Name": "島根県東部",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "3220100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3220300",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3220600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3220900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3234300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3238600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              },
+              {
+                "Code": "571",
+                "Name": "島根県西部",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "3220200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3220400",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3220500",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3220700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3244100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3244800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3244900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3250100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3250500",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              },
+              {
+                "Code": "575",
+                "Name": "島根県隠岐",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "3252500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3252600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3252700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3252800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "33",
+            "Name": null,
+            "MaxInt": "3",
+            "Area": [
+              {
+                "Code": "581",
+                "Name": "岡山県南部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "3310100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3310200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3310300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3310400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3320200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3320400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3320500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3320700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3320800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3320900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3321100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3321200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3321300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3321600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3334600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3342300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3344500",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3346100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3368100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              },
+              {
+                "Code": "580",
+                "Name": "岡山県北部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "3320300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3321000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3321400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3321500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3358600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3360600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3362200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3362300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3364300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3366300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "3366600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "34",
+            "Name": null,
+            "MaxInt": "4",
+            "Area": [
+              {
+                "Code": "592",
+                "Name": "広島県南西部",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "3410100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3410300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3410400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3410500",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3410700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3410800",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3420200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3420300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3421100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3421200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3421300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3421500",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3430200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3430400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3430900",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3443100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              },
+              {
+                "Code": "591",
+                "Name": "広島県南東部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "3420400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3420500",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3420700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3420800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3446200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3454500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              },
+              {
+                "Code": "590",
+                "Name": "広島県北部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "3420900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3421000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3421400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3436800",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3436900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "35",
+            "Name": null,
+            "MaxInt": "4",
+            "Area": [
+              {
+                "Code": "702",
+                "Name": "山口県西部",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "3520100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3520200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3521600",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              },
+              {
+                "Code": "704",
+                "Name": "山口県中部",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "3520300",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3520600",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3520700",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3521500",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              },
+              {
+                "Code": "700",
+                "Name": "山口県北部",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "3520400",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3521100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3521300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3550200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              },
+              {
+                "Code": "703",
+                "Name": "山口県東部",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "3520800",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3521000",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3521200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3530500",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3532100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3534100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3534300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3534400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "36",
+            "Name": null,
+            "MaxInt": "3",
+            "Area": [
+              {
+                "Code": "600",
+                "Name": "徳島県北部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "3620100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3620200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3620300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3620500",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3620600",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3620700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3620800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3632100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3634100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3634200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3640100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3640200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3640300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3640400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3640500",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3646800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3648900",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              },
+              {
+                "Code": "601",
+                "Name": "徳島県南部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "3620400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3630100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3630200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3636800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3638300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3638700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3638800",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "37",
+            "Name": null,
+            "MaxInt": "3",
+            "Area": [
+              {
+                "Code": "610",
+                "Name": "香川県東部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "3720100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3720600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3720700",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3732200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3732400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3734100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3736400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              },
+              {
+                "Code": "611",
+                "Name": "香川県西部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "3720200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3720300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3720400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3720500",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3720800",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3738600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3738700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3740300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3740400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3740600",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "38",
+            "Name": null,
+            "MaxInt": "5-",
+            "Area": [
+              {
+                "Code": "621",
+                "Name": "愛媛県中予",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "3820100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3821000",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3821500",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3838600",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3840100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3840200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              },
+              {
+                "Code": "620",
+                "Name": "愛媛県東予",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "3820200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3820500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3820600",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3821300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3835600",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              },
+              {
+                "Code": "622",
+                "Name": "愛媛県南予",
+                "MaxInt": "5-",
+                "City": [
+                  {
+                    "Code": "3820300",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3820400",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "3820700",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3821400",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3842200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3844200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3848400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3848800",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3850600",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "39",
+            "Name": null,
+            "MaxInt": "4",
+            "Area": [
+              {
+                "Code": "631",
+                "Name": "高知県中部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "3920100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3920400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3920500",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3920600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3921100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3921200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3934100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3934400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3936300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3936400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3938600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3938700",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3940200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3940300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3941000",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              },
+              {
+                "Code": "630",
+                "Name": "高知県東部",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "3920200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3920300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3930100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3930200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3930300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3930400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3930500",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3930600",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3930700",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              },
+              {
+                "Code": "632",
+                "Name": "高知県西部",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "3920800",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "3920900",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3921000",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3940100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3940500",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3941100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "3941200",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3942400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "3942800",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "40",
+            "Name": null,
+            "MaxInt": "5+",
+            "Area": [
+              {
+                "Code": "711",
+                "Name": "福岡県北九州",
+                "MaxInt": "5-",
+                "City": [
+                  {
+                    "Code": "4010100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4010300",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4010500",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4010600",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4010700",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4010800",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4010900",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4021300",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4021400",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4021500",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4038100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4038200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4038300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4038400",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4062100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4062500",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4064600",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4064700",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              },
+              {
+                "Code": "710",
+                "Name": "福岡県福岡",
+                "MaxInt": "5-",
+                "City": [
+                  {
+                    "Code": "4013100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4013200",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4013300",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4013500",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4013600",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4013700",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4021700",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4021800",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4021900",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4022000",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4022100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4022300",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4022400",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4023000",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4023100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4034100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4034200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4034300",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4034400",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4034500",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4034800",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4034900",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              },
+              {
+                "Code": "713",
+                "Name": "福岡県筑後",
+                "MaxInt": "5+",
+                "City": [
+                  {
+                    "Code": "4020200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4020300",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4020700",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4021000",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4021100",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4021200",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4021600",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4022500",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4022800",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4022900",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4044700",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4044800",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4050300",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4052200",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4054400",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  }
+                ]
+              },
+              {
+                "Code": "712",
+                "Name": "福岡県筑豊",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "4020400",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4020500",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4020600",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4022600",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4022700",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4040100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4040200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4042100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4060100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4060200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4060400",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4060500",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4060800",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4060900",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4061000",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "41",
+            "Name": null,
+            "MaxInt": "5+",
+            "Area": [
+              {
+                "Code": "721",
+                "Name": "佐賀県南部",
+                "MaxInt": "5+",
+                "City": [
+                  {
+                    "Code": "4120100",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4120300",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4120400",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4120600",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4120700",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4120800",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4120900",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4121000",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4132700",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4134100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4134600",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4142300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4142400",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4142500",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4144100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              },
+              {
+                "Code": "720",
+                "Name": "佐賀県北部",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "4120200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4120500",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4138700",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4140100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "42",
+            "Name": null,
+            "MaxInt": "5+",
+            "Area": [
+              {
+                "Code": "731",
+                "Name": "長崎県南西部",
+                "MaxInt": "5-",
+                "City": [
+                  {
+                    "Code": "4220100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4220400",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4220500",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4221200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4230700",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4230800",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              },
+              {
+                "Code": "730",
+                "Name": "長崎県北部",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "4220201",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4220700",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4220800",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4232100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4232200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4232300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4239100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              },
+              {
+                "Code": "732",
+                "Name": "長崎県島原半島",
+                "MaxInt": "5+",
+                "City": [
+                  {
+                    "Code": "4220300",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4221300",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4221400",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  }
+                ]
+              },
+              {
+                "Code": "735",
+                "Name": "長崎県対馬",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "4220900",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              },
+              {
+                "Code": "736",
+                "Name": "長崎県壱岐",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "4221000",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              },
+              {
+                "Code": "737",
+                "Name": "長崎県五島",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "4221100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "4241100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "43",
+            "Name": null,
+            "MaxInt": "7",
+            "Area": [
+              {
+                "Code": "741",
+                "Name": "熊本県熊本",
+                "MaxInt": "7",
+                "City": [
+                  {
+                    "Code": "4310100",
+                    "Name": null,
+                    "MaxInt": "6+"
+                  },
+                  {
+                    "Code": "4310200",
+                    "Name": null,
+                    "MaxInt": "6+"
+                  },
+                  {
+                    "Code": "4310300",
+                    "Name": null,
+                    "MaxInt": "6+"
+                  },
+                  {
+                    "Code": "4310400",
+                    "Name": null,
+                    "MaxInt": "6-"
+                  },
+                  {
+                    "Code": "4310500",
+                    "Name": null,
+                    "MaxInt": "6-"
+                  },
+                  {
+                    "Code": "4320200",
+                    "Name": null,
+                    "MaxInt": "6-"
+                  },
+                  {
+                    "Code": "4320400",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4320600",
+                    "Name": null,
+                    "MaxInt": "6-"
+                  },
+                  {
+                    "Code": "4320800",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4321000",
+                    "Name": null,
+                    "MaxInt": "6+"
+                  },
+                  {
+                    "Code": "4321100",
+                    "Name": null,
+                    "MaxInt": "6+"
+                  },
+                  {
+                    "Code": "4321300",
+                    "Name": null,
+                    "MaxInt": "6+"
+                  },
+                  {
+                    "Code": "4321600",
+                    "Name": null,
+                    "MaxInt": "6+"
+                  },
+                  {
+                    "Code": "4334800",
+                    "Name": null,
+                    "MaxInt": "6-"
+                  },
+                  {
+                    "Code": "4336400",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4336700",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4336800",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4336900",
+                    "Name": null,
+                    "MaxInt": "6-"
+                  },
+                  {
+                    "Code": "4340300",
+                    "Name": null,
+                    "MaxInt": "6+"
+                  },
+                  {
+                    "Code": "4340400",
+                    "Name": null,
+                    "MaxInt": "6-"
+                  },
+                  {
+                    "Code": "4343200",
+                    "Name": null,
+                    "MaxInt": "7"
+                  },
+                  {
+                    "Code": "4344100",
+                    "Name": null,
+                    "MaxInt": "6-"
+                  },
+                  {
+                    "Code": "4344200",
+                    "Name": null,
+                    "MaxInt": "6+"
+                  },
+                  {
+                    "Code": "4344300",
+                    "Name": null,
+                    "MaxInt": "7"
+                  },
+                  {
+                    "Code": "4344400",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4344700",
+                    "Name": null,
+                    "MaxInt": "6-"
+                  },
+                  {
+                    "Code": "4346800",
+                    "Name": null,
+                    "MaxInt": "6-"
+                  }
+                ]
+              },
+              {
+                "Code": "742",
+                "Name": "熊本県球磨",
+                "MaxInt": "5-",
+                "City": [
+                  {
+                    "Code": "4320300",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4350100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4350500",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4350600",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4351000",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4351100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4351200",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4351300",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4351400",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  }
+                ]
+              },
+              {
+                "Code": "743",
+                "Name": "熊本県天草・芦北",
+                "MaxInt": "6-",
+                "City": [
+                  {
+                    "Code": "4320500",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4321200",
+                    "Name": null,
+                    "MaxInt": "6-"
+                  },
+                  {
+                    "Code": "4321500",
+                    "Name": null,
+                    "MaxInt": "6-"
+                  },
+                  {
+                    "Code": "4348200",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4348400",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4353100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              },
+              {
+                "Code": "740",
+                "Name": "熊本県阿蘇",
+                "MaxInt": "6+",
+                "City": [
+                  {
+                    "Code": "4321400",
+                    "Name": null,
+                    "MaxInt": "6-"
+                  },
+                  {
+                    "Code": "4342300",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4342400",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4342500",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4342800",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4343300",
+                    "Name": null,
+                    "MaxInt": "6+"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "44",
+            "Name": null,
+            "MaxInt": "6-",
+            "Area": [
+              {
+                "Code": "751",
+                "Name": "大分県中部",
+                "MaxInt": "6-",
+                "City": [
+                  {
+                    "Code": "4420100",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4420200",
+                    "Name": null,
+                    "MaxInt": "6-"
+                  },
+                  {
+                    "Code": "4420600",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4420700",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4421000",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4421300",
+                    "Name": null,
+                    "MaxInt": "6-"
+                  },
+                  {
+                    "Code": "4434100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              },
+              {
+                "Code": "750",
+                "Name": "大分県北部",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "4420300",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4420900",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4421100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4421400",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              },
+              {
+                "Code": "753",
+                "Name": "大分県西部",
+                "MaxInt": "5+",
+                "City": [
+                  {
+                    "Code": "4420400",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4420800",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4446100",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4446200",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  }
+                ]
+              },
+              {
+                "Code": "752",
+                "Name": "大分県南部",
+                "MaxInt": "5+",
+                "City": [
+                  {
+                    "Code": "4420500",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4421200",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "45",
+            "Name": null,
+            "MaxInt": "5+",
+            "Area": [
+              {
+                "Code": "762",
+                "Name": "宮崎県南部平野部",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "4520100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4520400",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4520700",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4538200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4538300",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              },
+              {
+                "Code": "763",
+                "Name": "宮崎県南部山沿い",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "4520200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4520500",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4520900",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4534100",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4536100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              },
+              {
+                "Code": "760",
+                "Name": "宮崎県北部平野部",
+                "MaxInt": "5-",
+                "City": [
+                  {
+                    "Code": "4520300",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4520600",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4520800",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4540100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4540200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4540400",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4540500",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4540600",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4542100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              },
+              {
+                "Code": "761",
+                "Name": "宮崎県北部山沿い",
+                "MaxInt": "5+",
+                "City": [
+                  {
+                    "Code": "4540300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4542900",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4543000",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4543100",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4544100",
+                    "Name": null,
+                    "MaxInt": "5+"
+                  },
+                  {
+                    "Code": "4544200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4544300",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "46",
+            "Name": null,
+            "MaxInt": "5-",
+            "Area": [
+              {
+                "Code": "770",
+                "Name": "鹿児島県薩摩",
+                "MaxInt": "5-",
+                "City": [
+                  {
+                    "Code": "4620100",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4620400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4620600",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4620800",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4621000",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4621501",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4621600",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4621800",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4621900",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4622000",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4622300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4622400",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4622500",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4639200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  },
+                  {
+                    "Code": "4640400",
+                    "Name": null,
+                    "MaxInt": "5-"
+                  },
+                  {
+                    "Code": "4645200",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              },
+              {
+                "Code": "771",
+                "Name": "鹿児島県大隅",
+                "MaxInt": "3",
+                "City": [
+                  {
+                    "Code": "4620300",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4621400",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4621700",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4622100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "4646800",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4648200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  },
+                  {
+                    "Code": "4649000",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "4649100",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "4649200",
+                    "Name": null,
+                    "MaxInt": "3"
+                  }
+                ]
+              },
+              {
+                "Code": "775",
+                "Name": "鹿児島県甑島",
+                "MaxInt": "4",
+                "City": [
+                  {
+                    "Code": "4621502",
+                    "Name": null,
+                    "MaxInt": "4"
+                  }
+                ]
+              },
+              {
+                "Code": "776",
+                "Name": "鹿児島県種子島",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "4630300",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "4650200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "777",
+                "Name": "鹿児島県屋久島",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "4650500",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "06",
+            "Name": null,
+            "MaxInt": "1",
+            "Area": [
+              {
+                "Code": "242",
+                "Name": "山形県村山",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "0630200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Code": "08",
+            "Name": null,
+            "MaxInt": "2",
+            "Area": [
+              {
+                "Code": "301",
+                "Name": "茨城県南部",
+                "MaxInt": "2",
+                "City": [
+                  {
+                    "Code": "0820300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "0820400",
+                    "Name": null,
+                    "MaxInt": "2"
+                  },
+                  {
+                    "Code": "0822000",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "0822200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "0822300",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "0822700",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "0822800",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "0822900",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "0823400",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "0854200",
+                    "Name": null,
+                    "MaxInt": "1"
+                  },
+                  {
+                    "Code": "0854600",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              },
+              {
+                "Code": "300",
+                "Name": "茨城県北部",
+                "MaxInt": "1",
+                "City": [
+                  {
+                    "Code": "0834100",
+                    "Name": null,
+                    "MaxInt": "1"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

@@ -2,8 +2,8 @@ import "../styles/index.css";
 import { formatTimeJST, INTENSITY_CONFIG } from "./constants.js";
 import { createRubyHtml, loadAreaCodes, loadPrefectureCodes, loadCityNames } from "./areaCodes.js";
 import { initMap, highlightObservations, displayEpicenter, clearEpicenter, displayAllEpicenters, clearAllEpicenters, updateCityAreasVisibility, fitBoundsToObservations, displayHomeMarker, clearHomeMarker, displayHomeLocationIntensity, hideHomeLocationIntensity } from "./map.js";
-import { fetchEarthquakeReports } from "./parseReports.js";
-import { initSidebar, updateSidebarLoading, initLiveModeToggle, initAutoOpenToggle, initCityAreasToggle, initHomeLocationSettings, getHomeLocation, addReportToSidebar, updateReportInSidebar, getAutoOpenState, getCityAreasState, initHomeIntensityToggle, getHomeIntensityState } from "./sidebarUI.js";
+import { fetchEarthquakeReports, fetchOlderReports } from "./parseReports.js";
+import { initSidebar, updateSidebarLoading, initLiveModeToggle, initAutoOpenToggle, initCityAreasToggle, initHomeLocationSettings, getHomeLocation, addReportToSidebar, updateReportInSidebar, getAutoOpenState, getCityAreasState, initHomeIntensityToggle, getHomeIntensityState, getAllReports } from "./sidebarUI.js";
 import { renderObservationsList } from "./observationsList.js";
 import { startLivePolling, stopLivePolling } from "./liveMode.js";
 
@@ -101,7 +101,7 @@ async function boot() {
     
     // Highlight areas on map based on observation intensity
     highlightObservations(map, report.observations);
-    const boundsFitted = fitBoundsToObservations(map, report.observations, featureBounds, getCityAreasState(), report.coordinates);
+    const boundsFitted = fitBoundsToObservations(map, report.observations, featureBounds, getCityAreasState(), report.maxIntensity, report.coordinates);
     
     // Display epicenter marker
     if (report.coordinates) {
@@ -141,6 +141,42 @@ async function boot() {
     displayAllEpicenters(map, reports);
     
     _updateStatus('live');
+
+    // Setup load older reports button
+    const loadOlderBtn = document.getElementById('load-older-reports-btn');
+    if (loadOlderBtn) {
+      loadOlderBtn.style.display = 'block';
+      loadOlderBtn.addEventListener('click', async () => {
+        if (loadOlderBtn.classList.contains('loading')) return;
+        
+        loadOlderBtn.classList.add('loading');
+        loadOlderBtn.textContent = 'Loading...';
+        
+        try {
+          const currentReports = getAllReports();
+          const currentEventIds = new Set(currentReports.map(r => r.eventId));
+          
+          const olderReports = await fetchOlderReports(areaCodes, currentEventIds, (processed, total) => {
+            loadOlderBtn.textContent = `Loading... ${processed}/${total}`;
+          });
+          
+          for (const report of olderReports) {
+            addReportToSidebar(report, onReportSelect);
+          }
+          
+          // Only update all epicenters if no specific report is active
+          if (!document.querySelector('.eq-item.active')) {
+            displayAllEpicenters(map, getAllReports());
+          }
+          
+          loadOlderBtn.style.display = 'none'; // Hide when done
+        } catch (err) {
+          console.error('[eq-viewer] Error loading older reports:', err);
+          loadOlderBtn.textContent = 'Error loading';
+          loadOlderBtn.classList.remove('loading');
+        }
+      });
+    }
 
     // Initialize live mode and auto-open toggles
     initLiveModeToggle((isEnabled) => {
@@ -193,7 +229,7 @@ async function boot() {
                 globalThis.__currentReport = report;
                 _displayMapInfoBox(report);
                 highlightObservations(map, report.observations);
-                const boundsFitted = fitBoundsToObservations(map, report.observations, featureBounds, getCityAreasState(), report.coordinates);
+                const boundsFitted = fitBoundsToObservations(map, report.observations, featureBounds, getCityAreasState(), report.maxIntensity, report.coordinates);
                 if (report.coordinates) {
                   displayEpicenter(map, report.coordinates);
                   if (!boundsFitted) {

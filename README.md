@@ -14,6 +14,8 @@ Live at [webquake.hainaut.xyz](https://webquake.hainaut.xyz?utm_source=github)
 - Full list of localities sorted by their recorded intensity
 - Bilingual setup (Japanese and English)
 - Live mode to pull new reports and open them automatically
+- Home location setting to add a marker to a selected location on map, and easily view intensity for that location when viewing a report
+- Can load static report files to display older earthquakes (currently server-side only)
 
 ## Dev
 

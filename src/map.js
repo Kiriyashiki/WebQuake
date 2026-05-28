@@ -441,19 +441,26 @@ export function displayEpicenter(map, coordinates) {
  * @param {Array|null} observations
  * @param {Object} featureBounds - The loaded bounds.json object
  * @param {boolean} useCityAreas
+ * @param {string} maxInt
  * @param {{latitude: number, longitude: number}} [coordinates]
  */
-export function fitBoundsToObservations(map, observations, featureBounds, useCityAreas, coordinates) {
+export function fitBoundsToObservations(map, observations, featureBounds, useCityAreas, maxInt, coordinates) {
   if (!map.isStyleLoaded() || !observations || !featureBounds) return;
+
+  if (document.getElementById('map-container').offsetWidth <= 250) {
+    return false;
+  }
 
   let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
   let hasBounds = false;
 
   for (const pref of observations) {
     for (const area of pref.areas) {
+      const areaInt = Number.parseInt(area.maxInt, 10);
       if (useCityAreas) {
         for (const city of area.cities) {
-          if (Number.parseInt(city.maxInt, 10) >= 1) {
+          const cityInt = Number.parseInt(city.maxInt, 10);
+          if ((cityInt >= 1 && Number.parseInt(maxInt) <= 5) || cityInt >= 2) {
             const cityId = String(city.code).padStart(7, "0");
             const bounds = featureBounds.cities[cityId];
             if (bounds) {
@@ -465,7 +472,7 @@ export function fitBoundsToObservations(map, observations, featureBounds, useCit
             }
           }
         }
-      } else if (Number.parseInt(area.maxInt, 10) >= 1) {
+      } else if ((areaInt >= 1 && Number.parseInt(maxInt) <= 5) || areaInt >= 2) {
           const bounds = featureBounds.forecast[area.code];
           if (bounds) {
             if (bounds[0] < minLng) minLng = bounds[0];
@@ -488,9 +495,9 @@ export function fitBoundsToObservations(map, observations, featureBounds, useCit
 
   if (hasBounds) {
     map.fitBounds([[minLng, minLat], [maxLng, maxLat]], {
-      padding: 50,
+      padding: {top: 30, bottom:30, left: 150, right: 30},
       essential: true,
-      maxZoom: 8
+      maxZoom: 7.5
     });
   }
   

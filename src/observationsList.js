@@ -69,7 +69,7 @@ export function groupObservationsByIntensity(observations, areaCodes = new Map()
 
     for (const area of pref.areas) {
       const areaCode = area.code;
-      const areaName = area.name;
+      const areaName = areaCodes.get(areaCode)?.ja || area.name;
       const areaNameEn = areaCodes.get(areaCode)?.en || '';
 
       for (const city of area.cities) {
@@ -91,7 +91,7 @@ export function groupObservationsByIntensity(observations, areaCodes = new Map()
         if (!existingCity) {
           areaEntry.cities.push({
             code: cityCode,
-            name: city.name,
+            name: cityData?.ja || city.name,
             nameEn: cityData?.en || '',
             kana: cityData?.kana || null,
             maxInt: city.maxInt,

@@ -52,6 +52,79 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onProgress =
   return reports;
 }
 
+/**
+ * Fetches and parses older static earthquake reports from /reports/list.txt.
+ * Returns array of parsed reports sorted by origin time (newest first).
+ * @param {Map} areaCodes - Area code name mappings from areaCodes.js
+ * @param {Set} seenEventIds - Set of already processed event IDs
+ * @returns {Promise<Array>} Array of parsed reports
+ */
+export async function fetchOlderReports(areaCodes = new Map(), seenEventIds = new Set(), onProgress = null) {
+  const reports = [];
+  try {
+    const listRes = await fetch('/reports/list.txt');
+    if (!listRes.ok) throw new Error('Failed to fetch /reports/list.txt');
+    
+    const listText = await listRes.text();
+    const fileNames = listText.split('\n').map(line => line.trim()).filter(line => line.endsWith('.json'));
+    
+    let processedCount = 0;
+    const totalCount = fileNames.length;
+    if (onProgress) onProgress(processedCount, totalCount);
+
+    for (let i = 0; i < fileNames.length; i += 3) {
+      const batch = fileNames.slice(i, i + 3);
+      const batchPromises = batch.map(async (fileName) => {
+        try {
+          const res = await fetch(`/reports/${fileName}`);
+          if (!res.ok) return null;
+          const jsonData = await res.json();
+          const jmaReport = JMAEarthquakeReport.fromJSON(jsonData);
+          
+          if (seenEventIds.has(jmaReport.eventId)) return null;
+          seenEventIds.add(jmaReport.eventId);
+
+          const hypocenterCodeEntry = areaCodes.get(jmaReport.hypocenterCode) || {};
+          const hypocenterJa = hypocenterCodeEntry.ja || '不明';
+          const hypocenterKana = hypocenterCodeEntry.kana || 'ふめい';
+          const hypocenterEn = hypocenterCodeEntry.en || 'Unknown';
+
+          return {
+            eventId: jmaReport.eventId,
+            originTime: jmaReport.originTime,
+            magnitude: jmaReport.magnitude,
+            maxIntensity: jmaReport.maxIntensity,
+            hypocenterCode: jmaReport.hypocenterCode,
+            hypocenterJa,
+            hypocenterKana,
+            hypocenterEn,
+            coordinates: jmaReport.coordinates,
+            depth: jmaReport.depth,
+            observations: jmaReport.observations,
+            jmaReport,
+          };
+        } catch (err) {
+          console.warn(`Failed to process static report ${fileName}:`, err);
+          return null;
+        }
+      });
+
+      const batchResults = await Promise.all(batchPromises);
+      for (const report of batchResults) {
+        if (report) reports.push(report);
+        processedCount++;
+        if (onProgress) onProgress(processedCount, totalCount);
+      }
+    }
+  } catch (err) {
+    console.error('Failed to fetch older reports:', err);
+  }
+
+  // Sort by origin time, newest first
+  reports.sort((a, b) => (b.originTime || 0) - (a.originTime || 0));
+  return reports;
+}
+
 // ─── Private helpers ──────────────────────────────────────────────────────
 
 /**

@@ -220,6 +220,32 @@
   color: var(--text-muted);
 }
 
+.load-older-btn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  text-align: center;
+}
+
+.load-older-btn:hover {
+  background: var(--bg-panel);
+  border-color: var(--border-hi);
+}
+
+.load-older-btn.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 /* ── Live Mode Toggle ─────────────────────────────────────────────── */
 
 .sidebar-footer {

@@ -304,6 +304,14 @@ export function getReportById(eventId) {
 }
 
 /**
+ * Gets all current reports.
+ * @returns {Array} All reports
+ */
+export function getAllReports() {
+  return _currentReports;
+}
+
+/**
  * Initializes the home location settings with prefecture and city dropdowns.
  * @param {Map<number, {name, kana, enName}>} prefectureCodes - Prefecture code mappings
  * @param {Map<string, {ja, en}>} cityNames - City name mappings
