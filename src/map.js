@@ -729,16 +729,37 @@ export function displayHomeLocationIntensity(cityCode, observations, cityNames) 
   if (intensity && INTENSITY_CONFIG[intensity]) {
     const config = INTENSITY_CONFIG[intensity];
     const img = intensityContainer.querySelector("img");
-    img.src = `/img/shindo/${config.img}`;
-    img.alt = `Intensity ${intensity}`;
-    img.title = `Intensity: ${intensity}`;
+    if (img) {
+      img.style.display = "";
+      img.src = `/img/shindo/${config.img}`;
+      img.alt = `Intensity ${intensity}`;
+      img.title = `Intensity: ${intensity}`;
+    }
+
+    // Hide any placeholder if present
+    const placeholder = intensityContainer.querySelector(".tooltip-intensity-placeholder");
+    if (placeholder) placeholder.style.display = "none";
+
     intensityContainer.classList.remove("hidden");
 
     display.style.borderTopColor = config.color;
     display.querySelector(".tooltip-code").style.color = config.color;
   } else {
-    // No intensity recorded for this location
-    intensityContainer.classList.add("hidden");
+    // No intensity recorded for this location — show a placeholder box with '-'
+    const img = intensityContainer.querySelector("img");
+    if (img) img.style.display = "none";
+
+    let placeholder = intensityContainer.querySelector(".tooltip-intensity-placeholder");
+    if (!placeholder) {
+      placeholder = document.createElement("div");
+      placeholder.className = "tooltip-intensity-placeholder";
+      placeholder.textContent = "-";
+      intensityContainer.appendChild(placeholder);
+    } else {
+      placeholder.style.display = "";
+    }
+
+    intensityContainer.classList.remove("hidden");
     const defaultColor = "#1e2e44";
     display.style.borderTopColor = defaultColor;
     display.querySelector(".tooltip-code").style.color = defaultColor;
