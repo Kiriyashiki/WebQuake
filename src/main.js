@@ -131,13 +131,17 @@ async function boot() {
   // Fetch initial reports
   _updateStatus('loading');
   updateSidebarLoading(0, '...');
+  
   try {
-    const reports = await fetchEarthquakeReports(areaCodes, (processed, total) => {
-      updateSidebarLoading(processed, total);
-    });
-    initSidebar(reports, onReportSelect);
+    const reports = await fetchEarthquakeReports(
+      areaCodes,
+      (report) => {
+        // Add each report to sidebar as it's fetched (maintains newest-first order)
+        addReportToSidebar(report, onReportSelect);
+      }
+    );
     
-    // Display all epicenters on the map initially
+    // Display all epicenters on the map when done fetching
     displayAllEpicenters(map, reports);
     
     _updateStatus('live');
