@@ -51,6 +51,11 @@ async function boot() {
   const mapEl = document.getElementById("map");
   const map = initMap(mapEl, areaCodes, cityNames, getCityAreasState);
 
+    // Expose for later modules / debugging
+  globalThis.__eqMap = map;
+  globalThis.__areaCodes = areaCodes;
+  globalThis.__prefectureCodes = prefectureCodes;
+
   // Setup sidebar toggle button
   const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
   const sidebar = document.getElementById('sidebar');
@@ -141,8 +146,11 @@ async function boot() {
       }
     );
     
-    // Display all epicenters on the map when done fetching
-    displayAllEpicenters(map, reports);
+    // Display all epicenters on the map only if no report is currently open
+    const activeItem = document.querySelector('.eq-item.active');
+    if (!activeItem) {
+      displayAllEpicenters(map, reports);
+    }
     
     _updateStatus('live');
 
@@ -331,11 +339,6 @@ async function boot() {
     console.error('[eq-viewer] Failed to fetch initial reports:', err);
     _updateStatus('error');
   }
-
-  // Expose for later modules / debugging
-  globalThis.__eqMap = map;
-  globalThis.__areaCodes = areaCodes;
-  globalThis.__prefectureCodes = prefectureCodes;
 }
 
 /**
