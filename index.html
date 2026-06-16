@@ -47,6 +47,13 @@
             </ul>
             <button id="load-older-reports-btn" class="load-older-btn" style="display: none;" data-tooltip="Load reports of some past major earthquakes (data may be incomplete) • 過去の主要な地震に関する報告書を読み込む（データは不完全な場合があります）">Load notable reports • 重要なレポートを読み込む</button>
           </div>
+          <!-- Sidebar loading progress popup -->
+          <div id="sidebar-loading-container" class="sidebar-loading-container hidden">
+            <div class="sidebar-loading-popup">
+              <span class="loading-spinner"></span>
+              <span class="loading-label">Loading <span id="sidebar-loading-progress" class="mono">0/0</span></span>
+            </div>
+          </div>
           <div class="sidebar-footer">
             <button id="settings-btn" class="settings-btn" aria-label="Settings and Credits" data-tooltip="Extra settings and data attributions • 出典追加設定とデータ出典">
               <span class="settings-icon">⚙️</span>

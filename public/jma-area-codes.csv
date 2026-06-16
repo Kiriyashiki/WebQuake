@@ -201,7 +201,7 @@
 600;徳島県北部;とくしまけんほくぶ;Northern Part of Tokushima Pref.
 601;徳島県南部;とくしまけんなんぶ;Southern Part of Tokushima Pref.
 610;香川県東部;かがわけんひがしぶ;Eastern Part of Kagawa Pref.
-611;香川県西部;かがわけんにしぶ;Western Part of  Kagawa Pref.
+611;香川県西部;かがわけんにしぶ;Western Part of Kagawa Pref.
 620;愛媛県東予;えひめけんとうよ;Ehime Pref. Toyo Region
 621;愛媛県中予;えひめけんちゅうよ;Ehime Pref. Chuyo Region
 622;愛媛県南予;えひめけんなんよ;Ehime Pref. Nanyo Region
@@ -249,16 +249,16 @@
 751;大分県中部;おおいたけんちゅうぶ;Central Part of Oita Pref.
 752;大分県南部;おおいたけんなんぶ;Southern Part of Oita Pref.
 753;大分県西部;おおいたけんにしぶ;Western Part of Oita Pref.
-760;宮崎県北部平野部;みやざきけんほくぶへいやぶ;Miyazaki Pref. Northern Heiyabu
-761;宮崎県北部山沿い;みやざきけんほくぶやまぞい;Miyazaki Pref. Northern Yamazoi
-762;宮崎県南部平野部;みやざきけんなんぶへいやぶ;Miyazaki Pref. Southern Heiyabu
-763;宮崎県南部山沿い;みやざきけんなんぶやまぞい;Miyazaki Pref. Southern Yamazoi
+760;宮崎県北部平野部;みやざきけんほくぶへいやぶ;Northern Plains of Miyazaki Pref.
+761;宮崎県北部山沿い;みやざきけんほくぶやまぞい;Northern Mountainous Miyazaki Pref.
+762;宮崎県南部平野部;みやざきけんなんぶへいやぶ;Southern Plains of Miyazaki Pref.
+763;宮崎県南部山沿い;みやざきけんなんぶやまぞい;Southern Mountainous Miyazaki Pref.
 770;鹿児島県薩摩地方;かごしまけんさつまちほう;Kagoshima Pref. Satsuma Region
 771;鹿児島県大隅地方;かごしまけんおおすみちほう;Kagoshima Pref. Osumi Region
 774;鹿児島県十島村;かごしまけんとしまむら;Kagoshima Pref. Toshima Islands
 775;鹿児島県甑島;かごしまけんこしきじま;Kagoshima Pref. Koshikijima Islands
 776;鹿児島県種子島;かごしまけんたねがしま;Kagoshima Pref. Tanegashima Islands
-777;鹿児島県屋久島;かごしまけんやくしま;Kagoshima Pref. Yakushima Islands Region
+777;鹿児島県屋久島;かごしまけんやくしま;Kagoshima Pref. Yakushima Islands
 778;鹿児島県奄美北部;かごしまけんあまみほくぶ;Kagoshima Pref. Northern Part of Amami
 779;鹿児島県奄美南部;かごしまけんあまみなんぶ;Kagoshima Pref. Southern Part of Amami
 783;五島列島近海;ごとうれっとうきんかい;Sea near Goto Islands
@@ -297,7 +297,7 @@
 859;宮古島北西沖;みやこじまほくせいおき;Off North-Western Coast of Miyako Island
 860;石垣島北西沖;いしがきじまほくせいおき;Off North-Western Coast of Ishigakijima
 900;台湾付近;たいわんふきん;Near Taiwan
-901;東シナ海;ひがししなかい;Eastern Chinese Sea
+901;東シナ海;ひがししなかい;East China Sea
 902;四国沖;しこくおき;Off the Coast of Shikoku
 903;鳥島近海;とりしまきんかい;Sea near Torishima Island
 904;鳥島東方沖;とりしまとうほうおき;Off the Coast of Torishima

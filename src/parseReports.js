@@ -11,9 +11,10 @@ import { FEED_URL_LATEST, FEED_DATA_BASE_URL } from './constants.js';
  * Returns array of parsed reports sorted by origin time (newest first).
  * @param {Map} areaCodes - Area code name mappings from areaCodes.js
  * @param {Function} onReportFetched - Callback(report) called when each report is fetched
+ * @param {Function} onProgress - Callback(processed, total) called to report progress
  * @returns {Promise<Array>} Array of parsed reports
  */
-export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetched = null) {
+export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetched = null, onProgress = null) {
   const seenEventIds = new Set();
   const reports = [];
 
@@ -28,6 +29,8 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
 
     let processedCount = 0;
     const totalCount = targetEntries.length;
+
+    if (onProgress) onProgress(0, totalCount);
 
     // Process entries in batches of up to 3 in parallel
     for (let i = 0; i < targetEntries.length; i += 3) {
@@ -44,6 +47,7 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
         
         processedCount++;
       }
+      if (onProgress) onProgress(processedCount, totalCount);
     }
   } catch (err) {
     console.error('Failed to fetch reports:', err);

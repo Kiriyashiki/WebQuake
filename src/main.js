@@ -19,6 +19,8 @@ import { fetchEarthquakeReports, fetchOlderReports } from "./parseReports.js";
 import {
   initSidebar,
   updateSidebarLoading,
+  updateSidebarLoadingPopup,
+  hideSidebarLoadingPopup,
   initLiveModeToggle,
   initAutoOpenToggle,
   initCityAreasToggle,
@@ -230,12 +232,21 @@ async function boot() {
   // Fetch initial reports
   _updateStatus("loading");
   updateSidebarLoading(0, "...");
+  updateSidebarLoadingPopup(0, "...");
 
   try {
-    const reports = await fetchEarthquakeReports(areaCodes, (report) => {
-      // Add each report to sidebar as it's fetched (maintains newest-first order)
-      addReportToSidebar(report, onReportSelect);
-    });
+    const reports = await fetchEarthquakeReports(
+      areaCodes,
+      (report) => {
+        // Add each report to sidebar as it's fetched (maintains newest-first order)
+        addReportToSidebar(report, onReportSelect);
+      },
+      (processed, total) => {
+        updateSidebarLoadingPopup(processed, total);
+      }
+    );
+
+    hideSidebarLoadingPopup();
 
     // Display all epicenters on the map only if no report is currently open
     const activeItem = document.querySelector(".eq-item.active");
@@ -389,6 +400,7 @@ async function boot() {
   } catch (err) {
     console.error("[eq-viewer] Failed to fetch initial reports:", err);
     _updateStatus("error");
+    hideSidebarLoadingPopup();
   }
 }
 

@@ -466,3 +466,27 @@ export function getHomeIntensityState() {
   const toggleEl = document.getElementById("home-intensity-toggle");
   return toggleEl ? toggleEl.checked : false;
 }
+
+/**
+ * Updates the fixed loading popup in the sidebar.
+ * @param {number|string} processed - Number of reports processed
+ * @param {number|string} total - Total number of reports to process
+ */
+export function updateSidebarLoadingPopup(processed, total) {
+  const container = document.getElementById("sidebar-loading-container");
+  const progressEl = document.getElementById("sidebar-loading-progress");
+  if (!container || !progressEl) return;
+
+  progressEl.textContent = `${processed}/${total}`;
+  container.classList.remove("hidden");
+}
+
+/**
+ * Hides the fixed loading popup in the sidebar.
+ */
+export function hideSidebarLoadingPopup() {
+  const container = document.getElementById("sidebar-loading-container");
+  if (container) {
+    container.classList.add("hidden");
+  }
+}
