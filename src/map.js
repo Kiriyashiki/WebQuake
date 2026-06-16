@@ -166,6 +166,7 @@ function buildStyle(useCityAreas = true) {
         id: "forecast-line",
         type: "line",
         source: "forecast_areas",
+        layout: { visibility: !useCityAreas ? 'visible' : 'none' },
         paint: {
           "line-color": [
             "case",
@@ -381,6 +382,7 @@ export function updateCityAreasVisibility(map, useCityAreas) {
   map.setLayoutProperty("cities-line", "visibility", visibility);
   
   map.setLayoutProperty("forecast-fill", "visibility", invVisibility);
+  map.setLayoutProperty("forecast-line", "visibility", invVisibility);
 }
 
 /**
