@@ -92,10 +92,20 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
         entry.rdt
     );
 
+    // Group entries by event ID and keep only the newest for each
+    const latestEntriesByEventId = new Map();
     for (const entry of targetEntries) {
       const eventId = entry.eid;
       if (!eventId) continue;
 
+      const current = latestEntriesByEventId.get(eventId);
+      if (!current || new Date(entry.rdt) > new Date(current.rdt)) {
+        latestEntriesByEventId.set(eventId, entry);
+      }
+    }
+
+    // Process only the latest entry for each event ID
+    for (const [eventId, entry] of latestEntriesByEventId) {
       const trackedEntry = _trackedEntries.get(eventId);
 
       if (!trackedEntry) {
