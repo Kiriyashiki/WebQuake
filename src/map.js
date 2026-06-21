@@ -73,13 +73,22 @@ function buildStyle(useCityAreas = true) {
         },
       },
       {
-        id: "cities-base",
-        type: "fill",
+        id: "cities-line-bg",
+        type: "line",
         source: "cities",
         layout: { visibility: useCityAreas ? 'visible' : 'none' },
         paint: {
-          "fill-color": "transparent",
-          "fill-antialias": false,
+          "line-color": C.cityLine,
+          "line-width": 0.4,
+        },
+      },
+      {
+        id: "forecast-line-bg",
+        type: "line",
+        source: "forecast_areas",
+        paint: {
+          "line-color": C.forecastLine,
+          "line-width": 0.6,
         },
       },
       {
@@ -151,14 +160,14 @@ function buildStyle(useCityAreas = true) {
           "line-color": [
             "case",
             ["boolean", ["feature-state", "highlighted"], false],
-            buildIntensityColorExpression(false, "#172538"),
+            buildIntensityColorExpression(false, C.cityLine),
             ["case", ["boolean", ["feature-state", "hover"], false], C.japanLine, "#172538"],
           ],
           "line-width": [
             "case",
             ["boolean", ["feature-state", "highlighted"], false],
             0.4,
-            ["case", ["boolean", ["feature-state", "hover"], false], 1.2, 0.4],
+            ["case", ["boolean", ["feature-state", "hover"], false], 1.4, 0],
           ],
         },
       },
@@ -171,14 +180,14 @@ function buildStyle(useCityAreas = true) {
           "line-color": [
             "case",
             ["boolean", ["feature-state", "highlighted"], false],
-            buildIntensityColorExpression(false, C.japanLine),
+            buildIntensityColorExpression(false, C.forecastLine),
             ["case", ["boolean", ["feature-state", "hover"], false], "#2b4262", C.japanLine],
           ],
           "line-width": [
             "case",
             ["boolean", ["feature-state", "highlighted"], false],
             1,
-            ["case", ["boolean", ["feature-state", "hover"], false], 1.4, 0.7],
+            ["case", ["boolean", ["feature-state", "hover"], false], 1.6, 0],
           ],
         },
       },
@@ -295,10 +304,10 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
   map.on("load", () => {
     const canvas = map.getCanvas();
 
-    const layers = ["forecast-base", "cities-base"];
+    const layers = ["forecast-fill", "cities-fill"];
 
     layers.forEach(layerName => {
-      const isCityLayer = layerName === "cities-base";
+      const isCityLayer = layerName === "cities-fill";
       const sourceName = isCityLayer ? "cities" : "forecast_areas";
 
       // ── Mouse move on areas ──────────────────────────────────────
@@ -311,6 +320,7 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
         if (!feature) return;
 
         const newId = feature.id; // promoted from property
+        if (!newId) return; // Skip features without an ID
         if (newId === hoveredId) {
           // Just update tooltip position with current intensity
           const state = map.getFeatureState({ source: sourceName, id: newId });
@@ -377,9 +387,9 @@ export function updateCityAreasVisibility(map, useCityAreas) {
   const visibility = useCityAreas ? 'visible' : 'none';
   const invVisibility = useCityAreas ? 'none' : 'visible';
 
-  map.setLayoutProperty("cities-base", "visibility", visibility);
   map.setLayoutProperty("cities-fill", "visibility", visibility);
   map.setLayoutProperty("cities-line", "visibility", visibility);
+  map.setLayoutProperty("cities-line-bg", "visibility", visibility);
   
   map.setLayoutProperty("forecast-fill", "visibility", invVisibility);
   map.setLayoutProperty("forecast-line", "visibility", invVisibility);
