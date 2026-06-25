@@ -4,12 +4,23 @@
  */
 
 import { FEED_URL_LATEST, FEED_DATA_BASE_URL, POLL_INTERVAL } from "./constants.js";
+import {
+  SPECIAL_REPORT_TITLE,
+  parseSpecialReportOverrides,
+  applySpecialReportOverrides,
+} from "./parseReports.js";
 
 /**
  * Tracks the last seen entries with their updated timestamps.
  * Map of eventId -> { rdt: ISO string, jsonFile: string }
  */
 let _trackedEntries = new Map();
+
+/**
+ * Tracks VXSE61 special report entries we've already processed.
+ * Map of eventId -> { rdt: ISO string }
+ */
+let _trackedSpecialEntries = new Map();
 
 let _pollingIntervalId = null;
 let _pollingTimeoutId = null;
@@ -92,6 +103,11 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
         entry.rdt
     );
 
+    // Collect VXSE61 special report entries from the feed
+    const specialEntries = entries.filter(
+      (entry) => entry.ttl === SPECIAL_REPORT_TITLE && entry.eid && entry.rdt
+    );
+
     // Group entries by event ID and keep only the newest for each
     const latestEntriesByEventId = new Map();
     for (const entry of targetEntries) {
@@ -118,8 +134,21 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
 
         // Fetch and parse the report
         const report = await _fetchAndParseEntry(entry, areaCodes);
-        if (report && callbacks.onNewEntry) {
-          callbacks.onNewEntry(entry, report);
+        if (report) {
+          // Check if a VXSE61 special report already exists for this event
+          const matchingSpecial = specialEntries.find((s) => s.eid === eventId);
+          if (matchingSpecial) {
+            const overrides = parseSpecialReportOverrides(matchingSpecial);
+            applySpecialReportOverrides(report, overrides);
+            console.log(
+              `[live-mode] Applied VXSE61 overrides to new report ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`
+            );
+            _trackedSpecialEntries.set(eventId, { rdt: matchingSpecial.rdt });
+          }
+
+          if (callbacks.onNewEntry) {
+            callbacks.onNewEntry(entry, report);
+          }
         }
       } else if (entry.rdt !== trackedEntry.rdt) {
         // UPDATED ENTRY
@@ -131,8 +160,63 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
 
         // Fetch and parse the updated report
         const report = await _fetchAndParseEntry(entry, areaCodes);
-        if (report && callbacks.onUpdatedEntry) {
-          callbacks.onUpdatedEntry(entry, report);
+        if (report) {
+          // Check if a VXSE61 special report exists for this event
+          const matchingSpecial = specialEntries.find((s) => s.eid === eventId);
+          if (matchingSpecial) {
+            const overrides = parseSpecialReportOverrides(matchingSpecial);
+            applySpecialReportOverrides(report, overrides);
+            console.log(
+              `[live-mode] Applied VXSE61 overrides to updated report ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`
+            );
+            _trackedSpecialEntries.set(eventId, { rdt: matchingSpecial.rdt });
+          }
+
+          if (callbacks.onUpdatedEntry) {
+            callbacks.onUpdatedEntry(entry, report);
+          }
+        }
+      }
+    }
+
+    // Process VXSE61 special reports that didn't coincide with a normal report update.
+    // These update magnitude/depth for an already-tracked event.
+    for (const specialEntry of specialEntries) {
+      const eventId = specialEntry.eid;
+      const trackedSpecial = _trackedSpecialEntries.get(eventId);
+
+      // Skip if we've already processed this exact special report
+      if (trackedSpecial && trackedSpecial.rdt === specialEntry.rdt) continue;
+
+      // Skip if we already processed it above as part of a new/updated normal entry
+      // (check if it was just set in this poll cycle above)
+      const justTracked = _trackedSpecialEntries.get(eventId);
+      if (justTracked && justTracked.rdt === specialEntry.rdt) continue;
+
+      // Only process if there's a tracked normal report for this event
+      const trackedNormal = _trackedEntries.get(eventId);
+      if (!trackedNormal) continue;
+
+      console.log("[live-mode] VXSE61 special report detected for:", eventId);
+      _trackedSpecialEntries.set(eventId, { rdt: specialEntry.rdt });
+
+      // Re-fetch the original report and apply overrides
+      const originalEntry = latestEntriesByEventId.get(eventId) || {
+        eid: eventId,
+        json: trackedNormal.jsonFile,
+        rdt: trackedNormal.rdt,
+      };
+
+      const report = await _fetchAndParseEntry(originalEntry, areaCodes);
+      if (report) {
+        const overrides = parseSpecialReportOverrides(specialEntry);
+        applySpecialReportOverrides(report, overrides);
+        console.log(
+          `[live-mode] Applied VXSE61 overrides for ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`
+        );
+
+        if (callbacks.onUpdatedEntry) {
+          callbacks.onUpdatedEntry(specialEntry, report);
         }
       }
     }

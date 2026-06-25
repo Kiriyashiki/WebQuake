@@ -1,10 +1,58 @@
 /**
  * Fetches and parses JMA earthquake reports from the official JSON feed.
  * Handles duplicate detection and provides parsed report data.
+ * Also handles VXSE61 special reports (顕著な地震の震源要素更新のお知らせ)
+ * that provide updated magnitude/depth for major earthquakes.
  */
 
 import JMAEarthquakeReport from './jmaEarthquakeReport.js';
 import { FEED_URL_LATEST, FEED_DATA_BASE_URL } from './constants.js';
+
+/** Title string identifying VXSE61 special update reports in the feed. */
+export const SPECIAL_REPORT_TITLE = '顕著な地震の震源要素更新のお知らせ';
+
+/**
+ * Parses depth (in km) from a coordinate string like "+4012.6+14218.2-44000/".
+ * The third component is depth in metres (negative = underground).
+ * @param {string} cod - Coordinate string from feed entry
+ * @returns {number|null} Depth in km, or null if unparseable
+ */
+export function parseDepthFromCod(cod) {
+  if (!cod) return null;
+  const match = /^[+-][\d.]+[+-][\d.]+([+-]\d+\.?\d*)\/$/u.exec(cod);
+  if (!match) return null;
+  return Math.abs(Number.parseFloat(match[1])) / 1000;
+}
+
+/**
+ * Parses updated magnitude and depth from a VXSE61 special report feed entry.
+ * No JSON download is required — values are taken directly from the feed entry.
+ * @param {Object} entry - Feed entry with ttl === SPECIAL_REPORT_TITLE
+ * @returns {{ magnitude: number|null, depth: number|null }}
+ */
+export function parseSpecialReportOverrides(entry) {
+  const magnitude = entry.mag ? Number.parseFloat(entry.mag) : null;
+  const depth = parseDepthFromCod(entry.cod);
+  return {
+    magnitude: (magnitude !== null && !Number.isNaN(magnitude)) ? magnitude : null,
+    depth,
+  };
+}
+
+/**
+ * Applies special report overrides to a report object (mutates in place).
+ * Only overrides fields that have valid values.
+ * @param {Object} report - The display-ready report object
+ * @param {Object} overrides - { magnitude, depth } from parseSpecialReportOverrides
+ */
+export function applySpecialReportOverrides(report, overrides) {
+  if (overrides.magnitude !== null) {
+    report.magnitude = overrides.magnitude;
+  }
+  if (overrides.depth !== null) {
+    report.depth = overrides.depth;
+  }
+}
 
 /**
  * Fetches and parses earthquake reports from the JSON feed.
@@ -27,6 +75,18 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
       entry => entry.ttl === '震源・震度情報' && entry.json
     );
 
+    // Collect VXSE61 special report entries, grouped by event ID.
+    // If multiple special reports exist for the same event, keep the newest (by rdt).
+    const specialEntriesByEid = new Map();
+    for (const entry of feedEntries) {
+      if (entry.ttl === SPECIAL_REPORT_TITLE && entry.eid) {
+        const existing = specialEntriesByEid.get(entry.eid);
+        if (!existing || (entry.rdt && (!existing.rdt || entry.rdt > existing.rdt))) {
+          specialEntriesByEid.set(entry.eid, entry);
+        }
+      }
+    }
+
     let processedCount = 0;
     const totalCount = targetEntries.length;
 
@@ -40,6 +100,14 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
       
       for (const report of batchResults) {
         if (report) {
+          // Apply VXSE61 special report overrides if one exists for this event
+          const specialEntry = specialEntriesByEid.get(report.eventId);
+          if (specialEntry) {
+            const overrides = parseSpecialReportOverrides(specialEntry);
+            applySpecialReportOverrides(report, overrides);
+            console.log(`[parseReports] Applied VXSE61 overrides for ${report.eventId}: M${overrides.magnitude}, ${overrides.depth}km`);
+          }
+
           reports.push(report);
           // Emit callback for each report as it's fetched
           if (onReportFetched) onReportFetched(report);
