@@ -9,6 +9,7 @@ import {
   parseSpecialReportOverrides,
   applySpecialReportOverrides,
 } from "./parseReports.js";
+import { fetchFeedEntries, parseReport, buildDisplayReport } from "./reportUtils.js";
 
 /**
  * Tracks the last seen entries with their updated timestamps.
@@ -93,7 +94,7 @@ export function isPolling() {
  */
 async function _pollLatestFeed(areaCodes, callbacks = {}) {
   try {
-    const entries = await _fetchFeedEntries(FEED_URL_LATEST);
+    const entries = await fetchFeedEntries(FEED_URL_LATEST);
 
     // Filter for target entries only (震源・震度情報)
     const targetEntries = entries.filter(
@@ -226,42 +227,6 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
   }
 }
 
-// ─── Private helpers ──────────────────────────────────────────────────────
-
-/**
- * Fetches and parses the JSON feed, returning array of entry objects.
- * Each entry has { eid, rdt, ttl, ift, ser, at, anm, maxi, json, ... }
- */
-async function _fetchFeedEntries(feedUrl) {
-  try {
-    const res = await fetch(feedUrl, {
-      method: "GET",
-      mode: "cors",
-      cache: "no-cache",
-    });
-
-    if (!res.ok) {
-      throw new Error(`Feed fetch failed: ${feedUrl} (${res.status})`);
-    }
-
-    const data = await res.json();
-    
-    // The feed is an array of entries
-    if (!Array.isArray(data)) {
-      throw new TypeError("Feed is not an array");
-    }
-
-    return data;
-  } catch (err) {
-    console.error(`Error fetching feed ${feedUrl}:`, err);
-    throw err;
-  }
-}
-
-/**
- * Fetches and parses a single report entry.
- * Returns a parsed report object with observations, or null if error.
- */
 
 /**
  * Fetches and parses a single report entry.
@@ -269,9 +234,6 @@ async function _fetchFeedEntries(feedUrl) {
  */
 async function _fetchAndParseEntry(entry, areaCodes) {
   try {
-    // Import here to avoid circular dependency
-    const JMAEarthquakeReport = (await import("./jmaEarthquakeReport.js")).default;
-
     const reportUrl = FEED_DATA_BASE_URL + entry.json;
     const res = await fetch(reportUrl, {
       method: "GET",
@@ -287,32 +249,12 @@ async function _fetchAndParseEntry(entry, areaCodes) {
     }
 
     const jsonData = await res.json();
-    const jmaReport = JMAEarthquakeReport.fromJSON(jsonData);
+    const jmaReport = parseReport(jsonData);
 
-    // Get hypocenter name from area codes
-    const hypocenterCodeEntry = areaCodes.get(jmaReport.hypocenterCode) || {};
-    const hypocenterJa = hypocenterCodeEntry.ja || "不明";
-    const hypocenterKana = hypocenterCodeEntry.kana || "ふめい";
-    const hypocenterEn = hypocenterCodeEntry.en || "Unknown";
-
-    // Build display-ready report object
-    return {
-      eventId: jmaReport.eventId,
-      originTime: jmaReport.originTime,
-      magnitude: jmaReport.magnitude,
-      maxIntensity: jmaReport.maxIntensity,
-      hypocenterCode: jmaReport.hypocenterCode,
-      hypocenterJa,
-      hypocenterKana,
-      hypocenterEn,
-      coordinates: jmaReport.coordinates,
-      depth: jmaReport.depth,
-      observations: jmaReport.observations,
-      jmaReport,
-      // Store feed entry metadata for tracking
+    return buildDisplayReport(jmaReport, areaCodes, {
       feedRdt: entry.rdt,
       feedJson: entry.json,
-    };
+    });
   } catch (err) {
     console.warn("[live-mode] Error processing entry:", entry.eid, err.message);
     return null;

@@ -17,7 +17,6 @@ import {
 } from "./map.js";
 import { fetchEarthquakeReports, fetchOlderReports } from "./parseReports.js";
 import {
-  initSidebar,
   updateSidebarLoading,
   updateSidebarLoadingPopup,
   hideSidebarLoadingPopup,

@@ -3,11 +3,10 @@
  * of observations grouped by intensity level.
  */
 
-import { loadPrefectureCodes, loadCityNames } from "./areaCodes";
+import { loadPrefectureCodes, loadCityNames } from "./areaCodes.js";
 import { INTENSITY_CONFIG } from "./constants";
 
-let prefectureCodes = null;
-let cityNamesCache = null;
+
 
 /**
  * Build hierarchical observations list grouped by intensity
@@ -115,21 +114,12 @@ export async function renderObservationsList(container, observations, areaCodes 
   if (!container || !observations || observations.length === 0) return;
 
   try {
-    // Load city names data
-    if (!cityNamesCache) {
-      cityNamesCache = await loadCityNames();
-      console.info('[observationsList] Loaded city.json');
-    }
-
-    // Load prefecture codes if not provided
-    if (prefCodes) {
-      prefectureCodes = prefCodes;
-    } else if (!prefectureCodes) {
-      prefectureCodes = await loadPrefectureCodes();
-    }
+    // Load data (cached in areaCodes.js — no redundant fetches)
+    const cityNames = await loadCityNames();
+    const resolvedPrefCodes = prefCodes || await loadPrefectureCodes();
 
     // Group observations by intensity
-    const grouped = groupObservationsByIntensity(observations, areaCodes, prefectureCodes, cityNamesCache);
+    const grouped = groupObservationsByIntensity(observations, areaCodes, resolvedPrefCodes, cityNames);
 
     // Get intensity order (descending: highest first)
     const intensities = Object.keys(grouped).sort((a, b) => {

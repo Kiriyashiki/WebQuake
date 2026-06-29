@@ -1,5 +1,6 @@
 import { EQDB_API_URL } from './constants.js';
-import JMAEarthquakeReport from './jmaEarthquakeReport.js';
+import { loadAreaCodesRawCsv, loadBoundsData } from './areaCodes.js';
+import { parseReport, buildDisplayReport } from './reportUtils.js';
 
 // ─── Utility functions (from generateEqdbReport.js) ─────────────────────────
 
@@ -364,18 +365,18 @@ let _geoDataCache = null;
 async function loadGeoData() {
   if (_geoDataCache) return _geoDataCache;
 
-  const [boundsRes, forecastRes, muniRes, csvRes] = await Promise.all([
-    fetch('/bounds.json'),
+  const [bounds, forecastRes, muniRes, areaCodesCsv] = await Promise.all([
+    loadBoundsData(),
     fetch('/forecast_areas.geojson'),
     fetch('/municipalities.geojson'),
-    fetch('/jma-area-codes.csv'),
+    loadAreaCodesRawCsv(),
   ]);
 
   _geoDataCache = {
-    bounds: await boundsRes.json(),
+    bounds,
     forecastAreas: await forecastRes.json(),
     municipalities: await muniRes.json(),
-    areaCodesCsv: await csvRes.text(),
+    areaCodesCsv,
   };
 
   return _geoDataCache;
@@ -423,30 +424,12 @@ export async function fetchHistoryReports(areaCodes = new Map(), onReportFetched
 
         if (!reportJson) return null;
 
-        // Parse through JMAEarthquakeReport.fromJSON to get canonical format
-        const jmaReport = JMAEarthquakeReport.fromJSON(reportJson);
+        const jmaReport = parseReport(reportJson);
 
-        // Build display-ready report object (same format as parseReports.js)
-        const hypocenterCodeEntry = areaCodes.get(jmaReport.hypocenterCode) || {};
-        const hypocenterJa = hypocenterCodeEntry.ja || event.name || '不明';
-        const hypocenterKana = hypocenterCodeEntry.kana || 'ふめい';
-        const hypocenterEn = hypocenterCodeEntry.en || 'Unknown';
-
-        return {
-          eventId: jmaReport.eventId,
-          originTime: jmaReport.originTime,
-          magnitude: jmaReport.magnitude,
-          maxIntensity: jmaReport.maxIntensity,
-          hypocenterCode: jmaReport.hypocenterCode,
-          hypocenterJa,
-          hypocenterKana,
-          hypocenterEn,
-          coordinates: jmaReport.coordinates,
-          depth: jmaReport.depth,
-          observations: jmaReport.observations,
-          jmaReport,
+        return buildDisplayReport(jmaReport, areaCodes, {
+          fallbackName: event.name,
           isHistory: true,
-        };
+        });
       });
 
       const batchResults = await Promise.all(batchPromises);

@@ -104,7 +104,7 @@ function buildStyle(useCityAreas = true) {
         id: "forecast-fill",
         type: "fill",
         source: "forecast_areas",
-        layout: { visibility: !useCityAreas ? 'visible' : 'none' },
+        layout: { visibility: useCityAreas ? 'none' : 'visible' },
         paint: {
           "fill-color": [
             "case",
@@ -175,7 +175,7 @@ function buildStyle(useCityAreas = true) {
         id: "forecast-line",
         type: "line",
         source: "forecast_areas",
-        layout: { visibility: !useCityAreas ? 'visible' : 'none' },
+        layout: { visibility: useCityAreas ? 'none' : 'visible' },
         paint: {
           "line-color": [
             "case",
@@ -762,13 +762,13 @@ export function displayHomeLocationIntensity(cityCode, observations, cityNames) 
     if (img) img.style.display = "none";
 
     let placeholder = intensityContainer.querySelector(".tooltip-intensity-placeholder");
-    if (!placeholder) {
+    if (placeholder) {
+      placeholder.style.display = "";
+    } else {
       placeholder = document.createElement("div");
       placeholder.className = "tooltip-intensity-placeholder";
       placeholder.textContent = "-";
       intensityContainer.appendChild(placeholder);
-    } else {
-      placeholder.style.display = "";
     }
 
     intensityContainer.classList.remove("hidden");

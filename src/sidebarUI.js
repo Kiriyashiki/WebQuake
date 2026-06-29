@@ -37,7 +37,7 @@ export function initSidebar(reports, onReportSelect) {
 
   // Create an item for each report
   for (const report of reports) {
-    const item = _createReportItem(report, onReportSelect);
+    const item = createReportItem(report, onReportSelect);
     eqList.appendChild(item);
   }
 }
@@ -62,7 +62,7 @@ export function updateSidebarLoading(processed, total) {
  * Creates a DOM element for a single earthquake report.
  * Displays: intensity (image + colored border), magnitude, hypocenter name, time
  */
-function _createReportItem(report, onReportSelect) {
+export function createReportItem(report, onReportSelect) {
   const item = document.createElement("li");
   item.className = "eq-item";
   item.dataset.eventId = report.eventId;
@@ -238,7 +238,7 @@ export function addReportToSidebar(report, onReportSelect) {
   if (placeholder) placeholder.remove();
 
   // Create and insert item
-  const item = _createReportItem(report, onReportSelect);
+  const item = createReportItem(report, onReportSelect);
 
   // Find correct insertion position (sorted by originTime, newest first)
   let inserted = false;
@@ -287,7 +287,7 @@ export function updateReportInSidebar(updatedReport, onReportSelect) {
   // Find and replace the DOM element
   const item = eqList.querySelector(`[data-event-id="${updatedReport.eventId}"]`);
   if (item) {
-    const newItem = _createReportItem(updatedReport, onReportSelect);
+    const newItem = createReportItem(updatedReport, onReportSelect);
     item.replaceWith(newItem);
   }
 

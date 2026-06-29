@@ -5,8 +5,8 @@
  * that provide updated magnitude/depth for major earthquakes.
  */
 
-import JMAEarthquakeReport from './jmaEarthquakeReport.js';
 import { FEED_URL_LATEST, FEED_DATA_BASE_URL } from './constants.js';
+import { fetchFeedEntries, parseReport, buildDisplayReport } from './reportUtils.js';
 
 /** Title string identifying VXSE61 special update reports in the feed. */
 export const SPECIAL_REPORT_TITLE = '顕著な地震の震源要素更新のお知らせ';
@@ -68,7 +68,7 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
 
   try {
     // Fetch JSON feed
-    const feedEntries = await _fetchFeedEntries(FEED_URL_LATEST);
+    const feedEntries = await fetchFeedEntries(FEED_URL_LATEST);
 
     // Filter for target reports (震源・震度情報 only)
     const targetEntries = feedEntries.filter(
@@ -153,30 +153,12 @@ export async function fetchOlderReports(areaCodes = new Map(), seenEventIds = ne
           const res = await fetch(`/reports/${fileName}`);
           if (!res.ok) return null;
           const jsonData = await res.json();
-          const jmaReport = JMAEarthquakeReport.fromJSON(jsonData);
+          const jmaReport = parseReport(jsonData);
           
           if (seenEventIds.has(jmaReport.eventId)) return null;
           seenEventIds.add(jmaReport.eventId);
 
-          const hypocenterCodeEntry = areaCodes.get(jmaReport.hypocenterCode) || {};
-          const hypocenterJa = hypocenterCodeEntry.ja || '不明';
-          const hypocenterKana = hypocenterCodeEntry.kana || 'ふめい';
-          const hypocenterEn = hypocenterCodeEntry.en || 'Unknown';
-
-          return {
-            eventId: jmaReport.eventId,
-            originTime: jmaReport.originTime,
-            magnitude: jmaReport.magnitude,
-            maxIntensity: jmaReport.maxIntensity,
-            hypocenterCode: jmaReport.hypocenterCode,
-            hypocenterJa,
-            hypocenterKana,
-            hypocenterEn,
-            coordinates: jmaReport.coordinates,
-            depth: jmaReport.depth,
-            observations: jmaReport.observations,
-            jmaReport,
-          };
+          return buildDisplayReport(jmaReport, areaCodes);
         } catch (err) {
           console.warn(`Failed to process static report ${fileName}:`, err);
           return null;
@@ -199,43 +181,8 @@ export async function fetchOlderReports(areaCodes = new Map(), seenEventIds = ne
   return reports;
 }
 
-// ─── Private helpers ──────────────────────────────────────────────────────
 
-/**
- * Fetches and parses the JSON feed, returning array of entry objects.
- * Each entry has { eid, rdt, ttl, ift, ser, at, anm, maxi, json, ... }
- */
-async function _fetchFeedEntries(feedUrl) {
-  try {
-    const res = await fetch(feedUrl, {
-      method: 'GET',
-      mode: 'cors',
-      cache: 'no-cache'
-    });
 
-    if (!res.ok) {
-      throw new Error(`Feed fetch failed: ${feedUrl} (${res.status})`);
-    }
-
-    const data = await res.json();
-    
-    // The feed is an array of entries
-    if (!Array.isArray(data)) {
-      throw new TypeError('Feed is not an array');
-    }
-
-    return data;
-  } catch (err) {
-    console.error(`Error fetching feed ${feedUrl}:`, err);
-    throw err;
-  }
-}
-
-/**
- * Processes a single feed entry: checks if it's the target report type,
- * fetches the JSON report, parses it, and returns a display-ready report object.
- * Skips if already seen (by event ID).
- */
 async function _processEntry(entry, areaCodes, seenEventIds) {
   // Check if this is a target entry (震源・震度情報)
   if (entry.ttl !== '震源・震度情報' || !entry.json) {
@@ -257,7 +204,7 @@ async function _processEntry(entry, areaCodes, seenEventIds) {
     }
 
     const jsonData = await res.json();
-    const jmaReport = JMAEarthquakeReport.fromJSON(jsonData);
+    const jmaReport = parseReport(jsonData);
 
     // Skip if we've already seen this event
     if (seenEventIds.has(jmaReport.eventId)) {
@@ -265,31 +212,10 @@ async function _processEntry(entry, areaCodes, seenEventIds) {
     }
     seenEventIds.add(jmaReport.eventId);
 
-    // Get hypocenter name from area codes
-    const hypocenterCodeEntry = areaCodes.get(jmaReport.hypocenterCode) || {};
-    const hypocenterJa = hypocenterCodeEntry.ja || '不明';
-    const hypocenterKana = hypocenterCodeEntry.kana || 'ふめい';
-    const hypocenterEn = hypocenterCodeEntry.en || 'Unknown';
-
-    // Build display-ready report object
-    return {
-      eventId: jmaReport.eventId,
-      originTime: jmaReport.originTime,
-      magnitude: jmaReport.magnitude,
-      maxIntensity: jmaReport.maxIntensity,
-      hypocenterCode: jmaReport.hypocenterCode,
-      hypocenterJa,
-      hypocenterKana,
-      hypocenterEn,
-      coordinates: jmaReport.coordinates,
-      depth: jmaReport.depth,
-      observations: jmaReport.observations,
-      // Store original JMA report for reference
-      jmaReport,
-      // Store feed entry metadata for live mode tracking
+    return buildDisplayReport(jmaReport, areaCodes, {
       feedRdt: entry.rdt,
       feedJson: entry.json,
-    };
+    });
   } catch (err) {
     console.warn('Error processing entry:', entry.eid, err.message);
     return null;
