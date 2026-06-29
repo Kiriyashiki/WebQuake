@@ -1,6 +1,7 @@
 // ─── API Feed URLs ──────────────────────────────────────────────────────────
 export const FEED_URL_LATEST = 'https://www.jma.go.jp/bosai/quake/data/list.json';
 export const FEED_DATA_BASE_URL = 'https://www.jma.go.jp/bosai/quake/data/';
+export const EQDB_API_URL = 'https://www.data.jma.go.jp/eqdb/data/shindo/api/';
 
 // ─── Intensity Configuration (JMA Shindo Scale) ──────────────────────────────
 export const INTENSITY_CONFIG = {

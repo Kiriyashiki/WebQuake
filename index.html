@@ -39,19 +39,50 @@
 
         <!-- Sidebar -->
         <aside id="sidebar">
-          <div class="sidebar-section">
-            <ul id="eq-list">
-              <li class="eq-item placeholder">
-                <span class="mono muted">Loading...</span>
-              </li>
-            </ul>
-            <button id="load-older-reports-btn" class="load-older-btn" style="display: none;" data-tooltip="Load reports of some past major earthquakes (data may be incomplete) • 過去の主要な地震に関する報告書を読み込む（データは不完全な場合があります）">Load notable reports • 重要なレポートを読み込む</button>
+          <!-- Sidebar tab navigation -->
+          <div class="sidebar-tabs">
+            <button class="sidebar-tab active" data-tab="live">Live • ライブ</button>
+            <button class="sidebar-tab" data-tab="history">History • 履歴</button>
           </div>
-          <!-- Sidebar loading progress popup -->
-          <div id="sidebar-loading-container" class="sidebar-loading-container hidden">
-            <div class="sidebar-loading-popup">
-              <span class="loading-spinner"></span>
-              <span class="loading-label">Loading <span id="sidebar-loading-progress" class="mono">0/0</span></span>
+
+          <!-- Live tab content -->
+          <div id="live-tab-content" class="sidebar-tab-content active">
+            <div class="sidebar-section">
+              <ul id="eq-list">
+                <li class="eq-item placeholder">
+                  <span class="mono muted">Loading...</span>
+                </li>
+              </ul>
+              <button id="load-older-reports-btn" class="load-older-btn" style="display: none;" data-tooltip="Load reports of some past major earthquakes (data may be incomplete) • 過去の主要な地震に関する報告書を読み込む（データは不完全な場合があります）">Load notable reports • 重要なレポートを読み込む</button>
+            </div>
+            <!-- Sidebar loading progress popup -->
+            <div id="sidebar-loading-container" class="sidebar-loading-container hidden">
+              <div class="sidebar-loading-popup">
+                <span class="loading-spinner"></span>
+                <span class="loading-label">Loading <span id="sidebar-loading-progress" class="mono">0/0</span></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- History tab content -->
+          <div id="history-tab-content" class="sidebar-tab-content">
+            <div class="sidebar-section">
+              <div class="history-header">
+                <span class="history-date mono"></span>
+                <span class="history-subtitle muted">1 year ago today • 1年前の今日</span>
+              </div>
+              <ul id="history-list">
+                <li class="eq-item placeholder">
+                  <span class="mono muted">Click to load history data</span>
+                </li>
+              </ul>
+            </div>
+            <!-- History loading progress popup -->
+            <div id="history-loading-container" class="sidebar-loading-container hidden">
+              <div class="sidebar-loading-popup">
+                <span class="loading-spinner"></span>
+                <span class="loading-label">Loading <span id="history-loading-progress" class="mono">0/0</span></span>
+              </div>
             </div>
           </div>
           <div class="sidebar-footer">
@@ -220,9 +251,11 @@
                     Japan Meteorological Agency (JMA · 気象庁)<br />
                     - <a href="https://www.jma.go.jp/bosai/" target="_blank">Bosai · 防災情報</a><br />
                     - <a href="https://www.data.jma.go.jp/developer/gis.html" target="_blank">GIS Area data</a><br />
-                    -
-                    <a href="https://www.data.jma.go.jp/developer/multilingual.html" target="_blank"
+                    - <a href="https://www.data.jma.go.jp/developer/multilingual.html" target="_blank"
                       >Area/City names</a
+                    >
+                    - <a href="https://www.data.jma.go.jp/eqdb/data/shindo/" target="_blank"
+                      >EQDB</a
                     >
                   </p>
                   <p><a href="https://jquake.net/" target="_blank">JQuake (Intensity color scale)</a></p>

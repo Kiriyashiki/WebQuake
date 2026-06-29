@@ -36,6 +36,7 @@ import {
 } from "./sidebarUI.js";
 import { renderObservationsList } from "./observationsList.js";
 import { startLivePolling, stopLivePolling } from "./liveMode.js";
+import { fetchHistoryReports, getHistoryDateDisplay } from "./historyMode.js";
 
 async function boot() {
   // Load area code name mappings
@@ -96,6 +97,158 @@ async function boot() {
       sidebarToggleBtn.classList.toggle("closed");
       toggleArrow?.classList.toggle("rotated");
     });
+  }
+
+  // ─── Sidebar Tab Switching ─────────────────────────────────────────────────
+  let historyLoaded = false;
+  let historyReports = [];
+
+  const tabButtons = document.querySelectorAll(".sidebar-tab");
+  const liveTabContent = document.getElementById("live-tab-content");
+  const historyTabContent = document.getElementById("history-tab-content");
+
+  // Set history date display
+  const historyDateEl = document.querySelector(".history-date");
+  if (historyDateEl) {
+    historyDateEl.textContent = getHistoryDateDisplay();
+  }
+
+  tabButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const tabName = btn.dataset.tab;
+
+      // Update active tab button
+      tabButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      // Show/hide content (no clearing — preserves DOM)
+      if (tabName === "live") {
+        liveTabContent.classList.add("active");
+        historyTabContent.classList.remove("active");
+      } else {
+        liveTabContent.classList.remove("active");
+        historyTabContent.classList.add("active");
+
+        // Load history on first switch to History tab
+        if (!historyLoaded) {
+          historyLoaded = true;
+          _loadHistoryReports(areaCodes, onReportSelect);
+        }
+      }
+    });
+  });
+
+  /**
+   * Loads history reports and populates the history list.
+   */
+  async function _loadHistoryReports(areaCodes, onReportSelect) {
+    const historyList = document.getElementById("history-list");
+    const loadingContainer = document.getElementById("history-loading-container");
+    const progressEl = document.getElementById("history-loading-progress");
+
+    if (!historyList) return;
+
+    // Show loading state
+    historyList.innerHTML = `
+      <li class="eq-item placeholder">
+        <span class="mono muted">Loading history...</span>
+      </li>
+    `;
+
+    if (loadingContainer) loadingContainer.classList.remove("hidden");
+
+    try {
+      historyReports = await fetchHistoryReports(
+        areaCodes,
+        (report) => {
+          // Add each report to the history list as it arrives
+          _addHistoryReportItem(historyList, report, onReportSelect);
+        },
+        (processed, total) => {
+          if (progressEl) progressEl.textContent = `${processed}/${total}`;
+        },
+      );
+
+      // Clear the loading placeholder if we got any reports
+      if (historyReports.length === 0) {
+        historyList.innerHTML = `
+          <li class="eq-item placeholder">
+            <span class="mono muted">No earthquake events found for this date</span>
+          </li>
+        `;
+      }
+    } catch (err) {
+      console.error("[eq-viewer] Failed to load history:", err);
+      historyList.innerHTML = `
+        <li class="eq-item placeholder">
+          <span class="mono muted">Error loading history data</span>
+        </li>
+      `;
+    } finally {
+      if (loadingContainer) loadingContainer.classList.add("hidden");
+    }
+  }
+
+  /**
+   * Adds a report item to the history list. Uses the same visual format as _createReportItem
+   * in sidebarUI.js but targets the history list element.
+   */
+  let _historyPlaceholderCleared = false;
+  function _addHistoryReportItem(historyList, report, onReportSelect) {
+    // Clear placeholder on first real report
+    if (!_historyPlaceholderCleared) {
+      const placeholder = historyList.querySelector(".eq-item.placeholder");
+      if (placeholder) placeholder.remove();
+      _historyPlaceholderCleared = true;
+    }
+
+    const item = document.createElement("li");
+    item.className = "eq-item";
+    item.dataset.eventId = report.eventId;
+
+    const intensityConfig = INTENSITY_CONFIG[report.maxIntensity] || INTENSITY_CONFIG["1"];
+    const borderColor = intensityConfig.color;
+    const intensityImg = intensityConfig.img;
+
+    const timeStr = report.originTime ? formatTimeJST(report.originTime * 1000) : "----/--/-- --:--";
+
+    item.innerHTML = `
+      <div class="eq-content">
+        <div class="eq-left">
+          <div class="eq-location-ja">${report.hypocenterJa}</div>
+          <div class="eq-location-en" title="${report.hypocenterEn}">${report.hypocenterEn}</div>
+          <div class="eq-footer">
+            <div class="eq-mag">
+              <span class="eq-mag-label">M</span>
+              ${typeof report.magnitude === "number" ? report.magnitude.toFixed(1) : "--"}
+            </div>
+            <div class="eq-time">${timeStr}</div>
+          </div>
+        </div>
+        <div class="eq-intensity-container">
+          <img
+            src="/img/shindo/${intensityImg}"
+            alt="Intensity ${report.maxIntensity}"
+            class="eq-intensity-img"
+            title="Intensity: ${report.maxIntensity}"
+          />
+        </div>
+      </div>
+    `;
+
+    item.style.borderColor = borderColor;
+    item.style.borderWidth = "2px";
+
+    item.addEventListener("click", () => {
+      // Clear active from both live and history lists
+      document.querySelectorAll(".eq-item").forEach((el) => el.classList.remove("active"));
+      item.classList.add("active");
+
+      if (onReportSelect) onReportSelect(report);
+    });
+
+    // Insert in order (newest first — reports arrive in batch order)
+    historyList.appendChild(item);
   }
 
   // Setup settings modal

@@ -11,6 +11,77 @@
   transition: margin-left 0.3s ease;
 }
 
+/* ── Sidebar Tab Navigation ──────────────────────────────────────── */
+
+.sidebar-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.sidebar-tab {
+  flex: 1;
+  padding: 10px 8px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.sidebar-tab:hover {
+  color: var(--text-dim);
+  background: var(--bg-panel2);
+}
+
+.sidebar-tab.active {
+  color: var(--text);
+  border-bottom-color: var(--accent2);
+  background: var(--bg-panel2);
+}
+
+/* ── Tab Content Panels ──────────────────────────────────────────── */
+
+.sidebar-tab-content {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar-tab-content.active {
+  display: flex;
+}
+
+/* ── History Header ──────────────────────────────────────────────── */
+
+.history-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.history-date {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent2);
+}
+
+.history-subtitle {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+
 #sidebar.hidden {
   margin-left: calc(-1 * var(--sidebar-w));
 }
@@ -81,7 +152,7 @@
 
 /* ── Earthquake list items ──────────────────────────────────────── */
 
-#eq-list {
+#eq-list, #history-list {
   list-style: none;
   display: flex;
   flex-direction: column;
