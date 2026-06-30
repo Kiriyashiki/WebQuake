@@ -16,6 +16,7 @@ Live at [webquake.hainaut.xyz](https://webquake.hainaut.xyz?utm_source=github)
 - Live mode to pull new reports and open them automatically
 - Home location setting to add a marker to a selected location on map, and easily view intensity for that location when viewing a report
 - Can load static report files to display older earthquakes (currently server-side only)
+- Earthquake history (1 year ago today)
 
 ## Dev
 
@@ -36,6 +37,7 @@ pnpm run build
     - <a href="https://www.jma.go.jp/bosai/">Bosai · 防災情報</a>: Earthquake reports json feed
     - <a href="https://www.data.jma.go.jp/developer/gis.html">GIS Area data</a>: Map data of prefectures/forecast areas
     - <a href="https://www.data.jma.go.jp/developer/multilingual.html">Area/City names</a>: Name definition of area/city codes
+    - <a href="https://www.data.jma.go.jp/eqdb/data/shindo/">EQDB</a>: Historical Earthquake data
 - <a href="https://jquake.net/">JQuake</a>: Intensity color scale
 - [M PLUS Fonts](https://mplusfonts.github.io/) Font family used
 

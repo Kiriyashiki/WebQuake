@@ -109,9 +109,13 @@ export function groupObservationsByIntensity(observations, areaCodes = new Map()
  * @param {Array} observations - From JMAEarthquakeReport.observations
  * @param {Map} areaCodes - Area code mappings
  * @param {Map} prefCodes - Prefecture code mappings (optional, will be loaded if not provided)
+ * @param {Object} [options] - Optional rendering options
+ * @param {boolean} [options.isFlashReport=false] - If true, render in flash mode (no cities, show notice)
  */
-export async function renderObservationsList(container, observations, areaCodes = new Map(), prefCodes = null) {
+export async function renderObservationsList(container, observations, areaCodes = new Map(), prefCodes = null, options = {}) {
   if (!container || !observations || observations.length === 0) return;
+
+  const { isFlashReport = false } = options;
 
   try {
     // Load data (cached in areaCodes.js — no redundant fetches)
@@ -119,7 +123,9 @@ export async function renderObservationsList(container, observations, areaCodes 
     const resolvedPrefCodes = prefCodes || await loadPrefectureCodes();
 
     // Group observations by intensity
-    const grouped = groupObservationsByIntensity(observations, areaCodes, resolvedPrefCodes, cityNames);
+    const grouped = isFlashReport
+      ? groupObservationsByIntensityAreaOnly(observations, areaCodes, resolvedPrefCodes)
+      : groupObservationsByIntensity(observations, areaCodes, resolvedPrefCodes, cityNames);
 
     // Get intensity order (descending: highest first)
     const intensities = Object.keys(grouped).sort((a, b) => {
@@ -129,6 +135,17 @@ export async function renderObservationsList(container, observations, areaCodes 
 
     // Clear container
     container.innerHTML = '';
+
+    // Show flash report notice at the top
+    if (isFlashReport) {
+      const notice = document.createElement('div');
+      notice.className = 'observations-flash-notice';
+      notice.innerHTML = `
+        <span class="flash-notice-text">市区町村ごとの情報はまだ配信されていません</span>
+        <span class="flash-notice-text-en">Per-city intensity data not yet available</span>
+      `;
+      container.appendChild(notice);
+    }
 
     // Check if max intensity is 5- or higher
     const maxIntensity = intensities[0];
@@ -196,19 +213,21 @@ export async function renderObservationsList(container, observations, areaCodes 
           areaRow.innerHTML = `<span class="observation-ja">${areaJa}</span><span class="observation-dot">·</span><span class="observation-en">${areaEn}</span>`;
           areaDiv.appendChild(areaRow);
 
-          // Cities under area
-          for (const city of area.cities) {
-            const cityDiv = document.createElement('div');
-            cityDiv.className = 'observation-city';
+          // Cities under area (only for non-flash reports)
+          if (!isFlashReport) {
+            for (const city of area.cities) {
+              const cityDiv = document.createElement('div');
+              cityDiv.className = 'observation-city';
 
-            const cityRow = document.createElement('div');
-            cityRow.className = 'observation-row city-row';
-            const cityJa = city.name;
-            const cityEn = city.nameEn || city.code;
-            cityRow.innerHTML = `<span class="observation-ja">${cityJa}</span><span class="observation-dot">·</span><span class="observation-en">${cityEn}</span>`;
-            cityDiv.appendChild(cityRow);
+              const cityRow = document.createElement('div');
+              cityRow.className = 'observation-row city-row';
+              const cityJa = city.name;
+              const cityEn = city.nameEn || city.code;
+              cityRow.innerHTML = `<span class="observation-ja">${cityJa}</span><span class="observation-dot">·</span><span class="observation-en">${cityEn}</span>`;
+              cityDiv.appendChild(cityRow);
 
-            areaDiv.appendChild(cityDiv);
+              areaDiv.appendChild(cityDiv);
+            }
           }
 
           prefDiv.appendChild(areaDiv);
@@ -232,4 +251,68 @@ export async function renderObservationsList(container, observations, areaCodes 
   } catch (err) {
     console.error('[observationsList] Error rendering observations list:', err);
   }
+}
+
+/**
+ * Group observations by intensity at the area level (no cities).
+ * Used for flash reports (震度速報) which don't have per-city data.
+ * @param {Array} observations - Observations array (areas have empty cities arrays)
+ * @param {Map} areaCodes - Area code mappings
+ * @param {Map} prefectureCodes - Prefecture code mappings
+ * @returns {Object} Grouped observations by intensity
+ */
+function groupObservationsByIntensityAreaOnly(observations, areaCodes = new Map(), prefectureCodes = new Map()) {
+  const grouped = {};
+
+  const ensureIntensity = (intensity) => {
+    if (!grouped[intensity]) {
+      grouped[intensity] = [];
+    }
+  };
+
+  const findOrCreatePref = (intensity, prefCode, prefName) => {
+    let pref = grouped[intensity].find(p => p.code === prefCode);
+    if (!pref) {
+      const prefData = prefectureCodes.get(prefCode) || {};
+      pref = {
+        code: prefCode,
+        name: prefData.name || prefName,
+        nameEn: prefData.enName || '',
+        kana: prefData.kana || '',
+        areas: [],
+      };
+      grouped[intensity].push(pref);
+    }
+    return pref;
+  };
+
+  for (const pref of observations) {
+    const prefCode = pref.code;
+    const prefName = pref.name;
+
+    for (const area of pref.areas) {
+      const areaCode = area.code;
+      const areaName = areaCodes.get(areaCode)?.ja || area.name;
+      const areaNameEn = areaCodes.get(areaCode)?.en || '';
+      const areaIntensity = area.maxInt;
+
+      if (!areaIntensity) continue;
+
+      ensureIntensity(areaIntensity);
+      const prefEntry = findOrCreatePref(areaIntensity, prefCode, prefName);
+
+      // Check if area already exists
+      const existingArea = prefEntry.areas.find(a => a.code === areaCode);
+      if (!existingArea) {
+        prefEntry.areas.push({
+          code: areaCode,
+          name: areaName,
+          nameEn: areaNameEn,
+          cities: [],
+        });
+      }
+    }
+  }
+
+  return grouped;
 }

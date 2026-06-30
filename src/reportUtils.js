@@ -71,3 +71,138 @@ export function buildDisplayReport(jmaReport, areaCodes, extraFields = {}) {
     ...rest,
   };
 }
+
+// ─── Flash report title constants ────────────────────────────────────────────
+
+/** Title for 震度速報 (intensity flash report — first report, area-level only) */
+export const FLASH_INTENSITY_TITLE = '震度速報';
+
+/** Title for 震源速報 (epicenter flash report — second report, epicenter details) */
+export const FLASH_EPICENTER_TITLE = '震源に関する情報';
+
+/**
+ * Parses a 震度速報 JSON into area-level observations (no cities).
+ * The JSON structure uses Body.Intensity.Observation.Pref[] → Area[].
+ * @param {Object} jsonData - Parsed JSON from the 震度速報 report file
+ * @returns {{ maxIntensity: string|null, observations: Array }}
+ */
+export function parseFlashIntensityJson(jsonData) {
+  const maxInt = jsonData?.Body?.Intensity?.Observation?.MaxInt || null;
+  const prefArray = jsonData?.Body?.Intensity?.Observation?.Pref;
+  if (!prefArray || !Array.isArray(prefArray)) {
+    return { maxIntensity: maxInt, observations: [] };
+  }
+
+  const observations = [];
+  for (const pref of prefArray) {
+    const prefEntry = {
+      code: Number.parseInt(pref.Code, 10),
+      name: pref.Name || null,
+      maxInt: pref.MaxInt || null,
+      areas: [],
+    };
+
+    const areaArray = pref.Area || [];
+    for (const area of areaArray) {
+      prefEntry.areas.push({
+        code: Number.parseInt(area.Code, 10),
+        name: area.Name || null,
+        maxInt: area.MaxInt || null,
+        cities: [], // No cities in 震度速報
+      });
+    }
+
+    observations.push(prefEntry);
+  }
+
+  return { maxIntensity: maxInt, observations };
+}
+
+/**
+ * Builds a display-ready flash report from a 震度速報 feed entry + fetched JSON.
+ * Epicenter is unknown at this stage.
+ *
+ * @param {Object} feedEntry - The feed entry with ttl === '震度速報'
+ * @param {Object} parsedJson - { maxIntensity, observations } from parseFlashIntensityJson
+ * @returns {Object} Display-ready flash report object
+ */
+export function buildFlashIntensityReport(feedEntry, parsedJson) {
+  const originTime = feedEntry.at
+    ? Math.floor(Date.parse(feedEntry.at) / 1000)
+    : null;
+
+  return {
+    eventId: feedEntry.eid,
+    originTime,
+    magnitude: null,
+    maxIntensity: parsedJson.maxIntensity || feedEntry.maxi || null,
+    hypocenterCode: null,
+    hypocenterJa: '震源 調査中',
+    hypocenterKana: 'しんげん ちょうさちゅう',
+    hypocenterEn: 'Under Assessment',
+    coordinates: null,
+    depth: null,
+    observations: parsedJson.observations,
+    jmaReport: null,
+    isFlashReport: true,
+    flashType: 'intensity', // 震度速報
+    feedRdt: feedEntry.rdt,
+    feedJson: feedEntry.json,
+  };
+}
+
+/**
+ * Builds a display-ready flash report from a 震源速報 feed entry.
+ * No JSON fetch needed — epicenter details are in the feed entry itself.
+ * Observations from a prior 震度速報 can be carried over.
+ *
+ * @param {Object} feedEntry - The feed entry with ttl === '震源に関する情報'
+ * @param {Map} areaCodes - Area code name mappings
+ * @param {Array} [priorObservations] - Observations from a prior 震度速報 for this event
+ * @param {string} [priorMaxIntensity] - Max intensity from a prior 震度速報
+ * @returns {Object} Display-ready flash report object
+ */
+export function buildFlashEpicenterReport(feedEntry, areaCodes, priorObservations = [], priorMaxIntensity = null) {
+  const originTime = feedEntry.at
+    ? Math.floor(Date.parse(feedEntry.at) / 1000)
+    : null;
+
+  const magnitude = feedEntry.mag ? Number.parseFloat(feedEntry.mag) : null;
+
+  // Parse coordinates from cod field
+  let coordinates = null;
+  let depth = null;
+  if (feedEntry.cod) {
+    const match = /^([+-]\d+\.?\d*)([+-]\d+\.?\d*)([+-]\d+\.?\d*)\/$/u.exec(feedEntry.cod);
+    if (match) {
+      coordinates = {
+        latitude: Number.parseFloat(match[1]),
+        longitude: Number.parseFloat(match[2]),
+      };
+      depth = Math.abs(Number.parseFloat(match[3])) / 1000;
+    }
+  }
+
+  // Resolve hypocenter name from area code
+  const hypocenterCode = feedEntry.acd ? Number.parseInt(feedEntry.acd, 10) : null;
+  const hypocenterCodeEntry = areaCodes.get(hypocenterCode) || {};
+
+  return {
+    eventId: feedEntry.eid,
+    originTime,
+    magnitude: (magnitude !== null && !Number.isNaN(magnitude)) ? magnitude : null,
+    maxIntensity: priorMaxIntensity || feedEntry.maxi || null,
+    hypocenterCode,
+    hypocenterJa: hypocenterCodeEntry.ja || feedEntry.anm || '不明',
+    hypocenterKana: hypocenterCodeEntry.kana || '',
+    hypocenterEn: hypocenterCodeEntry.en || feedEntry.en_anm || 'Unknown',
+    coordinates,
+    depth,
+    observations: priorObservations,
+    jmaReport: null,
+    isFlashReport: true,
+    flashType: 'epicenter', // 震源速報
+    feedRdt: feedEntry.rdt,
+    feedJson: feedEntry.json,
+  };
+}

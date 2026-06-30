@@ -283,12 +283,44 @@ export function updateReportInSidebar(updatedReport, onReportSelect) {
   if (idx === -1) return false;
 
   _currentReports[idx] = updatedReport;
+  // Re-sort current reports because originTime might have changed (e.g. from flash to normal)
+  _currentReports.sort((a, b) => (b.originTime || 0) - (a.originTime || 0));
 
   // Find and replace the DOM element
   const item = eqList.querySelector(`[data-event-id="${updatedReport.eventId}"]`);
   if (item) {
+    const isActive = item.classList.contains("active");
     const newItem = createReportItem(updatedReport, onReportSelect);
+    
+    // Preserve active state
+    if (isActive) {
+      newItem.classList.add("active");
+    }
+    
     item.replaceWith(newItem);
+
+    // Re-insert into the correct position if necessary (originTime may have changed)
+    const existingItems = Array.from(eqList.querySelectorAll(".eq-item:not(.placeholder)"));
+    // Since we replaced it in place, it might be in the wrong order now.
+    // We can just append and then use standard DOM sorting or just re-insert.
+    let inserted = false;
+    for (const existingItem of existingItems) {
+      if (existingItem === newItem) continue;
+      const existingReport = _currentReports.find(
+        (r) => r.eventId === existingItem.dataset.eventId
+      );
+      if (
+        existingReport &&
+        (updatedReport.originTime || 0) > (existingReport.originTime || 0)
+      ) {
+        existingItem.before(newItem);
+        inserted = true;
+        break;
+      }
+    }
+    if (!inserted) {
+      eqList.appendChild(newItem);
+    }
   }
 
   return true;

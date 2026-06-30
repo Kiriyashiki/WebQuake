@@ -31,7 +31,7 @@ export const MAP_COLORS = {
 };
 
 // Live Mode interval
-export const POLL_INTERVAL = 60000;
+export const POLL_INTERVAL = 30000;
 
 /**
  * Helper to convert a hex color to rgba with specified opacity.

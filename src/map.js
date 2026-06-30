@@ -312,7 +312,7 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
 
       // ── Mouse move on areas ──────────────────────────────────────
       map.on("mousemove", layerName, (e) => {
-        if (isCityLayer !== getUseCityAreas()) return;
+        if (isCityLayer !== _currentCityAreasVisible) return;
 
         canvas.style.cursor = "crosshair";
 
@@ -359,7 +359,7 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
 
       // ── Mouse leave ──────────────────────────────────────────────────────
       map.on("mouseleave", layerName, () => {
-        if (isCityLayer !== getUseCityAreas()) return;
+        if (isCityLayer !== _currentCityAreasVisible) return;
         
         canvas.style.cursor = "";
 
@@ -376,12 +376,17 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
   return map;
 }
 
+let _currentCityAreasVisible = true;
+
 /**
  * Updates the visibility of city areas vs forecast areas layers.
- * @param {maplibregl.Map} map 
- * @param {boolean} useCityAreas 
+ * Also tracks internal state for mouse interactions.
+ * @param {maplibregl.Map} map
+ * @param {boolean} useCityAreas
  */
 export function updateCityAreasVisibility(map, useCityAreas) {
+  _currentCityAreasVisible = useCityAreas;
+
   if (!map.isStyleLoaded()) return;
 
   const visibility = useCityAreas ? 'visible' : 'none';
@@ -403,8 +408,6 @@ export function updateCityAreasVisibility(map, useCityAreas) {
  * @param {Array|null} observations  - Parsed observations from JMAEarthquakeReport
  */
 export function highlightObservations(map, observations) {
-  if (!map.isStyleLoaded()) return;
-
   // Reset every currently highlighted feature first
   // MapLibre does not provide a bulk-reset, so we track them.
   highlightObservations._active?.forEach(({ source, id }) => {
@@ -417,7 +420,7 @@ export function highlightObservations(map, observations) {
   for (const pref of observations) {
     for (const area of pref.areas) {
       // Highlight forecast areas
-      const areaId = area.code;
+      const areaId = String(area.code);
       map.setFeatureState(
         { source: "forecast_areas", id: areaId },
         { highlighted: true, intensity: area.maxInt },
@@ -457,7 +460,7 @@ export function displayEpicenter(map, coordinates) {
  * @param {{latitude: number, longitude: number}} [coordinates]
  */
 export function fitBoundsToObservations(map, observations, featureBounds, useCityAreas, maxInt, coordinates) {
-  if (!map.isStyleLoaded() || !observations || !featureBounds) return;
+  if (!observations || !featureBounds) return false;
 
   if (document.getElementById('map-container').offsetWidth <= 250) {
     return false;

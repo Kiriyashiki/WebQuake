@@ -276,6 +276,7 @@ async function boot() {
   // Initialize sidebar with earthquake reports
   const onReportSelect = (report) => {
     console.log("[eq-viewer] Selected report:", report.eventId, report.hypocenterJa);
+    console.log("[eq-viewer] Map style loaded:", map.isStyleLoaded());
 
     // Store current report in global for settings changes
     globalThis.__currentReport = report;
@@ -283,43 +284,57 @@ async function boot() {
     // Clear all initial epicenters when a report is opened
     clearAllEpicenters(map);
 
+    // Handle city areas visibility for flash reports
+    // Flash reports don't have per-city data, so temporarily switch city mode off
+    if (report.isFlashReport) {
+      updateCityAreasVisibility(map, false);
+    } else {
+      // Restore city areas to user's preferred setting
+      updateCityAreasVisibility(map, getCityAreasState());
+    }
+
     // Show info box on map
     _displayMapInfoBox(report);
 
-    // Highlight areas on map based on observation intensity
-    highlightObservations(map, report.observations);
-    const boundsFitted = fitBoundsToObservations(
-      map,
-      report.observations,
-      featureBounds,
-      getCityAreasState(),
-      report.maxIntensity,
-      report.coordinates,
-    );
+    // Give MapLibre a moment to apply layout property changes before setting feature states.
+    // If setFeatureState is called on a source whose layers were just made visible in the same tick,
+    // MapLibre often drops the feature states.
+    setTimeout(() => {
+      // Highlight areas on map based on observation intensity
+      highlightObservations(map, report.observations);
+      const boundsFitted = fitBoundsToObservations(
+        map,
+        report.observations,
+        featureBounds,
+        report.isFlashReport ? false : getCityAreasState(),
+        report.maxIntensity,
+        report.coordinates,
+      );
 
-    // Display epicenter marker
-    if (report.coordinates) {
-      displayEpicenter(map, report.coordinates);
-      if (!boundsFitted) {
-        map.flyTo({
-          center: [report.coordinates.longitude, report.coordinates.latitude],
-          zoom: 6,
-          essential: true,
-        });
+      // Display epicenter marker
+      if (report.coordinates) {
+        displayEpicenter(map, report.coordinates);
+        if (!boundsFitted) {
+          map.flyTo({
+            center: [report.coordinates.longitude, report.coordinates.latitude],
+            zoom: 6,
+            essential: true,
+          });
+        }
+      } else {
+        clearEpicenter(map);
       }
-    } else {
-      clearEpicenter(map);
-    }
 
-    // Display home location intensity if enabled
-    if (getHomeIntensityState()) {
-      const homeLocation = getHomeLocation();
-      if (homeLocation.cityCode && report.observations) {
-        displayHomeLocationIntensity(homeLocation.cityCode, report.observations, cityNames);
+      // Display home location intensity if enabled
+      if (getHomeIntensityState()) {
+        const homeLocation = getHomeLocation();
+        if (homeLocation.cityCode && report.observations) {
+          displayHomeLocationIntensity(homeLocation.cityCode, report.observations, cityNames);
+        }
+      } else {
+        hideHomeLocationIntensity();
       }
-    } else {
-      hideHomeLocationIntensity();
-    }
+    }, 50);
   };
 
   // Initialize auto-open toggle
@@ -330,7 +345,19 @@ async function boot() {
   // Initialize city areas toggle
   initCityAreasToggle((isEnabled) => {
     console.log("[eq-viewer] City areas:", isEnabled ? "enabled" : "disabled");
+    
+    // Skip if we're currently viewing a flash report (which forces city areas off anyway)
+    if (globalThis.__currentReport?.isFlashReport) return;
+    
     updateCityAreasVisibility(map, isEnabled);
+    
+    // Re-apply highlights after a delay to ensure MapLibre retains them on the newly visible layer
+    if (globalThis.__currentReport) {
+      setTimeout(() => {
+        if (!map.isStyleLoaded()) return;
+        highlightObservations(map, globalThis.__currentReport.observations);
+      }, 50);
+    }
   });
 
   // Initialize home location settings
@@ -465,14 +492,17 @@ async function boot() {
               audio.play().catch((err) => console.warn("[eq-viewer] Failed to play sound:", err));
 
               const added = addReportToSidebar(report, onReportSelect);
-              if (added && report.coordinates) {
-                // Add new epicenter to map
-                displayEpicenter(map, report.coordinates);
+              if (added) {
+                if (report.coordinates) {
+                  // Add new epicenter to map
+                  displayEpicenter(map, report.coordinates);
+                }
 
-                // Track most recent new report for auto-open
+                // Track most recent new report for auto-open using the publish time (feedRdt)
+                // This correctly handles flash reports which might have null originTime.
                 if (
                   !mostRecentNewReport ||
-                  (report.originTime || 0) > (mostRecentNewReport.originTime || 0)
+                  report.feedRdt >= mostRecentNewReport.feedRdt
                 ) {
                   mostRecentNewReport = report;
                 }
@@ -498,43 +528,7 @@ async function boot() {
                 const activeItem = document.querySelector(".eq-item.active");
                 if (activeItem && activeItem.dataset.eventId === report.eventId) {
                   console.log("[eq-viewer] Reloading active report on map");
-                  globalThis.__currentReport = report;
-                  _displayMapInfoBox(report);
-                  highlightObservations(map, report.observations);
-                  const boundsFitted = fitBoundsToObservations(
-                    map,
-                    report.observations,
-                    featureBounds,
-                    getCityAreasState(),
-                    report.maxIntensity,
-                    report.coordinates,
-                  );
-                  if (report.coordinates) {
-                    displayEpicenter(map, report.coordinates);
-                    if (!boundsFitted) {
-                      map.flyTo({
-                        center: [report.coordinates.longitude, report.coordinates.latitude],
-                        zoom: 6,
-                        essential: true,
-                      });
-                    }
-                  } else {
-                    clearEpicenter(map);
-                  }
-
-                  // Update home location intensity display if enabled
-                  if (getHomeIntensityState()) {
-                    const homeLocation = getHomeLocation();
-                    if (homeLocation.cityCode && report.observations) {
-                      displayHomeLocationIntensity(
-                        homeLocation.cityCode,
-                        report.observations,
-                        cityNames,
-                      );
-                    }
-                  } else {
-                    hideHomeLocationIntensity();
-                  }
+                  onReportSelect(report);
                 }
               }
             },
@@ -580,6 +574,7 @@ function _updateStatus(state) {
 /**
  * Displays report information in the top-left info box on the map.
  * Shows magnitude, depth, coordinates, time, intensity, and observations list.
+ * Handles flash reports with appropriate badges and restricted data display.
  */
 function _displayMapInfoBox(report) {
   const infoBox = document.getElementById("map-info-box");
@@ -588,6 +583,7 @@ function _displayMapInfoBox(report) {
   // Populate location
   const locationJa = infoBox.querySelector(".info-box-location-ja");
   const locationEn = infoBox.querySelector(".info-box-location-en");
+  const flashBadge = infoBox.querySelector(".info-box-flash-badge");
   const intensityImg = infoBox.querySelector(".info-box-intensity-img");
   const magnitude = infoBox.querySelector(".info-magnitude");
   const depth = infoBox.querySelector(".info-depth");
@@ -597,6 +593,15 @@ function _displayMapInfoBox(report) {
   if (locationJa)
     locationJa.innerHTML = createRubyHtml(report.hypocenterJa, report.hypocenterKana) || "不明";
   if (locationEn) locationEn.textContent = report.hypocenterEn || "Unknown";
+
+  // Show/hide flash report badge
+  if (flashBadge) {
+    if (report.isFlashReport) {
+      flashBadge.classList.remove("hidden");
+    } else {
+      flashBadge.classList.add("hidden");
+    }
+  }
 
   // Set intensity image
   if (intensityImg) {
@@ -636,6 +641,7 @@ function _displayMapInfoBox(report) {
       report.observations,
       globalThis.__areaCodes || new Map(),
       globalThis.__prefectureCodes || new Map(),
+      { isFlashReport: !!report.isFlashReport },
     );
   }
 

@@ -6,7 +6,16 @@
  */
 
 import { FEED_URL_LATEST, FEED_DATA_BASE_URL } from './constants.js';
-import { fetchFeedEntries, parseReport, buildDisplayReport } from './reportUtils.js';
+import {
+  fetchFeedEntries,
+  parseReport,
+  buildDisplayReport,
+  FLASH_INTENSITY_TITLE,
+  FLASH_EPICENTER_TITLE,
+  parseFlashIntensityJson,
+  buildFlashIntensityReport,
+  buildFlashEpicenterReport,
+} from './reportUtils.js';
 
 /** Title string identifying VXSE61 special update reports in the feed. */
 export const SPECIAL_REPORT_TITLE = '顕著な地震の震源要素更新のお知らせ';
@@ -57,6 +66,7 @@ export function applySpecialReportOverrides(report, overrides) {
 /**
  * Fetches and parses earthquake reports from the JSON feed.
  * Returns array of parsed reports sorted by origin time (newest first).
+ * Includes flash reports (震度速報/震源速報) for events that don't yet have a normal report.
  * @param {Map} areaCodes - Area code name mappings from areaCodes.js
  * @param {Function} onReportFetched - Callback(report) called when each report is fetched
  * @param {Function} onProgress - Callback(processed, total) called to report progress
@@ -87,12 +97,32 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
       }
     }
 
+    // Collect flash report entries, grouped by event ID
+    // 震度速報 entries (intensity flash — area-level observations, no epicenter)
+    const flashIntensityByEid = new Map();
+    // 震源速報 entries (epicenter flash — epicenter details, no per-city observations)
+    const flashEpicenterByEid = new Map();
+
+    for (const entry of feedEntries) {
+      if (entry.ttl === FLASH_INTENSITY_TITLE && entry.eid) {
+        const existing = flashIntensityByEid.get(entry.eid);
+        if (!existing || (entry.rdt && (!existing.rdt || entry.rdt > existing.rdt))) {
+          flashIntensityByEid.set(entry.eid, entry);
+        }
+      } else if (entry.ttl === FLASH_EPICENTER_TITLE && entry.eid) {
+        const existing = flashEpicenterByEid.get(entry.eid);
+        if (!existing || (entry.rdt && (!existing.rdt || entry.rdt > existing.rdt))) {
+          flashEpicenterByEid.set(entry.eid, entry);
+        }
+      }
+    }
+
     let processedCount = 0;
     const totalCount = targetEntries.length;
 
     if (onProgress) onProgress(0, totalCount);
 
-    // Process entries in batches of up to 3 in parallel
+    // Process normal entries in batches of up to 3 in parallel
     for (let i = 0; i < targetEntries.length; i += 3) {
       const batch = targetEntries.slice(i, i + 3);
       const batchPromises = batch.map(entry => _processEntry(entry, areaCodes, seenEventIds));
@@ -117,6 +147,34 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
       }
       if (onProgress) onProgress(processedCount, totalCount);
     }
+
+    // ─── Process flash reports for events without a normal report ──────────
+    // Collect all event IDs that have flash reports but no normal report
+    const flashEventIds = new Set();
+    for (const eid of flashIntensityByEid.keys()) {
+      if (!seenEventIds.has(eid)) flashEventIds.add(eid);
+    }
+    for (const eid of flashEpicenterByEid.keys()) {
+      if (!seenEventIds.has(eid)) flashEventIds.add(eid);
+    }
+
+    for (const eid of flashEventIds) {
+      try {
+        const flashReport = await _buildFlashReport(
+          eid,
+          flashIntensityByEid.get(eid),
+          flashEpicenterByEid.get(eid),
+          areaCodes,
+        );
+        if (flashReport) {
+          seenEventIds.add(eid);
+          reports.push(flashReport);
+          if (onReportFetched) onReportFetched(flashReport);
+        }
+      } catch (err) {
+        console.warn('[parseReports] Error processing flash report for', eid, err.message);
+      }
+    }
   } catch (err) {
     console.error('Failed to fetch reports:', err);
   }
@@ -124,6 +182,52 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
   // Sort by origin time, newest first
   reports.sort((a, b) => (b.originTime || 0) - (a.originTime || 0));
   return reports;
+}
+
+/**
+ * Builds the best available flash report for a given event ID.
+ * Prefers 震源速報 (has epicenter data) over 震度速報 (area-only),
+ * but carries observations from 震度速報 into the epicenter report.
+ *
+ * @param {string} eid - Event ID
+ * @param {Object|undefined} intensityEntry - 震度速報 feed entry (may be undefined)
+ * @param {Object|undefined} epicenterEntry - 震源速報 feed entry (may be undefined)
+ * @param {Map} areaCodes - Area code name mappings
+ * @returns {Promise<Object|null>} Flash report or null
+ */
+async function _buildFlashReport(eid, intensityEntry, epicenterEntry, areaCodes) {
+  let intensityData = null;
+
+  // If we have a 震度速報, fetch its JSON to get area-level observations
+  if (intensityEntry?.json) {
+    try {
+      const reportUrl = FEED_DATA_BASE_URL + intensityEntry.json;
+      const res = await fetch(reportUrl, { method: 'GET', mode: 'cors', cache: 'no-cache' });
+      if (res.ok) {
+        const jsonData = await res.json();
+        intensityData = parseFlashIntensityJson(jsonData);
+      }
+    } catch (err) {
+      console.warn('[parseReports] Failed to fetch 震度速報 JSON for', eid, err.message);
+    }
+  }
+
+  // If we have a 震源速報 (epicenter details), build from that + carry observations
+  if (epicenterEntry) {
+    return buildFlashEpicenterReport(
+      epicenterEntry,
+      areaCodes,
+      intensityData?.observations || [],
+      intensityData?.maxIntensity || null,
+    );
+  }
+
+  // Otherwise fall back to 震度速報 only
+  if (intensityEntry && intensityData) {
+    return buildFlashIntensityReport(intensityEntry, intensityData);
+  }
+
+  return null;
 }
 
 /**

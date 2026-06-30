@@ -3,3 +3,5 @@ dist/
 *.tar.gz
 *.zip
 test/TestFeed.xml
+test/TestFeed.json
+

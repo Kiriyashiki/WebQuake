@@ -263,3 +263,60 @@
   text-align: right;
   flex-shrink: 0;
 }
+
+/* ── Flash Report Badge ────────────────────────────────────────── */
+
+.info-box-flash-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 2px 8px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  border-radius: 3px;
+  animation: flash-badge-pulse 2s ease-in-out infinite;
+}
+
+.info-box-flash-badge.hidden {
+  display: none;
+}
+
+.flash-badge-text {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: #f59e0b;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@keyframes flash-badge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ── Flash Report Observations Notice ──────────────────────────── */
+
+.observations-flash-notice {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 3px;
+}
+
+.flash-notice-text {
+  font-size: 11px;
+  font-weight: 500;
+  color: #f59e0b;
+}
+
+.flash-notice-text-en {
+  font-size: 10px;
+  color: rgba(245, 158, 11, 0.7);
+  font-family: var(--font-mono);
+}
