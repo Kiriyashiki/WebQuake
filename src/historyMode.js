@@ -222,11 +222,67 @@ async function fetchEqdbEvent(eventId, boundsData, forecastAreas, municipalities
       return false;
     }
 
+    function haversineDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    function findForecastArea(point, cityBbox) {
+      for (const feature of forecastAreas.features) {
+        if (feature.geometry === null) { continue; }
+        if (pointInPolygon(point, feature)) {
+          return { code: feature.properties.code, name: feature.properties.name || null };
+        }
+      }
+      if (cityBbox) {
+        const [cMinLon, cMinLat, cMaxLon, cMaxLat] = cityBbox;
+        const centroid = [(cMinLon + cMaxLon) / 2, (cMinLat + cMaxLat) / 2];
+        for (const feature of forecastAreas.features) {
+          if (feature.geometry === null) { continue; }
+          if (pointInPolygon(centroid, feature)) {
+            return { code: feature.properties.code, name: feature.properties.name || null };
+          }
+        }
+      }
+      let bestCode = null;
+      let bestName = null;
+      let minAreaDist = Infinity;
+      for (const feature of forecastAreas.features) {
+        if (feature.geometry === null) { continue; }
+        const coords = feature.geometry.coordinates;
+        const processAreaRing = (ring) => {
+          for (const [lon, lat] of ring) {
+            const dist = haversineDistance(point[1], point[0], lat, lon);
+            if (dist < minAreaDist) {
+              minAreaDist = dist;
+              bestCode = feature.properties.code;
+              bestName = feature.properties.name || null;
+            }
+          }
+        };
+        if (feature.geometry.type === 'Polygon') {
+          for (const ring of coords) processAreaRing(ring);
+        } else if (feature.geometry.type === 'MultiPolygon') {
+          for (const poly of coords) {
+            for (const ring of poly) processAreaRing(ring);
+          }
+        }
+      }
+      return { code: bestCode || 'UNKNOWN_AREA', name: bestName };
+    }
+
     // Create observation point features
     const stationPoints = observations.map(obs => ({
       lon: Number.parseFloat(obs.lon),
       lat: Number.parseFloat(obs.lat),
-      int: formatIntensity(obs.int)
+      int: formatIntensity(obs.int),
+      matched: false
     }));
 
     // Process Cities, Areas, and Prefectures
@@ -246,9 +302,14 @@ async function fetchEqdbEvent(eventId, boundsData, forecastAreas, municipalities
       const cityFeature = cityPolygons.get(cityCode);
 
       if (cityFeature && candidatesInBounds.length > 0) {
-        validStations = candidatesInBounds.filter(station =>
-          pointInPolygon([station.lon, station.lat], cityFeature)
-        );
+        validStations = candidatesInBounds.filter(station => {
+          if (station.matched) return false;
+          if (pointInPolygon([station.lon, station.lat], cityFeature)) {
+            station.matched = true;
+            return true;
+          }
+          return false;
+        });
 
         const ints = validStations.map(s => s.int);
         cityInt = getMaxInt(ints);
@@ -258,31 +319,9 @@ async function fetchEqdbEvent(eventId, boundsData, forecastAreas, municipalities
 
       // STEP C: Assign to Forecast Area
       const representativePoint = [validStations[0].lon, validStations[0].lat];
-
-      let areaCode = null;
-      let areaName = null;
-      for (const feature of forecastAreas.features) {
-        if (pointInPolygon(representativePoint, feature)) {
-          areaCode = feature.properties.code;
-          areaName = feature.properties.name || null;
-          break;
-        }
-      }
-
-      // Fallback: use centroid of city polygon bounding box
-      if (!areaCode && cityFeature) {
-        const [cMinLon, cMinLat, cMaxLon, cMaxLat] = bbox;
-        const centroid = [(cMinLon + cMaxLon) / 2, (cMinLat + cMaxLat) / 2];
-        for (const feature of forecastAreas.features) {
-          if (pointInPolygon(centroid, feature)) {
-            areaCode = feature.properties.code;
-            areaName = feature.properties.name || null;
-            break;
-          }
-        }
-      }
-
-      if (!areaCode) areaCode = 'UNKNOWN_AREA';
+      const bestArea = findForecastArea(representativePoint, bbox);
+      const areaCode = bestArea.code;
+      const areaName = bestArea.name;
 
       // Pref code is first 2 digits of city code
       const prefCode = cityCode.substring(0, 2);
@@ -302,6 +341,92 @@ async function fetchEqdbEvent(eventId, boundsData, forecastAreas, municipalities
         Name: null,
         MaxInt: cityInt
       });
+    }
+
+    // STEP D: Fallback for unmatched stations (e.g. just off the coast)
+    const unmatchedStations = stationPoints.filter(s => !s.matched);
+    if (unmatchedStations.length > 0) {
+      for (const station of unmatchedStations) {
+        if (!station.int) continue;
+        
+        let bestCityCode = null;
+        let minDistance = 10; // Max 10km search radius
+
+        const searchRadiusDeg = 0.1; // ~11km roughly
+        for (const [cityCode, bbox] of Object.entries(boundsData.cities)) {
+          const [minLon, minLat, maxLon, maxLat] = bbox;
+          if (station.lon >= minLon - searchRadiusDeg && station.lon <= maxLon + searchRadiusDeg &&
+              station.lat >= minLat - searchRadiusDeg && station.lat <= maxLat + searchRadiusDeg) {
+            
+            const cityFeature = cityPolygons.get(cityCode);
+            if (!cityFeature) continue;
+
+            let cityMinDist = Infinity;
+            const coords = cityFeature.geometry.coordinates;
+
+            const processRing = (ring) => {
+              for (const [lon, lat] of ring) {
+                const dist = haversineDistance(station.lat, station.lon, lat, lon);
+                if (dist < cityMinDist) cityMinDist = dist;
+              }
+            };
+
+            if (cityFeature.geometry.type === 'Polygon') {
+              for (const ring of coords) processRing(ring);
+            } else if (cityFeature.geometry.type === 'MultiPolygon') {
+              for (const poly of coords) {
+                for (const ring of poly) processRing(ring);
+              }
+            }
+
+            if (cityMinDist < minDistance) {
+              minDistance = cityMinDist;
+              bestCityCode = cityCode;
+            }
+          }
+        }
+
+        if (bestCityCode) {
+          station.matched = true;
+          const prefCode = bestCityCode.substring(0, 2);
+          
+          let existingCityEntry = null;
+          let existingPrefData = prefMap.get(prefCode);
+          if (existingPrefData) {
+            for (const aData of existingPrefData.areas.values()) {
+              const cEntry = aData.cities.find(c => c.Code === bestCityCode);
+              if (cEntry) {
+                existingCityEntry = cEntry;
+                break;
+              }
+            }
+          }
+
+          if (existingCityEntry) {
+            existingCityEntry.MaxInt = getMaxInt([existingCityEntry.MaxInt, station.int]);
+          } else {
+            const bestArea = findForecastArea([station.lon, station.lat], boundsData.cities[bestCityCode]);
+            const areaCode = bestArea.code;
+            const areaName = bestArea.name;
+
+            if (!prefMap.has(prefCode)) {
+              prefMap.set(prefCode, { code: prefCode, name: null, areas: new Map() });
+            }
+            const prefData = prefMap.get(prefCode);
+
+            if (!prefData.areas.has(areaCode)) {
+              prefData.areas.set(areaCode, { code: areaCode, name: areaName, cities: [] });
+            }
+            const areaData = prefData.areas.get(areaCode);
+
+            areaData.cities.push({
+              Code: bestCityCode,
+              Name: null,
+              MaxInt: station.int
+            });
+          }
+        }
+      }
     }
 
     // Structure the Nested Observation Array and calculate MaxInts
