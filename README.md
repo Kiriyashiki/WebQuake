@@ -15,8 +15,7 @@ Live at [webquake.hainaut.xyz](https://webquake.hainaut.xyz?utm_source=github)
 - Bilingual setup (Japanese and English)
 - Live mode to pull new reports and open them automatically
 - Home location setting to add a marker to a selected location on map, and easily view intensity for that location when viewing a report
-- Can load static report files to display older earthquakes (currently server-side only)
-- Earthquake history (1 year ago today)
+- Earthquake history with search criteria
 
 ## Dev
 
