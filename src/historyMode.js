@@ -77,34 +77,125 @@ function getDateOneYearAgo() {
   return `${year}-${month}-${day}`;
 }
 
+// ─── EQDB max date (fetched once) ────────────────────────────────────────────
+
+let _eqdbMaxDate = null;
+
+/**
+ * Fetches the latest available date from the EQDB API.
+ * The result is cached after the first successful fetch.
+ * @returns {Promise<string>} Date string in YYYY-MM-DD format
+ */
+export async function fetchEqdbMaxDate() {
+  if (_eqdbMaxDate) return _eqdbMaxDate;
+
+  try {
+    const res = await fetch('https://www.data.jma.go.jp/eqdb/data/shindo/js/date.json');
+    const data = await res.json();
+    if (data.en) {
+      _eqdbMaxDate = data.en; // e.g. "2026-07-08"
+      return _eqdbMaxDate;
+    }
+  } catch (err) {
+    console.warn('[history] Failed to fetch EQDB max date:', err);
+  }
+
+  // Fallback: 8 days ago in JST (conservative)
+  const now = new Date();
+  const jstNow = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  jstNow.setUTCDate(jstNow.getUTCDate() - 8);
+  const year = jstNow.getUTCFullYear();
+  const month = String(jstNow.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(jstNow.getUTCDate()).padStart(2, '0');
+  _eqdbMaxDate = `${year}-${month}-${day}`;
+  return _eqdbMaxDate;
+}
+
+// ─── Search Presets ──────────────────────────────────────────────────────────
+
+/**
+ * Returns preset search parameters.
+ * @param {string} preset - Preset name ('year', 'large', 'deep')
+ * @param {string} maxDate - The latest available EQDB date (YYYY-MM-DD)
+ * @returns {Object} Search parameters
+ */
+export function getSearchPreset(preset, maxDate) {
+  switch (preset) {
+    case 'year':
+    default: {
+      const oneYearAgo = getDateOneYearAgo();
+      return {
+        dateFrom: oneYearAgo,
+        dateTo: oneYearAgo,
+        magMin: '0.0',
+        magMax: '9.9',
+        depMin: '000',
+        depMax: '999',
+        maxInt: '1',
+        sort: 'S0',
+      };
+    }
+    case 'large':
+      return {
+        dateFrom: '2004-01-01',
+        dateTo: maxDate,
+        magMin: '0.0',
+        magMax: '9.9',
+        depMin: '000',
+        depMax: '999',
+        maxInt: 'A', // 5-
+        sort: 'S0',
+      };
+    case 'deep':
+      return {
+        dateFrom: '2004-01-01',
+        dateTo: maxDate,
+        magMin: '0.0',
+        magMax: '9.9',
+        depMin: '200',
+        depMax: '999',
+        maxInt: '1',
+        sort: 'S0',
+      };
+  }
+}
+
 // ─── EQDB API functions ──────────────────────────────────────────────────────
 
 /**
- * Fetches the list of earthquake events from 1 year ago today via the EQDB API.
+ * Fetches the list of earthquake events from the EQDB API with search parameters.
+ * @param {Object} params - Search parameters
+ * @param {string} params.dateFrom - Start date (YYYY-MM-DD)
+ * @param {string} params.dateTo - End date (YYYY-MM-DD)
+ * @param {string} params.magMin - Minimum magnitude (e.g. '0.0')
+ * @param {string} params.magMax - Maximum magnitude (e.g. '9.9')
+ * @param {string} params.depMin - Minimum depth (e.g. '000')
+ * @param {string} params.depMax - Maximum depth (e.g. '999')
+ * @param {string} params.maxInt - Minimum intensity filter ('1'-'7', 'A'=5-, 'B'=5+, 'C'=6-, 'D'=6+)
+ * @param {string} params.sort - Sort mode ('S0'=newest, 'S1'=oldest, 'S2'=highest intensity)
  * @returns {Promise<Array>} Array of event objects with { id, ot, name, ... }
  */
-async function fetchHistoryList() {
-  const dateStr = getDateOneYearAgo();
+async function fetchHistoryList(params) {
   const boundary = '----bound';
 
   const fields = [
     { name: 'mode', value: 'search' },
-    { name: 'dateTimeF[]', value: dateStr },
+    { name: 'dateTimeF[]', value: params.dateFrom },
     { name: 'dateTimeF[]', value: '00:00' },
-    { name: 'dateTimeT[]', value: dateStr },
+    { name: 'dateTimeT[]', value: params.dateTo },
     { name: 'dateTimeT[]', value: '23:59' },
-    { name: 'mag[]', value: '0.0' },
-    { name: 'mag[]', value: '9.9' },
-    { name: 'dep[]', value: '000' },
-    { name: 'dep[]', value: '999' },
+    { name: 'mag[]', value: params.magMin },
+    { name: 'mag[]', value: params.magMax },
+    { name: 'dep[]', value: params.depMin },
+    { name: 'dep[]', value: params.depMax },
     { name: 'epi[]', value: '99' },
     { name: 'pref[]', value: '99' },
     { name: 'city[]', value: '99' },
     { name: 'station[]', value: '99' },
     { name: 'obsInt', value: '1' },
-    { name: 'maxInt', value: '1' },
-    { name: 'additionalC', value: 'false' },
-    { name: 'Sort', value: 'S0' },
+    { name: 'maxInt', value: params.maxInt },
+    { name: 'additionalC', value: 'true' },
+    { name: 'Sort', value: params.sort },
     { name: 'Comp', value: 'C0' },
     { name: 'seisCount', value: 'false' },
     { name: 'observed', value: 'false' },
@@ -508,36 +599,42 @@ async function loadGeoData() {
 }
 
 /**
- * Fetches history entries for 1 year ago today and builds full reports.
- * Each report is converted to the same display-ready format used by live mode.
+ * Fetches history event list and builds full reports in batches.
  *
+ * @param {Object} searchParams - Search parameters (dateFrom, dateTo, magMin, magMax, depMin, depMax, maxInt, sort)
  * @param {Map} areaCodes - Area code name mappings
- * @param {Function} onReportFetched - Callback(report) called for each report
- * @param {Function} onProgress - Callback(processed, total) for progress
- * @returns {Promise<Array>} Array of display-ready report objects
+ * @param {Object} options
+ * @param {number} [options.limit=50] - Number of events to process
+ * @param {number} [options.offset=0] - Offset into the event list
+ * @param {Function} [options.onReportFetched] - Callback(report) called for each report
+ * @param {Function} [options.onProgress] - Callback(processed, total) for progress
+ * @returns {Promise<{reports: Array, totalEvents: number, eventList: Array}>}
  */
-export async function fetchHistoryReports(areaCodes = new Map(), onReportFetched = null, onProgress = null) {
+export async function fetchHistoryReports(searchParams, areaCodes = new Map(), options = {}) {
+  const { limit = 50, offset = 0, onReportFetched = null, onProgress = null, cachedEventList = null } = options;
   const reports = [];
 
   try {
-    // 1. Fetch the list of events
-    const eventList = await fetchHistoryList();
+    // 1. Fetch the list of events (or use cached list)
+    const eventList = cachedEventList || await fetchHistoryList(searchParams);
 
     if (eventList.length === 0) {
-      return reports;
+      return { reports, totalEvents: 0, eventList };
     }
 
-    const totalCount = eventList.length;
+    // Slice for pagination
+    const eventsToProcess = eventList.slice(offset, offset + limit);
+    const totalToProcess = eventsToProcess.length;
     let processedCount = 0;
 
-    if (onProgress) onProgress(0, totalCount);
+    if (onProgress) onProgress(0, totalToProcess);
 
     // 2. Load geo data for report building
     const geoData = await loadGeoData();
 
     // 3. Process events in batches (max 2 concurrent to be polite to API)
-    for (let i = 0; i < eventList.length; i += 2) {
-      const batch = eventList.slice(i, i + 2);
+    for (let i = 0; i < eventsToProcess.length; i += 2) {
+      const batch = eventsToProcess.slice(i, i + 2);
       const batchPromises = batch.map(async (event) => {
         const reportJson = await fetchEqdbEvent(
           event.id,
@@ -565,16 +662,25 @@ export async function fetchHistoryReports(areaCodes = new Map(), onReportFetched
           reports.push(report);
           if (onReportFetched) onReportFetched(report);
         }
-        if (onProgress) onProgress(processedCount, totalCount);
+        if (onProgress) onProgress(processedCount, totalToProcess);
       }
     }
   } catch (err) {
     console.error('[history] Failed to fetch history reports:', err);
   }
 
-  // Sort by origin time, newest first
-  reports.sort((a, b) => (b.originTime || 0) - (a.originTime || 0));
-  return reports;
+  // The API already returns entries sorted by the specified sort mode,
+  // so we preserve that order.
+  return { reports, totalEvents: (options.cachedEventList || []).length, eventList: options.cachedEventList || [] };
+}
+
+/**
+ * Fetches only the event list from the EQDB API (for pagination).
+ * @param {Object} searchParams - Search parameters
+ * @returns {Promise<Array>} Array of event objects
+ */
+export async function fetchHistoryEventList(searchParams) {
+  return fetchHistoryList(searchParams);
 }
 
 /**

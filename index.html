@@ -53,7 +53,6 @@
                   <span class="mono muted">Loading...</span>
                 </li>
               </ul>
-              <button id="load-older-reports-btn" class="load-older-btn" style="display: none;" data-tooltip="Load reports of some past major earthquakes (data may be incomplete) • 過去の主要な地震に関する報告書を読み込む（データは不完全な場合があります）">Load notable reports • 重要なレポートを読み込む</button>
             </div>
             <!-- Sidebar loading progress popup -->
             <div id="sidebar-loading-container" class="sidebar-loading-container hidden">
@@ -67,15 +66,92 @@
           <!-- History tab content -->
           <div id="history-tab-content" class="sidebar-tab-content">
             <div class="sidebar-section">
-              <div class="history-header">
-                <span class="history-date mono"></span>
-                <span class="history-subtitle muted">1 year ago today • 1年前の今日</span>
+              <!-- Search controls -->
+              <div id="history-search-controls" class="history-search-controls">
+                <div class="history-search-header">
+                  <span class="mono" style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim);">Search EQDB · 地震データベース検索</span>
+                </div>
+
+                <!-- Presets -->
+                <div class="search-presets">
+                  <button class="search-preset-btn active" data-preset="year" data-tooltip="Earthquakes from 1 year ago today · 1年前の今日の地震">
+                    <span class="preset-label">1 Year Ago<br>1年前</span>
+                  </button>
+                  <button class="search-preset-btn" data-preset="large" data-tooltip="Intensity 5- or higher · 震度5弱以上">
+                    <span class="preset-label">Major<br>大地震</span>
+                  </button>
+                  <button class="search-preset-btn" data-preset="deep" data-tooltip="Depth 200km+ · 深さ200km以上">
+                    <span class="preset-label">Deep<br>深発</span>
+                  </button>
+                  <button class="search-preset-btn" data-preset="custom" data-tooltip="Custom search parameters · カスタム検索パラメータ">
+                    <span class="preset-label">Custom<br>カスタム</span>
+                  </button>
+                </div>
+
+                <!-- Custom search fields (hidden by default) -->
+                <div id="history-custom-fields" class="history-custom-fields hidden">
+                  <div class="search-field-group">
+                    <label class="search-field-label">Date Range · 日付範囲</label>
+                    <div class="search-field-row">
+                      <input type="date" id="history-date-from" class="search-input" />
+                      <span class="search-field-sep">→</span>
+                      <input type="date" id="history-date-to" class="search-input" />
+                    </div>
+                  </div>
+                  <div class="search-field-group">
+                    <label class="search-field-label">Minimum Intensity · 最低震度</label>
+                    <select id="history-min-intensity" class="search-input">
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="A">5- (5弱)</option>
+                      <option value="B">5+ (5強)</option>
+                      <option value="C">6- (6弱)</option>
+                      <option value="D">6+ (6強)</option>
+                      <option value="7">7</option>
+                    </select>
+                  </div>
+                  <div class="search-field-group">
+                    <label class="search-field-label">Magnitude Range · マグニチュード範囲</label>
+                    <div class="search-field-row">
+                      <input type="number" id="history-mag-min" class="search-input" min="0" max="9.9" step="0.1" value="0.0" />
+                      <span class="search-field-sep">→</span>
+                      <input type="number" id="history-mag-max" class="search-input" min="0" max="9.9" step="0.1" value="9.9" />
+                    </div>
+                  </div>
+                  <div class="search-field-group">
+                    <label class="search-field-label">Depth Range (km) · 深さ範囲</label>
+                    <div class="search-field-row">
+                      <input type="number" id="history-depth-min" class="search-input" min="0" max="999" step="1" value="0" />
+                      <span class="search-field-sep">→</span>
+                      <input type="number" id="history-depth-max" class="search-input" min="0" max="999" step="1" value="999" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sort -->
+                <div class="search-field-group">
+                  <label class="search-field-label">Sort · 並び順</label>
+                  <select id="history-sort" class="search-input">
+                    <option value="S0">Newest · 新しい順</option>
+                    <option value="S1">Oldest · 古い順</option>
+                    <option value="S2">Highest Intensity · 震度順</option>
+                  </select>
+                </div>
+
+                <!-- Search button -->
+                <button id="history-search-btn" class="history-search-btn">
+                  Search · 検索
+                </button>
               </div>
+
+              <!-- Results -->
               <ul id="history-list">
-                <li class="eq-item placeholder">
-                  <span class="mono muted">Click to load history data</span>
-                </li>
               </ul>
+
+              <!-- Load more button -->
+              <button id="history-load-more-btn" class="load-older-btn" style="display: none;">Load More · もっと読み込む</button>
             </div>
             <!-- History loading progress popup -->
             <div id="history-loading-container" class="sidebar-loading-container hidden">

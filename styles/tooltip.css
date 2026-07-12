@@ -198,3 +198,33 @@
 .sidebar-footer [data-tooltip]:last-child:hover::after {
   transform: translateX(0) translateY(-4px);
 }
+
+/* Search Presets Tooltip Positioning Tweaks to Prevent Spilling */
+.search-presets [data-tooltip]::after {
+  bottom: auto;
+  top: 100%;
+  margin-bottom: 0;
+  margin-top: 6px;
+  transform: translateX(-50%) translateY(8px);
+}
+.search-presets [data-tooltip]:hover::after {
+  transform: translateX(-50%) translateY(4px);
+}
+
+.search-presets [data-tooltip]:first-child::after {
+  left: 0;
+  transform: translateX(0) translateY(8px);
+}
+.search-presets [data-tooltip]:first-child:hover::after {
+  transform: translateX(0) translateY(4px);
+}
+
+.search-presets [data-tooltip]:last-child::after {
+  left: auto;
+  right: 0;
+  transform: translateX(0) translateY(8px);
+}
+.search-presets [data-tooltip]:last-child:hover::after {
+  transform: translateX(0) translateY(4px);
+}
+
