@@ -19,6 +19,7 @@ export const INTENSITY_CONFIG = {
 // ─── Map Colour Palette ──────────────────────────────────────────────────────
 export const MAP_COLORS = {
   ocean: "#060a0e",
+  lake: "#080c11",
   land: "#0d1520",
   japan: "#111d2c",
   japanLine: "#1e2e44",

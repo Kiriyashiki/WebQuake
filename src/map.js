@@ -18,6 +18,10 @@ function buildStyle(useCityAreas = true) {
         type: "geojson",
         data: "/world.geojson",
       },
+      lake: {
+        type: "geojson",
+        data: "/lake.geojson",
+      },
       forecast_areas: {
         type: "geojson",
         data: "/forecast_areas.geojson",
@@ -148,6 +152,15 @@ function buildStyle(useCityAreas = true) {
             ],
             "transparent",
           ],
+          "fill-antialias": true,
+        },
+      },
+      {
+        id: "lake-fill",
+        type: "fill",
+        source: "lake",
+        paint: {
+          "fill-color": C.lake,
           "fill-antialias": true,
         },
       },
