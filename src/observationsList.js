@@ -72,8 +72,11 @@ export function groupObservationsByIntensity(observations, areaCodes = new Map()
       const areaNameEn = areaCodes.get(areaCode)?.en || '';
 
       for (const city of area.cities) {
-        // Group each city by its own intensity
-        const cityIntensity = city.maxInt;
+        // Group each city by its own intensity.
+        // Cities with a condition (e.g. "震度５弱以上未入電") but no maxInt
+        // are grouped under the special '未入電' key.
+        const cityIntensity = city.maxInt || (city.condition ? '未入電' : null);
+        if (!cityIntensity) continue; // skip cities with no intensity info at all
         ensureIntensity(cityIntensity);
 
         const prefEntry = findOrCreatePref(cityIntensity, prefCode, prefName);
@@ -94,6 +97,7 @@ export function groupObservationsByIntensity(observations, areaCodes = new Map()
             nameEn: cityData?.en || '',
             kana: cityData?.kana || null,
             maxInt: city.maxInt,
+            condition: city.condition || null,
           });
         }
       }
@@ -128,9 +132,12 @@ export async function renderObservationsList(container, observations, areaCodes 
       : groupObservationsByIntensity(observations, areaCodes, resolvedPrefCodes, cityNames);
 
     // Get intensity order (descending: highest first)
+    // '未入電' (no data received) is placed after all standard intensities
     const intensities = Object.keys(grouped).sort((a, b) => {
-      const order = ['7', '6+', '6-', '5+', '5-', '4', '3', '2', '1'];
-      return order.indexOf(a) - order.indexOf(b);
+      const order = ['7', '6+', '6-', '5+', '5-', '4', '3', '2', '1', '未入電'];
+      const idxA = order.indexOf(a) === -1 ? order.length : order.indexOf(a);
+      const idxB = order.indexOf(b) === -1 ? order.length : order.indexOf(b);
+      return idxA - idxB;
     });
 
     // Clear container
@@ -158,26 +165,33 @@ export async function renderObservationsList(container, observations, areaCodes 
       const section = document.createElement('div');
       section.className = 'observations-intensity-section';
 
+      // Resolve style config; fall back for non-standard keys like '未入電'
+      const config = INTENSITY_CONFIG[intensity] || { color: '#4a4a4a', fontColor: '#FFFFFF' };
+
       // Header (collapsible)
       const header = document.createElement('div');
       header.className = 'observations-intensity-header';
-      header.style.backgroundColor = INTENSITY_CONFIG[intensity].color;
+      header.style.backgroundColor = config.color;
 
       // Determine if section should be open by default
       const intensityRank = ['7', '6+', '6-', '5+', '5-'].includes(intensity) ? 5 :
                            intensity === '4' ? 4 :
-                           Number.parseInt(intensity, 10);
+                           Number.parseInt(intensity, 10) || 0;
       const shouldOpen = maxIntensityRank >= 5 ? intensityRank >= 4 : true;
 
       const toggle = document.createElement('span');
       toggle.className = 'observations-toggle';
-      toggle.style.color = INTENSITY_CONFIG[intensity].fontColor;
+      toggle.style.color = config.fontColor;
       toggle.textContent = shouldOpen ? '▼' : '▶';
 
       const label = document.createElement('span');
       label.className = 'observations-intensity-label';
-      label.style.color = INTENSITY_CONFIG[intensity].fontColor;
-      label.textContent = `震度 ${intensity.replace('-', '弱').replace('+', '強')}`;
+      label.style.color = config.fontColor;
+      // Special label for non-standard intensity keys
+      const labelText = intensity === '未入電'
+        ? '震度５弱以上未入電'
+        : `震度 ${intensity.replace('-', '弱').replace('+', '強')}`;
+      label.textContent = labelText;
 
       header.appendChild(toggle);
       header.appendChild(label);
@@ -185,7 +199,7 @@ export async function renderObservationsList(container, observations, areaCodes 
       // Content (collapsible)
       const content = document.createElement('div');
       content.className = 'observations-intensity-content';
-      content.style.borderLeft = '2px solid ' + INTENSITY_CONFIG[intensity].color;
+      content.style.borderLeft = '2px solid ' + config.color;
       if (!shouldOpen) content.classList.add('collapsed');
 
       // Add prefectures, areas, cities to content

@@ -307,11 +307,16 @@ class JMAEarthquakeReport {
 
         const cityArray = area.City || [];
         for (const city of cityArray) {
-          areaEntry.cities.push({
+          const cityEntry = {
             code:   Number.parseInt(city.Code, 10),
             name:   city.Name || null,
             maxInt: city.MaxInt || null,
-          });
+          };
+          // Some cities report a Condition (e.g. "震度５弱以上未入電") instead of MaxInt
+          if (city.Condition) {
+            cityEntry.condition = city.Condition;
+          }
+          areaEntry.cities.push(cityEntry);
         }
 
         prefEntry.areas.push(areaEntry);
