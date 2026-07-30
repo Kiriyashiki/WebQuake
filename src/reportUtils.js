@@ -15,7 +15,7 @@ export async function fetchFeedEntries(feedUrl) {
   const res = await fetch(feedUrl, {
     method: 'GET',
     mode: 'cors',
-    cache: 'no-cache',
+    cache: 'no-store'
   });
 
   if (!res.ok) {
