@@ -46,6 +46,29 @@ class JMAEarthquakeReport {
     return report;
   }
 
+  /**
+   * Factory method to create a JMAEarthquakeReport from a pre-parsed XML Document.
+   * Avoids re-serializing and re-parsing when the Document is already available
+   * (e.g. from the XML feed live mode path).
+   * @param {Document} xmlDoc - Already-parsed XML Document
+   * @returns {JMAEarthquakeReport}
+   */
+  static fromXmlDoc(xmlDoc) {
+    const report = Object.create(JMAEarthquakeReport.prototype);
+    report._doc = xmlDoc;
+
+    report.eventId       = report._parseEventId();
+    report.originTime    = report._parseOriginTime();
+    report.hypocenterCode = report._parseHypocenterCode();
+    report.magnitude     = report._parseMagnitude();
+    report.maxIntensity  = report._parseMaxIntensity();
+    report.coordinates   = report._parseCoordinates();
+    report.depth         = report._parseDepth();
+    report.observations  = report._parseObservations();
+
+    return report;
+  }
+
   // ─── Private helpers ──────────────────────────────────────────────────────
 
   /** Return text content of the first element matching a tag name, or null. */

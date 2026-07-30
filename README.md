@@ -34,6 +34,7 @@ pnpm run build
 
 - [Japan Meteorological Agency (JMA · 気象庁)](https://www.jma.go.jp/jma/index.html)<br>
     - <a href="https://www.jma.go.jp/bosai/">Bosai · 防災情報</a>: Earthquake reports json feed
+    - <a href="https://xml.kishou.go.jp/xmlpull.html">XML Pull</a>: Earthquake reports xml feed
     - <a href="https://www.data.jma.go.jp/developer/gis.html">GIS Area data</a>: Map data of prefectures/forecast areas
     - <a href="https://www.data.jma.go.jp/developer/multilingual.html">Area/City names</a>: Name definition of area/city codes
     - <a href="https://www.data.jma.go.jp/eqdb/data/shindo/">EQDB</a>: Historical Earthquake data

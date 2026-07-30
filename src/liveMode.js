@@ -1,25 +1,28 @@
 /**
- * Live mode controller: Polls the latest JSON feed for new/updated earthquake entries.
+ * Live mode controller: Polls the JMA XML Atom feed for new/updated earthquake entries.
  * Compares entries by their 'rdt' timestamp and triggers callbacks for changes.
  * Also handles flash reports (震度速報/震源速報) for events without a normal report.
+ *
+ * Initial load uses JSON (via parseReports.js). Periodic live polling uses the
+ * XML feed (eqvol.xml) and fetches individual XML reports (VXSE51/52/53/61).
  */
 
-import { FEED_URL_LATEST, FEED_DATA_BASE_URL, POLL_INTERVAL } from "./constants.js";
+import { FEED_DATA_BASE_URL, POLL_INTERVAL } from "./constants.js";
 import {
   SPECIAL_REPORT_TITLE,
   parseSpecialReportOverrides,
   applySpecialReportOverrides,
 } from "./parseReports.js";
 import {
-  fetchFeedEntries,
-  parseReport,
   buildDisplayReport,
+  parseReport,
   FLASH_INTENSITY_TITLE,
   FLASH_EPICENTER_TITLE,
-  parseFlashIntensityJson,
   buildFlashIntensityReport,
   buildFlashEpicenterReport,
 } from "./reportUtils.js";
+import JMAEarthquakeReport from "./jmaEarthquakeReport.js";
+import { fetchXmlFeedEntries, parseFlashIntensityXml, clearXmlFeedCache } from "./xmlFeedParser.js";
 
 /**
  * Tracks the last seen normal report entries with their updated timestamps.
@@ -106,17 +109,19 @@ export function isPolling() {
 // ─── Private helpers ──────────────────────────────────────────────────────
 
 /**
- * Fetches the latest feed and detects new/updated entries.
+ * Fetches the latest XML feed and detects new/updated entries.
+ * Uses the JMA Atom XML feed (eqvol.xml) instead of the JSON feed.
  */
 async function _pollLatestFeed(areaCodes, callbacks = {}) {
   try {
-    const entries = await fetchFeedEntries(FEED_URL_LATEST);
+    const entries = await fetchXmlFeedEntries();
 
     // Filter for target entries only (震源・震度情報)
+    // In XML mode, entries have _xmlDoc instead of json
     const targetEntries = entries.filter(
       (entry) =>
         entry.ttl === "震源・震度情報" &&
-        entry.json &&
+        (entry.json || entry._xmlDoc) &&
         entry.rdt
     );
 
@@ -176,11 +181,11 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
         console.log("[live-mode] New entry detected:", eventId);
         _trackedEntries.set(eventId, {
           rdt: entry.rdt,
-          jsonFile: entry.json,
+          jsonFile: entry.json || null,
         });
         normalReportEventIds.add(eventId);
 
-        // Fetch and parse the report
+        // Parse the report (XML doc is already fetched)
         const report = await _fetchAndParseEntry(entry, areaCodes);
         if (report) {
           // Check if a VXSE61 special report already exists for this event
@@ -210,7 +215,7 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
         console.log("[live-mode] Updated entry detected:", eventId);
         _trackedEntries.set(eventId, {
           rdt: entry.rdt,
-          jsonFile: entry.json,
+          jsonFile: entry.json || null,
         });
         normalReportEventIds.add(eventId);
 
@@ -262,6 +267,8 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
       _trackedSpecialEntries.set(eventId, { rdt: specialEntry.rdt });
 
       // Re-fetch the original report and apply overrides
+      // For standalone special reports, we need to re-fetch the original report.
+      // In XML mode this may require re-fetching if the xmlDoc is not available.
       const originalEntry = latestEntriesByEventId.get(eventId) || {
         eid: eventId,
         json: trackedNormal.jsonFile,
@@ -342,22 +349,18 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
 
 /**
  * Builds the best available flash report for live mode.
- * Similar to _buildFlashReport in parseReports.js.
+ * Supports both XML-sourced entries (with _xmlDoc) and JSON entries.
  */
 async function _buildFlashReportForLive(eid, intensityEntry, epicenterEntry, areaCodes) {
   let intensityData = null;
 
-  // If we have a 震度速報, fetch its JSON to get area-level observations
-  if (intensityEntry?.json) {
+  // If we have a 震度速報, extract area-level observations
+  if (intensityEntry?._xmlDoc) {
+    // XML path: parse directly from the already-fetched XML doc
     try {
-      const reportUrl = FEED_DATA_BASE_URL + intensityEntry.json;
-      const res = await fetch(reportUrl, { method: 'GET', mode: 'cors', cache: 'no-cache' });
-      if (res.ok) {
-        const jsonData = await res.json();
-        intensityData = parseFlashIntensityJson(jsonData);
-      }
+      intensityData = parseFlashIntensityXml(intensityEntry._xmlDoc);
     } catch (err) {
-      console.warn('[live-mode] Failed to fetch 震度速報 JSON for', eid, err.message);
+      console.warn('[live-mode] Failed to parse 震度速報 XML for', eid, err.message);
     }
   }
 
@@ -381,32 +384,49 @@ async function _buildFlashReportForLive(eid, intensityEntry, epicenterEntry, are
 
 
 /**
- * Fetches and parses a single report entry.
+ * Parses a single report entry into a display-ready report.
+ * Supports both XML-sourced entries (with _xmlDoc) and JSON entries (with json field).
  * Returns a parsed report object with observations, or null if error.
  */
 async function _fetchAndParseEntry(entry, areaCodes) {
   try {
-    const reportUrl = FEED_DATA_BASE_URL + entry.json;
-    const res = await fetch(reportUrl, {
-      method: "GET",
-      mode: "cors",
-      cache: "no-cache",
-    });
-
-    if (!res.ok) {
-      console.warn(
-        `[live-mode] Failed to fetch report: ${reportUrl} (${res.status})`
-      );
-      return null;
+    // XML path: the entry already carries the parsed XML document
+    if (entry._xmlDoc) {
+      const jmaReport = JMAEarthquakeReport.fromXmlDoc(entry._xmlDoc);
+      return buildDisplayReport(jmaReport, areaCodes, {
+        feedRdt: entry.rdt,
+        feedJson: entry.json || null,
+      });
     }
 
-    const jsonData = await res.json();
-    const jmaReport = parseReport(jsonData);
+    // JSON fallback path (used when re-fetching tracked entries that
+    // were originally loaded from JSON during initial load)
+    if (entry.json) {
+      const reportUrl = FEED_DATA_BASE_URL + entry.json;
+      const res = await fetch(reportUrl, {
+        method: "GET",
+        mode: "cors",
+        cache: "no-cache",
+      });
 
-    return buildDisplayReport(jmaReport, areaCodes, {
-      feedRdt: entry.rdt,
-      feedJson: entry.json,
-    });
+      if (!res.ok) {
+        console.warn(
+          `[live-mode] Failed to fetch report: ${reportUrl} (${res.status})`
+        );
+        return null;
+      }
+
+      const jsonData = await res.json();
+      const jmaReport = parseReport(jsonData);
+
+      return buildDisplayReport(jmaReport, areaCodes, {
+        feedRdt: entry.rdt,
+        feedJson: entry.json,
+      });
+    }
+
+    console.warn("[live-mode] Entry has neither _xmlDoc nor json:", entry.eid);
+    return null;
   } catch (err) {
     console.warn("[live-mode] Error processing entry:", entry.eid, err.message);
     return null;
