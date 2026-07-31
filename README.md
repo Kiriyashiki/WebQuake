@@ -16,6 +16,7 @@ Live at [webquake.hainaut.xyz](https://webquake.hainaut.xyz?utm_source=github)
 - Live mode to pull new reports and open them automatically
 - Home location setting to add a marker to a selected location on map, and easily view intensity for that location when viewing a report
 - Earthquake history with search criteria
+- Earthquake Early Warning (experimental)
 
 ## Dev
 
@@ -38,6 +39,7 @@ pnpm run build
     - <a href="https://www.data.jma.go.jp/developer/gis.html">GIS Area data</a>: Map data of prefectures/forecast areas
     - <a href="https://www.data.jma.go.jp/developer/multilingual.html">Area/City names</a>: Name definition of area/city codes
     - <a href="https://www.data.jma.go.jp/eqdb/data/shindo/">EQDB</a>: Historical Earthquake data
+    - <a href="https://axis.prioris.jp/">AXIS</a>: EEW source
 - <a href="https://jquake.net/">JQuake</a>: Intensity color scale
 - <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>: Map data of lakes
 - [M PLUS Fonts](https://mplusfonts.github.io/) Font family used

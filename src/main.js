@@ -6,7 +6,6 @@ import {
   highlightObservations,
   displayEpicenter,
   clearEpicenter,
-  displayAllEpicenters,
   clearAllEpicenters,
   updateCityAreasVisibility,
   fitBoundsToObservations,
@@ -31,12 +30,16 @@ import {
   getCityAreasState,
   initHomeIntensityToggle,
   getHomeIntensityState,
-  getAllReports,
 } from "./sidebarUI.js";
 import { renderObservationsList } from "./observationsList.js";
 import { startLivePolling, stopLivePolling } from "./liveMode.js";
-import { fetchHistoryReports, fetchHistoryEventList, getSearchPreset, fetchEqdbMaxDate } from "./historyMode.js";
-
+import {
+  fetchHistoryReports,
+  fetchHistoryEventList,
+  getSearchPreset,
+  fetchEqdbMaxDate,
+} from "./historyMode.js";
+import { initEewSettings, handlePossibleEewReport } from "./eew.js";
 async function boot() {
   // Load area code name mappings
   let areaCodes = new Map();
@@ -102,7 +105,7 @@ async function boot() {
   let historyReports = [];
   let _historyCachedEventList = null;
   let _historyLoadedCount = 0;
-  let _currentHistoryPreset = 'year';
+  let _currentHistoryPreset = "year";
   let _eqdbMaxDate = null;
 
   const tabButtons = document.querySelectorAll(".sidebar-tab");
@@ -183,20 +186,26 @@ async function boot() {
   // Fetch EQDB max date, then initialize fields with default preset
   fetchEqdbMaxDate().then((maxDate) => {
     _eqdbMaxDate = maxDate;
-    _applyPresetToFields('year');
+    _applyPresetToFields("year");
 
     // Set date input constraints
     const dateFromEl = document.getElementById("history-date-from");
     const dateToEl = document.getElementById("history-date-to");
-    if (dateFromEl) { dateFromEl.min = '2004-01-01'; dateFromEl.max = maxDate; }
-    if (dateToEl) { dateToEl.min = '2004-01-01'; dateToEl.max = maxDate; }
+    if (dateFromEl) {
+      dateFromEl.min = "2004-01-01";
+      dateFromEl.max = maxDate;
+    }
+    if (dateToEl) {
+      dateToEl.min = "2004-01-01";
+      dateToEl.max = maxDate;
+    }
   });
 
   /**
    * Reads search parameters from the form fields (or preset).
    */
   function _getSearchParams() {
-    if (_currentHistoryPreset !== 'custom') {
+    if (_currentHistoryPreset !== "custom") {
       // Use sort from UI even for presets
       const sortEl = document.getElementById("history-sort");
       const params = getSearchPreset(_currentHistoryPreset, _eqdbMaxDate);
@@ -204,22 +213,22 @@ async function boot() {
       return params;
     }
 
-    const dateFrom = document.getElementById("history-date-from")?.value || '2004-01-01';
+    const dateFrom = document.getElementById("history-date-from")?.value || "2004-01-01";
     const dateTo = document.getElementById("history-date-to")?.value || _eqdbMaxDate;
-    const minInt = document.getElementById("history-min-intensity")?.value || '1';
-    const magMin = document.getElementById("history-mag-min")?.value || '0.0';
-    const magMax = document.getElementById("history-mag-max")?.value || '9.9';
-    const depMin = document.getElementById("history-depth-min")?.value || '0';
-    const depMax = document.getElementById("history-depth-max")?.value || '999';
-    const sort = document.getElementById("history-sort")?.value || 'S0';
+    const minInt = document.getElementById("history-min-intensity")?.value || "1";
+    const magMin = document.getElementById("history-mag-min")?.value || "0.0";
+    const magMax = document.getElementById("history-mag-max")?.value || "9.9";
+    const depMin = document.getElementById("history-depth-min")?.value || "0";
+    const depMax = document.getElementById("history-depth-max")?.value || "999";
+    const sort = document.getElementById("history-sort")?.value || "S0";
 
     return {
       dateFrom,
       dateTo,
       magMin: Number.parseFloat(magMin).toFixed(1),
       magMax: Number.parseFloat(magMax).toFixed(1),
-      depMin: String(Number.parseInt(depMin, 10)).padStart(3, '0'),
-      depMax: String(Number.parseInt(depMax, 10)).padStart(3, '0'),
+      depMin: String(Number.parseInt(depMin, 10)).padStart(3, "0"),
+      depMax: String(Number.parseInt(depMax, 10)).padStart(3, "0"),
       maxInt: minInt,
       sort,
     };
@@ -256,11 +265,11 @@ async function boot() {
     searchBtn.textContent = "Searching... · 検索中...";
 
     // Clear previous results
-    historyList.innerHTML = '';
+    historyList.innerHTML = "";
     historyReports = [];
     _historyLoadedCount = 0;
     _historyCachedEventList = null;
-    if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+    if (loadMoreBtn) loadMoreBtn.style.display = "none";
 
     if (loadingContainer) loadingContainer.classList.remove("hidden");
 
@@ -280,29 +289,25 @@ async function boot() {
       }
 
       // Show result count — remove old summary first
-      const existingSummary = historyList.parentNode.querySelector('.history-results-summary');
+      const existingSummary = historyList.parentNode.querySelector(".history-results-summary");
       if (existingSummary) existingSummary.remove();
-      const summaryEl = document.createElement('div');
-      summaryEl.className = 'history-results-summary';
+      const summaryEl = document.createElement("div");
+      summaryEl.className = "history-results-summary";
       summaryEl.textContent = `${_historyCachedEventList.length} events found (max 1000)`;
       historyList.before(summaryEl);
 
       // 2. Fetch first batch of reports
-      const { reports } = await fetchHistoryReports(
-        params,
-        areaCodes,
-        {
-          limit: 50,
-          offset: 0,
-          cachedEventList: _historyCachedEventList,
-          onReportFetched: (report) => {
-            _addHistoryReportItem(historyList, report, onReportSelect);
-          },
-          onProgress: (processed, total) => {
-            if (progressEl) progressEl.textContent = `${processed}/${total}`;
-          },
+      const { reports } = await fetchHistoryReports(params, areaCodes, {
+        limit: 50,
+        offset: 0,
+        cachedEventList: _historyCachedEventList,
+        onReportFetched: (report) => {
+          _addHistoryReportItem(historyList, report, onReportSelect);
         },
-      );
+        onProgress: (processed, total) => {
+          if (progressEl) progressEl.textContent = `${processed}/${total}`;
+        },
+      });
 
       historyReports = reports;
       _historyLoadedCount = Math.min(50, _historyCachedEventList.length);
@@ -317,9 +322,9 @@ async function boot() {
 
       // Show Load More if there are more events
       if (_historyLoadedCount < _historyCachedEventList.length && loadMoreBtn) {
-        loadMoreBtn.style.display = 'block';
+        loadMoreBtn.style.display = "block";
         loadMoreBtn.textContent = `Load More (${_historyCachedEventList.length - _historyLoadedCount} remaining) · もっと読み込む`;
-        loadMoreBtn.classList.remove('loading');
+        loadMoreBtn.classList.remove("loading");
       }
     } catch (err) {
       console.error("[eq-viewer] Failed to search history:", err);
@@ -345,28 +350,24 @@ async function boot() {
     const loadingContainer = document.getElementById("history-loading-container");
     const progressEl = document.getElementById("history-loading-progress");
 
-    loadMoreBtn.classList.add('loading');
-    loadMoreBtn.textContent = 'Loading... · 読み込み中...';
+    loadMoreBtn.classList.add("loading");
+    loadMoreBtn.textContent = "Loading... · 読み込み中...";
     if (loadingContainer) loadingContainer.classList.remove("hidden");
 
     try {
       const params = _getSearchParams();
 
-      const { reports } = await fetchHistoryReports(
-        params,
-        areaCodes,
-        {
-          limit: 50,
-          offset: _historyLoadedCount,
-          cachedEventList: _historyCachedEventList,
-          onReportFetched: (report) => {
-            _addHistoryReportItem(historyList, report, onReportSelect);
-          },
-          onProgress: (processed, total) => {
-            if (progressEl) progressEl.textContent = `${processed}/${total}`;
-          },
+      const { reports } = await fetchHistoryReports(params, areaCodes, {
+        limit: 50,
+        offset: _historyLoadedCount,
+        cachedEventList: _historyCachedEventList,
+        onReportFetched: (report) => {
+          _addHistoryReportItem(historyList, report, onReportSelect);
         },
-      );
+        onProgress: (processed, total) => {
+          if (progressEl) progressEl.textContent = `${processed}/${total}`;
+        },
+      });
 
       historyReports.push(...reports);
       _historyLoadedCount = Math.min(_historyLoadedCount + 50, _historyCachedEventList.length);
@@ -375,15 +376,15 @@ async function boot() {
       const remaining = _historyCachedEventList.length - _historyLoadedCount;
       if (remaining > 0) {
         loadMoreBtn.textContent = `Load More (${remaining} remaining) · もっと読み込む`;
-        loadMoreBtn.classList.remove('loading');
+        loadMoreBtn.classList.remove("loading");
       } else {
-        loadMoreBtn.style.display = 'none';
+        loadMoreBtn.style.display = "none";
       }
     } catch (err) {
       console.error("[eq-viewer] Failed to load more history:", err);
-      loadMoreBtn.textContent = 'Error · エラー';
+      loadMoreBtn.textContent = "Error · エラー";
     } finally {
-      loadMoreBtn.classList.remove('loading');
+      loadMoreBtn.classList.remove("loading");
       if (loadingContainer) loadingContainer.classList.add("hidden");
     }
   }
@@ -400,7 +401,9 @@ async function boot() {
     const borderColor = intensityConfig.color;
     const intensityImg = intensityConfig.img;
 
-    const timeStr = report.originTime ? formatTimeJST(report.originTime * 1000) : "----/--/-- --:--";
+    const timeStr = report.originTime
+      ? formatTimeJST(report.originTime * 1000)
+      : "----/--/-- --:--";
 
     item.innerHTML = `
       <div class="eq-content">
@@ -536,12 +539,12 @@ async function boot() {
   // Initialize city areas toggle
   initCityAreasToggle((isEnabled) => {
     console.log("[eq-viewer] City areas:", isEnabled ? "enabled" : "disabled");
-    
+
     // Skip if we're currently viewing a flash report (which forces city areas off anyway)
     if (globalThis.__currentReport?.isFlashReport) return;
-    
+
     updateCityAreasVisibility(map, isEnabled);
-    
+
     // Re-apply highlights after a delay to ensure MapLibre retains them on the newly visible layer
     if (globalThis.__currentReport) {
       setTimeout(() => {
@@ -599,6 +602,9 @@ async function boot() {
     displayHomeMarker(map, initialHomeLocation.cityCode, featureBounds);
   }
 
+  // Initialize EEW
+  initEewSettings(map, featureBounds, cityNames, areaCodes);
+
   // Fetch initial reports
   _updateStatus("loading");
   updateSidebarLoading(0, "...");
@@ -613,7 +619,7 @@ async function boot() {
       },
       (processed, total) => {
         updateSidebarLoadingPopup(processed, total);
-      }
+      },
     );
 
     hideSidebarLoadingPopup();
@@ -621,7 +627,7 @@ async function boot() {
     // Display all epicenters on the map only if no report is currently open
     const activeItem = document.querySelector(".eq-item.active");
     if (!activeItem) {
-      displayAllEpicenters(map, reports);
+      // displayAllEpicenters(map, reports);
     }
 
     _updateStatus("live");
@@ -651,19 +657,27 @@ async function boot() {
 
                 // Track most recent new report for auto-open using the publish time (feedRdt)
                 // This correctly handles flash reports which might have null originTime.
-                if (
-                  !mostRecentNewReport ||
-                  report.feedRdt >= mostRecentNewReport.feedRdt
-                ) {
+                if (!mostRecentNewReport || report.feedRdt >= mostRecentNewReport.feedRdt) {
                   mostRecentNewReport = report;
                 }
 
                 // Auto-open the most recent new report if enabled
-                if (getAutoOpenState() && mostRecentNewReport) {
-                  console.log("[eq-viewer] Auto-opening report:", mostRecentNewReport.eventId);
-                  const item = document.querySelector(
-                    `[data-event-id="${mostRecentNewReport.eventId}"]`,
-                  );
+                const eewCheck = handlePossibleEewReport(report);
+                let shouldAutoOpen = false;
+
+                if (getAutoOpenState()) {
+                  if (eewCheck === false) {
+                    // Suppressed because it's a lower intensity EEW
+                    shouldAutoOpen = false;
+                  } else if (mostRecentNewReport) {
+                    shouldAutoOpen = true;
+                  }
+                }
+
+                if (shouldAutoOpen) {
+                  const targetReport = mostRecentNewReport || report;
+                  console.log("[eq-viewer] Auto-opening report:", targetReport.eventId);
+                  const item = document.querySelector(`[data-event-id="${targetReport.eventId}"]`);
                   if (item) {
                     item.classList.remove("active");
                     item.click();
@@ -745,8 +759,25 @@ function _displayMapInfoBox(report) {
     locationJa.innerHTML = createRubyHtml(report.hypocenterJa, report.hypocenterKana) || "不明";
   if (locationEn) locationEn.textContent = report.hypocenterEn || "Unknown";
 
-  // Show/hide flash report badge
+  // Clean up EEW specific DOM alterations
+  const eewSerialRow = infoBox.querySelector(".eew-serial-row");
+  if (eewSerialRow) eewSerialRow.remove();
+
+  const eewIntensityPlaceholder = infoBox.querySelector(".eew-intensity-placeholder");
+  if (eewIntensityPlaceholder) eewIntensityPlaceholder.remove();
+
+  if (intensityImg) intensityImg.style.display = "block";
+
+  // Restore flash badge styling
   if (flashBadge) {
+    flashBadge.style.backgroundColor = "";
+    flashBadge.style.borderColor = "";
+    const badgeText = flashBadge.querySelector(".flash-badge-text");
+    if (badgeText) {
+      badgeText.textContent = "速報 · Flash Report";
+      badgeText.style.color = "";
+    }
+
     if (report.isFlashReport) {
       flashBadge.classList.remove("hidden");
     } else {
@@ -772,10 +803,24 @@ function _displayMapInfoBox(report) {
   }
 
   if (coordinates && report.coordinates) {
+    const coordsLabel = coordinates.previousElementSibling;
+    if (coordsLabel) coordsLabel.textContent = "Coordinates";
     const { latitude, longitude } = report.coordinates;
     coordinates.textContent = `${latitude.toFixed(1)} ; ${longitude.toFixed(1)}`;
   } else if (coordinates) {
+    const coordsLabel = coordinates.previousElementSibling;
+    if (coordsLabel) coordsLabel.textContent = "Coordinates";
     coordinates.textContent = "--";
+  }
+
+  // Restore observations label
+  const obsLabel = infoBox.querySelector(".observations-list-label");
+  if (obsLabel) obsLabel.textContent = "Observations • 観測";
+
+  const obsWrapper = infoBox.querySelector(".observations-list-wrapper");
+  if (obsWrapper) {
+    const toggleBtn = obsWrapper.querySelector(".observations-list-toggle");
+    if (toggleBtn) toggleBtn.style.display = "";
   }
 
   if (timeEl) {

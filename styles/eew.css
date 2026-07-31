@@ -1,0 +1,32 @@
+/* EEW styles */
+
+#eew-list-container {
+  margin-bottom: 4px;
+}
+#eew-list-container.hidden {
+  display: none;
+}
+
+.eew-list-item {
+  background: var(--bg-panel2);
+  border-radius: 5px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.eew-list-item:hover {
+  background: var(--bg-panel);
+}
+
+.eew-list-header {
+  font-family: var(--font-display);
+}
+
+.eew-intensity-placeholder {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.obs-intensity-group .auto-open {
+  pointer-events: none;
+}

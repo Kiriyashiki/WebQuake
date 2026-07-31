@@ -4,6 +4,9 @@ export const FEED_DATA_BASE_URL = 'https://www.jma.go.jp/bosai/quake/data/';
 export const EQDB_API_URL = 'https://www.data.jma.go.jp/eqdb/data/shindo/api/';
 export const XML_FEED_URL = 'https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml';
 
+// ─── Debug ──────────────────────────────────────────────────────────────────
+export const USE_TEST_SERVER = false;
+
 // ─── Intensity Configuration (JMA Shindo Scale) ──────────────────────────────
 export const INTENSITY_CONFIG = {
   "1":  { color: "#6B7878", fontColor: "#FFFFFF", img: "1.png" },

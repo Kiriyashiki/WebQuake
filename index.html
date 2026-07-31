@@ -24,7 +24,11 @@
           <span class="topbar-title">WebQuake</span>
           <span class="topbar-sub">地震情報 • Earthquake Information</span>
         </div>
-        <div id="topbar-right">
+        <div id="topbar-right" style="display: flex; align-items: center;">
+          <span id="eew-status-container" class="hidden" style="display: flex; align-items: center; margin-right: 12px; cursor: pointer;">
+            <span id="eew-status-dot" class="dot-error"></span>
+            <span id="eew-status-text" class="mono">EEW: Disconnected</span>
+          </span>
           <span id="status-dot" class="dot-idle"></span>
           <span id="status-text" class="mono">Idle</span>
         </div>
@@ -47,6 +51,8 @@
 
           <!-- Live tab content -->
           <div id="live-tab-content" class="sidebar-tab-content active">
+            <!-- EEW Fixed Container -->
+            <div id="eew-list-container" class="hidden"></div>
             <div class="sidebar-section">
               <ul id="eq-list">
                 <li class="eq-item placeholder">
@@ -290,12 +296,32 @@
                 <button id="settings-close-btn" aria-label="Close">✕</button>
               </div>
               <div class="settings-popup-body">
-                <div class="settings-section">
+                <div class="settings-columns">
+                  <div class="settings-left">
+                    <div class="settings-section">
                   <label class="live-mode-toggle popup-setting" data-tooltip="Enable live polling for new/updated reports • 新規•更新された報告のリアルタイム取得を有効にする">
                     <input type="checkbox" id="live-mode-toggle" />
                     <span class="toggle-label" style="flex-grow: 1; text-align: left;">Live Mode<br>ライブモード</span>
                     <span class="toggle-switch"></span>
                   </label>
+                </div>
+                <div class="settings-divider"></div>
+                <div class="settings-section">
+                  <div class="home-location-header">EEW (Earthquake Early Warning) • 緊急地震速報</div>
+                  <label class="live-mode-toggle popup-setting" data-tooltip="Enable receiving EEWs via AXIS websocket • AXISのWebsocket経由で緊急地震速報を受信する">
+                    <input type="checkbox" id="eew-toggle" />
+                    <span class="toggle-label" style="flex-grow: 1; text-align: left;">Enable EEW<br>有効にする</span>
+                    <span class="toggle-switch"></span>
+                  </label>
+                  <div class="dropdown-group" style="margin-top: 10px;">
+                    <label for="eew-token-input">AXIS Token • トークン:</label>
+                    <input type="password" id="eew-token-input" class="search-input" placeholder="Bearer Token" style="width: 100%; box-sizing: border-box;" />
+                  </div>
+                  <p>
+                    Important information about AXIS EEW and how to use it<br>
+                    AXIS緊急地震速報に関する重要な情報と使用方法<br>
+                    <a href="https://github.com/Kiriyashiki/WebQuake/blob/main/doc/AXIS-about-en.md" target="_blank">Please click here</a> • <a href="https://github.com/Kiriyashiki/WebQuake/blob/main/doc/AXIS-about-ja.md" target="_blank">ここでクリックしてください</a> 
+                  </p>
                 </div>
                 <div class="settings-divider"></div>
                 <div class="settings-section">
@@ -323,9 +349,10 @@
                     </label>
                   </div>
                 </div>
-                <div class="settings-divider"></div>
-                <div class="credits-section">
-                  <p><a href="https://maplibre.org/projects/gl-js/" target="_blank">MapLibre GL JS</a></p>
+                  </div>
+                  <div class="settings-right">
+                    <div class="credits-section">
+                      <p><a href="https://maplibre.org/projects/gl-js/" target="_blank">MapLibre GL JS</a></p>
                   <p>
                     Japan Meteorological Agency (JMA · 気象庁)<br />
                     - <a href="https://www.jma.go.jp/bosai/" target="_blank">Bosai · 防災情報</a><br />
@@ -336,7 +363,8 @@
                     ><br />
                     - <a href="https://www.data.jma.go.jp/eqdb/data/shindo/" target="_blank"
                       >EQDB</a
-                    >
+                    ><br />
+                    - <a href="https://axis.prioris.jp/">AXIS</a>
                   </p>
                   <p><a href="https://jquake.net/" target="_blank">JQuake (Intensity color scale)</a></p>
                   <p><a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap (Lakes GIS data)</a></p>
@@ -346,6 +374,8 @@
                   <p> This website is open-source · このウェブサイトはオープンソースです<br>
                     - <a href="https://github.com/Kiriyashiki/WebQuake" target="_blank">GitHub</a>
                   </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

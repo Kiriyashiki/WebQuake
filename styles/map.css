@@ -39,7 +39,7 @@
   border: 1px solid var(--border-hi);
   border-radius: 6px;
   box-shadow: 0 4px 24px rgba(0,0,0,0.7);
-  width: 340px;
+  width: auto;
   max-width: 90%;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -74,11 +74,30 @@
 }
 
 .settings-popup-body {
-  padding: 12px;
+  padding: 12px 16px;
   font-size: 13px;
   color: var(--text);
   line-height: 1.5;
 }
+
+.settings-columns {
+  display: flex;
+  gap: 24px;
+}
+
+.settings-left {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-right {
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hide divider in new layout if needed or keep it, we'll keep it but make it horizontal */
 
 .settings-section {
   padding: 4px 0 12px 0;
