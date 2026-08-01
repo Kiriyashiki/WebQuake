@@ -397,13 +397,23 @@ async function boot() {
     item.className = "eq-item";
     item.dataset.eventId = report.eventId;
 
-    const intensityConfig = INTENSITY_CONFIG[report.maxIntensity] || INTENSITY_CONFIG["1"];
-    const borderColor = intensityConfig.color;
-    const intensityImg = intensityConfig.img;
+    const hasIntensity = !!(report.maxIntensity && INTENSITY_CONFIG[report.maxIntensity]);
+    const intensityConfig = hasIntensity ? INTENSITY_CONFIG[report.maxIntensity] : null;
+    const borderColor = intensityConfig ? intensityConfig.color : "#1e2e44";
+    const intensityImg = intensityConfig ? intensityConfig.img : null;
 
     const timeStr = report.originTime
       ? formatTimeJST(report.originTime * 1000)
       : "----/--/-- --:--";
+
+    const intensityHtml = hasIntensity
+      ? `<img
+          src="/img/shindo/${intensityImg}"
+          alt="Intensity ${report.maxIntensity}"
+          class="eq-intensity-img"
+          title="Intensity: ${report.maxIntensity}"
+        />`
+      : `<div class="eq-intensity-placeholder">-</div>`;
 
     item.innerHTML = `
       <div class="eq-content">
@@ -419,12 +429,7 @@ async function boot() {
           </div>
         </div>
         <div class="eq-intensity-container">
-          <img
-            src="/img/shindo/${intensityImg}"
-            alt="Intensity ${report.maxIntensity}"
-            class="eq-intensity-img"
-            title="Intensity: ${report.maxIntensity}"
-          />
+          ${intensityHtml}
         </div>
       </div>
     `;
@@ -759,14 +764,17 @@ function _displayMapInfoBox(report) {
     locationJa.innerHTML = createRubyHtml(report.hypocenterJa, report.hypocenterKana) || "不明";
   if (locationEn) locationEn.textContent = report.hypocenterEn || "Unknown";
 
-  // Clean up EEW specific DOM alterations
+  // Clean up EEW specific DOM alterations & placeholders
   const eewSerialRow = infoBox.querySelector(".eew-serial-row");
   if (eewSerialRow) eewSerialRow.remove();
 
   const eewIntensityPlaceholder = infoBox.querySelector(".eew-intensity-placeholder");
   if (eewIntensityPlaceholder) eewIntensityPlaceholder.remove();
 
-  if (intensityImg) intensityImg.style.display = "block";
+  const existingPlaceholder = infoBox.querySelector(".info-box-intensity-placeholder");
+  if (existingPlaceholder) existingPlaceholder.remove();
+
+  const intensityContainer = infoBox.querySelector(".info-box-intensity-container");
 
   // Restore flash badge styling
   if (flashBadge) {
@@ -785,11 +793,26 @@ function _displayMapInfoBox(report) {
     }
   }
 
-  // Set intensity image
-  if (intensityImg) {
-    const intensityConfig = INTENSITY_CONFIG[report.maxIntensity] || INTENSITY_CONFIG["1"];
-    intensityImg.src = `/img/shindo/${intensityConfig.img}`;
-    intensityImg.alt = `Intensity ${report.maxIntensity}`;
+  // Set intensity image / placeholder
+  const hasIntensity = !!(report.maxIntensity && INTENSITY_CONFIG[report.maxIntensity]);
+  if (hasIntensity) {
+    if (intensityImg) {
+      intensityImg.style.display = "block";
+      const intensityConfig = INTENSITY_CONFIG[report.maxIntensity];
+      intensityImg.src = `/img/shindo/${intensityConfig.img}`;
+      intensityImg.alt = `Intensity ${report.maxIntensity}`;
+      intensityImg.title = `Intensity: ${report.maxIntensity}`;
+    }
+  } else {
+    if (intensityImg) {
+      intensityImg.style.display = "none";
+    }
+    if (intensityContainer) {
+      const placeholder = document.createElement("div");
+      placeholder.className = "info-box-intensity-placeholder";
+      placeholder.textContent = "-";
+      intensityContainer.appendChild(placeholder);
+    }
   }
 
   // Populate details

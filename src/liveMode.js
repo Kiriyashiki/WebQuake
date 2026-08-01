@@ -20,6 +20,7 @@ import {
   FLASH_EPICENTER_TITLE,
   buildFlashIntensityReport,
   buildFlashEpicenterReport,
+  parseFlashIntensityJson,
 } from "./reportUtils.js";
 import JMAEarthquakeReport from "./jmaEarthquakeReport.js";
 import { fetchXmlFeedEntries, parseFlashIntensityXml, clearXmlFeedCache } from "./xmlFeedParser.js";
@@ -32,7 +33,12 @@ let _trackedEntries = new Map();
 
 /**
  * Tracks flash report entries (震度速報/震源速報) we've processed.
- * Map of eventId -> { rdt: ISO string, type: 'intensity'|'epicenter' }
+ * Map of eventId -> {
+ *   intensityRdt: ISO string|null,
+ *   epicenterRdt: ISO string|null,
+ *   intensityEntry: Object|null,
+ *   epicenterEntry: Object|null
+ * }
  */
 let _trackedFlashEntries = new Map();
 
@@ -65,11 +71,20 @@ export function startLivePolling(areaCodes, callbacks = {}, initialReports = [])
 
   // Initialize tracked entries with initial reports
   for (const report of initialReports) {
-    if (report.eventId && report.feedRdt && report.feedJson) {
-      _trackedEntries.set(report.eventId, {
-        rdt: report.feedRdt,
-        jsonFile: report.feedJson,
-      });
+    if (report.eventId && report.feedRdt) {
+      if (report.isFlashReport) {
+        _trackedFlashEntries.set(report.eventId, {
+          intensityRdt: report.flashType === 'intensity' ? report.feedRdt : (report.maxIntensity ? report.feedRdt : null),
+          epicenterRdt: report.flashType === 'epicenter' ? report.feedRdt : null,
+          intensityEntry: null,
+          epicenterEntry: null,
+        });
+      } else {
+        _trackedEntries.set(report.eventId, {
+          rdt: report.feedRdt,
+          jsonFile: report.feedJson || null,
+        });
+      }
     }
   }
 
@@ -304,16 +319,19 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
     }
 
     for (const eid of flashEventIds) {
-      const intensityEntry = latestFlashIntensityByEid.get(eid);
-      const epicenterEntry = latestFlashEpicenterByEid.get(eid);
-
-      // Determine the "best" flash entry rdt and type
-      const bestEntry = epicenterEntry || intensityEntry;
-      const bestType = epicenterEntry ? 'epicenter' : 'intensity';
-      const bestRdt = bestEntry?.rdt;
+      const currentIntensityEntry = latestFlashIntensityByEid.get(eid);
+      const currentEpicenterEntry = latestFlashEpicenterByEid.get(eid);
 
       // Check if we already tracked this flash report
       const trackedFlash = _trackedFlashEntries.get(eid);
+
+      // Merge current entries with cached tracked entries in case one dropped out of the immediate feed window
+      const intensityEntry = currentIntensityEntry || trackedFlash?.intensityEntry || null;
+      const epicenterEntry = currentEpicenterEntry || trackedFlash?.epicenterEntry || null;
+
+      // Determine the "best" flash entry and type
+      const bestEntry = epicenterEntry || intensityEntry;
+      const bestType = epicenterEntry ? 'epicenter' : 'intensity';
 
       if (!trackedFlash) {
         // New flash report
@@ -322,21 +340,45 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
           eid, intensityEntry, epicenterEntry, areaCodes
         );
         if (flashReport) {
-          _trackedFlashEntries.set(eid, { rdt: bestRdt, type: bestType });
+          _trackedFlashEntries.set(eid, {
+            intensityRdt: intensityEntry?.rdt || null,
+            epicenterRdt: epicenterEntry?.rdt || null,
+            intensityEntry,
+            epicenterEntry,
+          });
           if (callbacks.onNewEntry) {
             callbacks.onNewEntry(bestEntry, flashReport);
           }
         }
-      } else if (bestRdt !== trackedFlash.rdt || bestType !== trackedFlash.type) {
-        // Updated flash report (e.g., 震源速報 arrived after 震度速報)
-        console.log(`[live-mode] Updated flash report detected (${bestType}):`, eid);
-        const flashReport = await _buildFlashReportForLive(
-          eid, intensityEntry, epicenterEntry, areaCodes
-        );
-        if (flashReport) {
-          _trackedFlashEntries.set(eid, { rdt: bestRdt, type: bestType });
-          if (callbacks.onUpdatedEntry) {
-            callbacks.onUpdatedEntry(bestEntry, flashReport);
+      } else {
+        // Check if there is new/updated information:
+        // 1. A new or updated intensity report has arrived (e.g., arrived after epicenter)
+        const isNewIntensity =
+          currentIntensityEntry &&
+          currentIntensityEntry.rdt !== trackedFlash.intensityRdt;
+        // 2. A new or updated epicenter report has arrived (e.g., arrived after intensity)
+        const isNewEpicenter =
+          currentEpicenterEntry &&
+          currentEpicenterEntry.rdt !== trackedFlash.epicenterRdt;
+
+        if (isNewIntensity || isNewEpicenter) {
+          console.log(`[live-mode] Updated flash report detected for ${eid}:`, {
+            isNewIntensity,
+            isNewEpicenter,
+          });
+          const flashReport = await _buildFlashReportForLive(
+            eid, intensityEntry, epicenterEntry, areaCodes
+          );
+          if (flashReport) {
+            _trackedFlashEntries.set(eid, {
+              intensityRdt: intensityEntry?.rdt || trackedFlash.intensityRdt || null,
+              epicenterRdt: epicenterEntry?.rdt || trackedFlash.epicenterRdt || null,
+              intensityEntry,
+              epicenterEntry,
+            });
+            if (callbacks.onUpdatedEntry) {
+              callbacks.onUpdatedEntry(bestEntry, flashReport);
+            }
           }
         }
       }
@@ -362,16 +404,34 @@ async function _buildFlashReportForLive(eid, intensityEntry, epicenterEntry, are
     } catch (err) {
       console.warn('[live-mode] Failed to parse 震度速報 XML for', eid, err.message);
     }
+  } else if (intensityEntry?.json) {
+    // JSON fallback path
+    try {
+      const reportUrl = FEED_DATA_BASE_URL + intensityEntry.json;
+      const res = await fetch(reportUrl, { method: 'GET', mode: 'cors', cache: 'no-cache' });
+      if (res.ok) {
+        const jsonData = await res.json();
+        intensityData = parseFlashIntensityJson(jsonData);
+      }
+    } catch (err) {
+      console.warn('[live-mode] Failed to fetch 震度速報 JSON for', eid, err.message);
+    }
   }
 
   // If we have a 震源速報, build from that + carry observations
   if (epicenterEntry) {
-    return buildFlashEpicenterReport(
+    const latestRdt = (intensityEntry?.rdt && (!epicenterEntry.rdt || intensityEntry.rdt > epicenterEntry.rdt))
+      ? intensityEntry.rdt
+      : epicenterEntry.rdt;
+
+    const report = buildFlashEpicenterReport(
       epicenterEntry,
       areaCodes,
       intensityData?.observations || [],
       intensityData?.maxIntensity || null,
     );
+    if (latestRdt) report.feedRdt = latestRdt;
+    return report;
   }
 
   // Otherwise fall back to 震度速報 only

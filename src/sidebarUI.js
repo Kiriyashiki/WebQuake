@@ -67,12 +67,22 @@ export function createReportItem(report, onReportSelect) {
   item.className = "eq-item";
   item.dataset.eventId = report.eventId;
 
-  const intensityConfig = INTENSITY_CONFIG[report.maxIntensity] || INTENSITY_CONFIG["1"];
-  const borderColor = intensityConfig.color;
-  const intensityImg = intensityConfig.img;
+  const hasIntensity = !!(report.maxIntensity && INTENSITY_CONFIG[report.maxIntensity]);
+  const intensityConfig = hasIntensity ? INTENSITY_CONFIG[report.maxIntensity] : null;
+  const borderColor = intensityConfig ? intensityConfig.color : "#1e2e44";
+  const intensityImg = intensityConfig ? intensityConfig.img : null;
 
   // Format time in JST
   const timeStr = report.originTime ? formatTimeJST(report.originTime * 1000) : "----/--/-- --:--";
+
+  const intensityHtml = hasIntensity
+    ? `<img 
+        src="/img/shindo/${intensityImg}" 
+        alt="Intensity ${report.maxIntensity}" 
+        class="eq-intensity-img"
+        title="Intensity: ${report.maxIntensity}"
+      />`
+    : `<div class="eq-intensity-placeholder">-</div>`;
 
   // Build HTML
   item.innerHTML = `
@@ -89,12 +99,7 @@ export function createReportItem(report, onReportSelect) {
         </div>
       </div>
       <div class="eq-intensity-container">
-        <img 
-          src="/img/shindo/${intensityImg}" 
-          alt="Intensity ${report.maxIntensity}" 
-          class="eq-intensity-img"
-          title="Intensity: ${report.maxIntensity}"
-        />
+        ${intensityHtml}
       </div>
     </div>
   `;

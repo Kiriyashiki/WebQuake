@@ -252,6 +252,20 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
+.info-box-intensity-placeholder {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-dim);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1;
+}
+
 .info-box-details {
   display: flex;
   flex-direction: column;

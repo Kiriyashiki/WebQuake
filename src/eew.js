@@ -737,8 +737,12 @@ function renderEewInfoBox(msg, isCancelled, isWarning, isPlum, totalCount, curre
     intensityImg.style.display = "block";
     const existingPlaceholder = intensityContainer.querySelector(".eew-intensity-placeholder");
     if (existingPlaceholder) existingPlaceholder.remove();
+    const infoPlaceholder = intensityContainer.querySelector(".info-box-intensity-placeholder");
+    if (infoPlaceholder) infoPlaceholder.remove();
   } else {
     intensityImg.style.display = "none";
+    const infoPlaceholder = intensityContainer.querySelector(".info-box-intensity-placeholder");
+    if (infoPlaceholder) infoPlaceholder.remove();
     let placeholder = intensityContainer.querySelector(".eew-intensity-placeholder");
     if (!placeholder) {
       placeholder = document.createElement("div");

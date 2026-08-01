@@ -557,7 +557,7 @@ export function displayAllEpicenters(map, reports) {
     const markerEl = document.createElement("div");
     markerEl.className = "epicenter-all-marker";
 
-    const intensityConfig = INTENSITY_CONFIG[report.maxIntensity] || INTENSITY_CONFIG["1"];
+    const intensityConfig = (report.maxIntensity && INTENSITY_CONFIG[report.maxIntensity]) || { color: "#1e2e44" };
 
     // Use CSS mask to colorize the bw epicenter image
     markerEl.style.width = "24px";  

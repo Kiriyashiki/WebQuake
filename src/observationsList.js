@@ -117,7 +117,12 @@ export function groupObservationsByIntensity(observations, areaCodes = new Map()
  * @param {boolean} [options.isFlashReport=false] - If true, render in flash mode (no cities, show notice)
  */
 export async function renderObservationsList(container, observations, areaCodes = new Map(), prefCodes = null, options = {}) {
-  if (!container || !observations || observations.length === 0) return;
+  if (!container) return;
+
+  // Clear container
+  container.innerHTML = '';
+
+  if (!observations || observations.length === 0) return;
 
   const { isFlashReport = false } = options;
 
@@ -139,9 +144,6 @@ export async function renderObservationsList(container, observations, areaCodes 
       const idxB = order.indexOf(b) === -1 ? order.length : order.indexOf(b);
       return idxA - idxB;
     });
-
-    // Clear container
-    container.innerHTML = '';
 
     // Show flash report notice at the top
     if (isFlashReport) {
