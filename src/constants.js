@@ -92,3 +92,22 @@ export function formatTimeJST(ms) {
   return `${year}/${month}/${day} ${hours}:${minutes}`;
 }
 
+/**
+ * Formats Unix timestamp (milliseconds) to YYYY/MM/DD HH:MM:SS format in JST (UTC+9).
+ */
+export function formatTimeJSTWithSeconds(ms) {
+  const date = new Date(ms);
+  
+  // Convert to JST (UTC+9) by adding 9 hours to the UTC timestamp
+  const jstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+  
+  const year = jstDate.getUTCFullYear();
+  const month = String(jstDate.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(jstDate.getUTCDate()).padStart(2, "0");
+  const hours = String(jstDate.getUTCHours()).padStart(2, "0");
+  const minutes = String(jstDate.getUTCMinutes()).padStart(2, "0");
+  const seconds = String(jstDate.getUTCSeconds()).padStart(2, "0");
+  
+  return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
+}
+

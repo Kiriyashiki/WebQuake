@@ -1,5 +1,5 @@
 import maplibregl from "maplibre-gl";
-import { formatTimeJST, INTENSITY_CONFIG, USE_TEST_SERVER } from "./constants.js";
+import { formatTimeJST, formatTimeJSTWithSeconds, INTENSITY_CONFIG, USE_TEST_SERVER } from "./constants.js";
 import {
   updateCityAreasVisibility,
   clearEpicenter,
@@ -344,6 +344,7 @@ function handleEewMessage(msg) {
   }
 
   updateEewUI();
+  startWaveAnimation();
 }
 
 function removeEew(eventId) {
@@ -498,7 +499,7 @@ function renderCurrentEew() {
               <span class="eq-mag-label">M</span>
               ${isPlum ? "--" : msg.Magnitude || "--"}
             </div>
-            <div class="eq-time">${formatTimeJST(new Date(msg.OriginDateTime).getTime())}</div>
+            <div class="eq-time">${formatTimeJSTWithSeconds(new Date(msg.OriginDateTime).getTime())}</div>
           </div>
         </div>
         <div class="eq-intensity-container">
@@ -532,6 +533,166 @@ function renderCurrentEew() {
   if (!currentActive) {
     renderEewInfoBox(msg, isCancelled, isWarning, isPlum, eews.length, carouselIndex + 1);
     updateMapForEew();
+  }
+}
+
+// ─── EEW Wave Animation ──────────────────────────────────────────────────────
+
+let waveInterval = null;
+const P_VEL = 7.0; // km/s
+const S_VEL = 4.0; // km/s
+
+function getCircleCoords(centerLat, centerLng, radiusKm, points = 64) {
+  const coords = [];
+  const R = 6371; // Earth radius in km
+  const lat1 = (centerLat * Math.PI) / 180;
+  const lon1 = (centerLng * Math.PI) / 180;
+  const d = radiusKm / R;
+
+  for (let i = 0; i <= points; i++) {
+    const brng = (i / points) * 2 * Math.PI;
+    const lat2 = Math.asin(
+      Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(brng)
+    );
+    let lon2 =
+      lon1 +
+      Math.atan2(
+        Math.sin(brng) * Math.sin(d) * Math.cos(lat1),
+        Math.cos(d) - Math.sin(lat1) * Math.sin(lat2)
+      );
+    coords.push([(lon2 * 180) / Math.PI, (lat2 * 180) / Math.PI]);
+  }
+  return coords;
+}
+
+function startWaveAnimation() {
+  if (waveInterval) return;
+
+  if (mapInstance && !mapInstance.getSource("eew-p-wave")) {
+    mapInstance.addSource("eew-p-wave", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] },
+    });
+    mapInstance.addLayer({
+      id: "eew-p-wave-layer",
+      type: "line",
+      source: "eew-p-wave",
+      paint: {
+        "line-color": "#3498db", // Blue for P wave
+        "line-width": 2,
+        "line-opacity": ["get", "opacity"],
+      },
+    });
+  }
+  if (mapInstance && !mapInstance.getSource("eew-s-wave")) {
+    mapInstance.addSource("eew-s-wave", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [] },
+    });
+    mapInstance.addLayer({
+      id: "eew-s-wave-layer",
+      type: "line",
+      source: "eew-s-wave",
+      paint: {
+        "line-color": "#e74c3c", // Red for S wave
+        "line-width": 2,
+        "line-opacity": ["get", "opacity"],
+      },
+    });
+  }
+
+  waveInterval = setInterval(updateWaves, 500);
+  updateWaves();
+}
+
+function stopWaveAnimation() {
+  if (waveInterval) {
+    clearInterval(waveInterval);
+    waveInterval = null;
+  }
+  if (mapInstance?.getSource("eew-p-wave")) {
+    mapInstance.getSource("eew-p-wave").setData({ type: "FeatureCollection", features: [] });
+  }
+  if (mapInstance?.getSource("eew-s-wave")) {
+    mapInstance.getSource("eew-s-wave").setData({ type: "FeatureCollection", features: [] });
+  }
+}
+
+function updateWaves() {
+  if (!mapInstance) return;
+
+  const pFeatures = [];
+  const sFeatures = [];
+  const now = Date.now();
+  let allFinished = true;
+
+  for (const eew of activeEews.values()) {
+    const msg = eew.msg;
+    if (!msg?.Hypocenter || eew.isCancelled) continue;
+
+    const isPlum = msg.Magnitude === "1.0" && msg.Hypocenter.Depth === "10km";
+    if (isPlum) continue;
+
+    const originTime = new Date(msg.OriginDateTime).getTime();
+    const t = Math.max(0, (now - originTime) / 1000);
+
+    let depth = Number.parseInt(msg.Hypocenter.Depth, 10);
+    if (Number.isNaN(depth)) depth = 10;
+
+    const pDist = P_VEL * t;
+    const sDist = S_VEL * t;
+
+    const pRad = pDist > depth ? Math.sqrt(pDist * pDist - depth * depth) : 0;
+    const sRad = sDist > depth ? Math.sqrt(sDist * sDist - depth * depth) : 0;
+
+    if (pRad >= 2000) {
+      continue;
+    }
+    allFinished = false;
+
+    let opacity = 1.0;
+    if (pRad > 1750) {
+      opacity = 1.0 - (pRad - 1750) / 250;
+      if (opacity < 0) opacity = 0;
+    }
+
+    const coords = msg.Hypocenter.Coordinate;
+    if (coords && coords.length >= 2) {
+      const lng = Number.parseFloat(coords[0]);
+      const lat = Number.parseFloat(coords[1]);
+
+      if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
+        if (pRad > 0) {
+          pFeatures.push({
+            type: "Feature",
+            properties: { opacity },
+            geometry: {
+              type: "Polygon",
+              coordinates: [getCircleCoords(lat, lng, pRad, 96)],
+            },
+          });
+        }
+        if (sRad > 0) {
+          sFeatures.push({
+            type: "Feature",
+            properties: { opacity },
+            geometry: {
+              type: "Polygon",
+              coordinates: [getCircleCoords(lat, lng, sRad, 64)],
+            },
+          });
+        }
+      }
+    }
+  }
+
+  const pSrc = mapInstance.getSource("eew-p-wave");
+  const sSrc = mapInstance.getSource("eew-s-wave");
+  if (pSrc) pSrc.setData({ type: "FeatureCollection", features: pFeatures });
+  if (sSrc) sSrc.setData({ type: "FeatureCollection", features: sFeatures });
+
+  if (allFinished && activeEews.size === 0) {
+    stopWaveAnimation();
   }
 }
 
@@ -607,7 +768,9 @@ function renderEewInfoBox(msg, isCancelled, isWarning, isPlum, totalCount, curre
     coordinates.textContent = "--";
   }
 
-  timeEl.textContent = formatTimeJST(new Date(msg.OriginDateTime).getTime());
+  if (timeEl) {
+    timeEl.textContent = formatTimeJSTWithSeconds(new Date(msg.OriginDateTime).getTime());
+  }
 
   // Add Extra row for Serial and Final
   const detailsContainer = infoBox.querySelector(".info-box-details");
