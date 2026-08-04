@@ -13,12 +13,12 @@
 101;石狩地方中部;いしかりちほうちゅうぶ;Central Part of Ishikari
 102;石狩地方南部;いしかりちほうなんぶ;Southern Part of Ishikari
 105;渡島地方北部;おしまちほうほくぶ;Northern Part of Oshima
-106;渡島地方東部;おしまちほうひがしぶ;Eastern Part of Oshima
-107;渡島地方西部;おしまちほうにしぶ;Western Part of Oshima
+106;渡島地方東部;おしまちほうとうぶ;Eastern Part of Oshima
+107;渡島地方西部;おしまちほうせいぶ;Western Part of Oshima
 110;檜山地方;ひやまちほう;Hiyama Region
 115;後志地方北部;しりべしちほうほくぶ;Northern Shiribeshi
-116;後志地方東部;しりべしちほうひがしぶ;Eastern Shiribeshi
-117;後志地方西部;しりべしちほうにしぶ;Western Shiribeshi
+116;後志地方東部;しりべしちほうとうぶ;Eastern Shiribeshi
+117;後志地方西部;しりべしちほうせいぶ;Western Shiribeshi
 119;北海道奥尻島;ほっかいどうおくしりとう;Hokkaido Okushiri Island
 120;空知地方北部;そらちちほうほくぶ;Northern Part of Sorachi
 121;空知地方中部;そらちちほうちゅうぶ;Central Part of Sorachi
@@ -34,11 +34,11 @@
 140;網走地方;あばしりちほう;Abashiri Region
 141;北見地方;きたみちほう;Kitami Region
 142;紋別地方;もんべつちほう;Mombetsu Region
-145;胆振地方西部;いぶりちほうにしぶ;Western Part of Iburi
+145;胆振地方西部;いぶりちほうせいぶ;Western Part of Iburi
 146;胆振地方中東部;いぶりちほうちゅうとうぶ;Central Eastern Iburi
-150;日高地方西部;ひだかちほうにしぶ;Western Part of Hidaka
+150;日高地方西部;ひだかちほうせいぶ;Western Part of Hidaka
 151;日高地方中部;ひだかちほうちゅうぶ;Central Part of Hidaka
-152;日高地方東部;ひだかちほうひがしぶ;Eastern Part of Hidaka
+152;日高地方東部;ひだかちほうとうぶ;Eastern Part of Hidaka
 155;十勝地方北部;とかちちほうほくぶ;Northern Part of Tokachi
 156;十勝地方中部;とかちちほうちゅうぶ;Central Part of Tokachi
 157;十勝地方南部;とかちちほうなんぶ;Southern Part of Tokachi
@@ -111,42 +111,42 @@
 342;千葉県南部;ちばけんなんぶ;Southern Part of Chiba Pref.
 349;房総半島南方沖;ぼうそうはんとうなんぽうおき;Off the Coast of Boso Peninsula
 350;東京都２３区;とうきょうとにじゅうさんく;Tokyo 23 Wards
-351;東京都多摩東部;とうきょうとたまひがしぶ;Tokyo Eastern Tama Region
-352;東京都多摩西部;とうきょうとたまにしぶ;Tokyo Western Tama Region
+351;東京都多摩東部;とうきょうとたまとうぶ;Tokyo Eastern Tama Region
+352;東京都多摩西部;とうきょうとたませいぶ;Tokyo Western Tama Region
 354;神津島;こうづしま;Kozushima Island
 355;伊豆大島;いずおおしま;Izu Oshima Island
 356;新島;にいじま;Niijima Island
 357;三宅島;みやけじま;Miyakejima Island
 358;八丈島;はちじょうじま;Hachijojima Island
-359;小笠原;おがさわら;Ogasawara Island
-360;神奈川県東部;かながわけんひがしぶ;Eastern Part of Kanagawa Pref.
-361;神奈川県西部;かながわけんにしぶ;Western Part of Kanagawa Pref.
+359;小笠原;おがさわら;Ogasawara Islands
+360;神奈川県東部;かながわけんとうぶ;Eastern Part of Kanagawa Pref.
+361;神奈川県西部;かながわけんせいぶ;Western Part of Kanagawa Pref.
 370;新潟県上越地方;にいがたけんじょうえつちほう;Niigata Pref. Joetsu Region
 371;新潟県中越地方;にいがたけんちゅうえつちほう;Niigata Pref. Chuetsu Region
 372;新潟県下越地方;にいがたけんかえつちほう;Niigata Pref. Kaetsu Region
 375;新潟県佐渡;にいがたけんさど;Niigata Pref. Sado Island
 378;新潟県下越沖;にいがたけんかえつおき;Off the Coast of Niigata Pref. Kaetsu
 379;新潟県上中越沖;にいがたけんじょうちゅうえつおき;Off the Coast of Niigata Pref. Jochuetsu
-380;富山県東部;とやまけんひがしぶ;Eastern Part of Toyama Pref.
-381;富山県西部;とやまけんにしぶ;Western Part of Toyama Pref.
+380;富山県東部;とやまけんとうぶ;Eastern Part of Toyama Pref.
+381;富山県西部;とやまけんせいぶ;Western Part of Toyama Pref.
 390;石川県能登地方;いしかわけんのとちほう;Ishikawa Pref. Noto Region
 391;石川県加賀地方;いしかわけんかがちほう;Ishikawa Pref. Kaga Region
 400;福井県嶺北;ふくいけんれいほく;Fukui Pref. Reihoku Region
 401;福井県嶺南;ふくいけんれいなん;Fukui Pref. Reinan Region
 411;山梨県中・西部;やまなしけんちゅう・せいぶ;Western-Central Yamanashi Pref
-412;山梨県東部・富士五湖;やまなしけんひがしぶ・ふじごこ;Eastern Yamanashi Pref. Fujigoko
+412;山梨県東部・富士五湖;やまなしけんとうぶ・ふじごこ;Eastern Yamanashi Pref. Fujigoko
 420;長野県北部;ながのけんほくぶ;Northern Part of Nagano Pref.
 421;長野県中部;ながのけんちゅうぶ;Central Part of Nagano Pref.
 422;長野県南部;ながのけんなんぶ;Southern Part of Nagano Pref.
 430;岐阜県飛騨地方;ぎふけんひだちほう;Gifu Pref. Hida Region
-431;岐阜県美濃東部;ぎふけんみのひがしぶ;Gifu Pref. Eastern Part of Mino
+431;岐阜県美濃東部;ぎふけんみのとうぶ;Gifu Pref. Eastern Part of Mino
 432;岐阜県美濃中西部;ぎふけんみのちゅうせいぶ;Gifu Pref. Western-Central Part of Mino
 440;静岡県伊豆地方;しずおかけんいずちほう;Shizuoka Pref. Izu Region
-441;静岡県東部;しずおかけんひがしぶ;Eastern Part of Shizuoka Pref.
+441;静岡県東部;しずおかけんとうぶ;Eastern Part of Shizuoka Pref.
 442;静岡県中部;しずおかけんちゅうぶ;Central Part of Shizuoka Pref.
-443;静岡県西部;しずおかけんにしぶ;Western Part of Shizuoka Pref.
-450;愛知県東部;あいちけんひがしぶ;Eastern Part of Aichi Pref.
-451;愛知県西部;あいちけんにしぶ;Western Part of Aichi Pref.
+443;静岡県西部;しずおかけんせいぶ;Western Part of Shizuoka Pref.
+450;愛知県東部;あいちけんとうぶ;Eastern Part of Aichi Pref.
+451;愛知県西部;あいちけんせいぶ;Western Part of Aichi Pref.
 460;三重県北部;みえけんほくぶ;Northern Part of Mie Pref.
 461;三重県中部;みえけんちゅうぶ;Central Part of Mie Pref.
 462;三重県南部;みえけんなんぶ;Southern Part of Mie Pref.
@@ -164,7 +164,7 @@
 483;新島・神津島近海;にいじま・こうづしまきんかい;Sea near Niijima and Kozu Island
 485;駿河湾;するがわん;Suruga Bay
 486;駿河湾南方沖;するがわんなんぽうおき;South of Suruga Bay
-487;遠州灘;えんしゅうなだ;Enshu-nada Sea
+487;遠州灘;えんしゅうなだ;Enshu Sea
 489;三河湾;みかわわん;Mikawa Bay
 490;伊勢湾;いせわん;Ise Bay
 492;若狭湾;わかさわん;Wakasa Bay
@@ -187,11 +187,11 @@
 540;奈良県;ならけん;Nara Pref.
 550;和歌山県北部;わかやまけんほくぶ;Northern Part of Wakayama Pref.
 551;和歌山県南部;わかやまけんなんぶ;Southern Part of Wakayama Pref.
-560;鳥取県東部;とっとりけんひがしぶ;Eastern Part of Tottori Pref.
+560;鳥取県東部;とっとりけんとうぶ;Eastern Part of Tottori Pref.
 562;鳥取県中部;とっとりけんちゅうぶ;Central Part of Tottori Pref.
-563;鳥取県西部;とっとりけんにしぶ;Western Part of Tottori Pref.
-570;島根県東部;しまねけんひがしぶ;Eastern Part of Shimane Pref.
-571;島根県西部;しまねけんにしぶ;Western Part of Shimane Pref.
+563;鳥取県西部;とっとりけんせいぶ;Western Part of Tottori Pref.
+570;島根県東部;しまねけんとうぶ;Eastern Part of Shimane Pref.
+571;島根県西部;しまねけんせいぶ;Western Part of Shimane Pref.
 575;島根県隠岐;しまねけんおき;Shimane Pref. Oki Islands
 580;岡山県北部;おかやまけんほくぶ;Northern Part of Okayama Pref.
 581;岡山県南部;おかやまけんなんぶ;Southern Part of Okayama Pref.
@@ -200,14 +200,14 @@
 592;広島県南西部;ひろしまけんなんせいぶ;South-Western Hiroshima Pref.
 600;徳島県北部;とくしまけんほくぶ;Northern Part of Tokushima Pref.
 601;徳島県南部;とくしまけんなんぶ;Southern Part of Tokushima Pref.
-610;香川県東部;かがわけんひがしぶ;Eastern Part of Kagawa Pref.
-611;香川県西部;かがわけんにしぶ;Western Part of Kagawa Pref.
+610;香川県東部;かがわけんとうぶ;Eastern Part of Kagawa Pref.
+611;香川県西部;かがわけんせいぶ;Western Part of Kagawa Pref.
 620;愛媛県東予;えひめけんとうよ;Ehime Pref. Toyo Region
 621;愛媛県中予;えひめけんちゅうよ;Ehime Pref. Chuyo Region
 622;愛媛県南予;えひめけんなんよ;Ehime Pref. Nanyo Region
-630;高知県東部;こうちけんひがしぶ;Eastern Part of Kochi Pref.
+630;高知県東部;こうちけんとうぶ;Eastern Part of Kochi Pref.
 631;高知県中部;こうちけんちゅうぶ;Central Part of Kochi Pref.
-632;高知県西部;こうちけんにしぶ;Western Part of Kochi Pref.
+632;高知県西部;こうちけんせいぶ;Western Part of Kochi Pref.
 673;土佐湾;とさわん;Tosa Bay
 674;紀伊水道;きいすいどう;Kii Channel
 675;大阪湾;おおさかわん;Osaka Bay
@@ -226,8 +226,8 @@
 688;淡路島付近;あわじしまふきん;Sea near Awaji Island
 689;和歌山県南方沖;わかやまけんなんぽうおき;Off Southern Coast of Wakayama Pref.
 700;山口県北部;やまぐちけんほくぶ;Northern Part of Yamaguchi Pref.
-702;山口県西部;やまぐちけんにしぶ;Western Part of Yamaguchi Pref.
-703;山口県東部;やまぐちけんひがしぶ;Eastern Part of Yamaguchi Pref.
+702;山口県西部;やまぐちけんせいぶ;Western Part of Yamaguchi Pref.
+703;山口県東部;やまぐちけんとうぶ;Eastern Part of Yamaguchi Pref.
 704;山口県中部;やまぐちけんちゅうぶ;Central Part of Yamaguchi Pref.
 710;福岡県福岡地方;ふくおかけんふくおかちほう;Fukuoka Pref. Fukuoka Region
 711;福岡県北九州地方;ふくおかけんきたきゅうしゅうちほう;Fukuoka Pref. Kitakyushu Region
@@ -248,7 +248,7 @@
 750;大分県北部;おおいたけんほくぶ;Northern Part of Oita Pref.
 751;大分県中部;おおいたけんちゅうぶ;Central Part of Oita Pref.
 752;大分県南部;おおいたけんなんぶ;Southern Part of Oita Pref.
-753;大分県西部;おおいたけんにしぶ;Western Part of Oita Pref.
+753;大分県西部;おおいたけんせいぶ;Western Part of Oita Pref.
 760;宮崎県北部平野部;みやざきけんほくぶへいやぶ;Northern Plains of Miyazaki Pref.
 761;宮崎県北部山沿い;みやざきけんほくぶやまぞい;Northern Mountainous Miyazaki Pref.
 762;宮崎県南部平野部;みやざきけんなんぶへいやぶ;Southern Plains of Miyazaki Pref.
@@ -257,8 +257,8 @@
 771;鹿児島県大隅地方;かごしまけんおおすみちほう;Kagoshima Pref. Osumi Region
 774;鹿児島県十島村;かごしまけんとしまむら;Kagoshima Pref. Toshima - Tokara
 775;鹿児島県甑島;かごしまけんこしきじま;Kagoshima Pref. Koshikijima Islands
-776;鹿児島県種子島;かごしまけんたねがしま;Kagoshima Pref. Tanegashima Islands
-777;鹿児島県屋久島;かごしまけんやくしま;Kagoshima Pref. Yakushima Islands
+776;鹿児島県種子島;かごしまけんたねがしま;Kagoshima Pref. Tanegashima Island
+777;鹿児島県屋久島;かごしまけんやくしま;Kagoshima Pref. Yakushima Island
 778;鹿児島県奄美北部;かごしまけんあまみほくぶ;Kagoshima Pref. Northern Part of Amami
 779;鹿児島県奄美南部;かごしまけんあまみなんぶ;Kagoshima Pref. Southern Part of Amami
 783;五島列島近海;ごとうれっとうきんかい;Sea near Goto Islands
@@ -283,7 +283,7 @@
 807;沖縄県西表島;おきなわけんいりおもてじま;Okinawa Pref. Iriomote Island
 820;大隅半島東方沖;おおすみはんとうとうほうおき;Off Eastern Coast of Osumi Peninsula
 821;九州地方南東沖;きゅうしゅうちほうなんとうおき;Off South-Eastern Coast of Kyushu 
-822;種子島南東沖;たねがしまなんとうおき;Off the Coast of Tanegashima
+822;種子島南東沖;たねがしまなんとうおき;Off South-Eastern Coast of Tanegashima
 823;奄美大島北東沖;あまみおおしまほくとうおき;Off North-Eastern Coast of Amami Island
 850;沖縄本島近海;おきなわほんとうきんかい;Sea near Okinawa Main Island
 851;南大東島近海;みなみだいとうじまきんかい;Sea near Southern Daito Islands
@@ -300,9 +300,9 @@
 901;東シナ海;ひがししなかい;East China Sea
 902;四国沖;しこくおき;Off the Coast of Shikoku
 903;鳥島近海;とりしまきんかい;Sea near Torishima Island
-904;鳥島東方沖;とりしまとうほうおき;Off the Coast of Torishima
+904;鳥島東方沖;とりしまとうほうおき;Off Eastern Coast of Torishima
 905;オホーツク海南部;おほーつくかいなんぶ;South Okhotsk Sea
-906;サハリン西方沖;さはりんせいほうおき;Off the Western Coast of Sakhalin
+906;サハリン西方沖;さはりんせいほうおき;Off Western Coast of Sakhalin
 907;日本海北部;にほんかいほくぶ;North Sea of Japan 
 908;日本海中部;にほんかいちゅうぶ;Central Sea of Japan
 909;日本海西部;にほんかいせいぶ;West Sea of Japan

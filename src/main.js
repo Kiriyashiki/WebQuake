@@ -39,7 +39,7 @@ import {
   getSearchPreset,
   fetchEqdbMaxDate,
 } from "./historyMode.js";
-import { initEewSettings, handlePossibleEewReport } from "./eew.js";
+import { initEewSettings, handlePossibleEewReport, clearEewMapDisplay } from "./eew.js";
 async function boot() {
   // Load area code name mappings
   let areaCodes = new Map();
@@ -476,6 +476,9 @@ async function boot() {
   const onReportSelect = (report) => {
     console.log("[eq-viewer] Selected report:", report.eventId, report.hypocenterJa);
     console.log("[eq-viewer] Map style loaded:", map.isStyleLoaded());
+
+    // Clear EEW map display (epicenter markers, wave layers, interaction timers)
+    clearEewMapDisplay();
 
     // Store current report in global for settings changes
     globalThis.__currentReport = report;

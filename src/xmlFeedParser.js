@@ -70,7 +70,7 @@ export async function fetchXmlFeedEntries() {
   const feedRes = await fetch(XML_FEED_URL, {
     method: 'GET',
     mode: 'cors',
-    cache: 'no-store',
+    cache: 'no-cache',
   });
 
   if (!feedRes.ok) {
