@@ -477,11 +477,11 @@ async function boot() {
     console.log("[eq-viewer] Selected report:", report.eventId, report.hypocenterJa);
     console.log("[eq-viewer] Map style loaded:", map.isStyleLoaded());
 
-    // Clear EEW map display (epicenter markers, wave layers, interaction timers)
-    clearEewMapDisplay();
-
     // Store current report in global for settings changes
     globalThis.__currentReport = report;
+
+    // Clear EEW map display (epicenter markers, wave layers, interaction timers)
+    clearEewMapDisplay();
 
     // Clear all initial epicenters when a report is opened
     clearAllEpicenters(map);
@@ -699,9 +699,24 @@ async function boot() {
               if (updated) {
                 // If the report is currently displayed on the map, refresh it
                 const activeItem = document.querySelector(".eq-item.active");
-                if (activeItem && activeItem.dataset.eventId === report.eventId) {
+                const isCurrentReport = globalThis.__currentReport?.eventId === report.eventId;
+                const isReportActive = activeItem && activeItem.dataset.eventId === report.eventId;
+
+                if (isCurrentReport || isReportActive) {
                   console.log("[eq-viewer] Reloading active report on map");
+                  const item = document.querySelector(`[data-event-id="${report.eventId}"]`);
+                  if (item) {
+                    document.querySelectorAll(".eq-item").forEach((el) => el.classList.remove("active"));
+                    item.classList.add("active");
+                  }
                   onReportSelect(report);
+                } else if (getAutoOpenState()) {
+                  console.log("[eq-viewer] Auto-opening updated report:", report.eventId);
+                  const item = document.querySelector(`[data-event-id="${report.eventId}"]`);
+                  if (item) {
+                    item.classList.remove("active");
+                    item.click();
+                  }
                 }
               }
             },

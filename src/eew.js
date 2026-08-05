@@ -7,6 +7,7 @@ import {
   highlightObservations,
 } from "./map.js";
 import { createRubyHtml } from "./areaCodes.js";
+import { getCityAreasState } from "./sidebarUI.js";
 
 let eewSocket = null;
 let activeEews = new Map(); // EventID -> EEW Object
@@ -155,6 +156,11 @@ export function clearEewMapDisplay() {
   }
   if (mapInstance?.getSource("eew-s-wave")) {
     mapInstance.getSource("eew-s-wave").setData({ type: "FeatureCollection", features: [] });
+  }
+
+  if (mapInstance) {
+    const isFlash = globalThis.__currentReport?.isFlashReport;
+    updateCityAreasVisibility(mapInstance, isFlash ? false : getCityAreasState());
   }
 }
 
@@ -385,6 +391,10 @@ function removeEew(eventId) {
 function clearAllEews() {
   activeEews.clear();
   stopWaveAnimation();
+  if (mapInstance) {
+    const isFlash = globalThis.__currentReport?.isFlashReport;
+    updateCityAreasVisibility(mapInstance, isFlash ? false : getCityAreasState());
+  }
   updateEewUI();
 }
 
@@ -429,6 +439,11 @@ function updateEewUI() {
     // Clear map markers and highlights
     for (const marker of eewEpicenterMarkers) marker.remove();
     eewEpicenterMarkers = [];
+
+    if (mapInstance) {
+      const isFlash = globalThis.__currentReport?.isFlashReport;
+      updateCityAreasVisibility(mapInstance, isFlash ? false : getCityAreasState());
+    }
 
     // Resume normal report
     const activeItem = document.querySelector(".eq-item.active");
