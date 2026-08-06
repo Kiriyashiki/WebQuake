@@ -30,7 +30,33 @@ let eewEpicenterMarkers = [];
 // For restoring map state
 let mapInteractionTimeout = null;
 let isUserInteractingWithMap = false;
+let isEewMapActive = false;
 let previousReport = null; // Store currently opened normal report to restore after EEWs clear
+
+/**
+ * Clears EEW visual elements from the map when a normal report is selected.
+ */
+export function clearEewMapDisplay() {
+  isEewMapActive = false;
+  isUserInteractingWithMap = false;
+
+  if (mapInteractionTimeout) {
+    clearTimeout(mapInteractionTimeout);
+    mapInteractionTimeout = null;
+  }
+
+  for (const marker of eewEpicenterMarkers) {
+    marker.remove();
+  }
+  eewEpicenterMarkers = [];
+
+  if (mapInstance) {
+    const pSrc = mapInstance.getSource("eew-p-wave");
+    const sSrc = mapInstance.getSource("eew-s-wave");
+    if (pSrc) pSrc.setData({ type: "FeatureCollection", features: [] });
+    if (sSrc) sSrc.setData({ type: "FeatureCollection", features: [] });
+  }
+}
 
 /**
  * Initializes the EEW settings and connects if enabled.
@@ -127,41 +153,15 @@ export function updateEewStatus(state) {
 }
 
 function onMapInteract() {
-  if (activeEews.size === 0) return;
-  if (document.querySelector(".eq-item.active")) return;
+  if (activeEews.size === 0 || !isEewMapActive || document.querySelector(".eq-item.active")) return;
   isUserInteractingWithMap = true;
   if (mapInteractionTimeout) clearTimeout(mapInteractionTimeout);
   mapInteractionTimeout = setTimeout(() => {
     isUserInteractingWithMap = false;
-    if (!document.querySelector(".eq-item.active") && activeEews.size > 0) {
-      updateMapForEew(); // Resume fitBounds only if EEW is active view
+    if (activeEews.size > 0 && isEewMapActive && !document.querySelector(".eq-item.active")) {
+      updateMapForEew(); // Resume fitBounds
     }
   }, 5000);
-}
-
-export function clearEewMapDisplay() {
-  if (mapInteractionTimeout) {
-    clearTimeout(mapInteractionTimeout);
-    mapInteractionTimeout = null;
-  }
-  isUserInteractingWithMap = false;
-
-  for (const marker of eewEpicenterMarkers) {
-    marker.remove();
-  }
-  eewEpicenterMarkers = [];
-
-  if (mapInstance?.getSource("eew-p-wave")) {
-    mapInstance.getSource("eew-p-wave").setData({ type: "FeatureCollection", features: [] });
-  }
-  if (mapInstance?.getSource("eew-s-wave")) {
-    mapInstance.getSource("eew-s-wave").setData({ type: "FeatureCollection", features: [] });
-  }
-
-  if (mapInstance) {
-    const isFlash = globalThis.__currentReport?.isFlashReport;
-    updateCityAreasVisibility(mapInstance, isFlash ? false : getCityAreasState());
-  }
 }
 
 async function connectEew() {
@@ -343,6 +343,7 @@ function handleEewMessage(msg) {
       setTimeout(() => {
         removeEew(eventId);
       }, 15000);
+      updateEewUI(false);
     }
   } else {
     // Forecast or Warning
@@ -367,35 +368,25 @@ function handleEewMessage(msg) {
       if (liveTab && !liveTab.classList.contains("active")) {
         liveTab.click();
       }
-      const currentActive = document.querySelector(".eq-item.active");
-      if (currentActive) {
-        previousReport = globalThis.__currentReport;
-        currentActive.classList.remove("active");
-      }
       const audio = new Audio("/sfx/eew.wav");
       audio.play().catch((err) => console.warn("[eq-viewer] Failed to play sound:", err));
     }
-  }
 
-  updateEewUI();
-  startWaveAnimation();
+    updateEewUI(isNew);
+    startWaveAnimation();
+  }
 }
 
 function removeEew(eventId) {
   if (activeEews.has(eventId)) {
     activeEews.delete(eventId);
-    updateEewUI();
+    updateEewUI(false);
   }
 }
 
 function clearAllEews() {
   activeEews.clear();
-  stopWaveAnimation();
-  if (mapInstance) {
-    const isFlash = globalThis.__currentReport?.isFlashReport;
-    updateCityAreasVisibility(mapInstance, isFlash ? false : getCityAreasState());
-  }
-  updateEewUI();
+  updateEewUI(false);
 }
 
 export function handlePossibleEewReport(report) {
@@ -420,8 +411,17 @@ export function handlePossibleEewReport(report) {
   return null; // Not an EEW related report
 }
 
-function updateEewUI() {
+function updateEewUI(isNewEew = false) {
   if (activeEews.size === 0) {
+    clearEewMapDisplay();
+    stopWaveAnimation();
+
+    // Restore city/area layer visibility to user's preference
+    // (updateMapForEew forced it off while EEWs were active)
+    if (mapInstance) {
+      updateCityAreasVisibility(mapInstance, getCityAreasState());
+    }
+
     // Remove UI
     const container = document.getElementById("eew-list-container");
     if (container) {
@@ -432,17 +432,6 @@ function updateEewUI() {
     if (carouselTimer) {
       clearInterval(carouselTimer);
       carouselTimer = null;
-    }
-
-    stopWaveAnimation();
-
-    // Clear map markers and highlights
-    for (const marker of eewEpicenterMarkers) marker.remove();
-    eewEpicenterMarkers = [];
-
-    if (mapInstance) {
-      const isFlash = globalThis.__currentReport?.isFlashReport;
-      updateCityAreasVisibility(mapInstance, isFlash ? false : getCityAreasState());
     }
 
     // Resume normal report
@@ -460,7 +449,6 @@ function updateEewUI() {
       const firstEl = document.querySelector(".eq-item");
       if (firstEl) firstEl.click();
     }
-    previousReport = null;
 
     // Force cleanup if nothing was clicked
     setTimeout(() => {
@@ -478,6 +466,16 @@ function updateEewUI() {
 
   // Filter active and sort by order received
   const eews = Array.from(activeEews.values()).sort((a, b) => a.receivedAt - b.receivedAt);
+
+  // Store previous report and switch map to EEW if a brand new EEW arrived
+  if (isNewEew) {
+    isEewMapActive = true;
+    const currentActive = document.querySelector(".eq-item.active");
+    if (currentActive?.closest("#eq-list") || currentActive?.closest("#history-list")) {
+      previousReport = globalThis.__currentReport;
+      currentActive.classList.remove("active"); // Deactivate normal report in list
+    }
+  }
 
   // Render list entry container
   const container = document.getElementById("eew-list-container");
@@ -558,17 +556,22 @@ function renderCurrentEew() {
   const listItem = container.querySelector(".eew-list-item");
   if (listItem) {
     listItem.addEventListener("click", () => {
-      // Deactivate any active normal report
-      document.querySelectorAll(".eq-item").forEach((el) => el.classList.remove("active"));
+      // If a normal report was clicked, it becomes active. Deactivate it.
+      const currentActive = document.querySelector(".eq-item.active");
+      if (currentActive) {
+        currentActive.classList.remove("active");
+      }
+      globalThis.__currentReport = null;
+      isEewMapActive = true;
+      renderEewInfoBox(msg, isCancelled, isWarning, isPlum, eews.length, carouselIndex + 1);
       updateMapForEew();
-      renderCurrentEew(); // Re-render info box
-      updateWaves(); // Instantly draw wave animations
+      updateWaves();
     });
   }
 
-  // Render info box and map only if no normal report is currently active
+  // Render info box and map only if EEW is active and no normal report is currently active
   const currentActive = document.querySelector(".eq-item.active");
-  if (!currentActive) {
+  if (isEewMapActive && !currentActive) {
     renderEewInfoBox(msg, isCancelled, isWarning, isPlum, eews.length, carouselIndex + 1);
     updateMapForEew();
   }
@@ -659,11 +662,16 @@ function stopWaveAnimation() {
 function updateWaves() {
   if (!mapInstance) return;
 
-  if (document.querySelector(".eq-item.active")) {
-    const pSrc = mapInstance.getSource("eew-p-wave");
-    const sSrc = mapInstance.getSource("eew-s-wave");
+  const pSrc = mapInstance.getSource("eew-p-wave");
+  const sSrc = mapInstance.getSource("eew-s-wave");
+
+  // If EEW is not active on the map or user is viewing a normal report, do not draw wave animations
+  if (!isEewMapActive || activeEews.size === 0 || document.querySelector(".eq-item.active")) {
     if (pSrc) pSrc.setData({ type: "FeatureCollection", features: [] });
     if (sSrc) sSrc.setData({ type: "FeatureCollection", features: [] });
+    if (activeEews.size === 0) {
+      stopWaveAnimation();
+    }
     return;
   }
 
@@ -732,8 +740,6 @@ function updateWaves() {
     }
   }
 
-  const pSrc = mapInstance.getSource("eew-p-wave");
-  const sSrc = mapInstance.getSource("eew-s-wave");
   if (pSrc) pSrc.setData({ type: "FeatureCollection", features: pFeatures });
   if (sSrc) sSrc.setData({ type: "FeatureCollection", features: sFeatures });
 
@@ -961,7 +967,9 @@ function getIntVal(v) {
 
 function updateMapForEew() {
   if (!mapInstance) return;
-  if (document.querySelector(".eq-item.active")) return;
+  if (!isEewMapActive || activeEews.size === 0 || document.querySelector(".eq-item.active")) {
+    return;
+  }
 
   for (const marker of eewEpicenterMarkers) marker.remove();
   eewEpicenterMarkers = [];

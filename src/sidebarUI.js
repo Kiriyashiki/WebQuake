@@ -233,9 +233,9 @@ export function addReportToSidebar(report, onReportSelect) {
   const eqList = document.getElementById("eq-list");
   if (!eqList) return false;
 
-  // Check if already exists - delegate to updateReportInSidebar
+  // Check if already exists
   if (_currentReports.some((r) => r.eventId === report.eventId)) {
-    return updateReportInSidebar(report, onReportSelect);
+    return false;
   }
 
   // Remove placeholder if present
@@ -285,9 +285,7 @@ export function updateReportInSidebar(updatedReport, onReportSelect) {
 
   // Find and update in current reports
   const idx = _currentReports.findIndex((r) => r.eventId === updatedReport.eventId);
-  if (idx === -1) {
-    return addReportToSidebar(updatedReport, onReportSelect);
-  }
+  if (idx === -1) return false;
 
   _currentReports[idx] = updatedReport;
   // Re-sort current reports because originTime might have changed (e.g. from flash to normal)

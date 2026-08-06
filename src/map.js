@@ -311,7 +311,6 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
   });
 
   const tooltip = document.getElementById("area-tooltip");
-  let hoveredId = null;
 
   // ── Wire hover interactions once the style is ready ──────────────────────
   map.on("load", () => {
@@ -322,6 +321,7 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
     layers.forEach(layerName => {
       const isCityLayer = layerName === "cities-fill";
       const sourceName = isCityLayer ? "cities" : "forecast_areas";
+      let hoveredId = null;  // Per-layer hover tracking
 
       // ── Mouse move on areas ──────────────────────────────────────
       map.on("mousemove", layerName, (e) => {
@@ -390,6 +390,7 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
 }
 
 let _currentCityAreasVisible = true;
+let _pendingCityAreasUpdate = null;
 
 /**
  * Updates the visibility of city areas vs forecast areas layers.
@@ -400,8 +401,30 @@ let _currentCityAreasVisible = true;
 export function updateCityAreasVisibility(map, useCityAreas) {
   _currentCityAreasVisible = useCityAreas;
 
-  if (!map.isStyleLoaded()) return;
+  if (!map.isStyleLoaded()) {
+    // Style not ready — defer the layout change until the map is idle.
+    // Cancel any earlier pending update so only the latest value applies.
+    if (_pendingCityAreasUpdate) {
+      map.off('idle', _pendingCityAreasUpdate);
+    }
+    _pendingCityAreasUpdate = () => {
+      _pendingCityAreasUpdate = null;
+      _applyCityAreasVisibility(map, _currentCityAreasVisible);
+    };
+    map.once('idle', _pendingCityAreasUpdate);
+    return;
+  }
 
+  // Cancel any pending deferred update since we're applying directly now
+  if (_pendingCityAreasUpdate) {
+    map.off('idle', _pendingCityAreasUpdate);
+    _pendingCityAreasUpdate = null;
+  }
+
+  _applyCityAreasVisibility(map, useCityAreas);
+}
+
+function _applyCityAreasVisibility(map, useCityAreas) {
   const visibility = useCityAreas ? 'visible' : 'none';
   const invVisibility = useCityAreas ? 'none' : 'visible';
 
