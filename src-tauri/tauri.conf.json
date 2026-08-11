@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "kyoquake",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "xyz.hainaut.kyoquake",
   "build": {
     "frontendDist": "../dist",
@@ -14,7 +14,7 @@
       {
         "title": "KyoQuake",
         "width": 900,
-        "height": 700,
+        "height": 650,
         "resizable": true,
         "fullscreen": false
       }
