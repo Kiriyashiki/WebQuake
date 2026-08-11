@@ -6,6 +6,8 @@ Web-based that displays information from earthquake reports published by the Jap
 
 Live at [kyoquake.hainaut.xyz](https://kyoquake.hainaut.xyz?utm_source=github)
 
+Desktop apps available in [Releases](https://github.com/Kiriyashiki/WebQuake/releases) (beta)
+
 ## Features
 
 - List of part earthquakes (up to 30 days old)

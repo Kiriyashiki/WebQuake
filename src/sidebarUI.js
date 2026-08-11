@@ -270,6 +270,8 @@ export function addReportToSidebar(report, onReportSelect) {
   _currentReports.push(report);
   _currentReports.sort((a, b) => (b.originTime || 0) - (a.originTime || 0));
 
+  _pruneReports();
+
   return true;
 }
 
@@ -327,6 +329,8 @@ export function updateReportInSidebar(updatedReport, onReportSelect) {
       eqList.appendChild(newItem);
     }
   }
+
+  _pruneReports();
 
   return true;
 }
@@ -525,5 +529,67 @@ export function hideSidebarLoadingPopup() {
   const container = document.getElementById("sidebar-loading-container");
   if (container) {
     container.classList.add("hidden");
+  }
+}
+
+/**
+ * Prunes the sidebar reports list.
+ * 1. Discards reports older than 30 days.
+ * 2. If there are more than 300 reports, discards the oldest ones if they have Intensity <= 2 or unknown.
+ */
+function _pruneReports() {
+  const eqList = document.getElementById("eq-list");
+  if (!eqList) return;
+
+  const now = Date.now();
+  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+  const MAX_REPORTS = 300;
+
+  const toKeep = [];
+  const toRemoveIds = new Set();
+  
+  let keptCount = 0;
+
+  for (const report of _currentReports) {
+    let reportTimeMs = 0;
+    if (report.originTime) {
+      reportTimeMs = report.originTime * 1000;
+    } else if (report.feedRdt) {
+      reportTimeMs = Date.parse(report.feedRdt);
+    }
+    
+    if (!reportTimeMs || isNaN(reportTimeMs)) {
+      reportTimeMs = now;
+    }
+
+    const ageMs = now - reportTimeMs;
+
+    // 1. Older than 30 days -> discard
+    if (ageMs > THIRTY_DAYS_MS) {
+      toRemoveIds.add(report.eventId);
+      continue;
+    }
+
+    // 2. Beyond 300 reports -> discard if Intensity 2 or less (or unknown)
+    if (keptCount >= MAX_REPORTS) {
+      const maxInt = report.maxIntensity || "";
+      if (!maxInt || maxInt === "1" || maxInt === "2") {
+        toRemoveIds.add(report.eventId);
+        continue;
+      }
+    }
+
+    toKeep.push(report);
+    keptCount++;
+  }
+
+  if (toRemoveIds.size > 0) {
+    _currentReports = toKeep;
+    for (const id of toRemoveIds) {
+      const item = eqList.querySelector(`[data-event-id="${id}"]`);
+      if (item) {
+        item.remove();
+      }
+    }
   }
 }
