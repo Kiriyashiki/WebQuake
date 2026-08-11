@@ -25,6 +25,16 @@ import {
 import JMAEarthquakeReport from "./jmaEarthquakeReport.js";
 import { fetchXmlFeedEntries, parseFlashIntensityXml, clearXmlFeedCache } from "./xmlFeedParser.js";
 
+const IS_TAURI = Boolean(window.__TAURI_INTERNALS__);
+let tauriFetch = null;
+if (IS_TAURI) {
+  import("@tauri-apps/plugin-http").then((mod) => {
+    tauriFetch = mod.fetch;
+  }).catch((err) => {
+    console.warn("[live-mode] Failed to load Tauri HTTP plugin.", err);
+  });
+}
+
 /**
  * Tracks the last seen normal report entries with their updated timestamps.
  * Map of eventId -> { rdt: ISO string, jsonFile: string }
@@ -91,7 +101,16 @@ export function startLivePolling(areaCodes, callbacks = {}, initialReports = [])
     }
   }
 
-  _syncTiming(areaCodes, callbacks);
+  if (IS_TAURI) {
+    _syncTiming(areaCodes, callbacks);
+  } else {
+    _currentInterval = POLL_INTERVAL;
+    if (_pollingTimeoutId === null) {
+      _pollingTimeoutId = setTimeout(() => {
+        _runPollCycle(areaCodes, callbacks);
+      }, _currentInterval);
+    }
+  }
 }
 
 /**
@@ -121,18 +140,26 @@ export function isPolling() {
 // ─── Private helpers ──────────────────────────────────────────────────────
 
 async function _syncTiming(areaCodes, callbacks) {
-  if (!_isActive) return;
+  if (!_isActive || !IS_TAURI) return;
 
   try {
-    const res = await fetch(`https://feur.hainaut.xyz/proxy-headers?url=${XML_FEED_URL}`);
-    if (!res.ok) throw new Error(`Proxy error: ${res.status}`);
-    const headers = await res.json();
+    if (!tauriFetch) {
+      const mod = await import("@tauri-apps/plugin-http");
+      tauriFetch = mod.fetch;
+    }
 
-    const cacheControl = headers['cache-control'] || '';
+    const res = await tauriFetch(XML_FEED_URL, {
+      method: 'GET',
+      headers: { 'Cache-Control': 'no-cache' }
+    });
+    
+    if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+    
+    const cacheControl = res.headers.get('cache-control') || '';
     const maxAgeMatch = cacheControl.match(/max-age=(\d+)/);
     const maxAge = maxAgeMatch ? parseInt(maxAgeMatch[1], 10) : 60;
     
-    const age = parseInt(headers['age'] || '0', 10);
+    const age = parseInt(res.headers.get('age') || '0', 10);
 
     _currentInterval = maxAge * 1000;
     const delayToNextPoll = (maxAge - age + 1) * 1000;
