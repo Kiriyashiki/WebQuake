@@ -1,10 +1,10 @@
-# WebQuake
+# KyoQuake
 
-Webapp that displays information from earthquake reports published by the Japan Meteorological Agency (JMA · 気象庁)
+Web-based that displays information from earthquake reports published by the Japan Meteorological Agency (JMA · 気象庁)
 
 ![Main app view](./extra/main.png)
 
-Live at [webquake.hainaut.xyz](https://webquake.hainaut.xyz?utm_source=github)
+Live at [kyoquake.hainaut.xyz](https://kyoquake.hainaut.xyz?utm_source=github)
 
 ## Features
 
@@ -48,3 +48,11 @@ pnpm run build
 
 - [Explaination of the intensity values - JMA](https://www.data.jma.go.jp/multi/quake/quake_advisory.html?lang=en)
 - [Past earthquakes up to 30 days - JMA](https://www.data.jma.go.jp/multi/quake/index.html?lang=en)
+
+### Name
+
+The name 'KyoQuake' is simply a combinaison of the character 京 (kyou), which is a short for 京都 (Kyoto), and 'Quake' for earthquake.<br>
+'Kyo' can as well be a reference to 強 (kyou) for 強震 (kyoushin, Strong-motion) or JMA intensities ５強 and ６強.
+The reference to Kyoto is simply a personal preference. This app still covers all of Japan :)<br>
+
+The app was formerly known as 'WebQuake', which was in my opinion too generic. For convenience, it remains as an internal ID and repository name.

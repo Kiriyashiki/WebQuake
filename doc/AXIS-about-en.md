@@ -3,14 +3,14 @@
 [ **English** | [日本語](./AXIS-about-ja.md) ]
 
 <a href="https://axis.prioris.jp/">AXIS</a> is a free service that distributes EEW (Earthquake Early Warning) reports via WebSocket.<br>
-By connecting WebQuake to AXIS, you can recieve EEWs.
+By connecting KyoQuake to AXIS, you can recieve EEWs.
 
 ## Important
  
 - AXIS is in BETA TEST. Errors and other issues may arise
 - Redistribution, reprinting, reproduction, modification, or commercial use of information received via AXIS is prohibited.
 - Please exercise caution if you are recording or streaming videos or similar content, specifically to public social media (Twitter, Youtube...)
-- The EEW implementation in WebQuake is similarly experimental. Please report any issues.
+- The EEW implementation in KyoQuake is similarly experimental. Please report any issues.
 
 ## How to use
 
@@ -42,7 +42,7 @@ Click 'Access Token' on the top bar. Under 'AXIS Access Token', you can find a l
 
 <img src="./img-token.png" width=500>
 
-Now you can just paste it under 'AXIS Token • トークン' in WebQuake settings, and enable EEWs.
+Now you can just paste it under 'AXIS Token • トークン' in KyoQuake settings, and enable EEWs.
 
 *If an error occurs, make sure you correctly copy/pasted the token.*
 
@@ -53,4 +53,4 @@ The AXIS token expires at the end of each month. Due to security limitations wit
 
 You can either get a new one from the AXIS dashboard, or use [KyoshinEewViewer](https://svs.ingen084.net/kyoshineewviewer/), which auto refreshes the token.
 
-*You can have up to two concurrent connections with AXIS, so you can use both WebQuake and another app (like KEVI) at the same time.*
+*You can have up to two concurrent connections with AXIS, so you can use both KyoQuake and another app (like KEVI) at the same time.*

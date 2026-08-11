@@ -167,6 +167,12 @@
   font-size: 12px;
   cursor: pointer;
   transition: all 0.15s ease;
+  color-scheme: dark;
+}
+
+.dropdown-group select option {
+  background: var(--bg-panel2);
+  color: var(--text);
 }
 
 .dropdown-group select:hover {

@@ -9,6 +9,18 @@ import {
 import { createRubyHtml } from "./areaCodes.js";
 import { getCityAreasState } from "./sidebarUI.js";
 
+// Detect Tauri runtime — when running as a desktop app, we can bypass CORS
+// by using Tauri's HTTP plugin which makes requests through Rust's HTTP client.
+const IS_TAURI = Boolean(window.__TAURI_INTERNALS__);
+let tauriFetch = null;
+if (IS_TAURI) {
+  import("@tauri-apps/plugin-http").then((mod) => {
+    tauriFetch = mod.fetch;
+  }).catch((err) => {
+    console.warn("[EEW] Failed to load Tauri HTTP plugin, falling back to browser fetch.", err);
+  });
+}
+
 let eewSocket = null;
 let activeEews = new Map(); // EventID -> EEW Object
 let retrySec = 100;
@@ -17,6 +29,7 @@ let reconnectTimer = null;
 let heartbeatTimer = null;
 let eewToken = "";
 let hasConnectedOnce = false;
+let tokenRefreshTimer = null;
 
 // For map and carousel
 let carouselIndex = 0;
@@ -99,6 +112,8 @@ export function initEewSettings(map, bounds, cities, areas) {
     const token = e.target.value.trim();
     localStorage.setItem("eew-token", token);
     eewToken = token;
+    // User manually changed the token — reset refresh tracking state
+    resetTokenRefreshState();
     if (toggleEl.checked) {
       disconnectEew();
       if (token) {
@@ -176,7 +191,8 @@ async function connectEew() {
     targetServer = "ws://localhost:8565";
   } else {
     try {
-      const res = await fetch("https://axis.prioris.jp/api/server/list/", {
+      const fetchFn = tauriFetch || fetch;
+      const res = await fetchFn("https://axis.prioris.jp/api/server/list/", {
         headers: {
           Authorization: `Bearer ${eewToken}`,
         },
@@ -237,6 +253,7 @@ function connectToWebSocket(serverUrl) {
         retrySec = 100;
         retryCount = 0;
         startHeartbeat();
+        scheduleTokenRefresh();
         return;
       } else if (message === "hb") {
         return;
@@ -309,12 +326,175 @@ function disconnectEew() {
     clearTimeout(heartbeatTimer);
     heartbeatTimer = null;
   }
+  if (tokenRefreshTimer) {
+    clearTimeout(tokenRefreshTimer);
+    tokenRefreshTimer = null;
+  }
   if (eewSocket) {
     eewSocket.onclose = null;
     eewSocket.close();
     eewSocket = null;
   }
   clearAllEews();
+}
+
+// ─── Token Refresh (Tauri only) ──────────────────────────────────────────────
+// AXIS tokens expire at month's end. In the last 7 days, the refresh API can
+// issue a new token valid through next month. We poll at most once per day.
+
+/**
+ * Returns the end-of-month timestamp (UTC, last millisecond) for a given date.
+ */
+function getEndOfMonthUTC(date) {
+  const y = date.getUTCFullYear();
+  const m = date.getUTCMonth();
+  // Day 0 of next month = last day of current month
+  return new Date(Date.UTC(y, m + 1, 0, 23, 59, 59, 999)).getTime();
+}
+
+/**
+ * Returns the UTC date string (YYYY-MM-DD) for a given timestamp.
+ */
+function toUTCDateString(ms) {
+  const d = new Date(ms);
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+}
+
+/**
+ * Resets token refresh tracking when the user manually changes the token.
+ */
+function resetTokenRefreshState() {
+  localStorage.removeItem("eew-token-expiry");
+  localStorage.removeItem("eew-token-last-refresh-check");
+  localStorage.removeItem("eew-token-expiry-alerted");
+}
+
+/**
+ * Called after a successful EEW connection ("hello" received).
+ * Sets the token expiry if not already set, then runs the refresh check
+ * and schedules a 24-hour recurring timer.
+ */
+function scheduleTokenRefresh() {
+  if (!IS_TAURI) return;
+
+  // If we don't have a stored expiry yet, assume end of current month
+  if (!localStorage.getItem("eew-token-expiry")) {
+    const expiry = getEndOfMonthUTC(new Date());
+    localStorage.setItem("eew-token-expiry", String(expiry));
+    console.log("[EEW] Token expiry set to end of current month:", new Date(expiry).toISOString());
+  }
+
+  // Run immediately, then every 24 hours
+  checkTokenRefresh();
+  if (tokenRefreshTimer) clearTimeout(tokenRefreshTimer);
+  tokenRefreshTimer = setTimeout(function tick() {
+    checkTokenRefresh();
+    tokenRefreshTimer = setTimeout(tick, 24 * 60 * 60 * 1000);
+  }, 24 * 60 * 60 * 1000);
+}
+
+/**
+ * Checks whether the AXIS token should be refreshed.
+ * Only calls the API if running in Tauri, we're in the last 7 days of the
+ * expiry month, and we haven't already checked today.
+ */
+async function checkTokenRefresh() {
+  if (!IS_TAURI || !tauriFetch || !eewToken) return;
+
+  const now = new Date();
+  const todayStr = toUTCDateString(now.getTime());
+
+  // Don't check more than once per day
+  const lastCheck = localStorage.getItem("eew-token-last-refresh-check");
+  if (lastCheck === todayStr) {
+    console.log("[EEW] Token refresh already checked today, skipping.");
+    return;
+  }
+
+  // Only check in the last 7 days before expiry
+  const expiry = Number(localStorage.getItem("eew-token-expiry"));
+  if (!expiry) return;
+  const msUntilExpiry = expiry - now.getTime();
+  const daysUntilExpiry = msUntilExpiry / (1000 * 60 * 60 * 24);
+  if (daysUntilExpiry > 7) {
+    console.log(`[EEW] Token expiry in ${Math.round(daysUntilExpiry)} days, no refresh needed yet.`);
+    return;
+  }
+
+  console.log(`[EEW] Token expiry in ${Math.round(daysUntilExpiry)} days, attempting refresh...`);
+
+  try {
+    const res = await tauriFetch("https://axis.prioris.jp/api/token/refresh/", {
+      headers: {
+        Authorization: `Bearer ${eewToken}`,
+      },
+    });
+
+    // Record that we checked today regardless of outcome
+    localStorage.setItem("eew-token-last-refresh-check", todayStr);
+
+    if (res.status === 402) {
+      // Contract expired
+      console.warn("[EEW] Token refresh failed: contract has expired (402).");
+      alertTokenExpiry();
+      return;
+    }
+
+    if (!res.ok) {
+      console.warn(`[EEW] Token refresh failed with HTTP ${res.status}.`);
+      alertTokenExpiry();
+      return;
+    }
+
+    const data = await res.json();
+
+    if (data.status === "generate a new token" && data.token) {
+      // Success — new token issued
+      console.log("[EEW] Token refreshed successfully.");
+      eewToken = data.token;
+      localStorage.setItem("eew-token", data.token);
+      localStorage.removeItem("eew-token-expiry-alerted");
+
+      // New token is valid until end of next month
+      const nextMonthDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 15));
+      const newExpiry = getEndOfMonthUTC(nextMonthDate);
+      localStorage.setItem("eew-token-expiry", String(newExpiry));
+      console.log("[EEW] New token expiry:", new Date(newExpiry).toISOString());
+
+      // Update the token input field if it exists
+      const tokenEl = document.getElementById("eew-token-input");
+      if (tokenEl) tokenEl.value = data.token;
+
+      // Reconnect with the new token
+      disconnectEew();
+      hasConnectedOnce = false;
+      connectEew();
+    } else if (data.status === "not due for refresh yet") {
+      // Not time yet — will retry tomorrow (lastCheck date is already saved)
+      console.log("[EEW] Token refresh not due yet, will retry tomorrow.");
+    } else {
+      console.warn("[EEW] Unexpected token refresh response:", data);
+      alertTokenExpiry();
+    }
+  } catch (err) {
+    console.warn("[EEW] Token refresh request failed:", err);
+    // Don't save lastCheck on network errors so we can retry sooner
+  }
+}
+
+/**
+ * Alerts the user once that their token may expire soon.
+ * The flag resets when the token is manually changed or successfully refreshed.
+ */
+function alertTokenExpiry() {
+  if (localStorage.getItem("eew-token-expiry-alerted") === "true") return;
+  localStorage.setItem("eew-token-expiry-alerted", "true");
+  alert(
+    "EEW token could not be refreshed and will expire at the end of this month. " +
+    "Please check your AXIS subscription or update your token in Settings.\n" +
+    "EEWトークンの更新に失敗しました。今月末にトークンが無効になります。" +
+    "AXISのサブスクリプションを確認するか、「設定」でトークンを更新してください。",
+  );
 }
 
 function startHeartbeat() {

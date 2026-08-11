@@ -40,6 +40,25 @@ import {
   fetchEqdbMaxDate,
 } from "./historyMode.js";
 import { initEewSettings, handlePossibleEewReport, clearEewMapDisplay } from "./eew.js";
+
+// In Tauri, external links don't open in the browser by default.
+// Intercept them and use the opener plugin to launch in the system browser.
+if (window.__TAURI_INTERNALS__) {
+  import("@tauri-apps/plugin-opener").then((opener) => {
+    document.addEventListener("click", (e) => {
+      const anchor = e.target.closest("a[href]");
+      if (!anchor) return;
+      const href = anchor.getAttribute("href");
+      if (href && (href.startsWith("http://") || href.startsWith("https://"))) {
+        e.preventDefault();
+        opener.openUrl(href);
+      }
+    });
+  }).catch((err) => {
+    console.warn("[Tauri] Failed to load opener plugin:", err);
+  });
+}
+
 async function boot() {
   // Load area code name mappings
   let areaCodes = new Map();
