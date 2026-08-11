@@ -7,7 +7,7 @@
  * XML feed (eqvol.xml) and fetches individual XML reports (VXSE51/52/53/61).
  */
 
-import { FEED_DATA_BASE_URL, POLL_INTERVAL } from "./constants.js";
+import { FEED_DATA_BASE_URL, POLL_INTERVAL, XML_FEED_URL } from "./constants.js";
 import {
   SPECIAL_REPORT_TITLE,
   parseSpecialReportOverrides,
@@ -48,8 +48,10 @@ let _trackedFlashEntries = new Map();
  */
 let _trackedSpecialEntries = new Map();
 
-let _pollingIntervalId = null;
 let _pollingTimeoutId = null;
+let _syncTimeoutId = null;
+let _currentInterval = POLL_INTERVAL;
+let _isActive = false;
 
 /**
  * Starts live mode polling.
@@ -62,12 +64,13 @@ let _pollingTimeoutId = null;
  * @param {Array} initialReports - Initial reports already loaded (for tracking purposes)
  */
 export function startLivePolling(areaCodes, callbacks = {}, initialReports = []) {
-  if (_pollingIntervalId !== null) {
+  if (_isActive) {
     console.warn("[live-mode] Polling already active");
     return;
   }
 
   console.log("[live-mode] Starting polling...");
+  _isActive = true;
 
   // Initialize tracked entries with initial reports
   for (const report of initialReports) {
@@ -88,27 +91,21 @@ export function startLivePolling(areaCodes, callbacks = {}, initialReports = [])
     }
   }
 
-  // Delay first poll by POLL_INTERVAL, then set up interval polling
-  _pollingTimeoutId = setTimeout(() => {
-    _pollingTimeoutId = null;
-    _pollLatestFeed(areaCodes, callbacks);
-    _pollingIntervalId = setInterval(() => {
-      _pollLatestFeed(areaCodes, callbacks);
-    }, POLL_INTERVAL);
-  }, POLL_INTERVAL);
+  _syncTiming(areaCodes, callbacks);
 }
 
 /**
  * Stops live mode polling.
  */
 export function stopLivePolling() {
+  _isActive = false;
   if (_pollingTimeoutId !== null) {
     clearTimeout(_pollingTimeoutId);
     _pollingTimeoutId = null;
   }
-  if (_pollingIntervalId !== null) {
-    clearInterval(_pollingIntervalId);
-    _pollingIntervalId = null;
+  if (_syncTimeoutId !== null) {
+    clearTimeout(_syncTimeoutId);
+    _syncTimeoutId = null;
   }
   console.log("[live-mode] Polling stopped");
 }
@@ -118,10 +115,68 @@ export function stopLivePolling() {
  * @returns {boolean}
  */
 export function isPolling() {
-  return _pollingTimeoutId !== null || _pollingIntervalId !== null;
+  return _isActive;
 }
 
 // ─── Private helpers ──────────────────────────────────────────────────────
+
+async function _syncTiming(areaCodes, callbacks) {
+  if (!_isActive) return;
+
+  try {
+    const res = await fetch(`https://feur.hainaut.xyz/proxy-headers?url=${XML_FEED_URL}`);
+    if (!res.ok) throw new Error(`Proxy error: ${res.status}`);
+    const headers = await res.json();
+
+    const cacheControl = headers['cache-control'] || '';
+    const maxAgeMatch = cacheControl.match(/max-age=(\d+)/);
+    const maxAge = maxAgeMatch ? parseInt(maxAgeMatch[1], 10) : 60;
+    
+    const age = parseInt(headers['age'] || '0', 10);
+
+    _currentInterval = maxAge * 1000;
+    const delayToNextPoll = (maxAge - age + 1) * 1000;
+
+    console.log(`[live-mode] Header sync success: max-age=${maxAge}, age=${age}. Next poll in ${delayToNextPoll}ms.`);
+
+    if (_pollingTimeoutId !== null) {
+      clearTimeout(_pollingTimeoutId);
+    }
+    _pollingTimeoutId = setTimeout(() => {
+      _runPollCycle(areaCodes, callbacks);
+    }, delayToNextPoll);
+
+  } catch (err) {
+    console.warn("[live-mode] Header sync failed, defaulting to fixed interval", err);
+    _currentInterval = POLL_INTERVAL;
+
+    if (_pollingTimeoutId === null) {
+      _pollingTimeoutId = setTimeout(() => {
+        _runPollCycle(areaCodes, callbacks);
+      }, _currentInterval);
+    }
+  }
+
+  if (_syncTimeoutId !== null) {
+    clearTimeout(_syncTimeoutId);
+  }
+  _syncTimeoutId = setTimeout(() => {
+    _syncTiming(areaCodes, callbacks);
+  }, 60 * 60 * 1000);
+}
+
+function _runPollCycle(areaCodes, callbacks) {
+  _pollingTimeoutId = null;
+  if (!_isActive) return;
+
+  _pollLatestFeed(areaCodes, callbacks).finally(() => {
+    if (_isActive && _pollingTimeoutId === null) {
+      _pollingTimeoutId = setTimeout(() => {
+        _runPollCycle(areaCodes, callbacks);
+      }, _currentInterval);
+    }
+  });
+}
 
 /**
  * Fetches the latest XML feed and detects new/updated entries.
