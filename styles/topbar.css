@@ -9,9 +9,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  background: rgba(7, 11, 15, 0.92);
+  background: rgb(9, 13, 17);
   border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(12px);
 }
 
 #topbar-left {

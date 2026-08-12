@@ -15,11 +15,10 @@
 /* ── Map Legend ──────────────────────────────────────────────────── */
 
 #map-legend {
-  background: rgba(11, 16, 24, 0.85);
+  background: rgb(13, 18, 26);
   border: 1px solid var(--border-hi);
   border-radius: 4px;
   padding: 10px 12px;
-  backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
   gap: 8px;

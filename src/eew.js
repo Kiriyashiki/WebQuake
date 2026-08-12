@@ -1226,6 +1226,7 @@ function updateMapForEew() {
       false,
       "1",
       hasValidEpicenter ? { longitude: minLng, latitude: minLat } : null,
+      6.5
     );
   }
 }

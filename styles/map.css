@@ -192,11 +192,9 @@
   top: 12px;
   left: 12px;
   z-index: 30;
-  background: rgba(11, 16, 24, 0.95);
+  background: rgb(12, 17, 25);
   border: 1px solid var(--border-hi);
   border-radius: 6px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 24px rgba(0,0,0,.6);
   max-width: 320px;
   transition: opacity 0.2s ease;
 }

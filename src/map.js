@@ -306,6 +306,7 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
     zoom: 4.4,
     minZoom: 2,
     maxZoom: 10,
+    fadeDuration: 0,
     attributionControl: false,
     pitchWithRotate: false,
   });
@@ -494,8 +495,9 @@ export function displayEpicenter(map, coordinates) {
  * @param {boolean} useCityAreas
  * @param {string} maxInt
  * @param {{latitude: number, longitude: number}} [coordinates]
+ * @param {number} zoom
  */
-export function fitBoundsToObservations(map, observations, featureBounds, useCityAreas, maxInt, coordinates) {
+export function fitBoundsToObservations(map, observations, featureBounds, useCityAreas, maxInt, coordinates, zoom = 7.5) {
   if (!observations || !featureBounds) return false;
 
   if (document.getElementById('map-container').offsetWidth <= 250) {
@@ -548,7 +550,7 @@ export function fitBoundsToObservations(map, observations, featureBounds, useCit
     map.fitBounds([[minLng, minLat], [maxLng, maxLat]], {
       padding: {top: 30, bottom:30, left: 150, right: 30},
       essential: true,
-      maxZoom: 7.5
+      maxZoom: zoom
     });
   }
   

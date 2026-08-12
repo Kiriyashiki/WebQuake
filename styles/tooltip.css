@@ -29,14 +29,12 @@
 
 #home-intensity-display {
   padding: 10px 14px 11px;
-  background: rgba(11, 16, 24, 0.95);
+  background: rgb(12, 17, 25);
   border: 1px solid var(--border-hi);
   border-top: 2px solid var(--accent2);
   border-radius: 4px;
-  backdrop-filter: blur(8px);
   min-width: 160px;
   width: max-content;
-  box-shadow: 0 4px 24px rgba(0,0,0,.6);
   transition: opacity 0.1s;
   display: flex;
   align-items: center;
