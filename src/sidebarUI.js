@@ -121,6 +121,18 @@ export function createReportItem(report, onReportSelect) {
   return item;
 }
 
+export function syncLiveModeToggleVisuals() {
+  const toggleEl = document.getElementById("live-mode-toggle");
+  if (!toggleEl) return;
+
+  let savedState = localStorage.getItem("live-mode-enabled");
+  if (savedState == null) {
+    savedState = "true";
+    localStorage.setItem("live-mode-enabled", "true");
+  }
+  toggleEl.checked = savedState === "true";
+}
+
 /**
  * Initializes the live mode toggle and sets up its event listener.
  * @param {Function} onToggle - Callback(enabled) when toggle state changes
@@ -129,14 +141,8 @@ export function initLiveModeToggle(onToggle) {
   const toggleEl = document.getElementById("live-mode-toggle");
   if (!toggleEl) return;
 
-  // Load saved state from localStorage
-  let savedState = localStorage.getItem("live-mode-enabled");
-  if (savedState == null) {
-    savedState = true;
-    localStorage.setItem("live-mode-enabled", "true");
-  }
-  savedState = savedState === "true";
-  toggleEl.checked = savedState;
+  // State should already be synced by syncLiveModeToggleVisuals
+  const savedState = toggleEl.checked;
 
   // Set initial callback
   if (onToggle) onToggle(savedState);

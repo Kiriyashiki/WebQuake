@@ -30,6 +30,7 @@ import {
   getCityAreasState,
   initHomeIntensityToggle,
   getHomeIntensityState,
+  syncLiveModeToggleVisuals,
 } from "./sidebarUI.js";
 import { renderObservationsList } from "./observationsList.js";
 import { startLivePolling, stopLivePolling } from "./liveMode.js";
@@ -60,6 +61,8 @@ if (window.__TAURI_INTERNALS__) {
 }
 
 async function boot() {
+  syncLiveModeToggleVisuals();
+
   // Load area code name mappings
   let areaCodes = new Map();
   try {
@@ -638,11 +641,18 @@ async function boot() {
   updateSidebarLoadingPopup(0, "...");
 
   try {
+    let initialAutoOpenTriggered = false;
     const reports = await fetchEarthquakeReports(
       areaCodes,
       (report) => {
         // Add each report to sidebar as it's fetched (maintains newest-first order)
         addReportToSidebar(report, onReportSelect);
+
+        if (!initialAutoOpenTriggered && getAutoOpenState()) {
+          initialAutoOpenTriggered = true;
+          const item = document.querySelector(`[data-event-id="${report.eventId}"]`);
+          if (item) item.click();
+        }
       },
       (processed, total) => {
         updateSidebarLoadingPopup(processed, total);
