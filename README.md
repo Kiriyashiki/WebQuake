@@ -1,6 +1,6 @@
 # KyoQuake
 
-Web-based that displays information from earthquake reports published by the Japan Meteorological Agency (JMA · 気象庁)
+Web-based app that displays information from earthquake reports published by the Japan Meteorological Agency (JMA · 気象庁)
 
 ![Main app view](./extra/main.png)
 
