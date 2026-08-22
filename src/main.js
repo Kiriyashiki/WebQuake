@@ -861,7 +861,8 @@ function _displayMapInfoBox(report) {
     const coordsLabel = coordinates.previousElementSibling;
     if (coordsLabel) coordsLabel.textContent = "Coordinates";
     const { latitude, longitude } = report.coordinates;
-    coordinates.textContent = `${latitude.toFixed(1)} ; ${longitude.toFixed(1)}`;
+    const precision = (report.isHistory || report.hasSpecialReport) ? 3 : 1;
+    coordinates.textContent = `${latitude.toFixed(precision)} ; ${longitude.toFixed(precision)}`;
   } else if (coordinates) {
     const coordsLabel = coordinates.previousElementSibling;
     if (coordsLabel) coordsLabel.textContent = "Coordinates";

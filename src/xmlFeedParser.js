@@ -259,11 +259,7 @@ function _normalizeVXSE52Entry(baseEntry, doc) {
   ];
   const mag = magElements.length > 0 ? magElements[0].textContent.trim() : null;
 
-  const coordElements = [
-    ...doc.getElementsByTagName('Coordinate'),
-    ...doc.getElementsByTagName('jmx_eb:Coordinate'),
-  ];
-  const cod = coordElements.length > 0 ? coordElements[0].textContent.trim() : null;
+  const cod = _xmlCoordinate(doc);
 
   const hypocenter = doc.getElementsByTagName('Hypocenter')[0];
   let acd = null;
@@ -308,11 +304,7 @@ function _normalizeVXSE61Entry(baseEntry, doc) {
   ];
   const mag = magElements.length > 0 ? magElements[0].textContent.trim() : null;
 
-  const coordElements = [
-    ...doc.getElementsByTagName('Coordinate'),
-    ...doc.getElementsByTagName('jmx_eb:Coordinate'),
-  ];
-  const cod = coordElements.length > 0 ? coordElements[0].textContent.trim() : null;
+  const cod = _xmlCoordinate(doc);
 
   return {
     ...baseEntry,
@@ -408,4 +400,30 @@ function _directChildText(parent, tagName) {
     if (child.localName === tagName) return child.textContent.trim();
   }
   return null;
+}
+
+/**
+ * Extracts coordinate string from an XML document.
+ * Prefers the detailed degree-minute coordinate (type="震源位置（度分）") if present,
+ * falling back to the first available Coordinate element.
+ *
+ * @param {Document} doc
+ * @returns {string|null} Coordinate string or null
+ */
+function _xmlCoordinate(doc) {
+  const coordElements = [
+    ...doc.getElementsByTagName('Coordinate'),
+    ...doc.getElementsByTagName('jmx_eb:Coordinate'),
+  ];
+  if (coordElements.length === 0) return null;
+
+  const degMinEl = coordElements.find(
+    (el) => el.getAttribute('type') === '震源位置（度分）' || el.getAttribute('type')?.includes('度分')
+  );
+  if (degMinEl) {
+    const text = degMinEl.textContent.trim();
+    if (text) return text;
+  }
+
+  return coordElements[0].textContent.trim() || null;
 }
