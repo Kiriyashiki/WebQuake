@@ -22,15 +22,15 @@ export const INTENSITY_CONFIG = {
 
 // ─── Map Colour Palette ──────────────────────────────────────────────────────
 export const MAP_COLORS = {
-  ocean: "#060a0e",
-  lake: "#080c11",
-  land: "#0d1520",
-  japan: "#111d2c",
-  japanLine: "#1e2e44",
-  prefectureLine: "#333e4e",
-  forecastLine: "#24334a",
-  cityLine: "#192434",
-  worldLine: "#141e2c",
+  ocean: "#080c11",
+  lake: "#0d131b",
+  land: "#111d2c",
+  japan: "#1e2e44",
+  japanLine: "#333e4e",
+  prefectureLine: "#3e4e65",
+  forecastLine: "#2f415e",
+  cityLine: "#2a3b54",
+  worldLine: "#202e42",
   accent2: "#f0a500",
   hoverFill: "rgba(240, 165, 0, 0.18)",
 };
@@ -60,7 +60,7 @@ function hexToRgba(hex, opacity) {
  * @returns {Array} MapLibre case expression
  */
 export function buildIntensityColorExpression(isDimmed = false, fallback = "transparent") {
-  const opacity = isDimmed ? 0.4 : 1;
+  const opacity = isDimmed ? 0.7 : 1;
   const colors = [];
 
   Object.entries(INTENSITY_CONFIG).forEach(([intensity, config]) => {

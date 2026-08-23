@@ -4,16 +4,19 @@
   display: flex;
   flex-direction: column;
   border-top: 1px solid var(--border);
+  min-height: 0;
+  overflow: hidden;
 }
 
 .observations-list-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 8px;
+  padding: 6px 8px;
   cursor: pointer;
   user-select: none;
   transition: background 0.15s;
+  flex-shrink: 0;
 }
 
 .observations-list-header:hover {
@@ -48,12 +51,12 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 400px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border-hi) transparent;
   font-size: 12px;
   transition: max-height 0.2s ease, opacity 0.2s ease, padding 0.2s ease;
+  min-height: 0;
 }
 
 .observations-list-container.collapsed {
@@ -83,7 +86,7 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  padding: 6px 8px;
+  padding: 4px 8px;
   border-radius: 3px 3px 0 0;
   transition: background 0.15s;
   user-select: none;
@@ -115,7 +118,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding-left: 12px;
+  padding-top: 4px;
+  padding-left: 8px;
   transition: max-height 0.2s ease, opacity 0.2s ease;
 }
 
@@ -129,14 +133,13 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: 4px 0;
 }
 
 .observation-area {
   display: flex;
   flex-direction: column;
   gap: 0;
-  margin-left: 12px;
+  margin-left: 8px;
   padding: 2px 0;
 }
 
@@ -144,7 +147,7 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  margin-left: 12px;
+  margin-left: 8px;
   padding: 1px 0;
 }
 
@@ -174,7 +177,7 @@
 
 .city-row .observation-ja {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .observation-dot {
@@ -183,7 +186,7 @@
 }
 
 .observation-en {
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -199,7 +202,7 @@
 
 .city-row .observation-en {
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .observation-icon {
