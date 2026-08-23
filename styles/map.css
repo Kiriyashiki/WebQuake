@@ -320,6 +320,7 @@
   border: 1px solid rgba(245, 158, 11, 0.5);
   border-radius: 3px;
   animation: flash-badge-pulse 2s ease-in-out infinite;
+  will-change: opacity;
 }
 
 .info-box-flash-badge.hidden {

@@ -338,10 +338,11 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
         if (newId === hoveredId) {
           // Just update tooltip position with current intensity
           const state = map.getFeatureState({ source: sourceName, id: newId });
+          const { left, top } = container.getBoundingClientRect();
           showTooltip(
             tooltip,
-            e.originalEvent.clientX - container.getBoundingClientRect().left,
-            e.originalEvent.clientY - container.getBoundingClientRect().top,
+            e.originalEvent.clientX - left,
+            e.originalEvent.clientY - top,
             newId,
             isCityLayer ? cityNames?.get(String(newId)) : areaCodes.get(Number(newId)),
             state?.intensity,
@@ -360,10 +361,11 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
         map.setFeatureState({ source: sourceName, id: hoveredId }, { hover: true });
 
         const state = map.getFeatureState({ source: sourceName, id: hoveredId });
+        const { left, top } = container.getBoundingClientRect();
         showTooltip(
           tooltip,
-          e.originalEvent.clientX - container.getBoundingClientRect().left,
-          e.originalEvent.clientY - container.getBoundingClientRect().top,
+          e.originalEvent.clientX - left,
+          e.originalEvent.clientY - top,
           hoveredId,
           isCityLayer ? cityNames?.get(String(hoveredId)) : areaCodes.get(Number(hoveredId)),
           state?.intensity,
@@ -500,7 +502,7 @@ export function displayEpicenter(map, coordinates) {
 export function fitBoundsToObservations(map, observations, featureBounds, useCityAreas, maxInt, coordinates, zoom = 7.5) {
   if (!observations || !featureBounds) return false;
 
-  if (document.getElementById('map-container').offsetWidth <= 250) {
+  if (document.getElementById('map-container').offsetWidth <= 400) {
     return false;
   }
 
@@ -548,7 +550,7 @@ export function fitBoundsToObservations(map, observations, featureBounds, useCit
 
   if (hasBounds) {
     map.fitBounds([[minLng, minLat], [maxLng, maxLat]], {
-      padding: {top: 30, bottom:30, left: 150, right: 30},
+      padding: {top: 30, bottom:30, left: 300, right: 30},
       essential: true,
       maxZoom: zoom
     });

@@ -145,6 +145,25 @@ export function clearXmlFeedCache() {
   _entryCache.clear();
 }
 
+/**
+ * Removes cached entries for the given event IDs.
+ * Called when the sidebar prunes old reports to free stale XML documents.
+ * @param {Set<string>} eventIdsToRemove
+ */
+export function pruneXmlFeedCache(eventIdsToRemove) {
+  for (const [url, cached] of _entryCache) {
+    if (cached.entry?.eid && eventIdsToRemove.has(cached.entry.eid)) {
+      _entryCache.delete(url);
+    }
+  }
+}
+
+document.addEventListener('reports-pruned', (e) => {
+  if (e.detail?.removedIds) {
+    pruneXmlFeedCache(e.detail.removedIds);
+  }
+});
+
 // ─── Individual XML Report Fetching & Normalization ─────────────────────────
 
 /**

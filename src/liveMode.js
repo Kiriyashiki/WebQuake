@@ -137,6 +137,25 @@ export function isPolling() {
   return _isActive;
 }
 
+/**
+ * Removes tracked entries for the given event IDs.
+ * Called when the sidebar prunes old reports to keep tracking Maps in sync.
+ * @param {Set<string>} eventIdsToRemove
+ */
+export function pruneTrackedEntries(eventIdsToRemove) {
+  for (const id of eventIdsToRemove) {
+    _trackedEntries.delete(id);
+    _trackedFlashEntries.delete(id);
+    _trackedSpecialEntries.delete(id);
+  }
+}
+
+document.addEventListener('reports-pruned', (e) => {
+  if (e.detail?.removedIds) {
+    pruneTrackedEntries(e.detail.removedIds);
+  }
+});
+
 // ─── Private helpers ──────────────────────────────────────────────────────
 
 async function _syncTiming(areaCodes, callbacks) {

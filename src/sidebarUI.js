@@ -3,7 +3,7 @@
  * Shows reports with intensity images, colored borders, magnitude, and location.
  */
 
-import { formatTimeJST, INTENSITY_CONFIG } from "./constants.js";
+import { formatTimeJST, INTENSITY_CONFIG, PRUNE_MAX_AGE_MS, PRUNE_MAX_REPORTS } from "./constants.js";
 
 /**
  * Current list of reports in the sidebar (for live mode updates).
@@ -548,9 +548,6 @@ function _pruneReports() {
   if (!eqList) return;
 
   const now = Date.now();
-  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-  const MAX_REPORTS = 300;
-
   const toKeep = [];
   const toRemoveIds = new Set();
   
@@ -564,20 +561,20 @@ function _pruneReports() {
       reportTimeMs = Date.parse(report.feedRdt);
     }
     
-    if (!reportTimeMs || isNaN(reportTimeMs)) {
+    if (!reportTimeMs || Number.isNaN(reportTimeMs)) {
       reportTimeMs = now;
     }
 
     const ageMs = now - reportTimeMs;
 
-    // 1. Older than 30 days -> discard
-    if (ageMs > THIRTY_DAYS_MS) {
+    // 1. Older than max age -> discard
+    if (ageMs > PRUNE_MAX_AGE_MS) {
       toRemoveIds.add(report.eventId);
       continue;
     }
 
-    // 2. Beyond 300 reports -> discard if Intensity 2 or less (or unknown)
-    if (keptCount >= MAX_REPORTS) {
+    // 2. Beyond max reports limit -> discard if Intensity 2 or less (or unknown)
+    if (keptCount >= PRUNE_MAX_REPORTS) {
       const maxInt = report.maxIntensity || "";
       if (!maxInt || maxInt === "1" || maxInt === "2") {
         toRemoveIds.add(report.eventId);
@@ -597,5 +594,9 @@ function _pruneReports() {
         item.remove();
       }
     }
+    
+    document.dispatchEvent(new CustomEvent('reports-pruned', {
+      detail: { removedIds: toRemoveIds }
+    }));
   }
 }

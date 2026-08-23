@@ -5,7 +5,7 @@
  * that provide updated magnitude/depth for major earthquakes.
  */
 
-import { FEED_URL_LATEST, FEED_DATA_BASE_URL } from './constants.js';
+import { FEED_URL_LATEST, FEED_DATA_BASE_URL, PRUNE_MAX_AGE_MS, PRUNE_MAX_REPORTS } from './constants.js';
 import {
   fetchFeedEntries,
   parseReport,
@@ -133,9 +133,33 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
     const feedEntries = await fetchFeedEntries(FEED_URL_LATEST);
 
     // Filter for target reports (震源・震度情報 only)
-    const targetEntries = feedEntries.filter(
+    const rawTargetEntries = feedEntries.filter(
       entry => entry.ttl === '震源・震度情報' && entry.json
     );
+
+    // Sort newest first by rdt
+    rawTargetEntries.sort((a, b) => new Date(b.rdt).getTime() - new Date(a.rdt).getTime());
+
+    const targetEntries = [];
+    let keptCount = 0;
+    const now = Date.now();
+
+    for (const entry of rawTargetEntries) {
+      const entryTimeMs = new Date(entry.rdt).getTime();
+      const ageMs = now - entryTimeMs;
+
+      if (ageMs > PRUNE_MAX_AGE_MS) continue;
+
+      if (keptCount >= PRUNE_MAX_REPORTS) {
+        const maxInt = entry.maxi || "";
+        if (!maxInt || maxInt === "1" || maxInt === "2") {
+          continue;
+        }
+      }
+
+      targetEntries.push(entry);
+      keptCount++;
+    }
 
     // Collect VXSE61 special report entries, grouped by event ID.
     // If multiple special reports exist for the same event, keep the newest (by rdt).

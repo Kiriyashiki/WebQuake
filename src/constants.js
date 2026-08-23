@@ -38,6 +38,10 @@ export const MAP_COLORS = {
 // Live Mode interval
 export const POLL_INTERVAL = 10000;
 
+// ─── Sidebar Pruning Thresholds ──────────────────────────────────────────────
+export const PRUNE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+export const PRUNE_MAX_REPORTS = 300;
+
 /**
  * Helper to convert a hex color to rgba with specified opacity.
  * @param {string} hex - Hex color (e.g., "#FF0000")

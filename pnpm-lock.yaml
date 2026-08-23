@@ -14,9 +14,6 @@ importers:
       '@tauri-apps/plugin-opener':
         specifier: ^2.5.4
         version: 2.5.4
-      '@turf/turf':
-        specifier: ^7.3.5
-        version: 7.3.5
       maplibre-gl:
         specifier: ^5.24.0
         version: 5.24.0
@@ -24,6 +21,9 @@ importers:
       '@tauri-apps/cli':
         specifier: ^2.11.4
         version: 2.11.4
+      '@turf/turf':
+        specifier: ^7.3.5
+        version: 7.3.5
       vite:
         specifier: ^5.4.0
         version: 5.4.21
