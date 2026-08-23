@@ -1,5 +1,6 @@
 import maplibregl from "maplibre-gl";
 import { formatTimeJST, formatTimeJSTWithSeconds, INTENSITY_CONFIG, USE_TEST_SERVER } from "./constants.js";
+import { playAudio } from "./audio.js";
 import {
   updateCityAreasVisibility,
   clearEpicenter,
@@ -548,8 +549,7 @@ function handleEewMessage(msg) {
       if (liveTab && !liveTab.classList.contains("active")) {
         liveTab.click();
       }
-      const audio = new Audio("/sfx/eew.wav");
-      audio.play().catch((err) => console.warn("[eq-viewer] Failed to play sound:", err));
+      playAudio("/sfx/eew.wav");
     }
 
     updateEewUI(isNew);
@@ -841,6 +841,7 @@ function stopWaveAnimation() {
 
 function updateWaves() {
   if (!mapInstance) return;
+  if (document.hidden) return;
 
   const pSrc = mapInstance.getSource("eew-p-wave");
   const sSrc = mapInstance.getSource("eew-s-wave");

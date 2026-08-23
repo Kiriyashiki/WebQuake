@@ -1,5 +1,6 @@
 import "../styles/index.css";
 import { formatTimeJST, INTENSITY_CONFIG } from "./constants.js";
+import { playAudio } from "./audio.js";
 import { createRubyHtml, loadAreaCodes, loadPrefectureCodes, loadCityNames } from "./areaCodes.js";
 import {
   initMap,
@@ -682,8 +683,7 @@ async function boot() {
               console.log("[eq-viewer] New entry:", report.eventId);
 
               // Play notification sound
-              const audio = new Audio("/sfx/ping.wav");
-              audio.play().catch((err) => console.warn("[eq-viewer] Failed to play sound:", err));
+              playAudio("/sfx/ping.wav");
 
               const added = addReportToSidebar(report, onReportSelect);
               if (added) {
