@@ -223,13 +223,13 @@ function buildStyle(useCityAreas = true) {
             "case",
             ["boolean", ["feature-state", "highlighted"], false],
             buildIntensityColorExpression(false, C.cityLine),
-            ["case", ["boolean", ["feature-state", "hover"], false], C.japanLine, "#172538"],
+            ["case", ["boolean", ["feature-state", "hover"], false], C.japanLine, C.forecastLine],
           ],
           "line-width": [
             "case",
             ["boolean", ["feature-state", "highlighted"], false],
             0.4,
-            ["case", ["boolean", ["feature-state", "hover"], false], 1.4, 0],
+            ["case", ["boolean", ["feature-state", "hover"], false], 1.4, 0.5],
           ],
         },
       },
@@ -341,14 +341,19 @@ function removeEpicenterMarker(map) {
 }
 
 // ─── Main map factory ────────────────────────────────────────────────────────
+let _stationNamesCsv = null;
+
 /**
  * @param {HTMLElement} container  - The #map element.
  * @param {Map<number, {ja:string, en:string}>} areaCodes
  * @param {Map<string, {ja:string, en:string}>} cityNames
+ * @param {Object} stationNames - Contains byCode and byName maps for station resolution
  * @param {Function} getUseCityAreas - Returns current state of city areas toggle
  * @returns {maplibregl.Map}
  */
-export function initMap(container, areaCodes, cityNames, getUseCityAreas = () => true) {
+export function initMap(container, areaCodes, cityNames, stationNames, getUseCityAreas = () => true) {
+  _stationNamesCsv = stationNames;
+  
   const map = new maplibregl.Map({
     container,
     style: buildStyle(getUseCityAreas()),
@@ -457,13 +462,12 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
           const state = map.getFeatureState({ source: "shakemap", id: newId });
           const { left, top } = container.getBoundingClientRect();
           const stationName = feature.properties?.name || "";
-          const info = _shakemapStationInfo.get(stationName) || { ja: stationName, en: "" };
           showTooltip(
             tooltip,
             e.originalEvent.clientX - left,
             e.originalEvent.clientY - top,
             newId,
-            info,
+            _getShakemapTooltipInfo(stationName),
             state?.intensity,
             "station"
           );
@@ -480,13 +484,12 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
         const state = map.getFeatureState({ source: "shakemap", id: hoveredShakemapId });
         const { left, top } = container.getBoundingClientRect();
         const stationName = feature.properties?.name || "";
-        const info = _shakemapStationInfo.get(stationName) || { ja: stationName, en: "" };
         showTooltip(
           tooltip,
           e.originalEvent.clientX - left,
           e.originalEvent.clientY - top,
           hoveredShakemapId,
-          info,
+          _getShakemapTooltipInfo(stationName),
           state?.intensity,
           "station"
         );
@@ -562,6 +565,9 @@ function _applyCityAreasVisibility(map, useCityAreas) {
     
     map.setLayoutProperty("forecast-fill", "visibility", "none");
     map.setLayoutProperty("forecast-line", "visibility", "none");
+    
+    map.setLayoutProperty("forecast-line-bg", "visibility", "none");
+    map.setLayoutProperty("prefecture-line", "visibility", "none");
     return;
   }
 
@@ -574,6 +580,9 @@ function _applyCityAreasVisibility(map, useCityAreas) {
   
   map.setLayoutProperty("forecast-fill", "visibility", invVisibility);
   map.setLayoutProperty("forecast-line", "visibility", invVisibility);
+  
+  map.setLayoutProperty("forecast-line-bg", "visibility", "visible");
+  map.setLayoutProperty("prefecture-line", "visibility", "visible");
 }
 
 // ─── Shakemap mode ─────────────────────────────────────────────────────────
@@ -587,6 +596,21 @@ function _applyCityAreasVisibility(map, useCityAreas) {
 function _cleanStationName(name) {
   if (!name) return "";
   return name.replace(/[＊*]/g, "");
+}
+
+/**
+ * Returns tooltip info for a shakemap station, falling back to CSV data if unhighlighted.
+ * @param {string} name 
+ * @returns {{ja: string, en: string}}
+ */
+function _getShakemapTooltipInfo(name) {
+  if (!name) return { ja: "", en: "" };
+  const cleanName = _cleanStationName(name);
+  let info = _shakemapStationInfo.get(cleanName);
+  if (info) return info;
+  
+  const csvMatch = _stationNamesCsv?.byName?.get(cleanName);
+  return csvMatch ? { ja: csvMatch.ja, en: csvMatch.en } : { ja: cleanName, en: "" };
 }
 
 let _pendingShakemapUpdate = null;
@@ -663,12 +687,27 @@ export function highlightShakemapObservations(map, observations) {
         if (!city.stations) continue;
         for (const station of city.stations) {
           if (!station.name) continue;
+          
           const cleanName = _cleanStationName(station.name);
-          const cleanEnName = station.enName ? station.enName.replace(/\*/g, "") : "";
+          let finalJa = cleanName;
+          let finalEn = station.enName ? station.enName.replace(/\*/g, "") : "";
+
+          // Use CSV names if available (match by code first, then by JP name)
+          if (_stationNamesCsv) {
+            let csvMatch = null;
+            if (station.code) csvMatch = _stationNamesCsv.byCode.get(station.code);
+            if (!csvMatch) csvMatch = _stationNamesCsv.byName.get(cleanName);
+            
+            if (csvMatch) {
+              finalJa = csvMatch.ja;
+              finalEn = csvMatch.en;
+            }
+          }
+
           stationsByName.set(cleanName, {
             int: station.int,
-            ja: cleanName,
-            en: cleanEnName,
+            ja: finalJa,
+            en: finalEn,
           });
         }
       }

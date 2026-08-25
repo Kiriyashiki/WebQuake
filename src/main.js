@@ -2,7 +2,7 @@ import "../styles/index.css";
 import { initLogger } from "./logger.js";
 import { formatTimeJST, INTENSITY_CONFIG } from "./constants.js";
 import { playAudio, preloadAudio } from "./audio.js";
-import { createRubyHtml, loadAreaCodes, loadPrefectureCodes, loadCityNames } from "./areaCodes.js";
+import { createRubyHtml, loadAreaCodes, loadPrefectureCodes, loadCityNames, loadStationNames } from "./areaCodes.js";
 import {
   initMap,
   highlightObservations,
@@ -97,6 +97,15 @@ async function boot() {
     console.warn("[eq-viewer] Could not load city.json:", err.message);
   }
 
+  // Load station names mappings
+  let stationNames = { byCode: new Map(), byName: new Map() };
+  try {
+    stationNames = await loadStationNames();
+    console.info(`[eq-viewer] Loaded ${stationNames.byCode.size} station names.`);
+  } catch (err) {
+    console.warn("[eq-viewer] Could not load stations.csv:", err.message);
+  }
+
   // Load feature bounds
   let featureBounds = null;
   try {
@@ -111,7 +120,7 @@ async function boot() {
 
   // Boot the map
   const mapEl = document.getElementById("map");
-  const map = initMap(mapEl, areaCodes, cityNames, getCityAreasState);
+  const map = initMap(mapEl, areaCodes, cityNames, stationNames, getCityAreasState);
 
   // Expose for later modules / debugging
   globalThis.__eqMap = map;
@@ -892,13 +901,13 @@ function _displayMapInfoBox(report, map) {
 
   if (coordinates && report.coordinates) {
     const coordsLabel = coordinates.previousElementSibling;
-    if (coordsLabel) coordsLabel.textContent = "Coordinates";
+    if (coordsLabel) coordsLabel.textContent = "Coordinates • 北緯東経";
     const { latitude, longitude } = report.coordinates;
     const precision = (report.isHistory || report.hasSpecialReport) ? 3 : 1;
     coordinates.textContent = `${latitude.toFixed(precision)} ; ${longitude.toFixed(precision)}`;
   } else if (coordinates) {
     const coordsLabel = coordinates.previousElementSibling;
-    if (coordsLabel) coordsLabel.textContent = "Coordinates";
+    if (coordsLabel) coordsLabel.textContent = "Coordinates • 北緯東経";
     coordinates.textContent = "--";
   }
 

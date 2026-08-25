@@ -138,6 +138,57 @@ export function loadCityNames() {
   return _cityNamesPromise;
 }
 
+// ─── Station Names ─────────────────────────────────────────────────────────────
+
+let _stationNamesPromise = null;
+
+/**
+ * Loads stations.csv data into Maps keyed by code and nameja.
+ *
+ * CSV format (semicolon-delimited, with header):
+ *   code;nameja;kana;nameen
+ *
+ * Returns: { byCode: Map<string, {ja, kana, en}>, byName: Map<string, {ja, kana, en}> }
+ */
+export function loadStationNames() {
+  if (!_stationNamesPromise) {
+    _stationNamesPromise = (async () => {
+      const res = await fetch('/stations.csv');
+      if (!res.ok) throw new Error(`Failed to load stations CSV: ${res.status}`);
+
+      const text = await res.text();
+      const byCode = new Map();
+      const byName = new Map();
+
+      const lines = text.split('\n');
+      let startIndex = 0;
+      if (lines.length > 0 && lines[0].startsWith('code')) {
+        startIndex = 1;
+      }
+
+      for (let i = startIndex; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line || line.startsWith('#')) continue;
+
+        const parts = line.split(';');
+        if (parts.length < 4) continue;
+
+        const code = parts[0].trim();
+        const ja   = parts[1].replace(/[＊*]/g, "").trim();
+        const kana = parts[2].trim();
+        const en   = parts[3].replace(/[＊*]/g, "").trim();
+
+        const info = { ja, kana, en };
+        if (code) byCode.set(code, info);
+        if (ja) byName.set(ja, info);
+      }
+
+      return { byCode, byName };
+    })();
+  }
+  return _stationNamesPromise;
+}
+
 // ─── Bounds Data ─────────────────────────────────────────────────────────────
 
 /**

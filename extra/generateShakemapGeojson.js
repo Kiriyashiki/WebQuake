@@ -2,41 +2,29 @@ const fs = require('fs');
 const turf = require('@turf/turf');
 
 // ---------- Load data ----------
+console.log('Loading datasets...');
 const stations = JSON.parse(fs.readFileSync('extra/stations.json', 'utf-8'));
 const prefectures = JSON.parse(fs.readFileSync('public/prefectures.geojson', 'utf-8'));
 
+let exclusions = { features: [] };
+try {
+  exclusions = JSON.parse(fs.readFileSync('extra/exclusions.geojson', 'utf-8'));
+  console.log(`Loaded ${exclusions.features.length} exclusion features`);
+} catch (e) {
+  console.log('No exclusions.geojson found or error reading it. Proceeding without exclusions.');
+}
+
 console.log(`Loaded ${stations.length} stations and ${prefectures.features.length} prefecture features`);
 
-// ---------- Build station points ----------
-const points = stations.map((s) => {
-  const lat = Number(s.lat);
-  const lon = Number(s.lon);
-  return turf.point([lon, lat], {
-    staLat: lat,
-    staLon: lon,
-    name: s.name,
-    pref: s.pref,
-    affi: s.affi,
-  });
-});
+// ---------- Helper: check bbox overlap ----------
+function bboxOverlap(a, b) {
+  // a and b are [minX, minY, maxX, maxY]
+  return !(a[2] < b[0] || b[2] < a[0] || a[3] < b[1] || b[3] < a[1]);
+}
 
-const pointCollection = turf.featureCollection(points);
-
-// ---------- Compute bounding box from prefectures ----------
-const bbox = turf.bbox(prefectures);
-console.log(`Japan bounding box: [${bbox}]`);
-
-// ---------- Compute Voronoi ----------
-console.log('Computing Voronoi diagram...');
-const voronoi = turf.voronoi(pointCollection, { bbox });
-
-// Filter out any null cells (can happen with duplicate points)
-const voronoiCells = voronoi.features.filter((f) => f !== null && f.geometry !== null);
-console.log(`Generated ${voronoiCells.length} Voronoi cells`);
-
-// ---------- Flatten all prefecture polygons with their bboxes ----------
+// ---------- Flatten all prefecture polygons ----------
 console.log('Preparing land polygons...');
-const landPolygons = [];
+let landPolygons = [];
 for (const feature of prefectures.features) {
   if (feature.geometry.type === 'Polygon') {
     const poly = turf.polygon(feature.geometry.coordinates);
@@ -50,13 +38,93 @@ for (const feature of prefectures.features) {
     }
   }
 }
-console.log(`Total land polygons: ${landPolygons.length}`);
 
-// ---------- Helper: check bbox overlap ----------
-function bboxOverlap(a, b) {
-  // a and b are [minX, minY, maxX, maxY]
-  return !(a[2] < b[0] || b[2] < a[0] || a[3] < b[1] || b[3] < a[1]);
+// ---------- Flatten exclusions ----------
+const exclusionPolygons = [];
+for (const feature of exclusions.features) {
+  if (!feature.geometry) continue;
+  if (feature.geometry.type === 'Polygon') {
+    const poly = turf.polygon(feature.geometry.coordinates);
+    poly._bbox = turf.bbox(poly);
+    exclusionPolygons.push(poly);
+  } else if (feature.geometry.type === 'MultiPolygon') {
+    for (const coords of feature.geometry.coordinates) {
+      const poly = turf.polygon(coords);
+      poly._bbox = turf.bbox(poly);
+      exclusionPolygons.push(poly);
+    }
+  }
 }
+
+// ---------- Apply exclusions to land polygons ----------
+if (exclusionPolygons.length > 0) {
+  console.log(`Subtracting ${exclusionPolygons.length} exclusion polygons from land...`);
+  const finalLandPolygons = [];
+  
+  for (const land of landPolygons) {
+    let currentParts = [land];
+    
+    for (const excl of exclusionPolygons) {
+      if (!bboxOverlap(land._bbox, excl._bbox)) continue;
+      
+      const nextParts = [];
+      for (const part of currentParts) {
+        try {
+          const diff = turf.difference(turf.featureCollection([part, excl]));
+          if (diff) {
+            if (diff.geometry.type === 'Polygon') {
+              nextParts.push(diff);
+            } else if (diff.geometry.type === 'MultiPolygon') {
+              for (const coords of diff.geometry.coordinates) {
+                nextParts.push(turf.polygon(coords));
+              }
+            }
+          }
+          // If diff is null, part is completely covered by exclusion, so it is removed.
+        } catch (e) {
+          // If difference fails (e.g., self-intersection issues), fallback to keeping the part
+          nextParts.push(part);
+        }
+      }
+      currentParts = nextParts;
+      if (currentParts.length === 0) break;
+    }
+    
+    for (const part of currentParts) {
+      part._bbox = turf.bbox(part);
+      finalLandPolygons.push(part);
+    }
+  }
+  landPolygons = finalLandPolygons;
+}
+console.log(`Total land polygons after exclusions: ${landPolygons.length}`);
+
+// ---------- Compute bounding box from updated land polygons ----------
+const landFeatureCollection = turf.featureCollection(landPolygons);
+const bbox = turf.bbox(landFeatureCollection);
+console.log(`Japan bounding box (after exclusions): [${bbox}]`);
+
+// ---------- Build station points ----------
+const points = stations.map((s) => {
+  const lat = Number(s.lat);
+  const lon = Number(s.lon);
+  return turf.point([lon, lat], {
+    staLat: lat,
+    staLon: lon,
+    name: s.name,
+    pref: s.pref,
+    affi: s.affi,
+  });
+});
+const pointCollection = turf.featureCollection(points);
+
+// ---------- Compute Voronoi ----------
+console.log('Computing Voronoi diagram...');
+const voronoi = turf.voronoi(pointCollection, { bbox });
+
+// Filter out any null cells (can happen with duplicate points)
+const voronoiCells = voronoi.features.filter((f) => f !== null && f.geometry !== null);
+console.log(`Generated ${voronoiCells.length} Voronoi cells`);
 
 // ---------- Clip Voronoi cells to land using per-polygon intersection ----------
 console.log('Clipping Voronoi cells to Japan coastline...');
@@ -76,7 +144,15 @@ for (let i = 0; i < voronoiCells.length; i++) {
     if (!bboxOverlap(cellBbox, land._bbox)) continue;
     try {
       const clipped = turf.intersect(turf.featureCollection([cell, land]));
-      if (clipped) fragments.push(clipped);
+      if (clipped) {
+        if (clipped.geometry.type === 'Polygon') {
+          fragments.push(clipped);
+        } else if (clipped.geometry.type === 'MultiPolygon') {
+          for (const coords of clipped.geometry.coordinates) {
+            fragments.push(turf.polygon(coords));
+          }
+        }
+      }
     } catch (e) {
       // Skip failed intersections
     }
@@ -119,7 +195,12 @@ for (let i = 0; i < voronoiCells.length; i++) {
 console.log(`Clipped ${clippedFeatures.length} cells (${skipped} skipped/empty)`);
 
 // ---------- Write output ----------
-const result = turf.featureCollection(clippedFeatures);
+let result = turf.featureCollection(clippedFeatures);
+
+// Truncate coordinates to 6 decimal places to reduce file size
+console.log('Truncating coordinates to 6 decimal places...');
+result = turf.truncate(result, { precision: 6, coordinates: 2, mutate: true });
+
 const outputPath = 'extra/shakemap.geojson';
 fs.writeFileSync(outputPath, JSON.stringify(result));
 
