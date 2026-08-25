@@ -12,9 +12,13 @@
       "allow": [
         {
           "url": "https://axis.prioris.jp/api/*"
+        },
+        {
+          "url": "https://www.data.jma.go.jp/developer/xml/*"
         }
       ]
     },
-    "opener:default"
+    "opener:default",
+    "log:default"
   ]
 }

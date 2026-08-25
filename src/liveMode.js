@@ -23,7 +23,7 @@ import {
   parseFlashIntensityJson,
 } from "./reportUtils.js";
 import JMAEarthquakeReport from "./jmaEarthquakeReport.js";
-import { fetchXmlFeedEntries, parseFlashIntensityXml, clearXmlFeedCache } from "./xmlFeedParser.js";
+import { fetchXmlFeedEntries, parseFlashIntensityXml } from "./xmlFeedParser.js";
 
 const IS_TAURI = Boolean(window.__TAURI_INTERNALS__);
 let tauriFetch = null;
@@ -79,7 +79,7 @@ export function startLivePolling(areaCodes, callbacks = {}, initialReports = [])
     return;
   }
 
-  console.log("[live-mode] Starting polling...");
+  console.info("[live-mode] Starting polling...");
   _isActive = true;
 
   // Initialize tracked entries with initial reports
@@ -126,7 +126,7 @@ export function stopLivePolling() {
     clearTimeout(_syncTimeoutId);
     _syncTimeoutId = null;
   }
-  console.log("[live-mode] Polling stopped");
+  console.info("[live-mode] Polling stopped");
 }
 
 /**
@@ -176,14 +176,14 @@ async function _syncTiming(areaCodes, callbacks) {
     
     const cacheControl = res.headers.get('cache-control') || '';
     const maxAgeMatch = cacheControl.match(/max-age=(\d+)/);
-    const maxAge = maxAgeMatch ? parseInt(maxAgeMatch[1], 10) : 60;
+    const maxAge = maxAgeMatch ? Number.parseInt(maxAgeMatch[1], 10) : 60;
     
-    const age = parseInt(res.headers.get('age') || '0', 10);
+    const age = Number.parseInt(res.headers.get('age') || '0', 10);
 
     _currentInterval = maxAge * 1000;
     const delayToNextPoll = (maxAge - age + 1) * 1000;
 
-    console.log(`[live-mode] Header sync success: max-age=${maxAge}, age=${age}. Next poll in ${delayToNextPoll}ms.`);
+    console.debug(`[live-mode] Header sync success: max-age=${maxAge}, age=${age}. Next poll in ${delayToNextPoll}ms.`);
 
     if (_pollingTimeoutId !== null) {
       clearTimeout(_pollingTimeoutId);
@@ -294,7 +294,7 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
 
       if (!trackedEntry) {
         // NEW ENTRY (normal report)
-        console.log("[live-mode] New entry detected:", eventId);
+        console.info("[live-mode] New entry detected:", eventId);
         _trackedEntries.set(eventId, {
           rdt: entry.rdt,
           jsonFile: entry.json || null,
@@ -309,7 +309,7 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
           if (matchingSpecial) {
             const overrides = parseSpecialReportOverrides(matchingSpecial);
             applySpecialReportOverrides(report, overrides);
-            console.log(
+            console.debug(
               `[live-mode] Applied VXSE61 overrides to new report ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`
             );
             _trackedSpecialEntries.set(eventId, { rdt: matchingSpecial.rdt });
@@ -317,7 +317,7 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
 
           if (hadFlashReport) {
             // Normal report overwrites a prior flash report
-            console.log("[live-mode] Normal report overwrites flash for:", eventId);
+            console.debug("[live-mode] Normal report overwrites flash for:", eventId);
             _trackedFlashEntries.delete(eventId);
             if (callbacks.onUpdatedEntry) {
               callbacks.onUpdatedEntry(entry, report);
@@ -328,7 +328,7 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
         }
       } else if (entry.rdt !== trackedEntry.rdt) {
         // UPDATED ENTRY
-        console.log("[live-mode] Updated entry detected:", eventId);
+        console.info("[live-mode] Updated entry detected:", eventId);
         _trackedEntries.set(eventId, {
           rdt: entry.rdt,
           jsonFile: entry.json || null,
@@ -343,7 +343,7 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
           if (matchingSpecial) {
             const overrides = parseSpecialReportOverrides(matchingSpecial);
             applySpecialReportOverrides(report, overrides);
-            console.log(
+            console.debug(
               `[live-mode] Applied VXSE61 overrides to updated report ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`
             );
             _trackedSpecialEntries.set(eventId, { rdt: matchingSpecial.rdt });
@@ -379,7 +379,7 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
       const trackedNormal = _trackedEntries.get(eventId);
       if (!trackedNormal) continue;
 
-      console.log("[live-mode] VXSE61 special report detected for:", eventId);
+      console.info("[live-mode] VXSE61 special report detected for:", eventId);
       _trackedSpecialEntries.set(eventId, { rdt: specialEntry.rdt });
 
       // Re-fetch the original report and apply overrides
@@ -395,7 +395,7 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
       if (report) {
         const overrides = parseSpecialReportOverrides(specialEntry);
         applySpecialReportOverrides(report, overrides);
-        console.log(
+        console.debug(
           `[live-mode] Applied VXSE61 overrides for ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`
         );
 
@@ -436,7 +436,7 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
 
       if (!trackedFlash) {
         // New flash report
-        console.log(`[live-mode] New flash report detected (${bestType}):`, eid);
+        console.info(`[live-mode] New flash report detected (${bestType}):`, eid);
         const flashReport = await _buildFlashReportForLive(
           eid, intensityEntry, epicenterEntry, areaCodes
         );
@@ -463,7 +463,7 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
           currentEpicenterEntry.rdt !== trackedFlash.epicenterRdt;
 
         if (isNewIntensity || isNewEpicenter) {
-          console.log(`[live-mode] Updated flash report detected for ${eid}:`, {
+          console.debug(`[live-mode] Updated flash report detected for ${eid}:`, {
             isNewIntensity,
             isNewEpicenter,
           });

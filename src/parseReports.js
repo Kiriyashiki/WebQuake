@@ -211,7 +211,7 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
           if (specialEntry) {
             const overrides = parseSpecialReportOverrides(specialEntry);
             applySpecialReportOverrides(report, overrides);
-            console.log(`[parseReports] Applied VXSE61 overrides for ${report.eventId}: M${overrides.magnitude}, ${overrides.depth}km`);
+            console.debug(`[parseReports] Applied VXSE61 overrides for ${report.eventId}: M${overrides.magnitude}, ${overrides.depth}km`);
           }
 
           reports.push(report);

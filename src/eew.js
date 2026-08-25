@@ -134,7 +134,7 @@ export function initEewSettings(map, bounds, cities, areas) {
   if (eewStatusContainer) {
     eewStatusContainer.addEventListener("click", () => {
       if (toggleEl.checked) {
-        console.log("[EEW] Manual reconnect triggered");
+        console.info("[EEW] Manual reconnect triggered");
         disconnectEew();
         hasConnectedOnce = false;
         connectEew();
@@ -151,7 +151,7 @@ export function updateEewStatus(state) {
   if (!container || !dot || !text) return;
 
   const toggleEl = document.getElementById("eew-toggle");
-  if (!toggleEl || !toggleEl.checked) {
+  if (!toggleEl?.checked) {
     container.classList.add("hidden");
     return;
   }
@@ -238,18 +238,18 @@ function connectToWebSocket(serverUrl) {
     ? `${serverUrl}?token=${encodeURIComponent(eewToken)}`
     : `${serverUrl}/socket?token=${encodeURIComponent(eewToken)}`;
 
-  console.log("[EEW] Connecting to", serverUrl);
+  console.info("[EEW] Connecting to", serverUrl);
   eewSocket = new WebSocket(wsUrl);
 
   eewSocket.onopen = () => {
-    console.log("[EEW] WebSocket Connected. Waiting for hello...");
+    console.info("[EEW] WebSocket Connected. Waiting for hello...");
   };
 
   eewSocket.onmessage = (event) => {
     const message = event.data;
     if (typeof message === "string") {
       if (message === "hello") {
-        console.log("[EEW] Received hello from server. Connection fully established.");
+        console.info("[EEW] Received hello from server. Connection fully established.");
         hasConnectedOnce = true;
         updateEewStatus("connected");
         retrySec = 100;
@@ -274,7 +274,7 @@ function connectToWebSocket(serverUrl) {
   };
 
   eewSocket.onclose = (event) => {
-    console.log(`[EEW] Connection closed (code: ${event.code}, reason: ${event.reason})`);
+    console.info(`[EEW] Connection closed (code: ${event.code}, reason: ${event.reason})`);
     eewSocket = null;
     if (heartbeatTimer) {
       clearTimeout(heartbeatTimer);
@@ -284,7 +284,7 @@ function connectToWebSocket(serverUrl) {
   };
 
   eewSocket.onerror = (err) => {
-    console.log("[EEW] WebSocket error occurred");
+    console.warn("[EEW] WebSocket error occurred");
   };
 }
 
@@ -316,7 +316,7 @@ function retryConnection() {
     return;
   }
 
-  console.log(`[EEW] Retry: ${retryCount} (delay ${retrySec}ms)`);
+  console.info(`[EEW] Retry: ${retryCount} (delay ${retrySec}ms)`);
   updateEewStatus("connecting");
   reconnectTimer = setTimeout(connectEew, retrySec);
 }
@@ -383,7 +383,7 @@ function scheduleTokenRefresh() {
   if (!localStorage.getItem("eew-token-expiry")) {
     const expiry = getEndOfMonthUTC(new Date());
     localStorage.setItem("eew-token-expiry", String(expiry));
-    console.log("[EEW] Token expiry set to end of current month:", new Date(expiry).toISOString());
+    console.debug("[EEW] Token expiry set to end of current month:", new Date(expiry).toISOString());
   }
 
   // Run immediately, then every 24 hours
@@ -409,7 +409,7 @@ async function checkTokenRefresh() {
   // Don't check more than once per day
   const lastCheck = localStorage.getItem("eew-token-last-refresh-check");
   if (lastCheck === todayStr) {
-    console.log("[EEW] Token refresh already checked today, skipping.");
+    console.debug("[EEW] Token refresh already checked today, skipping.");
     return;
   }
 
@@ -419,11 +419,11 @@ async function checkTokenRefresh() {
   const msUntilExpiry = expiry - now.getTime();
   const daysUntilExpiry = msUntilExpiry / (1000 * 60 * 60 * 24);
   if (daysUntilExpiry > 7) {
-    console.log(`[EEW] Token expiry in ${Math.round(daysUntilExpiry)} days, no refresh needed yet.`);
+    console.debug(`[EEW] Token expiry in ${Math.round(daysUntilExpiry)} days, no refresh needed yet.`);
     return;
   }
 
-  console.log(`[EEW] Token expiry in ${Math.round(daysUntilExpiry)} days, attempting refresh...`);
+  console.info(`[EEW] Token expiry in ${Math.round(daysUntilExpiry)} days, attempting refresh...`);
 
   try {
     const res = await tauriFetch("https://axis.prioris.jp/api/token/refresh/", {
@@ -452,7 +452,7 @@ async function checkTokenRefresh() {
 
     if (data.status === "generate a new token" && data.token) {
       // Success — new token issued
-      console.log("[EEW] Token refreshed successfully.");
+      console.info("[EEW] Token refreshed successfully.");
       eewToken = data.token;
       localStorage.setItem("eew-token", data.token);
       localStorage.removeItem("eew-token-expiry-alerted");
@@ -461,7 +461,7 @@ async function checkTokenRefresh() {
       const nextMonthDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 15));
       const newExpiry = getEndOfMonthUTC(nextMonthDate);
       localStorage.setItem("eew-token-expiry", String(newExpiry));
-      console.log("[EEW] New token expiry:", new Date(newExpiry).toISOString());
+      console.debug("[EEW] New token expiry:", new Date(newExpiry).toISOString());
 
       // Update the token input field if it exists
       const tokenEl = document.getElementById("eew-token-input");
@@ -473,7 +473,7 @@ async function checkTokenRefresh() {
       connectEew();
     } else if (data.status === "not due for refresh yet") {
       // Not time yet — will retry tomorrow (lastCheck date is already saved)
-      console.log("[EEW] Token refresh not due yet, will retry tomorrow.");
+      console.debug("[EEW] Token refresh not due yet, will retry tomorrow.");
     } else {
       console.warn("[EEW] Unexpected token refresh response:", data);
       alertTokenExpiry();
@@ -545,6 +545,7 @@ function handleEewMessage(msg) {
     }
 
     if (isNew) {
+      console.debug(`[EEW] New EEW recieved: ${eventId}`);
       // Auto open logic
       const liveTab = document.querySelector('[data-tab="live"]');
       if (liveTab && !liveTab.classList.contains("active")) {

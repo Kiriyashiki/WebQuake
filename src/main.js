@@ -1,6 +1,7 @@
 import "../styles/index.css";
+import { initLogger } from "./logger.js";
 import { formatTimeJST, INTENSITY_CONFIG } from "./constants.js";
-import { playAudio } from "./audio.js";
+import { playAudio, preloadAudio } from "./audio.js";
 import { createRubyHtml, loadAreaCodes, loadPrefectureCodes, loadCityNames } from "./areaCodes.js";
 import {
   initMap,
@@ -66,6 +67,7 @@ if (window.__TAURI_INTERNALS__) {
 }
 
 async function boot() {
+  await initLogger();
   syncLiveModeToggleVisuals();
 
   // Load area code name mappings
@@ -501,8 +503,8 @@ async function boot() {
 
   // Initialize sidebar with earthquake reports
   const onReportSelect = (report) => {
-    console.log("[eq-viewer] Selected report:", report.eventId, report.hypocenterJa);
-    console.log("[eq-viewer] Map style loaded:", map.isStyleLoaded());
+    console.debug("[eq-viewer] Selected report:", report.eventId, report.hypocenterJa);
+    console.debug("[eq-viewer] Map style loaded:", map.isStyleLoaded());
 
     // Clear EEW map display (markers, wave animations, autozoom timeout)
     clearEewMapDisplay();
@@ -574,12 +576,12 @@ async function boot() {
 
   // Initialize auto-open toggle
   initAutoOpenToggle((isEnabled) => {
-    console.log("[eq-viewer] Auto-open:", isEnabled ? "enabled" : "disabled");
+    console.debug("[eq-viewer] Auto-open:", isEnabled ? "enabled" : "disabled");
   });
 
   // Initialize city areas toggle
   initCityAreasToggle((isEnabled) => {
-    console.log("[eq-viewer] City areas:", isEnabled ? "enabled" : "disabled");
+    console.debug("[eq-viewer] City areas:", isEnabled ? "enabled" : "disabled");
 
     // Skip if we're currently viewing a flash report (which forces city areas off anyway)
     if (globalThis.__currentReport?.isFlashReport) return;
@@ -597,7 +599,7 @@ async function boot() {
 
   // Initialize home location settings
   initHomeLocationSettings(prefectureCodes, cityNames, (homeLocation) => {
-    console.log("[eq-viewer] Home location updated:", homeLocation);
+    console.debug("[eq-viewer] Home location updated:", homeLocation);
 
     if (homeLocation.showMarker) {
       displayHomeMarker(map, homeLocation.cityCode, featureBounds);
@@ -619,7 +621,7 @@ async function boot() {
 
   // Initialize home intensity toggle
   initHomeIntensityToggle((isEnabled) => {
-    console.log("[eq-viewer] Home intensity:", isEnabled ? "enabled" : "disabled");
+    console.debug("[eq-viewer] Home intensity:", isEnabled ? "enabled" : "disabled");
 
     const activeItem = document.querySelector(".eq-item.active");
     if (!activeItem || !isEnabled) {
@@ -645,6 +647,10 @@ async function boot() {
 
   // Initialize EEW
   initEewSettings(map, featureBounds, cityNames, areaCodes);
+
+  // Preload audio files so they don't hang fetch() during OS sleep/resume
+  preloadAudio("/sfx/ping.wav");
+  preloadAudio("/sfx/eew.wav");
 
   // Fetch initial reports
   _updateStatus("loading");
@@ -683,14 +689,14 @@ async function boot() {
     // Initialize live mode
     initLiveModeToggle((isEnabled) => {
       if (isEnabled) {
-        console.log("[eq-viewer] Live mode enabled");
+        console.info("[eq-viewer] Live mode enabled");
         let mostRecentNewReport = null;
 
         startLivePolling(
           areaCodes,
           {
             onNewEntry: (entry, report) => {
-              console.log("[eq-viewer] New entry:", report.eventId);
+              console.info("[eq-viewer] New entry:", report.eventId);
 
               // Play notification sound
               playAudio("/sfx/ping.wav");
@@ -723,7 +729,7 @@ async function boot() {
 
                 if (shouldAutoOpen) {
                   const targetReport = mostRecentNewReport || report;
-                  console.log("[eq-viewer] Auto-opening report:", targetReport.eventId);
+                  console.debug("[eq-viewer] Auto-opening report:", targetReport.eventId);
                   const item = document.querySelector(`[data-event-id="${targetReport.eventId}"]`);
                   if (item) {
                     item.classList.remove("active");
@@ -733,13 +739,13 @@ async function boot() {
               }
             },
             onUpdatedEntry: (entry, report) => {
-              console.log("[eq-viewer] Updated entry:", report.eventId);
+              console.info("[eq-viewer] Updated entry:", report.eventId);
               const updated = updateReportInSidebar(report, onReportSelect);
               if (updated) {
                 // If the report is currently displayed on the map, refresh it
                 const activeItem = document.querySelector(".eq-item.active");
                 if (activeItem && activeItem.dataset.eventId === report.eventId) {
-                  console.log("[eq-viewer] Reloading active report on map");
+                  console.debug("[eq-viewer] Reloading active report on map");
                   onReportSelect(report);
                 }
               }
@@ -751,7 +757,7 @@ async function boot() {
           reports,
         );
       } else {
-        console.log("[eq-viewer] Live mode disabled");
+        console.info("[eq-viewer] Live mode disabled");
         stopLivePolling();
       }
     });
@@ -928,7 +934,6 @@ function _displayMapInfoBox(report, map) {
   const shakemapWrapper = infoBox.querySelector(".shakemap-toggle-wrapper");
   if (shakemapWrapper) {
     const shakemapHeader = shakemapWrapper.querySelector(".shakemap-toggle-header");
-    const shakemapArrow = shakemapWrapper.querySelector(".shakemap-toggle-arrow");
 
     // Check if report has station data (flash reports don't)
     const hasStations = _reportHasStations(report);

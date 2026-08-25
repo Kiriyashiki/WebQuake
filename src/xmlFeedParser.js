@@ -113,7 +113,7 @@ export async function fetchXmlFeedEntries() {
   const newlyFetched = [];
 
   if (toFetch.length > 0) {
-    console.log(`[xml-feed] Fetching ${toFetch.length} new/updated report(s), ${fromCache.length} cached`);
+    console.debug(`[xml-feed] Fetching ${toFetch.length} new/updated report(s), ${fromCache.length} cached`);
 
     for (let i = 0; i < toFetch.length; i += 4) {
       const batch = toFetch.slice(i, i + 4);
