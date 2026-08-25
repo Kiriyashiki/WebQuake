@@ -206,11 +206,25 @@ class JMAEarthquakeReport {
         for (const city of area.getElementsByTagName("City")) {
           if (city.parentNode !== area) continue;
 
-          areaEntry.cities.push({
+          const cityEntry = {
             code:   Number.parseInt(this._directChildText(city, "Code"), 10),
             name:   this._directChildText(city, "Name"),
             maxInt: this._directChildText(city, "MaxInt"),
-          });
+          };
+          // Parse IntensityStation elements within this City
+          const stationEls = city.getElementsByTagName("IntensityStation");
+          if (stationEls.length > 0) {
+            cityEntry.stations = [];
+            for (const station of stationEls) {
+              if (station.parentNode !== city) continue;
+              cityEntry.stations.push({
+                name: this._directChildText(station, "Name"),
+                code: this._directChildText(station, "Code"),
+                int:  this._directChildText(station, "Int"),
+              });
+            }
+          }
+          areaEntry.cities.push(cityEntry);
         }
 
         prefEntry.areas.push(areaEntry);
@@ -338,6 +352,22 @@ class JMAEarthquakeReport {
           // Some cities report a Condition (e.g. "震度５弱以上未入電") instead of MaxInt
           if (city.Condition) {
             cityEntry.condition = city.Condition;
+          }
+          // Parse IntensityStation data (per-station observations within this city)
+          const stationArray = city.IntensityStation || [];
+          if (stationArray.length > 0) {
+            cityEntry.stations = [];
+            for (const station of stationArray) {
+              const stationEntry = {
+                name: station.Name || null,
+                code: station.Code || null,
+                int:  station.Int || null,
+              };
+              if (station.enName) {
+                stationEntry.enName = station.enName;
+              }
+              cityEntry.stations.push(stationEntry);
+            }
           }
           areaEntry.cities.push(cityEntry);
         }

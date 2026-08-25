@@ -4,3 +4,4 @@ dist/
 *.zip
 test/
 pnpm-workspace.yaml
+extra/shakemap.geojson

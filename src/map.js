@@ -37,6 +37,11 @@ function buildStyle(useCityAreas = true) {
         data: "/municipalities.geojson",
         promoteId: "regioncode",
       },
+      shakemap: {
+        type: "geojson",
+        data: "/shakemap.geojson",
+        promoteId: "name",
+      },
     },
     layers: [
       // Ocean / void background
@@ -156,6 +161,30 @@ function buildStyle(useCityAreas = true) {
         },
       },
       {
+        id: "shakemap-fill",
+        type: "fill",
+        source: "shakemap",
+        layout: { visibility: 'none' },
+        paint: {
+          "fill-color": [
+            "case",
+            ["boolean", ["feature-state", "highlighted"], false],
+            [
+              "case",
+              ["boolean", ["feature-state", "hover"], false],
+              [
+                "coalesce",
+                buildIntensityColorExpression(false),
+                "transparent",
+              ],
+              buildIntensityColorExpression(true),
+            ],
+            "transparent",
+          ],
+          "fill-antialias": true,
+        },
+      },
+      {
         id: "lake-fill",
         type: "fill",
         source: "lake",
@@ -169,6 +198,26 @@ function buildStyle(useCityAreas = true) {
         type: "line",
         source: "cities",
         layout: { visibility: useCityAreas ? 'visible' : 'none' },
+        paint: {
+          "line-color": [
+            "case",
+            ["boolean", ["feature-state", "highlighted"], false],
+            buildIntensityColorExpression(false, C.cityLine),
+            ["case", ["boolean", ["feature-state", "hover"], false], C.japanLine, "#172538"],
+          ],
+          "line-width": [
+            "case",
+            ["boolean", ["feature-state", "highlighted"], false],
+            0.4,
+            ["case", ["boolean", ["feature-state", "hover"], false], 1.4, 0],
+          ],
+        },
+      },
+      {
+        id: "shakemap-line",
+        type: "line",
+        source: "shakemap",
+        layout: { visibility: 'none' },
         paint: {
           "line-color": [
             "case",
@@ -209,9 +258,10 @@ function buildStyle(useCityAreas = true) {
 }
 
 // ─── Tooltip helpers ─────────────────────────────────────────────────────────
-function showTooltip(tooltip, x, y, code, info, intensity = null, isCity = false) {
+function showTooltip(tooltip, x, y, code, info, intensity = null, mode = "area") {
   const codeEl = tooltip.querySelector(".tooltip-code");
-  codeEl.textContent = isCity ? `CITY ${code}` : `AREA ${code}`;
+  const codeLabel = mode === "station" ? "STATION" : mode === "city" ? `CITY ${code}` : `AREA ${code}`;
+  codeEl.textContent = codeLabel;
   tooltip.querySelector(".tooltip-ja").textContent = info?.ja ?? "—";
   tooltip.querySelector(".tooltip-en").textContent = info?.en ?? "";
 
@@ -346,7 +396,7 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
             newId,
             isCityLayer ? cityNames?.get(String(newId)) : areaCodes.get(Number(newId)),
             state?.intensity,
-            isCityLayer
+            isCityLayer ? "city" : "area"
           );
           return;
         }
@@ -369,7 +419,7 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
           hoveredId,
           isCityLayer ? cityNames?.get(String(hoveredId)) : areaCodes.get(Number(hoveredId)),
           state?.intensity,
-          isCityLayer
+          isCityLayer ? "city" : "area"
         );
       });
 
@@ -387,6 +437,74 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
         hideTooltip(tooltip);
       });
     });
+
+    // ── Shakemap layer hover interactions ─────────────────────────────────
+    {
+      let hoveredShakemapId = null;
+
+      map.on("mousemove", "shakemap-fill", (e) => {
+        if (!_shakemapVisible) return;
+
+        canvas.style.cursor = "crosshair";
+
+        const feature = e.features[0];
+        if (!feature) return;
+
+        const newId = feature.id;
+        if (newId === undefined || newId === null) return;
+
+        if (newId === hoveredShakemapId) {
+          const state = map.getFeatureState({ source: "shakemap", id: newId });
+          const { left, top } = container.getBoundingClientRect();
+          const stationName = feature.properties?.name || "";
+          const info = _shakemapStationInfo.get(stationName) || { ja: stationName, en: "" };
+          showTooltip(
+            tooltip,
+            e.originalEvent.clientX - left,
+            e.originalEvent.clientY - top,
+            newId,
+            info,
+            state?.intensity,
+            "station"
+          );
+          return;
+        }
+
+        if (hoveredShakemapId !== null) {
+          map.setFeatureState({ source: "shakemap", id: hoveredShakemapId }, { hover: false });
+        }
+
+        hoveredShakemapId = newId;
+        map.setFeatureState({ source: "shakemap", id: hoveredShakemapId }, { hover: true });
+
+        const state = map.getFeatureState({ source: "shakemap", id: hoveredShakemapId });
+        const { left, top } = container.getBoundingClientRect();
+        const stationName = feature.properties?.name || "";
+        const info = _shakemapStationInfo.get(stationName) || { ja: stationName, en: "" };
+        showTooltip(
+          tooltip,
+          e.originalEvent.clientX - left,
+          e.originalEvent.clientY - top,
+          hoveredShakemapId,
+          info,
+          state?.intensity,
+          "station"
+        );
+      });
+
+      map.on("mouseleave", "shakemap-fill", () => {
+        if (!_shakemapVisible) return;
+
+        canvas.style.cursor = "";
+
+        if (hoveredShakemapId !== null) {
+          map.setFeatureState({ source: "shakemap", id: hoveredShakemapId }, { hover: false });
+          hoveredShakemapId = null;
+        }
+
+        hideTooltip(tooltip);
+      });
+    }
   });
 
   return map;
@@ -394,6 +512,14 @@ export function initMap(container, areaCodes, cityNames, getUseCityAreas = () =>
 
 let _currentCityAreasVisible = true;
 let _pendingCityAreasUpdate = null;
+let _shakemapVisible = false;
+
+/**
+ * Map of shakemap station name (JP, clean) → { ja, en, intensity }.
+ * Populated by highlightShakemapObservations and used for tooltips.
+ * @type {Map<string, {ja: string, en: string}>}
+ */
+let _shakemapStationInfo = new Map();
 
 /**
  * Updates the visibility of city areas vs forecast areas layers.
@@ -428,6 +554,17 @@ export function updateCityAreasVisibility(map, useCityAreas) {
 }
 
 function _applyCityAreasVisibility(map, useCityAreas) {
+  if (_shakemapVisible) {
+    // If shakemap is active, force both city and forecast layers off
+    map.setLayoutProperty("cities-fill", "visibility", "none");
+    map.setLayoutProperty("cities-line", "visibility", "none");
+    map.setLayoutProperty("cities-line-bg", "visibility", "none");
+    
+    map.setLayoutProperty("forecast-fill", "visibility", "none");
+    map.setLayoutProperty("forecast-line", "visibility", "none");
+    return;
+  }
+
   const visibility = useCityAreas ? 'visible' : 'none';
   const invVisibility = useCityAreas ? 'none' : 'visible';
 
@@ -437,6 +574,137 @@ function _applyCityAreasVisibility(map, useCityAreas) {
   
   map.setLayoutProperty("forecast-fill", "visibility", invVisibility);
   map.setLayoutProperty("forecast-line", "visibility", invVisibility);
+}
+
+// ─── Shakemap mode ─────────────────────────────────────────────────────────
+
+/**
+ * Strip fullwidth and ASCII asterisks from a station name for clean display
+ * and matching against the shakemap GeoJSON.
+ * @param {string} name
+ * @returns {string}
+ */
+function _cleanStationName(name) {
+  if (!name) return "";
+  return name.replace(/[＊*]/g, "");
+}
+
+let _pendingShakemapUpdate = null;
+
+/**
+ * Toggles shakemap layer visibility and hides/shows the normal intensity layers.
+ * When shakemap is shown, both city and forecast layers are hidden.
+ * When shakemap is hidden, the appropriate city/forecast layers are restored.
+ * @param {maplibregl.Map} map
+ * @param {boolean} show
+ */
+export function updateShakemapVisibility(map, show) {
+  _shakemapVisible = show;
+
+  if (!map.isStyleLoaded()) {
+    if (_pendingShakemapUpdate) {
+      map.off('idle', _pendingShakemapUpdate);
+    }
+    _pendingShakemapUpdate = () => {
+      _pendingShakemapUpdate = null;
+      updateShakemapVisibility(map, _shakemapVisible);
+    };
+    map.once('idle', _pendingShakemapUpdate);
+    return;
+  }
+
+  if (_pendingShakemapUpdate) {
+    map.off('idle', _pendingShakemapUpdate);
+    _pendingShakemapUpdate = null;
+  }
+
+  if (show) {
+    // Show shakemap layers
+    map.setLayoutProperty("shakemap-fill", "visibility", "visible");
+    map.setLayoutProperty("shakemap-line", "visibility", "visible");
+  } else {
+    // Hide shakemap layers
+    map.setLayoutProperty("shakemap-fill", "visibility", "none");
+    map.setLayoutProperty("shakemap-line", "visibility", "none");
+  }
+
+  // Update underlying layers - this will hide them if shakemap is active,
+  // or restore them if shakemap is inactive.
+  _applyCityAreasVisibility(map, _currentCityAreasVisible);
+}
+
+/**
+ * Returns whether the shakemap layer is currently visible.
+ * @returns {boolean}
+ */
+export function isShakemapVisible() {
+  return _shakemapVisible;
+}
+
+/**
+ * Highlights shakemap features by matching station names from observations.
+ * Stations are matched by Japanese name (with ＊/* stripped).
+ *
+ * @param {maplibregl.Map} map
+ * @param {Array|null} observations - Parsed observations (Pref → Area → City → stations)
+ */
+export function highlightShakemapObservations(map, observations) {
+  // Clear previous shakemap highlights
+  clearShakemapHighlights(map);
+  _shakemapStationInfo.clear();
+
+  if (!observations) return;
+
+  // 1. Collect all stations from the observations into a name→{int, enName} map
+  const stationsByName = new Map();
+  for (const pref of observations) {
+    for (const area of pref.areas) {
+      for (const city of area.cities) {
+        if (!city.stations) continue;
+        for (const station of city.stations) {
+          if (!station.name) continue;
+          const cleanName = _cleanStationName(station.name);
+          const cleanEnName = station.enName ? station.enName.replace(/\*/g, "") : "";
+          stationsByName.set(cleanName, {
+            int: station.int,
+            ja: cleanName,
+            en: cleanEnName,
+          });
+        }
+      }
+    }
+  }
+
+  if (stationsByName.size === 0) return;
+
+  if (!highlightShakemapObservations._active) {
+    highlightShakemapObservations._active = [];
+  }
+
+  // 2. Set feature state directly using the station name as the ID
+  for (const [cleanName, stationData] of stationsByName.entries()) {
+    map.setFeatureState(
+      { source: "shakemap", id: cleanName },
+      { highlighted: true, intensity: stationData.int },
+    );
+
+    highlightShakemapObservations._active.push({ source: "shakemap", id: cleanName });
+
+    // Store info for tooltip lookups
+    _shakemapStationInfo.set(cleanName, { ja: stationData.ja, en: stationData.en });
+  }
+}
+
+/**
+ * Clears all shakemap feature highlights.
+ * @param {maplibregl.Map} map
+ */
+export function clearShakemapHighlights(map) {
+  highlightShakemapObservations._active?.forEach(({ source, id }) => {
+    map.setFeatureState({ source, id }, { intensity: null, highlighted: false });
+  });
+  highlightShakemapObservations._active = [];
+  _shakemapStationInfo.clear();
 }
 
 /**

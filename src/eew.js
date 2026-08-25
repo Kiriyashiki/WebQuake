@@ -3,6 +3,7 @@ import { formatTimeJST, formatTimeJSTWithSeconds, INTENSITY_CONFIG, USE_TEST_SER
 import { playAudio } from "./audio.js";
 import {
   updateCityAreasVisibility,
+  updateShakemapVisibility,
   clearEpicenter,
   fitBoundsToObservations,
   highlightObservations,
@@ -1157,6 +1158,7 @@ function updateMapForEew() {
 
   clearEpicenter(mapInstance); // Clear normal epicenter
   updateCityAreasVisibility(mapInstance, false); // Force Cities off temporarily
+  updateShakemapVisibility(mapInstance, false); // Force Shakemap off temporarily
 
   const mergedForecast = mergeForecasts(Array.from(activeEews.values()));
 

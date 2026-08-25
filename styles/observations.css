@@ -217,3 +217,45 @@
   color: inherit;
   font-family: var(--font-mono);
 }
+
+/* ── Shakemap Toggle Button ─────────────────────────────────────── */
+
+.shakemap-toggle-wrapper {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  transition: opacity 0.2s ease;
+}
+
+.shakemap-toggle-wrapper.hidden {
+  display: none;
+}
+
+.shakemap-toggle-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.shakemap-toggle-header:hover {
+  background: rgba(240, 165, 0, 0.08);
+}
+
+.shakemap-toggle-wrapper.active .shakemap-toggle-header {
+  background: rgba(240, 165, 0, 0.15);
+}
+
+.shakemap-toggle-label {
+  color: var(--accent2);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}

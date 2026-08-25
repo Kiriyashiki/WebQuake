@@ -9,6 +9,10 @@ import {
   clearEpicenter,
   clearAllEpicenters,
   updateCityAreasVisibility,
+  updateShakemapVisibility,
+  highlightShakemapObservations,
+  clearShakemapHighlights,
+  isShakemapVisible,
   fitBoundsToObservations,
   displayHomeMarker,
   clearHomeMarker,
@@ -509,6 +513,12 @@ async function boot() {
     // Clear all initial epicenters when a report is opened
     clearAllEpicenters(map);
 
+    // Revert shakemap mode when a report is opened (shakemap is temporary)
+    if (isShakemapVisible()) {
+      updateShakemapVisibility(map, false);
+      clearShakemapHighlights(map);
+    }
+
     // Handle city areas visibility for flash reports
     // Flash reports don't have per-city data, so temporarily switch city mode off
     if (report.isFlashReport) {
@@ -519,7 +529,7 @@ async function boot() {
     }
 
     // Show info box on map
-    _displayMapInfoBox(report);
+    _displayMapInfoBox(report, map);
 
     // Give MapLibre a moment to apply layout property changes before setting feature states.
     // If setFeatureState is called on a source whose layers were just made visible in the same tick,
@@ -774,11 +784,28 @@ function _updateStatus(state) {
 }
 
 /**
+ * Checks whether a report contains per-station (IntensityStation) data.
+ * @param {Object} report
+ * @returns {boolean}
+ */
+function _reportHasStations(report) {
+  if (!report.observations) return false;
+  for (const pref of report.observations) {
+    for (const area of pref.areas) {
+      for (const city of area.cities) {
+        if (city.stations && city.stations.length > 0) return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
  * Displays report information in the top-left info box on the map.
  * Shows magnitude, depth, coordinates, time, intensity, and observations list.
  * Handles flash reports with appropriate badges and restricted data display.
  */
-function _displayMapInfoBox(report) {
+function _displayMapInfoBox(report, map) {
   const infoBox = document.getElementById("map-info-box");
   if (!infoBox) return;
 
@@ -895,6 +922,60 @@ function _displayMapInfoBox(report) {
       globalThis.__prefectureCodes || new Map(),
       { isFlashReport: !!report.isFlashReport },
     );
+  }
+
+  // Setup shakemap toggle button
+  const shakemapWrapper = infoBox.querySelector(".shakemap-toggle-wrapper");
+  if (shakemapWrapper) {
+    const shakemapHeader = shakemapWrapper.querySelector(".shakemap-toggle-header");
+    const shakemapArrow = shakemapWrapper.querySelector(".shakemap-toggle-arrow");
+
+    // Check if report has station data (flash reports don't)
+    const hasStations = _reportHasStations(report);
+    if (!hasStations || report.isFlashReport) {
+      shakemapWrapper.classList.add("hidden");
+    } else {
+      shakemapWrapper.classList.remove("hidden");
+
+      // Reset visual state (not active)
+      shakemapWrapper.classList.remove("active");
+
+      // Clone to remove old listeners
+      const newShakemapHeader = shakemapHeader.cloneNode(true);
+      shakemapHeader.parentNode.replaceChild(newShakemapHeader, shakemapHeader);
+
+      newShakemapHeader.addEventListener("click", () => {
+        const isCurrentlyActive = shakemapWrapper.classList.contains("active");
+
+        if (isCurrentlyActive) {
+          // Deactivate: revert to normal mode
+          shakemapWrapper.classList.remove("active");
+          updateShakemapVisibility(map, false);
+          clearShakemapHighlights(map);
+
+          // Restore city/forecast visibility
+          if (report.isFlashReport) {
+            updateCityAreasVisibility(map, false);
+          } else {
+            updateCityAreasVisibility(map, getCityAreasState());
+          }
+
+          // Re-highlight the normal observations after a tick
+          setTimeout(() => {
+            highlightObservations(map, report.observations);
+          }, 50);
+        } else {
+          // Activate: switch to shakemap mode
+          shakemapWrapper.classList.add("active");
+          updateShakemapVisibility(map, true);
+
+          // Highlight stations on the shakemap after a tick
+          setTimeout(() => {
+            highlightShakemapObservations(map, report.observations);
+          }, 50);
+        }
+      });
+    }
   }
 
   // Setup observations list toggle
