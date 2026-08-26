@@ -101,11 +101,12 @@ export function startLivePolling(areaCodes, callbacks = {}, initialReports = [])
     }
   }
 
-  if (IS_TAURI) {
-    _syncTiming(areaCodes, callbacks);
-  } else {
-    _currentInterval = POLL_INTERVAL;
-    if (_pollingTimeoutId === null) {
+  _currentInterval = POLL_INTERVAL;
+  if (_pollingTimeoutId === null) {
+    if (IS_TAURI) {
+      // Start immediately for Tauri to align timing with server right away
+      _runPollCycle(areaCodes, callbacks);
+    } else {
       _pollingTimeoutId = setTimeout(() => {
         _runPollCycle(areaCodes, callbacks);
       }, _currentInterval);
@@ -121,10 +122,6 @@ export function stopLivePolling() {
   if (_pollingTimeoutId !== null) {
     clearTimeout(_pollingTimeoutId);
     _pollingTimeoutId = null;
-  }
-  if (_syncTimeoutId !== null) {
-    clearTimeout(_syncTimeoutId);
-    _syncTimeoutId = null;
   }
   console.info("[live-mode] Polling stopped");
 }
@@ -158,70 +155,28 @@ document.addEventListener('reports-pruned', (e) => {
 
 // ─── Private helpers ──────────────────────────────────────────────────────
 
-async function _syncTiming(areaCodes, callbacks) {
-  if (!_isActive || !IS_TAURI) return;
-
-  try {
-    if (!tauriFetch) {
-      const mod = await import("@tauri-apps/plugin-http");
-      tauriFetch = mod.fetch;
-    }
-
-    const res = await tauriFetch(XML_FEED_URL, {
-      method: 'GET',
-      headers: { 'Cache-Control': 'no-cache' }
-    });
-    
-    if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-    
-    const cacheControl = res.headers.get('cache-control') || '';
-    const maxAgeMatch = cacheControl.match(/max-age=(\d+)/);
-    const maxAge = maxAgeMatch ? Number.parseInt(maxAgeMatch[1], 10) : 60;
-    
-    const age = Number.parseInt(res.headers.get('age') || '0', 10);
-
-    _currentInterval = maxAge * 1000;
-    const delayToNextPoll = (maxAge - age + 1) * 1000;
-
-    console.debug(`[live-mode] Header sync success: max-age=${maxAge}, age=${age}. Next poll in ${delayToNextPoll}ms.`);
-
-    if (_pollingTimeoutId !== null) {
-      clearTimeout(_pollingTimeoutId);
-    }
-    _pollingTimeoutId = setTimeout(() => {
-      _runPollCycle(areaCodes, callbacks);
-    }, delayToNextPoll);
-
-  } catch (err) {
-    console.warn("[live-mode] Header sync failed, defaulting to fixed interval", err);
-    _currentInterval = POLL_INTERVAL;
-
-    if (_pollingTimeoutId === null) {
-      _pollingTimeoutId = setTimeout(() => {
-        _runPollCycle(areaCodes, callbacks);
-      }, _currentInterval);
-    }
-  }
-
-  if (_syncTimeoutId !== null) {
-    clearTimeout(_syncTimeoutId);
-  }
-  _syncTimeoutId = setTimeout(() => {
-    _syncTiming(areaCodes, callbacks);
-  }, 60 * 60 * 1000);
-}
-
 function _runPollCycle(areaCodes, callbacks) {
   _pollingTimeoutId = null;
   if (!_isActive) return;
 
-  _pollLatestFeed(areaCodes, callbacks).finally(() => {
-    if (_isActive && _pollingTimeoutId === null) {
-      _pollingTimeoutId = setTimeout(() => {
-        _runPollCycle(areaCodes, callbacks);
-      }, _currentInterval);
-    }
-  });
+  _pollLatestFeed(areaCodes, callbacks)
+    .then((nextIntervalMs) => {
+      if (nextIntervalMs) {
+        _currentInterval = nextIntervalMs;
+      }
+    })
+    .catch((err) => {
+      // In case of error, default back to POLL_INTERVAL
+      _currentInterval = POLL_INTERVAL;
+      console.warn("[live-mode] Error during poll, falling back to static interval", err);
+    })
+    .finally(() => {
+      if (_isActive && _pollingTimeoutId === null) {
+        _pollingTimeoutId = setTimeout(() => {
+          _runPollCycle(areaCodes, callbacks);
+        }, _currentInterval);
+      }
+    });
 }
 
 /**
@@ -230,7 +185,20 @@ function _runPollCycle(areaCodes, callbacks) {
  */
 async function _pollLatestFeed(areaCodes, callbacks = {}) {
   try {
-    const entries = await fetchXmlFeedEntries();
+    const options = {};
+    if (IS_TAURI) {
+      if (!tauriFetch) {
+        const mod = await import("@tauri-apps/plugin-http");
+        tauriFetch = mod.fetch;
+      }
+      options.tauriFetch = tauriFetch;
+    }
+
+    const { entries, nextIntervalMs, notModified } = await fetchXmlFeedEntries(options);
+
+    if (notModified) {
+      return nextIntervalMs;
+    }
 
     // Filter for target entries only (震源・震度情報)
     // In XML mode, entries have _xmlDoc instead of json
@@ -484,6 +452,8 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
         }
       }
     }
+
+    return nextIntervalMs;
   } catch (err) {
     console.error("[live-mode] Polling error:", err);
     if (callbacks.onError) callbacks.onError(err);

@@ -1,5 +1,5 @@
 import maplibregl from "maplibre-gl";
-import { formatTimeJST, formatTimeJSTWithSeconds, INTENSITY_CONFIG, USE_TEST_SERVER } from "./constants.js";
+import { formatTimeJSTWithSeconds, INTENSITY_CONFIG, USE_TEST_SERVER } from "./constants.js";
 import { playAudio } from "./audio.js";
 import {
   updateCityAreasVisibility,
@@ -935,6 +935,11 @@ function renderEewInfoBox(msg, isCancelled, isWarning, isPlum, totalCount, curre
   const infoBox = document.getElementById("map-info-box");
   if (!infoBox) return;
   infoBox.classList.remove("hidden");
+
+  const shakemapWrapper = infoBox.querySelector(".shakemap-toggle-wrapper");
+  if (shakemapWrapper) {
+    shakemapWrapper.classList.add("hidden");
+  }
 
   const locationJa = infoBox.querySelector(".info-box-location-ja");
   const locationEn = infoBox.querySelector(".info-box-location-en");

@@ -55,6 +55,9 @@ const _entryCache = new Map();
 
 // ─── Atom Feed Parsing ──────────────────────────────────────────────────────
 
+let _lastModified = null;
+let _eTag = null;
+
 /**
  * Fetches the JMA Atom XML feed index and returns normalized entry objects
  * compatible with the JSON feed format.
@@ -63,15 +66,46 @@ const _entryCache = new Map();
  * changed <updated> timestamp since the last poll.  Cached entries are
  * reused directly.
  *
- * @returns {Promise<Array>} Array of normalized entry objects
+ * @param {Object} options Options containing tauriFetch if available
+ * @returns {Promise<{ entries: Array, nextIntervalMs: number|null, notModified: boolean }>} 
  */
-export async function fetchXmlFeedEntries() {
+export async function fetchXmlFeedEntries(options = {}) {
+  const headers = {};
+  if (_lastModified) headers['If-Modified-Since'] = _lastModified;
+  if (_eTag) headers['If-None-Match'] = _eTag;
+
+  const fetchFn = options.tauriFetch || fetch;
+
   // 1. Fetch the Atom feed index (lightweight — just the feed XML)
-  const feedRes = await fetch(XML_FEED_URL, {
+  const feedRes = await fetchFn(XML_FEED_URL, {
     method: 'GET',
     mode: 'cors',
     cache: 'no-cache',
+    headers,
   });
+
+  let nextIntervalMs = null;
+  let notModified = false;
+
+  if (options.tauriFetch) {
+    const cacheControl = feedRes.headers.get('cache-control') || '';
+    const maxAgeMatch = cacheControl.match(/max-age=(\d+)/);
+    const maxAge = maxAgeMatch ? Number.parseInt(maxAgeMatch[1], 10) : 60;
+    const age = Number.parseInt(feedRes.headers.get('age') || '0', 10);
+    
+    // Schedule next poll when age reaches maxAge + 1s to be safe
+    nextIntervalMs = Math.max((maxAge - age + 1), 1) * 1000;
+    
+    // Update cache headers if not 304
+    if (feedRes.status !== 304) {
+      if (feedRes.headers.get('last-modified')) _lastModified = feedRes.headers.get('last-modified');
+      if (feedRes.headers.get('etag')) _eTag = feedRes.headers.get('etag');
+    }
+  }
+
+  if (feedRes.status === 304) {
+    return { entries: [], nextIntervalMs, notModified: true };
+  }
 
   if (!feedRes.ok) {
     throw new Error(`XML feed fetch failed: ${XML_FEED_URL} (${feedRes.status})`);
@@ -118,7 +152,7 @@ export async function fetchXmlFeedEntries() {
     for (let i = 0; i < toFetch.length; i += 4) {
       const batch = toFetch.slice(i, i + 4);
       const batchResults = await Promise.all(
-        batch.map(atomEntry => _fetchAndNormalizeXmlEntry(atomEntry))
+        batch.map(atomEntry => _fetchAndNormalizeXmlEntry(atomEntry, options))
       );
 
       for (let j = 0; j < batchResults.length; j++) {
@@ -135,7 +169,7 @@ export async function fetchXmlFeedEntries() {
     }
   }
 
-  return [...fromCache, ...newlyFetched];
+  return { entries: [...fromCache, ...newlyFetched], nextIntervalMs, notModified };
 }
 
 /**
@@ -170,11 +204,13 @@ document.addEventListener('reports-pruned', (e) => {
  * Fetches an individual XML report and normalizes it to the JSON entry format.
  *
  * @param {{ title: string, dataUrl: string, updated: string }} atomEntry
+ * @param {Object} options Options containing tauriFetch if available
  * @returns {Promise<Object|null>} Normalized entry or null on failure
  */
-async function _fetchAndNormalizeXmlEntry(atomEntry) {
+async function _fetchAndNormalizeXmlEntry(atomEntry, options = {}) {
   try {
-    const res = await fetch(atomEntry.dataUrl, {
+    const fetchFn = options.tauriFetch || fetch;
+    const res = await fetchFn(atomEntry.dataUrl, {
       method: 'GET',
       mode: 'cors',
       cache: 'no-cache',
