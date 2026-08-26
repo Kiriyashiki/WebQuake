@@ -20,6 +20,14 @@ export const INTENSITY_CONFIG = {
   "7":  { color: "#5D0092", fontColor: "#FFFFFF", img: "7.png" }
 };
 
+// ─── LPGM Configuration (JMA LPGM Scale) ──────────────────────────────
+export const LPGM_CONFIG = {
+  "1":  { color: "#32B464", fontColor: "#FFFFFF", img: "l1.png" },
+  "2":  { color: "#FFE05D", fontColor: "#000000", img: "l2.png" },
+  "3": { color: "#FFAA13", fontColor: "#000000", img: "l3.png" },
+  "4": { color: "#E40000", fontColor: "#FFFFFF", img: "l4.png" }
+};
+
 // ─── Map Colour Palette ──────────────────────────────────────────────────────
 export const MAP_COLORS = {
   ocean: "#080c11",
@@ -73,6 +81,23 @@ export function buildIntensityColorExpression(isDimmed = false, fallback = "tran
   });
 
   // Default to fallback
+  colors.push(fallback);
+
+  return ["case", ...colors];
+}
+
+/**
+ * Builds LPGM color expressions for MapLibre style.
+ */
+export function buildLpgmColorExpression(isDimmed = false, fallback = "transparent") {
+  const opacity = isDimmed ? 0.7 : 1;
+  const colors = [];
+
+  Object.entries(LPGM_CONFIG).forEach(([intensity, config]) => {
+    const color = isDimmed ? hexToRgba(config.color, opacity) : config.color;
+    colors.push(["==", ["feature-state", "lpgmIntensity"], intensity], color);
+  });
+
   colors.push(fallback);
 
   return ["case", ...colors];

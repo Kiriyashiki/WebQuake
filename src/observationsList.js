@@ -4,7 +4,7 @@
  */
 
 import { loadPrefectureCodes, loadCityNames } from "./areaCodes.js";
-import { INTENSITY_CONFIG } from "./constants";
+import { INTENSITY_CONFIG, LPGM_CONFIG } from "./constants";
 
 
 
@@ -124,7 +124,7 @@ export async function renderObservationsList(container, observations, areaCodes 
 
   if (!observations || observations.length === 0) return;
 
-  const { isFlashReport = false } = options;
+  const { isFlashReport = false, isLpgm = false } = options;
 
   try {
     // Load data (cached in areaCodes.js — no redundant fetches)
@@ -132,14 +132,14 @@ export async function renderObservationsList(container, observations, areaCodes 
     const resolvedPrefCodes = prefCodes || await loadPrefectureCodes();
 
     // Group observations by intensity
-    const grouped = isFlashReport
-      ? groupObservationsByIntensityAreaOnly(observations, areaCodes, resolvedPrefCodes)
+    const grouped = (isFlashReport || isLpgm)
+      ? groupObservationsByIntensityAreaOnly(observations, areaCodes, resolvedPrefCodes, isLpgm)
       : groupObservationsByIntensity(observations, areaCodes, resolvedPrefCodes, cityNames);
 
     // Get intensity order (descending: highest first)
     // '未入電' (no data received) is placed after all standard intensities
     const intensities = Object.keys(grouped).sort((a, b) => {
-      const order = ['7', '6+', '6-', '5+', '5-', '4', '3', '2', '1', '未入電'];
+      const order = isLpgm ? ['4', '3', '2', '1'] : ['7', '6+', '6-', '5+', '5-', '4', '3', '2', '1', '未入電'];
       const idxA = order.indexOf(a) === -1 ? order.length : order.indexOf(a);
       const idxB = order.indexOf(b) === -1 ? order.length : order.indexOf(b);
       return idxA - idxB;
@@ -158,9 +158,10 @@ export async function renderObservationsList(container, observations, areaCodes 
 
     // Check if max intensity is 5- or higher
     const maxIntensity = intensities[0];
-    const maxIntensityRank = ['7', '6+', '6-', '5+', '5-'].includes(maxIntensity) ? 5 : 
+    const maxIntensityRank = isLpgm ? Number.parseInt(maxIntensity, 10) :
+                             (['7', '6+', '6-', '5+', '5-'].includes(maxIntensity) ? 5 : 
                              maxIntensity === '4' ? 4 : 
-                             Number.parseInt(maxIntensity, 10);
+                             Number.parseInt(maxIntensity, 10));
 
     // Create sections for each intensity
     for (const intensity of intensities) {
@@ -168,7 +169,7 @@ export async function renderObservationsList(container, observations, areaCodes 
       section.className = 'observations-intensity-section';
 
       // Resolve style config; fall back for non-standard keys like '未入電'
-      const config = INTENSITY_CONFIG[intensity] || { color: '#4a4a4a', fontColor: '#FFFFFF' };
+      const config = (isLpgm ? LPGM_CONFIG[intensity] : INTENSITY_CONFIG[intensity]) || { color: '#4a4a4a', fontColor: '#FFFFFF' };
 
       // Header (collapsible)
       const header = document.createElement('div');
@@ -176,10 +177,12 @@ export async function renderObservationsList(container, observations, areaCodes 
       header.style.backgroundColor = config.color;
 
       // Determine if section should be open by default
-      const intensityRank = ['7', '6+', '6-', '5+', '5-'].includes(intensity) ? 5 :
+      const intensityRank = isLpgm ? Number.parseInt(intensity, 10) || 0 :
+                           (['7', '6+', '6-', '5+', '5-'].includes(intensity) ? 5 :
                            intensity === '4' ? 4 :
-                           Number.parseInt(intensity, 10) || 0;
-      const shouldOpen = maxIntensityRank >= 5 ? intensityRank >= 4 : true;
+                           Number.parseInt(intensity, 10) || 0);
+      
+      const shouldOpen = isLpgm ? true : (maxIntensityRank >= 5 ? intensityRank >= 4 : true);
 
       const toggle = document.createElement('span');
       toggle.className = 'observations-toggle';
@@ -190,9 +193,11 @@ export async function renderObservationsList(container, observations, areaCodes 
       label.className = 'observations-intensity-label';
       label.style.color = config.fontColor;
       // Special label for non-standard intensity keys
-      const labelText = intensity === '未入電'
-        ? '震度５弱以上未入電'
-        : `震度 ${intensity.replace('-', '弱').replace('+', '強')}`;
+      const labelText = isLpgm
+        ? `長周期地震動階級 ${intensity}`
+        : (intensity === '未入電'
+            ? '震度５弱以上未入電'
+            : `震度 ${intensity.replace('-', '弱').replace('+', '強')}`);
       label.textContent = labelText;
 
       header.appendChild(toggle);
@@ -271,13 +276,14 @@ export async function renderObservationsList(container, observations, areaCodes 
 
 /**
  * Group observations by intensity at the area level (no cities).
- * Used for flash reports (震度速報) which don't have per-city data.
+ * Used for flash reports (震度速報) which don't have per-city data, and for LPGM which only has area-level intensities.
  * @param {Array} observations - Observations array (areas have empty cities arrays)
  * @param {Map} areaCodes - Area code mappings
  * @param {Map} prefectureCodes - Prefecture code mappings
+ * @param {boolean} isLpgm - If true, groups by maxLgInt instead of maxInt
  * @returns {Object} Grouped observations by intensity
  */
-function groupObservationsByIntensityAreaOnly(observations, areaCodes = new Map(), prefectureCodes = new Map()) {
+function groupObservationsByIntensityAreaOnly(observations, areaCodes = new Map(), prefectureCodes = new Map(), isLpgm = false) {
   const grouped = {};
 
   const ensureIntensity = (intensity) => {
@@ -307,24 +313,23 @@ function groupObservationsByIntensityAreaOnly(observations, areaCodes = new Map(
     const prefName = pref.name;
 
     for (const area of pref.areas) {
+      const intensity = isLpgm ? area.maxLgInt : area.maxInt;
+      if (!intensity) continue;
+      ensureIntensity(intensity);
+
       const areaCode = area.code;
       const areaName = areaCodes.get(areaCode)?.ja || area.name;
       const areaNameEn = areaCodes.get(areaCode)?.en || '';
-      const areaIntensity = area.maxInt;
 
-      if (!areaIntensity) continue;
+      const prefEntry = findOrCreatePref(intensity, prefCode, prefName);
 
-      ensureIntensity(areaIntensity);
-      const prefEntry = findOrCreatePref(areaIntensity, prefCode, prefName);
-
-      // Check if area already exists
       const existingArea = prefEntry.areas.find(a => a.code === areaCode);
       if (!existingArea) {
         prefEntry.areas.push({
           code: areaCode,
           name: areaName,
           nameEn: areaNameEn,
-          cities: [],
+          cities: [], // empty for area-only view
         });
       }
     }

@@ -4,12 +4,18 @@
  */
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { INTENSITY_CONFIG, MAP_COLORS, buildIntensityColorExpression } from "./constants.js";
+import {
+  INTENSITY_CONFIG,
+  LPGM_CONFIG,
+  MAP_COLORS,
+  buildIntensityColorExpression,
+  buildLpgmColorExpression,
+} from "./constants.js";
+
+const C = MAP_COLORS;
 
 // ─── Build the MapLibre style object ────────────────────────────────────────
 function buildStyle(useCityAreas = true) {
-  const C = MAP_COLORS;
-  
   return {
     version: 8,
     glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
@@ -85,7 +91,7 @@ function buildStyle(useCityAreas = true) {
         id: "cities-line-bg",
         type: "line",
         source: "cities",
-        layout: { visibility: useCityAreas ? 'visible' : 'none' },
+        layout: { visibility: useCityAreas ? "visible" : "none" },
         paint: {
           "line-color": C.cityLine,
           "line-width": 0.4,
@@ -113,7 +119,7 @@ function buildStyle(useCityAreas = true) {
         id: "forecast-fill",
         type: "fill",
         source: "forecast_areas",
-        layout: { visibility: useCityAreas ? 'none' : 'visible' },
+        layout: { visibility: useCityAreas ? "none" : "visible" },
         paint: {
           "fill-color": [
             "case",
@@ -122,11 +128,7 @@ function buildStyle(useCityAreas = true) {
               "case",
               ["boolean", ["feature-state", "hover"], false],
               // Highlighted + hovered: lighter intensity color
-              [
-                "coalesce",
-                buildIntensityColorExpression(false),
-                "transparent",
-              ],
+              ["coalesce", buildIntensityColorExpression(false), "transparent"],
               // Highlighted + not hovered: intensity color at 40% opacity
               buildIntensityColorExpression(true),
             ],
@@ -140,7 +142,7 @@ function buildStyle(useCityAreas = true) {
         id: "cities-fill",
         type: "fill",
         source: "cities",
-        layout: { visibility: useCityAreas ? 'visible' : 'none' },
+        layout: { visibility: useCityAreas ? "visible" : "none" },
         paint: {
           "fill-color": [
             "case",
@@ -148,11 +150,7 @@ function buildStyle(useCityAreas = true) {
             [
               "case",
               ["boolean", ["feature-state", "hover"], false],
-              [
-                "coalesce",
-                buildIntensityColorExpression(false),
-                "transparent",
-              ],
+              ["coalesce", buildIntensityColorExpression(false), "transparent"],
               buildIntensityColorExpression(true),
             ],
             "transparent",
@@ -164,7 +162,7 @@ function buildStyle(useCityAreas = true) {
         id: "shakemap-fill",
         type: "fill",
         source: "shakemap",
-        layout: { visibility: 'none' },
+        layout: { visibility: "none" },
         paint: {
           "fill-color": [
             "case",
@@ -172,11 +170,7 @@ function buildStyle(useCityAreas = true) {
             [
               "case",
               ["boolean", ["feature-state", "hover"], false],
-              [
-                "coalesce",
-                buildIntensityColorExpression(false),
-                "transparent",
-              ],
+              ["coalesce", buildIntensityColorExpression(false), "transparent"],
               buildIntensityColorExpression(true),
             ],
             "transparent",
@@ -197,7 +191,7 @@ function buildStyle(useCityAreas = true) {
         id: "cities-line",
         type: "line",
         source: "cities",
-        layout: { visibility: useCityAreas ? 'visible' : 'none' },
+        layout: { visibility: useCityAreas ? "visible" : "none" },
         paint: {
           "line-color": [
             "case",
@@ -217,7 +211,7 @@ function buildStyle(useCityAreas = true) {
         id: "shakemap-line",
         type: "line",
         source: "shakemap",
-        layout: { visibility: 'none' },
+        layout: { visibility: "none" },
         paint: {
           "line-color": [
             "case",
@@ -237,7 +231,7 @@ function buildStyle(useCityAreas = true) {
         id: "forecast-line",
         type: "line",
         source: "forecast_areas",
-        layout: { visibility: useCityAreas ? 'none' : 'visible' },
+        layout: { visibility: useCityAreas ? "none" : "visible" },
         paint: {
           "line-color": [
             "case",
@@ -260,19 +254,29 @@ function buildStyle(useCityAreas = true) {
 // ─── Tooltip helpers ─────────────────────────────────────────────────────────
 function showTooltip(tooltip, x, y, code, info, intensity = null, mode = "area") {
   const codeEl = tooltip.querySelector(".tooltip-code");
-  const codeLabel = mode === "station" ? "STATION" : mode === "city" ? `CITY ${code}` : `AREA ${code}`;
+  const codeLabel =
+    mode === "station" ? "STATION" : mode === "city" ? `CITY ${code}` : `AREA ${code}`;
   codeEl.textContent = codeLabel;
   tooltip.querySelector(".tooltip-ja").textContent = info?.ja ?? "—";
   tooltip.querySelector(".tooltip-en").textContent = info?.en ?? "";
 
   // Update intensity display if available
   const intensityContainer = tooltip.querySelector(".tooltip-intensity-container");
-  if (intensity && INTENSITY_CONFIG[intensity]) {
-    const config = INTENSITY_CONFIG[intensity];
+
+  let config = null;
+  if (intensity) {
+    if (_lpgmVisible) {
+      config = LPGM_CONFIG[intensity];
+    } else {
+      config = INTENSITY_CONFIG[intensity];
+    }
+  }
+
+  if (config) {
     const img = intensityContainer.querySelector("img");
-    img.src = `/img/shindo/${config.img}`;
-    img.alt = `Intensity ${intensity}`;
-    img.title = `Intensity: ${intensity}`;
+    img.src = _lpgmVisible ? `/img/lpgm/${config.img}` : `/img/shindo/${config.img}`;
+    img.alt = _lpgmVisible ? `LPGM ${intensity}` : `Intensity ${intensity}`;
+    img.title = _lpgmVisible ? `LPGM: ${intensity}` : `Intensity: ${intensity}`;
     intensityContainer.classList.remove("hidden");
 
     tooltip.style.borderTopColor = config.color;
@@ -351,9 +355,15 @@ let _stationNamesCsv = null;
  * @param {Function} getUseCityAreas - Returns current state of city areas toggle
  * @returns {maplibregl.Map}
  */
-export function initMap(container, areaCodes, cityNames, stationNames, getUseCityAreas = () => true) {
+export function initMap(
+  container,
+  areaCodes,
+  cityNames,
+  stationNames,
+  getUseCityAreas = () => true,
+) {
   _stationNamesCsv = stationNames;
-  
+
   const map = new maplibregl.Map({
     container,
     style: buildStyle(getUseCityAreas()),
@@ -374,14 +384,17 @@ export function initMap(container, areaCodes, cityNames, stationNames, getUseCit
 
     const layers = ["forecast-fill", "cities-fill"];
 
-    layers.forEach(layerName => {
+    layers.forEach((layerName) => {
       const isCityLayer = layerName === "cities-fill";
       const sourceName = isCityLayer ? "cities" : "forecast_areas";
-      let hoveredId = null;  // Per-layer hover tracking
+      let hoveredId = null; // Per-layer hover tracking
 
       // ── Mouse move on areas ──────────────────────────────────────
       map.on("mousemove", layerName, (e) => {
-        if (isCityLayer !== _currentCityAreasVisible) return;
+        const isActiveLayer = _lpgmVisible
+          ? !isCityLayer
+          : isCityLayer === _currentCityAreasVisible;
+        if (!isActiveLayer) return;
 
         canvas.style.cursor = "crosshair";
 
@@ -400,8 +413,8 @@ export function initMap(container, areaCodes, cityNames, stationNames, getUseCit
             e.originalEvent.clientY - top,
             newId,
             isCityLayer ? cityNames?.get(String(newId)) : areaCodes.get(Number(newId)),
-            state?.intensity,
-            isCityLayer ? "city" : "area"
+            _lpgmVisible ? state?.lpgmIntensity : state?.intensity,
+            isCityLayer ? "city" : "area",
           );
           return;
         }
@@ -423,15 +436,18 @@ export function initMap(container, areaCodes, cityNames, stationNames, getUseCit
           e.originalEvent.clientY - top,
           hoveredId,
           isCityLayer ? cityNames?.get(String(hoveredId)) : areaCodes.get(Number(hoveredId)),
-          state?.intensity,
-          isCityLayer ? "city" : "area"
+          _lpgmVisible ? state?.lpgmIntensity : state?.intensity,
+          isCityLayer ? "city" : "area",
         );
       });
 
       // ── Mouse leave ──────────────────────────────────────────────────────
       map.on("mouseleave", layerName, () => {
-        if (isCityLayer !== _currentCityAreasVisible) return;
-        
+        const isActiveLayer = _lpgmVisible
+          ? !isCityLayer
+          : isCityLayer === _currentCityAreasVisible;
+        if (!isActiveLayer) return;
+
         canvas.style.cursor = "";
 
         if (hoveredId !== null) {
@@ -469,7 +485,7 @@ export function initMap(container, areaCodes, cityNames, stationNames, getUseCit
             newId,
             _getShakemapTooltipInfo(stationName),
             state?.intensity,
-            "station"
+            "station",
           );
           return;
         }
@@ -491,7 +507,7 @@ export function initMap(container, areaCodes, cityNames, stationNames, getUseCit
           hoveredShakemapId,
           _getShakemapTooltipInfo(stationName),
           state?.intensity,
-          "station"
+          "station",
         );
       });
 
@@ -537,19 +553,19 @@ export function updateCityAreasVisibility(map, useCityAreas) {
     // Style not ready — defer the layout change until the map is idle.
     // Cancel any earlier pending update so only the latest value applies.
     if (_pendingCityAreasUpdate) {
-      map.off('idle', _pendingCityAreasUpdate);
+      map.off("idle", _pendingCityAreasUpdate);
     }
     _pendingCityAreasUpdate = () => {
       _pendingCityAreasUpdate = null;
       _applyCityAreasVisibility(map, _currentCityAreasVisible);
     };
-    map.once('idle', _pendingCityAreasUpdate);
+    map.once("idle", _pendingCityAreasUpdate);
     return;
   }
 
   // Cancel any pending deferred update since we're applying directly now
   if (_pendingCityAreasUpdate) {
-    map.off('idle', _pendingCityAreasUpdate);
+    map.off("idle", _pendingCityAreasUpdate);
     _pendingCityAreasUpdate = null;
   }
 
@@ -562,27 +578,89 @@ function _applyCityAreasVisibility(map, useCityAreas) {
     map.setLayoutProperty("cities-fill", "visibility", "none");
     map.setLayoutProperty("cities-line", "visibility", "none");
     map.setLayoutProperty("cities-line-bg", "visibility", "none");
-    
+
     map.setLayoutProperty("forecast-fill", "visibility", "none");
     map.setLayoutProperty("forecast-line", "visibility", "none");
-    
+
     map.setLayoutProperty("forecast-line-bg", "visibility", "none");
     map.setLayoutProperty("prefecture-line", "visibility", "none");
     return;
   }
 
-  const visibility = useCityAreas ? 'visible' : 'none';
-  const invVisibility = useCityAreas ? 'none' : 'visible';
+  // LPGM mode overrides user preference and forces city layers OFF,
+  // ensuring forecast layers are visible.
+  const isCityVisible = _lpgmVisible ? false : useCityAreas;
+
+  const visibility = isCityVisible ? "visible" : "none";
+  const invVisibility = isCityVisible ? "none" : "visible";
 
   map.setLayoutProperty("cities-fill", "visibility", visibility);
   map.setLayoutProperty("cities-line", "visibility", visibility);
   map.setLayoutProperty("cities-line-bg", "visibility", visibility);
-  
+
   map.setLayoutProperty("forecast-fill", "visibility", invVisibility);
   map.setLayoutProperty("forecast-line", "visibility", invVisibility);
-  
+
   map.setLayoutProperty("forecast-line-bg", "visibility", "visible");
   map.setLayoutProperty("prefecture-line", "visibility", "visible");
+}
+
+// ─── LPGM mode ─────────────────────────────────────────────────────────────
+
+let _lpgmVisible = false;
+
+export function isLpgmVisible() {
+  return _lpgmVisible;
+}
+
+/**
+ * Toggles LPGM layer colors and forces forecast mode.
+ * @param {maplibregl.Map} map
+ * @param {boolean} show
+ */
+export function updateLpgmVisibility(map, show) {
+  _lpgmVisible = show;
+
+  if (show) {
+    map.setPaintProperty("forecast-fill", "fill-color", [
+      "case",
+      ["boolean", ["feature-state", "highlighted"], false],
+      [
+        "case",
+        ["boolean", ["feature-state", "hover"], false],
+        ["coalesce", buildLpgmColorExpression(false), "transparent"],
+        buildLpgmColorExpression(true),
+      ],
+      "transparent",
+    ]);
+    map.setPaintProperty("forecast-line", "line-color", [
+      "case",
+      ["boolean", ["feature-state", "highlighted"], false],
+      buildLpgmColorExpression(false, C.forecastLine),
+      ["case", ["boolean", ["feature-state", "hover"], false], "#2b4262", C.japanLine],
+    ]);
+  } else {
+    map.setPaintProperty("forecast-fill", "fill-color", [
+      "case",
+      ["boolean", ["feature-state", "highlighted"], false],
+      [
+        "case",
+        ["boolean", ["feature-state", "hover"], false],
+        ["coalesce", buildIntensityColorExpression(false), "transparent"],
+        buildIntensityColorExpression(true),
+      ],
+      "transparent",
+    ]);
+    map.setPaintProperty("forecast-line", "line-color", [
+      "case",
+      ["boolean", ["feature-state", "highlighted"], false],
+      buildIntensityColorExpression(false, C.forecastLine),
+      ["case", ["boolean", ["feature-state", "hover"], false], "#2b4262", C.japanLine],
+    ]);
+  }
+
+  // Update layout properties to enforce forecast areas only
+  _applyCityAreasVisibility(map, _currentCityAreasVisible);
 }
 
 // ─── Shakemap mode ─────────────────────────────────────────────────────────
@@ -600,7 +678,7 @@ function _cleanStationName(name) {
 
 /**
  * Returns tooltip info for a shakemap station, falling back to CSV data if unhighlighted.
- * @param {string} name 
+ * @param {string} name
  * @returns {{ja: string, en: string}}
  */
 function _getShakemapTooltipInfo(name) {
@@ -608,7 +686,7 @@ function _getShakemapTooltipInfo(name) {
   const cleanName = _cleanStationName(name);
   let info = _shakemapStationInfo.get(cleanName);
   if (info) return info;
-  
+
   const csvMatch = _stationNamesCsv?.byName?.get(cleanName);
   return csvMatch ? { ja: csvMatch.ja, en: csvMatch.en } : { ja: cleanName, en: "" };
 }
@@ -627,18 +705,18 @@ export function updateShakemapVisibility(map, show) {
 
   if (!map.isStyleLoaded()) {
     if (_pendingShakemapUpdate) {
-      map.off('idle', _pendingShakemapUpdate);
+      map.off("idle", _pendingShakemapUpdate);
     }
     _pendingShakemapUpdate = () => {
       _pendingShakemapUpdate = null;
       updateShakemapVisibility(map, _shakemapVisible);
     };
-    map.once('idle', _pendingShakemapUpdate);
+    map.once("idle", _pendingShakemapUpdate);
     return;
   }
 
   if (_pendingShakemapUpdate) {
-    map.off('idle', _pendingShakemapUpdate);
+    map.off("idle", _pendingShakemapUpdate);
     _pendingShakemapUpdate = null;
   }
 
@@ -687,7 +765,7 @@ export function highlightShakemapObservations(map, observations) {
         if (!city.stations) continue;
         for (const station of city.stations) {
           if (!station.name) continue;
-          
+
           const cleanName = _cleanStationName(station.name);
           let finalJa = cleanName;
           let finalEn = station.enName ? station.enName.replace(/\*/g, "") : "";
@@ -697,7 +775,7 @@ export function highlightShakemapObservations(map, observations) {
             let csvMatch = null;
             if (station.code) csvMatch = _stationNamesCsv.byCode.get(station.code);
             if (!csvMatch) csvMatch = _stationNamesCsv.byName.get(cleanName);
-            
+
             if (csvMatch) {
               finalJa = csvMatch.ja;
               finalEn = csvMatch.en;
@@ -751,13 +829,17 @@ export function clearShakemapHighlights(map) {
  * list, colour-coded by intensity. Pass null to clear.
  *
  * @param {maplibregl.Map} map
- * @param {Array|null} observations  - Parsed observations from JMAEarthquakeReport
+ * @param {Array|null} observations  - Parsed observations from JMAEarthquakeReport or lpgmInfo
+ * @param {boolean} isLpgm - If true, uses maxLgInt instead of maxInt
  */
-export function highlightObservations(map, observations) {
+export function highlightObservations(map, observations, isLpgm = false) {
   // Reset every currently highlighted feature first
   // MapLibre does not provide a bulk-reset, so we track them.
   highlightObservations._active?.forEach(({ source, id }) => {
-    map.setFeatureState({ source, id }, { intensity: null, highlighted: false });
+    map.setFeatureState(
+      { source, id },
+      { intensity: null, lpgmIntensity: null, highlighted: false },
+    );
   });
   highlightObservations._active = [];
 
@@ -767,20 +849,28 @@ export function highlightObservations(map, observations) {
     for (const area of pref.areas) {
       // Highlight forecast areas
       const areaId = String(area.code);
-      map.setFeatureState(
-        { source: "forecast_areas", id: areaId },
-        { highlighted: true, intensity: area.maxInt },
-      );
+      const intensityVal = isLpgm ? area.maxLgInt : area.maxInt;
+
+      const featureState = { highlighted: true };
+      if (isLpgm) {
+        featureState.lpgmIntensity = intensityVal;
+      } else {
+        featureState.intensity = intensityVal;
+      }
+
+      map.setFeatureState({ source: "forecast_areas", id: areaId }, featureState);
       highlightObservations._active.push({ source: "forecast_areas", id: areaId });
 
       // Highlight city areas
-      for (const city of area.cities) {
-        const cityId = String(city.code).padStart(7, "0");
-        map.setFeatureState(
-          { source: "cities", id: cityId },
-          { highlighted: true, intensity: city.maxInt },
-        );
-        highlightObservations._active.push({ source: "cities", id: cityId });
+      if (area.cities) {
+        for (const city of area.cities) {
+          const cityId = String(city.code).padStart(7, "0");
+          map.setFeatureState(
+            { source: "cities", id: cityId },
+            { highlighted: true, intensity: city.maxInt },
+          );
+          highlightObservations._active.push({ source: "cities", id: cityId });
+        }
       }
     }
   }
@@ -806,14 +896,25 @@ export function displayEpicenter(map, coordinates) {
  * @param {{latitude: number, longitude: number}} [coordinates]
  * @param {number} zoom
  */
-export function fitBoundsToObservations(map, observations, featureBounds, useCityAreas, maxInt, coordinates, zoom = 7.5) {
+export function fitBoundsToObservations(
+  map,
+  observations,
+  featureBounds,
+  useCityAreas,
+  maxInt,
+  coordinates,
+  zoom = 7.5,
+) {
   if (!observations || !featureBounds) return false;
 
-  if (document.getElementById('map-container').offsetWidth <= 400) {
+  if (document.getElementById("map-container").offsetWidth <= 400) {
     return false;
   }
 
-  let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity;
+  let minLng = Infinity,
+    minLat = Infinity,
+    maxLng = -Infinity,
+    maxLat = -Infinity;
   let hasBounds = false;
 
   for (const pref of observations) {
@@ -835,19 +936,23 @@ export function fitBoundsToObservations(map, observations, featureBounds, useCit
           }
         }
       } else if ((areaInt >= 1 && Number.parseInt(maxInt) <= 5) || areaInt >= 2) {
-          const bounds = featureBounds.forecast[area.code];
-          if (bounds) {
-            if (bounds[0] < minLng) minLng = bounds[0];
-            if (bounds[1] < minLat) minLat = bounds[1];
-            if (bounds[2] > maxLng) maxLng = bounds[2];
-            if (bounds[3] > maxLat) maxLat = bounds[3];
-            hasBounds = true;
-          }
+        const bounds = featureBounds.forecast[area.code];
+        if (bounds) {
+          if (bounds[0] < minLng) minLng = bounds[0];
+          if (bounds[1] < minLat) minLat = bounds[1];
+          if (bounds[2] > maxLng) maxLng = bounds[2];
+          if (bounds[3] > maxLat) maxLat = bounds[3];
+          hasBounds = true;
         }
+      }
     }
   }
 
-  if (coordinates && typeof coordinates.longitude === "number" && typeof coordinates.latitude === "number") {
+  if (
+    coordinates &&
+    typeof coordinates.longitude === "number" &&
+    typeof coordinates.latitude === "number"
+  ) {
     if (coordinates.longitude < minLng) minLng = coordinates.longitude;
     if (coordinates.latitude < minLat) minLat = coordinates.latitude;
     if (coordinates.longitude > maxLng) maxLng = coordinates.longitude;
@@ -856,13 +961,19 @@ export function fitBoundsToObservations(map, observations, featureBounds, useCit
   }
 
   if (hasBounds) {
-    map.fitBounds([[minLng, minLat], [maxLng, maxLat]], {
-      padding: {top: 30, bottom:30, left: 300, right: 30},
-      essential: true,
-      maxZoom: zoom
-    });
+    map.fitBounds(
+      [
+        [minLng, minLat],
+        [maxLng, maxLat],
+      ],
+      {
+        padding: { top: 30, bottom: 30, left: 300, right: 30 },
+        essential: true,
+        maxZoom: zoom,
+      },
+    );
   }
-  
+
   return hasBounds;
 }
 
@@ -891,10 +1002,12 @@ export function displayAllEpicenters(map, reports) {
     const markerEl = document.createElement("div");
     markerEl.className = "epicenter-all-marker";
 
-    const intensityConfig = (report.maxIntensity && INTENSITY_CONFIG[report.maxIntensity]) || { color: "#1e2e44" };
+    const intensityConfig = (report.maxIntensity && INTENSITY_CONFIG[report.maxIntensity]) || {
+      color: "#1e2e44",
+    };
 
     // Use CSS mask to colorize the bw epicenter image
-    markerEl.style.width = "24px";  
+    markerEl.style.width = "24px";
     markerEl.style.height = "24px";
     markerEl.style.backgroundColor = intensityConfig.color;
     markerEl.style.maskImage = "url(/img/epicenter-bw.png)";
@@ -1087,7 +1200,7 @@ export function displayHomeLocationIntensity(cityCode, observations, cityNames) 
   // Update intensity display (may be null if no observation recorded)
   const intensity = findIntensityForCity(observations, cityCode);
   const intensityContainer = display.querySelector(".tooltip-intensity-container");
-  
+
   if (intensity && INTENSITY_CONFIG[intensity]) {
     const config = INTENSITY_CONFIG[intensity];
     const img = intensityContainer.querySelector("img");

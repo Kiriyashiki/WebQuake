@@ -233,10 +233,21 @@
                   <span class="info-label">Time • 日時</span>
                   <span class="info-value info-time mono"></span>
                 </div>
+                <div class="info-box-row info-box-lpgm-row hidden">
+                  <span class="info-label">LPGM • 長周期地震動階級</span>
+                  <span class="info-value info-lpgm mono"></span>
+                </div>
               </div>
-              <div class="shakemap-toggle-wrapper">
-                <div class="shakemap-toggle-header">
-                  <span class="shakemap-toggle-label">Toggle Shakemap</span>
+              <div class="map-toggles-wrapper hidden">
+                <div class="shakemap-toggle-wrapper hidden">
+                  <div class="shakemap-toggle-header">
+                    <span class="shakemap-toggle-label">Toggle Shakemap</span>
+                  </div>
+                </div>
+                <div class="lpgm-toggle-wrapper hidden">
+                  <div class="lpgm-toggle-header">
+                    <span class="lpgm-toggle-label">Toggle LPGM</span>
+                  </div>
                 </div>
               </div>
               <div class="observations-list-wrapper">
@@ -279,23 +290,15 @@
             <div id="map-legend">
               <div class="legend-title mono">震度 · INTENSITY</div>
               <div class="legend-items">
-                <div class="legend-item"><img src="/img/shindo/1.png" alt="1" /><span>1</span></div>
-                <div class="legend-item"><img src="/img/shindo/2.png" alt="2" /><span>2</span></div>
-                <div class="legend-item"><img src="/img/shindo/3.png" alt="3" /><span>3</span></div>
-                <div class="legend-item"><img src="/img/shindo/4.png" alt="4" /><span>4</span></div>
-                <div class="legend-item">
-                  <img src="/img/shindo/5minus.png" alt="5-" /><span>5弱</span>
-                </div>
-                <div class="legend-item">
-                  <img src="/img/shindo/5plus.png" alt="5+" /><span>5強</span>
-                </div>
-                <div class="legend-item">
-                  <img src="/img/shindo/6minus.png" alt="6-" /><span>6弱</span>
-                </div>
-                <div class="legend-item">
-                  <img src="/img/shindo/6plus.png" alt="6+" /><span>6強</span>
-                </div>
-                <div class="legend-item"><img src="/img/shindo/7.png" alt="7" /><span>7</span></div>
+                <div class="legend-item"><img src="/img/shindo/1.png" alt="1" /></div>
+                <div class="legend-item"><img src="/img/shindo/2.png" alt="2" /></div>
+                <div class="legend-item"><img src="/img/shindo/3.png" alt="3" /></div>
+                <div class="legend-item"><img src="/img/shindo/4.png" alt="4" /></div>
+                <div class="legend-item"><img src="/img/shindo/5minus.png" alt="5-" /></div>
+                <div class="legend-item"><img src="/img/shindo/5plus.png" alt="5+" /></div>
+                <div class="legend-item"><img src="/img/shindo/6minus.png" alt="6-" /></div>
+                <div class="legend-item"><img src="/img/shindo/6plus.png" alt="6+" /></div>
+                <div class="legend-item"><img src="/img/shindo/7.png" alt="7" /></div>
               </div>
               <div class="legend-divider"></div>
               <div class="legend-item epicenter-legend">
@@ -380,9 +383,9 @@
                     ><br />
                     - <a href="https://www.data.jma.go.jp/eqdb/data/shindo/" target="_blank"
                       >EQDB</a
-                    ><br />
-                    - <a href="https://axis.prioris.jp/">AXIS</a>
+                    >
                   </p>
+                  <p><a href="https://axis.prioris.jp/">AXIS</a></p>
                   <p><a href="https://jquake.net/" target="_blank">JQuake (Intensity color scale)</a></p>
                   <p><a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap (Lakes GIS data)</a></p>
                   <p>App Development · ウェブサイト開発<br>

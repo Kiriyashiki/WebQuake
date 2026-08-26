@@ -218,44 +218,67 @@
   font-family: var(--font-mono);
 }
 
-/* ── Shakemap Toggle Button ─────────────────────────────────────── */
+/* ── Map Mode Toggles ───────────────────────────────────────────── */
 
-.shakemap-toggle-wrapper {
+.map-toggles-wrapper {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   border-top: 1px solid var(--border);
   flex-shrink: 0;
   transition: opacity 0.2s ease;
 }
 
-.shakemap-toggle-wrapper.hidden {
+.map-toggles-wrapper.hidden {
   display: none;
 }
 
-.shakemap-toggle-header {
+.shakemap-toggle-wrapper,
+.lpgm-toggle-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Add a right border to the first toggle to separate them */
+.shakemap-toggle-wrapper {
+  border-right: 1px solid var(--border);
+}
+
+.shakemap-toggle-wrapper.hidden,
+.lpgm-toggle-wrapper.hidden {
+  display: none;
+}
+
+.shakemap-toggle-header,
+.lpgm-toggle-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   padding: 6px 8px;
   cursor: pointer;
   user-select: none;
   transition: background 0.15s, color 0.15s;
   flex-shrink: 0;
+  height: 100%;
 }
 
-.shakemap-toggle-header:hover {
+.shakemap-toggle-header:hover,
+.lpgm-toggle-header:hover {
   background: rgba(240, 165, 0, 0.08);
 }
 
-.shakemap-toggle-wrapper.active .shakemap-toggle-header {
+.shakemap-toggle-wrapper.active .shakemap-toggle-header,
+.lpgm-toggle-wrapper.active .lpgm-toggle-header {
   background: rgba(240, 165, 0, 0.15);
 }
 
-.shakemap-toggle-label {
+.shakemap-toggle-label,
+.lpgm-toggle-label {
   color: var(--accent2);
   font-family: var(--font-mono);
   font-weight: 600;
   font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  text-align: center;
 }

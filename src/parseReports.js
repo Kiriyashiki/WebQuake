@@ -17,6 +17,8 @@ import {
   buildFlashEpicenterReport,
 } from './reportUtils.js';
 
+import { parseLpgmJson } from './lpgmUtils.js';
+
 /** Title string identifying VXSE61 special update reports in the feed. */
 export const SPECIAL_REPORT_TITLE = '顕著な地震の震源要素更新のお知らせ';
 
@@ -193,6 +195,26 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
       }
     }
 
+    // Fetch LPGM JSON feed (parallel)
+    const lpgmEntriesByEid = new Map();
+    try {
+      const lpgmRes = await fetch("https://www.jma.go.jp/bosai/ltpgm/data/list.json");
+      if (lpgmRes.ok) {
+        const lpgmList = await lpgmRes.json();
+        for (const entry of lpgmList) {
+          if (entry.ttl === "長周期地震動に関する観測情報" && entry.eid && entry.json) {
+            const existing = lpgmEntriesByEid.get(entry.eid);
+            // Keep newest by rdt if multiple exist
+            if (!existing || (entry.rdt && (!existing.rdt || entry.rdt > existing.rdt))) {
+              lpgmEntriesByEid.set(entry.eid, entry);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to fetch LPGM list:", err);
+    }
+
     let processedCount = 0;
     const totalCount = targetEntries.length;
 
@@ -201,7 +223,7 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
     // Process normal entries in batches of up to 3 in parallel
     for (let i = 0; i < targetEntries.length; i += 3) {
       const batch = targetEntries.slice(i, i + 3);
-      const batchPromises = batch.map(entry => _processEntry(entry, areaCodes, seenEventIds));
+      const batchPromises = batch.map(entry => _processEntry(entry, areaCodes, seenEventIds, lpgmEntriesByEid.get(entry.eid)));
       const batchResults = await Promise.all(batchPromises);
       
       for (const report of batchResults) {
@@ -306,7 +328,7 @@ async function _buildFlashReport(eid, intensityEntry, epicenterEntry, areaCodes)
   return null;
 }
 
-async function _processEntry(entry, areaCodes, seenEventIds) {
+async function _processEntry(entry, areaCodes, seenEventIds, lpgmEntry) {
   // Check if this is a target entry (震源・震度情報)
   if (entry.ttl !== '震源・震度情報' || !entry.json) {
     return null;
@@ -335,10 +357,28 @@ async function _processEntry(entry, areaCodes, seenEventIds) {
     }
     seenEventIds.add(jmaReport.eventId);
 
-    return buildDisplayReport(jmaReport, areaCodes, {
+    const displayReport = buildDisplayReport(jmaReport, areaCodes, {
       feedRdt: entry.rdt,
       feedJson: entry.json,
     });
+
+    if (lpgmEntry) {
+      try {
+        const lpgmRes = await fetch(`https://www.jma.go.jp/bosai/ltpgm/data/${lpgmEntry.json}`, {
+          method: 'GET',
+          mode: 'cors',
+          cache: 'no-cache'
+        });
+        if (lpgmRes.ok) {
+          const lpgmJson = await lpgmRes.json();
+          displayReport.lpgmInfo = parseLpgmJson(lpgmJson);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch LPGM data for', entry.eid, err);
+      }
+    }
+
+    return displayReport;
   } catch (err) {
     console.warn('Error processing entry:', entry.eid, err.message);
     return null;

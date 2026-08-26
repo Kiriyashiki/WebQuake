@@ -47,8 +47,8 @@ AXISを利用するには、[GitHub](https://github.com/)のアカウントが�
 
 ## トークンの有効期限
 
-AXISトークンは毎月月末に失効します。ブラウザ環境におけるセキュリティ上の制限（CORS）のため、現時点ではトークンを自動的に更新する安全な方法がなく、他の手段を用いて更新する必要があります。
+AXISトークンは毎月月末に失効します。ブラウザ環境におけるセキュリティ上の制限（CORS）のため、現時点ではWeb版でトークンを自動的に更新する安全な方法がないため、デスクトップアプリのみが自動的にトークンを更新することができます。
 
-AXIS dashboardから新しいものを取得するか、トークンを自動的に更新する[KyoshinEewViewer](https://svs.ingen084.net/kyoshineewviewer/)を使用することができます。
+AXIS dashboardから新しいトークンを取得する、必要に応じて。
 
-*AXISとは最大2つの同時接続が可能なので、KyoQuakeと別のアプリ（KEVIなど）を同時に利用することができます。*
+*AXISとは最大2つの同時接続が可能なので、KyoQuakeと別のアプリ（[KyoshinEewViewer](https://svs.ingen084.net/kyoshineewviewer/)など）を同時に利用することができます。*

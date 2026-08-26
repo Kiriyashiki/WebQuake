@@ -12,18 +12,27 @@ Desktop apps available in [Releases](https://github.com/Kiriyashiki/WebQuake/rel
 
 - List of part earthquakes (up to 30 days old)
 - Description of the earthquake (Mangitude, Intensity, Date and Time, etc.)
-- On map visualization of the epicenter, and recorded intensity by area/city
+- On-map visualization of the epicenter, and recorded intensity by area/city/station
 - Full list of localities sorted by their recorded intensity
 - Bilingual setup (Japanese and English)
 - Live mode to pull new reports and open them automatically
 - Home location setting to add a marker to a selected location on map, and easily view intensity for that location when viewing a report
 - Earthquake history with search criteria
 - Earthquake Early Warning (experimental)
+- Long Period Ground Motion (LPGM) data
+
+### Desktop app
+
+A desktop app version for various platforms is also available for download [here](https://github.com/Kiriyashiki/WebQuake/releases) (in beta).<br>
+It has the same features as the web app, with some added features that cannot work on the web version:
+- Smarter live feed polling logic to reduce bandwidth use
+- Better handling of the AXIS connection, with automatic token renewal
 
 ## Dev
 
 This project uses Vite.js with NodeJS, and is written in vanilla JavaScript.<br>
-The prefered package manager is pnpm.
+The prefered package manager is pnpm.<br>
+Tauri is used for the desktop apps.
 
 ### Build
 
@@ -41,7 +50,7 @@ pnpm run build
     - <a href="https://www.data.jma.go.jp/developer/gis.html">GIS Area data</a>: Map data of prefectures/forecast areas
     - <a href="https://www.data.jma.go.jp/developer/multilingual.html">Area/City names</a>: Name definition of area/city codes
     - <a href="https://www.data.jma.go.jp/eqdb/data/shindo/">EQDB</a>: Historical Earthquake data
-    - <a href="https://axis.prioris.jp/">AXIS</a>: EEW source
+- <a href="https://axis.prioris.jp/">AXIS</a>: EEW source
 - <a href="https://jquake.net/">JQuake</a>: Intensity color scale
 - <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>: Map data of lakes
 - [M PLUS Fonts](https://mplusfonts.github.io/) Font family used
@@ -50,6 +59,7 @@ pnpm run build
 
 - [Explaination of the intensity values - JMA](https://www.data.jma.go.jp/multi/quake/quake_advisory.html?lang=en)
 - [Past earthquakes up to 30 days - JMA](https://www.data.jma.go.jp/multi/quake/index.html?lang=en)
+- [About LPGM - JMA (Japanese)](https://www.jma.go.jp/jma/kishou/know/jishin/choshuki/)
 
 ### Name
 

@@ -22,17 +22,20 @@ import {
   buildFlashEpicenterReport,
   parseFlashIntensityJson,
 } from "./reportUtils.js";
+import { parseLpgmXml, parseLpgmJson } from "./lpgmUtils.js";
 import JMAEarthquakeReport from "./jmaEarthquakeReport.js";
 import { fetchXmlFeedEntries, parseFlashIntensityXml } from "./xmlFeedParser.js";
 
 const IS_TAURI = Boolean(window.__TAURI_INTERNALS__);
 let tauriFetch = null;
 if (IS_TAURI) {
-  import("@tauri-apps/plugin-http").then((mod) => {
-    tauriFetch = mod.fetch;
-  }).catch((err) => {
-    console.warn("[live-mode] Failed to load Tauri HTTP plugin.", err);
-  });
+  import("@tauri-apps/plugin-http")
+    .then((mod) => {
+      tauriFetch = mod.fetch;
+    })
+    .catch((err) => {
+      console.warn("[live-mode] Failed to load Tauri HTTP plugin.", err);
+    });
 }
 
 /**
@@ -58,6 +61,12 @@ let _trackedFlashEntries = new Map();
  */
 let _trackedSpecialEntries = new Map();
 
+/**
+ * Tracks LPGM reports we've already processed.
+ * Map of eventId -> { rdt: ISO string }
+ */
+let _trackedLpgmEntries = new Map();
+
 let _pollingTimeoutId = null;
 let _syncTimeoutId = null;
 let _currentInterval = POLL_INTERVAL;
@@ -65,7 +74,7 @@ let _isActive = false;
 
 /**
  * Starts live mode polling.
- * 
+ *
  * @param {Map} areaCodes - Area code name mappings
  * @param {Object} callbacks - Callback functions:
  *   - onNewEntry(entry, report): Called when a new entry is detected
@@ -87,8 +96,13 @@ export function startLivePolling(areaCodes, callbacks = {}, initialReports = [])
     if (report.eventId && report.feedRdt) {
       if (report.isFlashReport) {
         _trackedFlashEntries.set(report.eventId, {
-          intensityRdt: report.flashType === 'intensity' ? report.feedRdt : (report.maxIntensity ? report.feedRdt : null),
-          epicenterRdt: report.flashType === 'epicenter' ? report.feedRdt : null,
+          intensityRdt:
+            report.flashType === "intensity"
+              ? report.feedRdt
+              : report.maxIntensity
+                ? report.feedRdt
+                : null,
+          epicenterRdt: report.flashType === "epicenter" ? report.feedRdt : null,
           intensityEntry: null,
           epicenterEntry: null,
         });
@@ -144,10 +158,11 @@ export function pruneTrackedEntries(eventIdsToRemove) {
     _trackedEntries.delete(id);
     _trackedFlashEntries.delete(id);
     _trackedSpecialEntries.delete(id);
+    _trackedLpgmEntries.delete(id);
   }
 }
 
-document.addEventListener('reports-pruned', (e) => {
+document.addEventListener("reports-pruned", (e) => {
   if (e.detail?.removedIds) {
     pruneTrackedEntries(e.detail.removedIds);
   }
@@ -203,23 +218,25 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
     // Filter for target entries only (震源・震度情報)
     // In XML mode, entries have _xmlDoc instead of json
     const targetEntries = entries.filter(
-      (entry) =>
-        entry.ttl === "震源・震度情報" &&
-        (entry.json || entry._xmlDoc) &&
-        entry.rdt
+      (entry) => entry.ttl === "震源・震度情報" && (entry.json || entry._xmlDoc) && entry.rdt,
     );
 
     // Collect VXSE61 special report entries from the feed
     const specialEntries = entries.filter(
-      (entry) => entry.ttl === SPECIAL_REPORT_TITLE && entry.eid && entry.rdt
+      (entry) => entry.ttl === SPECIAL_REPORT_TITLE && entry.eid && entry.rdt,
+    );
+
+    // Collect LPGM entries from the feed
+    const lpgmEntries = entries.filter(
+      (entry) => entry.ttl === "長周期地震動に関する観測情報" && entry.eid && entry.rdt,
     );
 
     // Collect flash report entries from the feed
     const flashIntensityEntries = entries.filter(
-      (entry) => entry.ttl === FLASH_INTENSITY_TITLE && entry.eid && entry.rdt
+      (entry) => entry.ttl === FLASH_INTENSITY_TITLE && entry.eid && entry.rdt,
     );
     const flashEpicenterEntries = entries.filter(
-      (entry) => entry.ttl === FLASH_EPICENTER_TITLE && entry.eid && entry.rdt
+      (entry) => entry.ttl === FLASH_EPICENTER_TITLE && entry.eid && entry.rdt,
     );
 
     // Group entries by event ID and keep only the newest for each
@@ -231,6 +248,18 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
       const current = latestEntriesByEventId.get(eventId);
       if (!current || new Date(entry.rdt) > new Date(current.rdt)) {
         latestEntriesByEventId.set(eventId, entry);
+      }
+    }
+
+    // Group LPGM entries by event ID
+    const latestLpgmEntriesByEid = new Map();
+    for (const entry of lpgmEntries) {
+      const eventId = entry.eid;
+      if (!eventId) continue;
+
+      const current = latestLpgmEntriesByEid.get(eventId);
+      if (!current || new Date(entry.rdt) > new Date(current.rdt)) {
+        latestLpgmEntriesByEid.set(eventId, entry);
       }
     }
 
@@ -270,7 +299,11 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
         normalReportEventIds.add(eventId);
 
         // Parse the report (XML doc is already fetched)
-        const report = await _fetchAndParseEntry(entry, areaCodes);
+        const report = await _fetchAndParseEntry(
+          entry,
+          areaCodes,
+          latestLpgmEntriesByEid.get(eventId),
+        );
         if (report) {
           // Check if a VXSE61 special report already exists for this event
           const matchingSpecial = specialEntries.find((s) => s.eid === eventId);
@@ -278,9 +311,13 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
             const overrides = parseSpecialReportOverrides(matchingSpecial);
             applySpecialReportOverrides(report, overrides);
             console.debug(
-              `[live-mode] Applied VXSE61 overrides to new report ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`
+              `[live-mode] Applied VXSE61 overrides to new report ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`,
             );
             _trackedSpecialEntries.set(eventId, { rdt: matchingSpecial.rdt });
+          }
+
+          if (latestLpgmEntriesByEid.has(eventId)) {
+            _trackedLpgmEntries.set(eventId, { rdt: latestLpgmEntriesByEid.get(eventId).rdt });
           }
 
           if (hadFlashReport) {
@@ -291,8 +328,8 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
               callbacks.onUpdatedEntry(entry, report);
             }
           } else if (callbacks.onNewEntry) {
-              callbacks.onNewEntry(entry, report);
-            }
+            callbacks.onNewEntry(entry, report);
+          }
         }
       } else if (entry.rdt !== trackedEntry.rdt) {
         // UPDATED ENTRY
@@ -304,7 +341,11 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
         normalReportEventIds.add(eventId);
 
         // Fetch and parse the updated report
-        const report = await _fetchAndParseEntry(entry, areaCodes);
+        const report = await _fetchAndParseEntry(
+          entry,
+          areaCodes,
+          latestLpgmEntriesByEid.get(eventId),
+        );
         if (report) {
           // Check if a VXSE61 special report exists for this event
           const matchingSpecial = specialEntries.find((s) => s.eid === eventId);
@@ -312,9 +353,13 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
             const overrides = parseSpecialReportOverrides(matchingSpecial);
             applySpecialReportOverrides(report, overrides);
             console.debug(
-              `[live-mode] Applied VXSE61 overrides to updated report ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`
+              `[live-mode] Applied VXSE61 overrides to updated report ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`,
             );
             _trackedSpecialEntries.set(eventId, { rdt: matchingSpecial.rdt });
+          }
+
+          if (latestLpgmEntriesByEid.has(eventId)) {
+            _trackedLpgmEntries.set(eventId, { rdt: latestLpgmEntriesByEid.get(eventId).rdt });
           }
 
           // Clear flash tracking since normal report takes over
@@ -329,8 +374,10 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
       }
     }
 
-    // Process VXSE61 special reports that didn't coincide with a normal report update.
-    // These update magnitude/depth for an already-tracked event.
+    // ─── Process standalone VXSE61 (special) and LPGM reports ──────────────
+    // These update magnitude/depth or LPGM info for an already-tracked event.
+
+    // 1. VXSE61 special reports
     for (const specialEntry of specialEntries) {
       const eventId = specialEntry.eid;
       const trackedSpecial = _trackedSpecialEntries.get(eventId);
@@ -339,7 +386,6 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
       if (trackedSpecial && trackedSpecial.rdt === specialEntry.rdt) continue;
 
       // Skip if we already processed it above as part of a new/updated normal entry
-      // (check if it was just set in this poll cycle above)
       const justTracked = _trackedSpecialEntries.get(eventId);
       if (justTracked && justTracked.rdt === specialEntry.rdt) continue;
 
@@ -351,24 +397,67 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
       _trackedSpecialEntries.set(eventId, { rdt: specialEntry.rdt });
 
       // Re-fetch the original report and apply overrides
-      // For standalone special reports, we need to re-fetch the original report.
-      // In XML mode this may require re-fetching if the xmlDoc is not available.
       const originalEntry = latestEntriesByEventId.get(eventId) || {
         eid: eventId,
         json: trackedNormal.jsonFile,
         rdt: trackedNormal.rdt,
       };
 
-      const report = await _fetchAndParseEntry(originalEntry, areaCodes);
+      const report = await _fetchAndParseEntry(
+        originalEntry,
+        areaCodes,
+        latestLpgmEntriesByEid.get(eventId),
+      );
       if (report) {
         const overrides = parseSpecialReportOverrides(specialEntry);
         applySpecialReportOverrides(report, overrides);
         console.debug(
-          `[live-mode] Applied VXSE61 overrides for ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`
+          `[live-mode] Applied VXSE61 overrides for ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`,
         );
 
         if (callbacks.onUpdatedEntry) {
           callbacks.onUpdatedEntry(specialEntry, report);
+        }
+      }
+    }
+
+    // 2. LPGM reports
+    for (const [eventId, lpgmEntry] of latestLpgmEntriesByEid) {
+      const trackedLpgm = _trackedLpgmEntries.get(eventId);
+
+      if (trackedLpgm && trackedLpgm.rdt === lpgmEntry.rdt) continue;
+
+      const justTracked = _trackedLpgmEntries.get(eventId);
+      if (justTracked && justTracked.rdt === lpgmEntry.rdt) continue;
+
+      const trackedNormal = _trackedEntries.get(eventId);
+      if (!trackedNormal) continue;
+
+      console.info("[live-mode] LPGM report detected for:", eventId);
+      _trackedLpgmEntries.set(eventId, { rdt: lpgmEntry.rdt });
+
+      const originalEntry = latestEntriesByEventId.get(eventId) || {
+        eid: eventId,
+        json: trackedNormal.jsonFile,
+        rdt: trackedNormal.rdt,
+      };
+
+      const report = await _fetchAndParseEntry(originalEntry, areaCodes, lpgmEntry);
+      if (report) {
+        // Re-apply special overrides if they exist
+        const trackedSpecial = _trackedSpecialEntries.get(eventId);
+        if (trackedSpecial) {
+          const matchingSpecial = specialEntries.find(
+            (s) => s.eid === eventId && s.rdt === trackedSpecial.rdt,
+          );
+          if (matchingSpecial) {
+            const overrides = parseSpecialReportOverrides(matchingSpecial);
+            applySpecialReportOverrides(report, overrides);
+          }
+        }
+
+        if (callbacks.onUpdatedEntry) {
+          callbacks.onUpdatedEntry(lpgmEntry, report);
         }
       }
     }
@@ -400,13 +489,16 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
 
       // Determine the "best" flash entry and type
       const bestEntry = epicenterEntry || intensityEntry;
-      const bestType = epicenterEntry ? 'epicenter' : 'intensity';
+      const bestType = epicenterEntry ? "epicenter" : "intensity";
 
       if (!trackedFlash) {
         // New flash report
         console.info(`[live-mode] New flash report detected (${bestType}):`, eid);
         const flashReport = await _buildFlashReportForLive(
-          eid, intensityEntry, epicenterEntry, areaCodes
+          eid,
+          intensityEntry,
+          epicenterEntry,
+          areaCodes,
         );
         if (flashReport) {
           _trackedFlashEntries.set(eid, {
@@ -423,12 +515,10 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
         // Check if there is new/updated information:
         // 1. A new or updated intensity report has arrived (e.g., arrived after epicenter)
         const isNewIntensity =
-          currentIntensityEntry &&
-          currentIntensityEntry.rdt !== trackedFlash.intensityRdt;
+          currentIntensityEntry && currentIntensityEntry.rdt !== trackedFlash.intensityRdt;
         // 2. A new or updated epicenter report has arrived (e.g., arrived after intensity)
         const isNewEpicenter =
-          currentEpicenterEntry &&
-          currentEpicenterEntry.rdt !== trackedFlash.epicenterRdt;
+          currentEpicenterEntry && currentEpicenterEntry.rdt !== trackedFlash.epicenterRdt;
 
         if (isNewIntensity || isNewEpicenter) {
           console.debug(`[live-mode] Updated flash report detected for ${eid}:`, {
@@ -436,7 +526,10 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
             isNewEpicenter,
           });
           const flashReport = await _buildFlashReportForLive(
-            eid, intensityEntry, epicenterEntry, areaCodes
+            eid,
+            intensityEntry,
+            epicenterEntry,
+            areaCodes,
           );
           if (flashReport) {
             _trackedFlashEntries.set(eid, {
@@ -473,27 +566,28 @@ async function _buildFlashReportForLive(eid, intensityEntry, epicenterEntry, are
     try {
       intensityData = parseFlashIntensityXml(intensityEntry._xmlDoc);
     } catch (err) {
-      console.warn('[live-mode] Failed to parse 震度速報 XML for', eid, err.message);
+      console.warn("[live-mode] Failed to parse 震度速報 XML for", eid, err.message);
     }
   } else if (intensityEntry?.json) {
     // JSON fallback path
     try {
       const reportUrl = FEED_DATA_BASE_URL + intensityEntry.json;
-      const res = await fetch(reportUrl, { method: 'GET', mode: 'cors', cache: 'no-cache' });
+      const res = await fetch(reportUrl, { method: "GET", mode: "cors", cache: "no-cache" });
       if (res.ok) {
         const jsonData = await res.json();
         intensityData = parseFlashIntensityJson(jsonData);
       }
     } catch (err) {
-      console.warn('[live-mode] Failed to fetch 震度速報 JSON for', eid, err.message);
+      console.warn("[live-mode] Failed to fetch 震度速報 JSON for", eid, err.message);
     }
   }
 
   // If we have a 震源速報, build from that + carry observations
   if (epicenterEntry) {
-    const latestRdt = (intensityEntry?.rdt && (!epicenterEntry.rdt || intensityEntry.rdt > epicenterEntry.rdt))
-      ? intensityEntry.rdt
-      : epicenterEntry.rdt;
+    const latestRdt =
+      intensityEntry?.rdt && (!epicenterEntry.rdt || intensityEntry.rdt > epicenterEntry.rdt)
+        ? intensityEntry.rdt
+        : epicenterEntry.rdt;
 
     const report = buildFlashEpicenterReport(
       epicenterEntry,
@@ -513,26 +607,26 @@ async function _buildFlashReportForLive(eid, intensityEntry, epicenterEntry, are
   return null;
 }
 
-
 /**
  * Parses a single report entry into a display-ready report.
  * Supports both XML-sourced entries (with _xmlDoc) and JSON entries (with json field).
  * Returns a parsed report object with observations, or null if error.
  */
-async function _fetchAndParseEntry(entry, areaCodes) {
+async function _fetchAndParseEntry(entry, areaCodes, lpgmEntry) {
   try {
+    let displayReport = null;
+
     // XML path: the entry already carries the parsed XML document
     if (entry._xmlDoc) {
       const jmaReport = JMAEarthquakeReport.fromXmlDoc(entry._xmlDoc);
-      return buildDisplayReport(jmaReport, areaCodes, {
+      displayReport = buildDisplayReport(jmaReport, areaCodes, {
         feedRdt: entry.rdt,
         feedJson: entry.json || null,
       });
     }
 
-    // JSON fallback path (used when re-fetching tracked entries that
-    // were originally loaded from JSON during initial load)
-    if (entry.json) {
+    // JSON fallback path
+    if (!displayReport && entry.json) {
       const reportUrl = FEED_DATA_BASE_URL + entry.json;
       const res = await fetch(reportUrl, {
         method: "GET",
@@ -541,23 +635,46 @@ async function _fetchAndParseEntry(entry, areaCodes) {
       });
 
       if (!res.ok) {
-        console.warn(
-          `[live-mode] Failed to fetch report: ${reportUrl} (${res.status})`
-        );
+        console.warn(`[live-mode] Failed to fetch report: ${reportUrl} (${res.status})`);
         return null;
       }
 
       const jsonData = await res.json();
       const jmaReport = parseReport(jsonData);
 
-      return buildDisplayReport(jmaReport, areaCodes, {
+      displayReport = buildDisplayReport(jmaReport, areaCodes, {
         feedRdt: entry.rdt,
         feedJson: entry.json,
       });
     }
 
-    console.warn("[live-mode] Entry has neither _xmlDoc nor json:", entry.eid);
-    return null;
+    if (!displayReport) {
+      console.warn("[live-mode] Entry has neither _xmlDoc nor json:", entry.eid);
+      return null;
+    }
+
+    // Append LPGM info if available
+    if (lpgmEntry) {
+      if (lpgmEntry._xmlDoc) {
+        displayReport.lpgmInfo = parseLpgmXml(lpgmEntry._xmlDoc);
+      } else if (lpgmEntry.json) {
+        try {
+          const lpgmRes = await fetch(`https://www.jma.go.jp/bosai/ltpgm/data/${lpgmEntry.json}`, {
+            method: "GET",
+            mode: "cors",
+            cache: "no-cache",
+          });
+          if (lpgmRes.ok) {
+            const lpgmJson = await lpgmRes.json();
+            displayReport.lpgmInfo = parseLpgmJson(lpgmJson);
+          }
+        } catch (err) {
+          console.warn("[live-mode] Failed to fetch LPGM JSON:", err);
+        }
+      }
+    }
+
+    return displayReport;
   } catch (err) {
     console.warn("[live-mode] Error processing entry:", entry.eid, err.message);
     return null;

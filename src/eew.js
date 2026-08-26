@@ -7,9 +7,11 @@ import {
   clearEpicenter,
   fitBoundsToObservations,
   highlightObservations,
+  updateLpgmVisibility,
 } from "./map.js";
 import { createRubyHtml } from "./areaCodes.js";
 import { getCityAreasState } from "./sidebarUI.js";
+import { updateMapLegend } from "./main.js";
 
 // Detect Tauri runtime — when running as a desktop app, we can bypass CORS
 // by using Tauri's HTTP plugin which makes requests through Rust's HTTP client.
@@ -936,10 +938,11 @@ function renderEewInfoBox(msg, isCancelled, isWarning, isPlum, totalCount, curre
   if (!infoBox) return;
   infoBox.classList.remove("hidden");
 
-  const shakemapWrapper = infoBox.querySelector(".shakemap-toggle-wrapper");
-  if (shakemapWrapper) {
-    shakemapWrapper.classList.add("hidden");
-  }
+  const mapTogglesWrapper = infoBox.querySelector(".map-toggles-wrapper");
+  if (mapTogglesWrapper) mapTogglesWrapper.classList.add("hidden");
+
+  const lpgmRow = infoBox.querySelector(".info-box-lpgm-row");
+  if (lpgmRow) lpgmRow.classList.add("hidden");
 
   const locationJa = infoBox.querySelector(".info-box-location-ja");
   const locationEn = infoBox.querySelector(".info-box-location-en");
@@ -1165,6 +1168,8 @@ function updateMapForEew() {
   clearEpicenter(mapInstance); // Clear normal epicenter
   updateCityAreasVisibility(mapInstance, false); // Force Cities off temporarily
   updateShakemapVisibility(mapInstance, false); // Force Shakemap off temporarily
+  updateLpgmVisibility(mapInstance, false); // Force LPGM off temporarily
+  updateMapLegend(false); // Restore standard legend
 
   const mergedForecast = mergeForecasts(Array.from(activeEews.values()));
 

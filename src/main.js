@@ -1,8 +1,14 @@
 import "../styles/index.css";
 import { initLogger } from "./logger.js";
-import { formatTimeJST, INTENSITY_CONFIG } from "./constants.js";
+import { formatTimeJST, INTENSITY_CONFIG, LPGM_CONFIG } from "./constants.js";
 import { playAudio, preloadAudio } from "./audio.js";
-import { createRubyHtml, loadAreaCodes, loadPrefectureCodes, loadCityNames, loadStationNames } from "./areaCodes.js";
+import {
+  createRubyHtml,
+  loadAreaCodes,
+  loadPrefectureCodes,
+  loadCityNames,
+  loadStationNames,
+} from "./areaCodes.js";
 import {
   initMap,
   highlightObservations,
@@ -14,6 +20,8 @@ import {
   highlightShakemapObservations,
   clearShakemapHighlights,
   isShakemapVisible,
+  updateLpgmVisibility,
+  isLpgmVisible,
   fitBoundsToObservations,
   displayHomeMarker,
   clearHomeMarker,
@@ -51,19 +59,21 @@ import { initEewSettings, handlePossibleEewReport, clearEewMapDisplay } from "./
 // In Tauri, external links don't open in the browser by default.
 // Intercept them and use the opener plugin to launch in the system browser.
 if (window.__TAURI_INTERNALS__) {
-  import("@tauri-apps/plugin-opener").then((opener) => {
-    document.addEventListener("click", (e) => {
-      const anchor = e.target.closest("a[href]");
-      if (!anchor) return;
-      const href = anchor.getAttribute("href");
-      if (href && (href.startsWith("http://") || href.startsWith("https://"))) {
-        e.preventDefault();
-        opener.openUrl(href);
-      }
+  import("@tauri-apps/plugin-opener")
+    .then((opener) => {
+      document.addEventListener("click", (e) => {
+        const anchor = e.target.closest("a[href]");
+        if (!anchor) return;
+        const href = anchor.getAttribute("href");
+        if (href && (href.startsWith("http://") || href.startsWith("https://"))) {
+          e.preventDefault();
+          opener.openUrl(href);
+        }
+      });
+    })
+    .catch((err) => {
+      console.warn("[Tauri] Failed to load opener plugin:", err);
     });
-  }).catch((err) => {
-    console.warn("[Tauri] Failed to load opener plugin:", err);
-  });
 }
 
 async function boot() {
@@ -530,6 +540,12 @@ async function boot() {
       clearShakemapHighlights(map);
     }
 
+    // Revert LPGM mode when a report is opened
+    if (isLpgmVisible()) {
+      updateLpgmVisibility(map, false);
+      updateMapLegend(false);
+    }
+
     // Handle city areas visibility for flash reports
     // Flash reports don't have per-city data, so temporarily switch city mode off
     if (report.isFlashReport) {
@@ -815,6 +831,37 @@ function _reportHasStations(report) {
   return false;
 }
 
+export function updateMapLegend(isLpgm) {
+  const legend = document.getElementById("map-legend");
+  if (!legend) return;
+
+  const title = legend.querySelector(".legend-title");
+  const items = legend.querySelector(".legend-items");
+
+  if (isLpgm) {
+    title.textContent = "長周期地震動階級 · LPGM";
+    items.innerHTML = `
+      <div class="legend-item"><img src="/img/lpgm/l1.png" alt="1" /></div>
+      <div class="legend-item"><img src="/img/lpgm/l2.png" alt="2" /></div>
+      <div class="legend-item"><img src="/img/lpgm/l3.png" alt="3" /></div>
+      <div class="legend-item"><img src="/img/lpgm/l4.png" alt="4" /></div>
+    `;
+  } else {
+    title.textContent = "震度 · INTENSITY";
+    items.innerHTML = `
+      <div class="legend-item"><img src="/img/shindo/1.png" alt="1" /></div>
+      <div class="legend-item"><img src="/img/shindo/2.png" alt="2" /></div>
+      <div class="legend-item"><img src="/img/shindo/3.png" alt="3" /></div>
+      <div class="legend-item"><img src="/img/shindo/4.png" alt="4" /></div>
+      <div class="legend-item"><img src="/img/shindo/5minus.png" alt="5-" /></div>
+      <div class="legend-item"><img src="/img/shindo/5plus.png" alt="5+" /></div>
+      <div class="legend-item"><img src="/img/shindo/6minus.png" alt="6-" /></div>
+      <div class="legend-item"><img src="/img/shindo/6plus.png" alt="6+" /></div>
+      <div class="legend-item"><img src="/img/shindo/7.png" alt="7" /></div>
+    `;
+  }
+}
+
 /**
  * Displays report information in the top-left info box on the map.
  * Shows magnitude, depth, coordinates, time, intensity, and observations list.
@@ -903,7 +950,7 @@ function _displayMapInfoBox(report, map) {
     const coordsLabel = coordinates.previousElementSibling;
     if (coordsLabel) coordsLabel.textContent = "Coordinates • 北緯東経";
     const { latitude, longitude } = report.coordinates;
-    const precision = (report.isHistory || report.hasSpecialReport) ? 3 : 1;
+    const precision = report.isHistory || report.hasSpecialReport ? 3 : 1;
     coordinates.textContent = `${latitude.toFixed(precision)} ; ${longitude.toFixed(precision)}`;
   } else if (coordinates) {
     const coordsLabel = coordinates.previousElementSibling;
@@ -939,8 +986,108 @@ function _displayMapInfoBox(report, map) {
     );
   }
 
+  // Setup LPGM row in details
+  const lpgmRow = infoBox.querySelector(".info-box-lpgm-row");
+  const lpgmValue = infoBox.querySelector(".info-lpgm");
+  if (lpgmRow && lpgmValue) {
+    if (report.lpgmInfo && report.lpgmInfo.maxLgInt) {
+      const maxLg = report.lpgmInfo.maxLgInt;
+      lpgmValue.textContent = `CLASS ${maxLg}`;
+      const lpgmConfig = LPGM_CONFIG[maxLg];
+      if (lpgmConfig) {
+        lpgmValue.style.backgroundColor = lpgmConfig.color;
+        lpgmValue.style.color = lpgmConfig.fontColor;
+        lpgmValue.style.padding = "2px 6px";
+        lpgmValue.style.borderRadius = "4px";
+      }
+      lpgmRow.classList.remove("hidden");
+    } else {
+      lpgmRow.classList.add("hidden");
+      lpgmValue.textContent = "";
+      lpgmValue.style.backgroundColor = "";
+    }
+  }
+
+  // Hide map-toggles-wrapper by default, show if either child is active
+  const mapTogglesWrapper = infoBox.querySelector(".map-toggles-wrapper");
+
+  // Setup LPGM toggle button
+  const lpgmWrapper = infoBox.querySelector(".lpgm-toggle-wrapper");
+  let lpgmAvailable = false;
+  if (lpgmWrapper) {
+    const lpgmHeader = lpgmWrapper.querySelector(".lpgm-toggle-header");
+
+    if (
+      !report.lpgmInfo ||
+      !report.lpgmInfo.observations ||
+      report.lpgmInfo.observations.length === 0
+    ) {
+      lpgmWrapper.classList.add("hidden");
+    } else {
+      lpgmAvailable = true;
+      lpgmWrapper.classList.remove("hidden");
+      lpgmWrapper.classList.remove("active");
+
+      const newLpgmHeader = lpgmHeader.cloneNode(true);
+      lpgmHeader.parentNode.replaceChild(newLpgmHeader, lpgmHeader);
+
+      newLpgmHeader.addEventListener("click", () => {
+        const isCurrentlyActive = lpgmWrapper.classList.contains("active");
+
+        if (isCurrentlyActive) {
+          lpgmWrapper.classList.remove("active");
+          updateLpgmVisibility(map, false);
+
+          if (report.isFlashReport) {
+            updateCityAreasVisibility(map, false);
+          } else {
+            updateCityAreasVisibility(map, getCityAreasState());
+          }
+
+          updateMapLegend(false);
+          renderObservationsList(
+            observationsContainer,
+            report.observations,
+            globalThis.__areaCodes || new Map(),
+            globalThis.__prefectureCodes || new Map(),
+            { isFlashReport: !!report.isFlashReport },
+          );
+
+          // Re-highlight the normal observations after a tick
+          setTimeout(() => {
+            highlightObservations(map, report.observations, false);
+          }, 50);
+        } else {
+          // If shakemap is active, turn it off first
+          const shakemapWrapper = infoBox.querySelector(".shakemap-toggle-wrapper");
+          if (shakemapWrapper && shakemapWrapper.classList.contains("active")) {
+            shakemapWrapper.querySelector(".shakemap-toggle-header").click();
+          }
+
+          lpgmWrapper.classList.add("active");
+          updateLpgmVisibility(map, true);
+
+          updateMapLegend(true);
+          renderObservationsList(
+            observationsContainer,
+            report.lpgmInfo.observations,
+            globalThis.__areaCodes || new Map(),
+            globalThis.__prefectureCodes || new Map(),
+            { isFlashReport: false, isLpgm: true },
+          );
+
+          // Highlight LPGM observations after a tick
+          setTimeout(() => {
+            highlightObservations(map, report.lpgmInfo.observations, true);
+          }, 50);
+        }
+      });
+    }
+  }
+
   // Setup shakemap toggle button
   const shakemapWrapper = infoBox.querySelector(".shakemap-toggle-wrapper");
+  let shakemapAvailable = false;
   if (shakemapWrapper) {
     const shakemapHeader = shakemapWrapper.querySelector(".shakemap-toggle-header");
 
@@ -949,6 +1096,7 @@ function _displayMapInfoBox(report, map) {
     if (!hasStations || report.isFlashReport) {
       shakemapWrapper.classList.add("hidden");
     } else {
+      shakemapAvailable = true;
       shakemapWrapper.classList.remove("hidden");
 
       // Reset visual state (not active)
@@ -979,6 +1127,12 @@ function _displayMapInfoBox(report, map) {
             highlightObservations(map, report.observations);
           }, 50);
         } else {
+          // If LPGM is active, turn it off first
+          const lpgmWrapper = infoBox.querySelector(".lpgm-toggle-wrapper");
+          if (lpgmWrapper && lpgmWrapper.classList.contains("active")) {
+            lpgmWrapper.querySelector(".lpgm-toggle-header").click();
+          }
+
           // Activate: switch to shakemap mode
           shakemapWrapper.classList.add("active");
           updateShakemapVisibility(map, true);
@@ -989,6 +1143,14 @@ function _displayMapInfoBox(report, map) {
           }, 50);
         }
       });
+    }
+  }
+
+  if (mapTogglesWrapper) {
+    if (!shakemapAvailable && !lpgmAvailable) {
+      mapTogglesWrapper.classList.add("hidden");
+    } else {
+      mapTogglesWrapper.classList.remove("hidden");
     }
   }
 
