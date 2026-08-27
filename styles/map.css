@@ -309,6 +309,10 @@
   flex-shrink: 0;
 }
 
+.info-box-row.hidden {
+  display: none;
+}
+
 /* ── Flash Report Badge ────────────────────────────────────────── */
 
 .info-box-flash-badge {

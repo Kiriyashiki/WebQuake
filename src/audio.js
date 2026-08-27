@@ -67,7 +67,10 @@ export async function playAudio(path) {
     const source = ctx.createBufferSource();
     source.buffer = buffer;
     source.connect(ctx.destination);
-    source.start(0);
+    source.onended = () => {
+      source.disconnect();
+    };
+    source.start();
   } catch (err) {
     console.warn(`[audio] Failed to play ${path}:`, err);
   }
