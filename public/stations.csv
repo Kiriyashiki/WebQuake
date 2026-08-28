@@ -272,16 +272,16 @@
 2820920;豊岡市出石町;とよおかしいずしちょう;Toyoka City Izushi Town
 3138930;鳥取南部町法勝寺;とっとりなんぶちょうほっしょうじ;Tottori Nanbu Town Hosshoji
 3139030;伯耆町吉長;ほうきちょうよしなが;Hoki Town Yoshinaga
-3310431;岡山南区浦安南町;おかやまみなみくうらやすみなみまち;Okayama Minami Ward Urayasu Minami Town
-3420900;広島三次市十日市中;ひろしまみよししとうかいちなか;Hiroshima Miyo City City Tokaichinaka
-3420920;広島三次市三次町;ひろしまみよししみよしまち;Hiroshima Miyo City Shimiyoshi Town
-3420921;広島三次市甲奴図書館;ひろしまみよししこうぬとしょかん;Hiroshima Miyo City Shikonutoshokan
-3420933;広島三次市布野町;ひろしまみよししふのちょう;Hiroshima Miyo City Shifuno Town
-3420934;広島三次市作木町;ひろしまみよししさくぎちょう;Hiroshima Miyo City Shisakugi Town
-3420937;広島三次市三和町;ひろしまみよししみわちょう;Hiroshima Miyo City Shimiwa Town
-3420938;広島三次市三良坂町;ひろしまみよししみらさかちょう;Hiroshima Miyo City Shimirasaka Town
-3420939;広島三次市君田町;ひろしまみよししきみたちょう;Hiroshima Miyo City Shikimita Town
-3420941;広島三次市吉舎町;ひろしまみよししきさちょう;Hiroshima Miyo City Shikisa Town
+3310431;岡山南区浦安南町;おかやまみなみくうらやすみなみまち;Okayama Minami Ward Urayasuminami Town
+3420900;広島三次市十日市中;ひろしまみよししとうかいちなか;Hiroshima Miyoshi City Tokaichinaka
+3420920;広島三次市三次町;ひろしまみよししみよしまち;Hiroshima Miyoshi City Miyoshi Town
+3420921;広島三次市甲奴図書館;ひろしまみよししこうぬとしょかん;Hiroshima Miyoshi City Konutoshokan
+3420933;広島三次市布野町;ひろしまみよししふのちょう;Hiroshima Miyoshi City Funo Town
+3420934;広島三次市作木町;ひろしまみよししさくぎちょう;Hiroshima Miyoshi City Sakugi Town
+3420937;広島三次市三和町;ひろしまみよししみわちょう;Hiroshima Miyoshi City Wiwa Town
+3420938;広島三次市三良坂町;ひろしまみよししみらさかちょう;Hiroshima Miyoshi City Mirasaka Town
+3420939;広島三次市君田町;ひろしまみよししきみたちょう;Hiroshima Miyoshi City Kimita Town
+3420941;広島三次市吉舎町;ひろしまみよししきさちょう;Hiroshima Miyoshi City Kisa Town
 3421000;庄原市西城町熊野;しょうばらしさいじょうちょうくまの;Shobara City Saijo Town Kumano
 3421020;庄原市西城町大佐;しょうばらしさいじょうちょうおおさ;Shobara City Saijo Town Osa
 3421021;庄原市東城町;しょうばらしとうじょうちょう;Shobara City Tojo Town
@@ -404,7 +404,7 @@
 3454536;神石高原町小畠;じんせきこうげんちょうこばたけ;Jinsekikogen Town Kobatake
 3410100;広島中区上八丁堀;ひろしまなかくかみはっちょうぼり;Hiroshima Naka Ward Kamihatchobori
 3410120;広島中区羽衣町;ひろしまなかくはごろもちょう;Hiroshima Naka Ward Hagoromo Town
-3420740;福山市新市町;ふくやまししんいちちょう;Fukuyama City City N'ichicho
+3420740;福山市新市町;ふくやまししんいちちょう;Fukuyama City Shin'ichicho
 3138931;鳥取南部町天萬;とっとりなんぶちょうてんまん;Tottori Nanbu Town Tenman
 3320935;高梁市有漢町;たかはししうかんちょう;Takahashi City Ukan Town
 3320920;高梁市原田南町;たかはししはらだみなみちょう;Takahashi City Harada Minami Town
@@ -896,7 +896,7 @@
 2722530;高石市加茂;たかいししかも;Takaishi City Kamo
 2722630;藤井寺市岡;ふじいでらしおか;Fujiidera City Oka
 2722820;泉南市男里;せんなんしおのさと;Sennan City Onosato
-2722830;泉南市信達市場;せんなんししんだちいちば;Sennan City City Ndachiichiba
+2722830;泉南市信達市場;せんなんししんだちいちば;Sennan City Shin'dachiichiba
 2723130;大阪狭山市狭山;おおさかさやましさやま;Osaka Sayama City Sayama
 2720831;貝塚市畠中;かいづかしはたけなか;Kaizuka City Hatakenaka
 2723230;阪南市尾崎町;はんなんしおざきちょう;Hannan City Ozaki Town
@@ -928,7 +928,7 @@
 2720430;池田市城南;いけだしじょうなん;Ikeda City Jonan
 2720530;吹田市内本町;すいたしうちほんまち;Suita City Uchihon Town
 2720700;高槻市桃園町;たかつきしとうえんちょう;Takatsuki City Touen Town
-2720720;高槻市立第２中学校;たかつきしりつだいにちゅうがっこう;Takatsuki City Ritsudaini Middle School
+2720720;高槻市立第２中学校;たかつきしりつだいにちゅうがっこう;Takatsuki City Municipal No. 2 Middle School
 2720732;高槻市消防本部;たかつきししょうぼうほんぶ;Takatsuki City Fire Department
 2720931;守口市京阪本通;もりぐちしけいはんほんどおり;Moriguchi City Keihanhondori
 2721031;枚方市大垣内;ひらかたしおおがいと;Hirakata City Ogaito
@@ -1031,7 +1031,7 @@
 2521338;東近江市妹町;ひがしおうみしいもとちょう;Higashiomi City Imoto Town
 2521340;東近江市五個荘小幡町;ひがしおうみしごかしょうおばたちょう;Higashiomi City Gokashouobata Town
 2521341;東近江市躰光寺町;ひがしおうみしたいこうじちょう;Higashiomi City Taikoji Town
-2521342;東近江市八日市緑町;ひがしおうみしようかいちみどりまち;Higashiomi City Yokaichimidorimachi City Town
+2521342;東近江市八日市緑町;ひがしおうみしようかいちみどりまち;Higashiomi City Yokaichimidori Town
 2620100;福知山市内記;ふくちやましないき;Fukuchiyama City Naiki
 2620120;福知山市長田野町;ふくちやましおさだのちょう;Fukuchiyama City Osadano Town
 2520930;甲賀市土山町;こうかしつちやまちょう;Koka City Tsuchiyama Town
@@ -1854,7 +1854,7 @@
 3740634;まんのう町生間;まんのうちょういかま;Manno Town Ikama
 3720533;観音寺市豊浜町;かんおんじしとよはまちょう;Kan'onji City Toyohama Town
 3738732;綾川町山田下;あやがわちょうやまだしも;Ayagawa Town Yamadashimo
-3820200;今治市南宝来町二丁目;いまばりしみなみほうらいちょうにちょうめ;Imabari City Minamihorai Town Nichome
+3820200;今治市南宝来町二丁目;いまばりしみなみほうらいちょうにちょうめ;Imabari City Minamihorai Town 2-chome
 3820230;今治市朝倉北;いまばりしあさくらきた;Imabari City Asakurakita
 3820231;今治市玉川町;いまばりしたまがわちょう;Imabari City Tamagawa Town
 3820233;今治市大西町;いまばりしおおにしちょう;Imabari City Onishi Town
@@ -2144,7 +2144,7 @@
 4023033;糸島市前原西;いとしましまえばるにし;Itoshima City Maebarunishi
 4023031;糸島市二丈深江;いとしましにじょうふかえ;Itoshima City Nijofukae
 4023020;糸島市前原東;いとしましまえばるひがし;Itoshima City Maebaruhigashi
-4013120;福岡東区香椎駅東三丁目;ふくおかひがしくかしいえきひがしさんちょうめ;Fukuoka Higashi Ward Kashiiekihigashisanchome
+4013120;福岡東区香椎駅東三丁目;ふくおかひがしくかしいえきひがしさんちょうめ;Fukuoka Higashi Ward Kashiiekihigashi 3-chome
 4013131;福岡東区千早;ふくおかひがしくちはや;Fukuoka Higashi Ward Chihaya
 4013201;福岡空港;ふくおかくうこう;Fukuoka Airport
 4013231;福岡博多区博多駅前;ふくおかはかたくはかたえきまえ;Fukuoka Hakata Ward Hakataekimae
@@ -2201,7 +2201,7 @@
 621330;南陽市三間通;なんようしみつまどおり;Nanyo City Mitsumadori
 638131;高畠町高畠;たかはたまちたかはた;Takahata Town Takahata
 638231;山形川西町上小松;やまがたかわにしまちかみこまつ;Yamagata Kawanishi Town Kamikomatsu
-640130;山形小国町小国小坂町;やまがたおぐにまちおぐにこさかまち;Yamagata Ogunimachiogunikosaka Town Town
+640130;山形小国町小国小坂町;やまがたおぐにまちおぐにこさかまち;Yamagata Oguni Town Ogunikosaka Town
 640200;白鷹町黒鴨;しらたかまちくろがも;Shirataka Town Kurogamo
 640232;白鷹町荒砥;しらたかまちあらと;Shirataka Town Arato
 640320;飯豊町上原;いいでまちうわばら;Iide Town Uwabara
@@ -2209,7 +2209,7 @@
 720101;福島市花園町;ふくしましはなぞのちょう;Fukushima City Hanazono Town
 720120;福島市桜木町;ふくしましさくらぎちょう;Fukushima City Sakuragi Town
 720131;福島市飯野町;ふくしましいいのまち;Fukushima City Iino Town
-620201;米沢市アルカディア;よねざわしあるかでぃあ;Yonezawa City Arukadia
+620201;米沢市アルカディア;よねざわしあるかでぃあ;Yonezawa City Arcadia
 720132;福島市五老内町;ふくしましごろううちまち;Fukushima City Gorouchi Town
 620620;寒河江市西根;さがえしにしね;Sagae City Nishine
 620120;山形市薬師町;やまがたしやくしまち;Yamagata City Yakushi Town
@@ -2251,14 +2251,14 @@
 750430;浅川町浅川;あさかわまちあさかわ;Asakawa Town Asakawa
 750500;古殿町松川横川;ふるどのまちまつかわよこかわ;Furudono Town Matsukawayokokawa
 750530;古殿町松川新桑原;ふるどのまちまつかわしんくわばら;Furudono Town Matsukawashinkuwabara
-752131;三春町大町;みはるまちおおまち;Miharu Town O Town
+752131;三春町大町;みはるまちおおまち;Miharu Town Omachi
 752220;小野町中通;おのまちなかどおり;Ono Town Nakadori
 752230;小野町小野新町;おのまちおのにいまち;Ono Town Ononii Town
-721101;田村市船引町;たむらしふねひきまち;Ta Village Shifunehiki Town
-721131;田村市大越町;たむらしおおごえまち;Ta Village Shiogoe Town
-721133;田村市常葉町;たむらしときわまち;Ta Village Shitokiwa Town
-721134;田村市都路町;たむらしみやこじまち;Ta Village Shimiyakoji Town
-721135;田村市滝根町;たむらしたきねまち;Ta Village Shitakine Town
+721101;田村市船引町;たむらしふねひきまち;Tamura City Funehiki Town
+721131;田村市大越町;たむらしおおごえまち;Tamura City Ogoe Town
+721133;田村市常葉町;たむらしときわまち;Tamura City Tokiwa Town
+721134;田村市都路町;たむらしみやこじまち;Tamura City Miyakoji Town
+721135;田村市滝根町;たむらしたきねまち;Tamura City Takine Town
 721331;福島伊達市梁川町;ふくしまだてしやながわまち;Fukushima Date City Yanagawa Town
 721332;福島伊達市保原町;ふくしまだてしほばらまち;Fukushima Date City Hobara Town
 750230;玉川村小高;たまかわむらおたか;Tamakawa Village Otaka
@@ -2512,7 +2512,7 @@
 920636;日光市藤原庁舎;にっこうしふじはらちょうしゃ;Nikko City Fujihara Government Office
 920637;日光市御幸町;につこうしごこうまち;Nitsuko City Goko Town
 920638;日光市黒部;にっこうしくろべ;Nikko City Kurobe
-920639;日光市今市本町;にっこうしいまいちほんちょう;Nikko City Imaichihoncho City Town
+920639;日光市今市本町;にっこうしいまいちほんちょう;Nikko City Imaichihoncho Town
 921000;大田原市黒羽田町;おおたわらしくろばねたまち;Otawara City Kurobaneta Town
 921033;大田原市本町;おおたわらしほんちょう;Otawara City Honcho
 823531;つくばみらい市加藤;つくばみらいしかとう;Tsukubamirai City Kato
@@ -2869,14 +2869,14 @@
 133701;七飯町桜町;ななえちょうさくらまち;Nanae Town Sakura Town
 133720;七飯町本町;ななえちょうほんちょう;Nanae Town Honcho
 134320;鹿部町宮浜;しかべちょうみやはま;Shikabe Town Miyahama
-134503;渡島森町御幸町;おしまもりまちみゆきちょう;Oshimamorimachimiyuki Town Town
-134520;渡島森町上台町;おしまもりまちうわだいちょう;Oshimamorimachiuwadai Town Town
-134531;渡島森町砂原;おしまもりまちさわら;Oshimamori Town Sawara
-123632;渡島北斗市中央;おしまほくとしちゅうおう;O City Mahokutoshichuuo
+134503;渡島森町御幸町;おしまもりまちみゆきちょう;Oshima Mori Town Miyuki Town
+134520;渡島森町上台町;おしまもりまちうわだいちょう;Oshima Mori Town Uwadai Town
+134531;渡島森町砂原;おしまもりまちさわら;Oshima Mori Town Sawara
+123632;渡島北斗市中央;おしまほくとしちゅうおう;Oshima Mahokuto City Chuuo
 134720;長万部町平里;おしゃまんべちょうひらさと;Oshamanbe Town Hirasato
-123633;渡島北斗市本町;おしまほくとしほんちょう;O City Mahokutoshihon Town
-133101;渡島松前町清部;おしままつまえちょうきよべ;Oshimamatsumae Town Kiyobe
-133220;福島町福島;ふくしまちょうふくしま;Fukushima Chofukushima
+123633;渡島北斗市本町;おしまほくとしほんちょう;Oshima Hokuto City Honcho
+133101;渡島松前町清部;おしままつまえちょうきよべ;Oshima Matsumae Town Kiyobe
+133220;福島町福島;ふくしまちょうふくしま;Fukushima Town Fukushima
 133300;知内町小谷石;しりうちちょうこたにいし;Shiriuchi Town Kotaniishi
 133331;知内町重内;しりうちちょうおもない;Shiriuchi Town Omonai
 133421;木古内町木古内;きこないちょうきこない;Kikonai Town Kikonai
@@ -2969,8 +2969,8 @@
 140521;積丹町余別町;しゃこたんちょうよべつちょう;Shakotan Town Yobetsu Town
 140632;古平町浜町;ふるびらちょうはまちょう;Furubira Town Hama Town
 140731;仁木町西町;にきちょうにしまち;Niki Town Nishi Town
-140800;余市町朝日町;よいちちょうあさひちょう;Yoichichouasahicho City Town
-140820;余市町浜中町;よいちちょうはまなかちょう;Yoichichohamanakacho City Town
+140800;余市町朝日町;よいちちょうあさひちょう;Yoichi Town Asahi Town
+140820;余市町浜中町;よいちちょうはまなかちょう;Yoichi Town Hamanaka Town
 140920;赤井川村赤井川;あかいがわむらあかいがわ;Akaigawa Village Akaigawa
 139520;ニセコ町中央通;にせこちょうちゅうおうどおり;Niseko Town Chuuodori
 139632;真狩村真狩;まっかりむらまっかり;Makkari Village Makkari
@@ -3184,7 +3184,7 @@
 164334;幕別町本町;まくべつちょうもとまち;Makubetsu Town Moto Town
 164420;十勝池田町西１条;とかちいけだちょうにしいちじょう;Tokachiikeda Town Nishi 1-jo
 164531;豊頃町茂岩本町;とよころちょうもいわほんまち;Toyokoro Town Moiwahon Town
-164600;本別町北２丁目;ほんべつちょうきたにちょうめ;Honbetsu Town Kitanichome
+164600;本別町北２丁目;ほんべつちょうきたにちょうめ;Honbetsu Town Kita 2-chome
 164620;本別町向陽町;ほんべつちょうこうようちょう;Honbetsu Town Koyo Town
 164920;浦幌町桜町;うらほろちょうさくらまち;Urahoro Town Sakura Town
 163820;中札内村東２条;なかさつないむらひがしにじょう;Nakasatsunai Village Higashi 2-jo
@@ -4125,11 +4125,11 @@
 1411041;横浜戸塚区戸塚町;よこはまとつかくとつかちょう;Yokohama Totsuka Ward Totsuka Town
 1411042;横浜戸塚区鳥が丘;よこはまとつかくとりがおか;Yokohama Totsuka Ward Torigaoka
 1411142;横浜港南区野庭町;よこはまこうなんくのばちょう;Yokohama Konan Ward Noba Town
-1411143;横浜港南区丸山台北部;よこはまこうなんくまるやまだいほくぶ;Yokohama Konan Ward Maruyamadaihokubu
+1411143;横浜港南区丸山台北部;よこはまこうなんくまるやまだいほくぶ;Yokohama Konan Ward Northern Maruyamadai
 1411220;横浜旭区大池町;よこはまあさひくおおいけちょう;Yokohama Asahi Ward Ooike Town
 1411240;横浜旭区今宿東町;よこはまあさひくいまじゅくひがしちょう;Yokohama Asahi Ward Imajuku Higashi Town
 1411242;横浜旭区川井宿町;よこはまあさひくかわいしゅくちょう;Yokohama Asahi Ward Kawaishuku Town
-1411341;横浜緑区十日市場町;よこはまみどりくとおかいちばちょう;Yokohama Midori Ward Tokaichibacho City Town
+1411341;横浜緑区十日市場町;よこはまみどりくとおかいちばちょう;Yokohama Midori Ward Tokaichiba Town
 1411342;横浜緑区鴨居;よこはまみどりくかもい;Yokohama Midori Ward Kamoi
 1411440;横浜瀬谷区中屋敷;よこはませやくなかやしき;Yokohama Seya Ward Nakayashiki
 1436631;開成町延沢;かいせいまちのぶさわ;Kaisei Town Nobusawa

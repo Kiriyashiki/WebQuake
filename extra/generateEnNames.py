@@ -90,6 +90,7 @@ PROTECTED_STEMS = {
     "中町": ("なかまち", "Nakamachi"),
     "元町": ("もとまち", "Motomachi"),
     "栄町": ("さかえまち", "Sakaemachi"),
+    "田村": ("たむら", "Tamura"),
 }
 
 def normalize_text(text: str) -> str:

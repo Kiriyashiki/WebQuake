@@ -44,6 +44,23 @@ let cityNames = null;
 let areaCodes = null;
 let eewEpicenterMarkers = [];
 
+let travelTimeData = null;
+fetch('/tjma2001.csv')
+  .then(res => res.text())
+  .then(csvText => {
+    travelTimeData = {};
+    const lines = csvText.trim().split('\n');
+    for (let i = 1; i < lines.length; i++) {
+      if (!lines[i]) continue;
+      const [depth, distance, p_time, s_time] = lines[i].split(',').map(Number);
+      if (!travelTimeData[depth]) {
+        travelTimeData[depth] = [];
+      }
+      travelTimeData[depth].push({ distance, p_time, s_time });
+    }
+  })
+  .catch(err => console.error("[EEW] Could not load tjma2001.csv:", err));
+
 // For restoring map state
 let mapInteractionTimeout = null;
 let isUserInteractingWithMap = false;
@@ -764,8 +781,6 @@ function renderCurrentEew() {
 // ─── EEW Wave Animation ──────────────────────────────────────────────────────
 
 let waveInterval = null;
-const P_VEL = 7.0; // km/s
-const S_VEL = 4.0; // km/s
 
 function getCircleCoords(centerLat, centerLng, radiusKm, points = 64) {
   const coords = [];
@@ -843,6 +858,33 @@ function stopWaveAnimation() {
   }
 }
 
+function getTravelDistance(depth, time, phase) {
+  if (!travelTimeData || !travelTimeData[depth]) return 0;
+  
+  const data = travelTimeData[depth];
+  
+  let prev = data[0];
+  for (let i = 1; i < data.length; i++) {
+    const curr = data[i];
+    const prevTime = phase === 'P' ? prev.p_time : prev.s_time;
+    const currTime = phase === 'P' ? curr.p_time : curr.s_time;
+    
+    if (time >= prevTime && time <= currTime) {
+      if (currTime === prevTime) return prev.distance;
+      const ratio = (time - prevTime) / (currTime - prevTime);
+      return prev.distance + ratio * (curr.distance - prev.distance);
+    }
+    prev = curr;
+  }
+  
+  const lastTime = phase === 'P' ? prev.p_time : prev.s_time;
+  if (time > lastTime) {
+    return prev.distance;
+  }
+  
+  return 0;
+}
+
 function updateWaves() {
   if (!mapInstance) return;
   if (document.hidden) return;
@@ -877,12 +919,13 @@ function updateWaves() {
 
     let depth = Number.parseInt(msg.Hypocenter.Depth, 10);
     if (Number.isNaN(depth)) depth = 10;
+    
+    // Convert to multiple of 10 for table lookup, cap at 700km
+    depth = Math.round(depth / 10) * 10;
+    if (depth > 700) depth = 700;
 
-    const pDist = P_VEL * t;
-    const sDist = S_VEL * t;
-
-    const pRad = pDist > depth ? Math.sqrt(pDist * pDist - depth * depth) : 0;
-    const sRad = sDist > depth ? Math.sqrt(sDist * sDist - depth * depth) : 0;
+    const pRad = getTravelDistance(depth, t, 'P');
+    const sRad = getTravelDistance(depth, t, 'S');
 
     if (pRad >= 2000) {
       continue;
