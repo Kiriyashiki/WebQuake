@@ -15,12 +15,11 @@
  * Entry title → report type mapping:
  *   震度速報            → VXSE51 (intensity flash)
  *   震源に関する情報    → VXSE52 (epicenter flash)
- *   震源・震度に関する情報 → VXSE53 (normal report, 震源・震度情報)
+ *   震源・震度に関する情報 → VXSE53 (normal report)
  *   顕著な地震の震源要素更新のお知らせ → VXSE61 (special update)
  */
 
-import { FLASH_INTENSITY_TITLE, FLASH_EPICENTER_TITLE } from './reportUtils.js';
-import { SPECIAL_REPORT_TITLE } from './parseReports.js';
+import { FLASH_INTENSITY_TITLE, FLASH_EPICENTER_TITLE, SPECIAL_TITLE, NORMAL_TITLE } from './reportUtils.js';
 import { XML_FEED_URL } from './constants.js';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -32,8 +31,8 @@ import { XML_FEED_URL } from './constants.js';
 const ATOM_TITLE_TO_TTL = {
   '震度速報':            FLASH_INTENSITY_TITLE,    // VXSE51
   '震源に関する情報':    FLASH_EPICENTER_TITLE,    // VXSE52
-  '震源・震度に関する情報': '震源・震度情報',       // VXSE53 → same ttl as JSON
-  '顕著な地震の震源要素更新のお知らせ': SPECIAL_REPORT_TITLE, // VXSE61
+  '震源・震度に関する情報': NORMAL_TITLE,       // VXSE53 → same ttl as JSON
+  '顕著な地震の震源要素更新のお知らせ': SPECIAL_TITLE, // VXSE61
 };
 
 /** Set of Atom titles that we should process */

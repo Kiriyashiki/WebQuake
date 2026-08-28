@@ -80,6 +80,15 @@ export const FLASH_INTENSITY_TITLE = '震度速報';
 /** Title for 震源速報 (epicenter flash report — second report, epicenter details) */
 export const FLASH_EPICENTER_TITLE = '震源に関する情報';
 
+/** Title for 震源・震度情報 (normal report) */
+export const NORMAL_TITLE = '震源・震度情報';
+
+/** Title for VXSE61 (special report for notable earthquakes) */
+export const SPECIAL_TITLE = '顕著な地震の震源要素更新のお知らせ';
+
+/** Title for VXSE62 (Long period ground motion) */
+export const LPGM_TITLE = '長周期地震動に関する観測情報';
+
 /**
  * Parses a 震度速報 JSON into area-level observations (no cities).
  * The JSON structure uses Body.Intensity.Observation.Pref[] → Area[].

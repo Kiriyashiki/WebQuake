@@ -9,7 +9,6 @@
 
 import { FEED_DATA_BASE_URL, POLL_INTERVAL, XML_FEED_URL } from "./constants.js";
 import {
-  SPECIAL_REPORT_TITLE,
   parseSpecialReportOverrides,
   applySpecialReportOverrides,
 } from "./parseReports.js";
@@ -18,6 +17,9 @@ import {
   parseReport,
   FLASH_INTENSITY_TITLE,
   FLASH_EPICENTER_TITLE,
+  NORMAL_TITLE,
+  SPECIAL_TITLE,
+  LPGM_TITLE,
   buildFlashIntensityReport,
   buildFlashEpicenterReport,
   parseFlashIntensityJson,
@@ -218,17 +220,17 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
     // Filter for target entries only (震源・震度情報)
     // In XML mode, entries have _xmlDoc instead of json
     const targetEntries = entries.filter(
-      (entry) => entry.ttl === "震源・震度情報" && (entry.json || entry._xmlDoc) && entry.rdt,
+      (entry) => entry.ttl === NORMAL_TITLE && (entry.json || entry._xmlDoc) && entry.rdt,
     );
 
     // Collect VXSE61 special report entries from the feed
     const specialEntries = entries.filter(
-      (entry) => entry.ttl === SPECIAL_REPORT_TITLE && entry.eid && entry.rdt,
+      (entry) => entry.ttl === SPECIAL_TITLE && entry.eid && entry.rdt,
     );
 
     // Collect LPGM entries from the feed
     const lpgmEntries = entries.filter(
-      (entry) => entry.ttl === "長周期地震動に関する観測情報" && entry.eid && entry.rdt,
+      (entry) => entry.ttl === LPGM_TITLE && entry.eid && entry.rdt,
     );
 
     // Collect flash report entries from the feed

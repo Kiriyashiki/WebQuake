@@ -5,22 +5,22 @@
  * that provide updated magnitude/depth for major earthquakes.
  */
 
-import { FEED_URL_LATEST, FEED_DATA_BASE_URL, PRUNE_MAX_AGE_MS, PRUNE_MAX_REPORTS } from './constants.js';
+import { FEED_URL_LATEST, FEED_DATA_BASE_URL, PRUNE_MAX_AGE_MS, PRUNE_MAX_REPORTS, FEED_LPGM_BASE_URL } from './constants.js';
 import {
   fetchFeedEntries,
   parseReport,
   buildDisplayReport,
   FLASH_INTENSITY_TITLE,
   FLASH_EPICENTER_TITLE,
+  NORMAL_TITLE,
+  SPECIAL_TITLE,
   parseFlashIntensityJson,
   buildFlashIntensityReport,
   buildFlashEpicenterReport,
+  LPGM_TITLE,
 } from './reportUtils.js';
 
 import { parseLpgmJson } from './lpgmUtils.js';
-
-/** Title string identifying VXSE61 special update reports in the feed. */
-export const SPECIAL_REPORT_TITLE = '顕著な地震の震源要素更新のお知らせ';
 
 /**
  * Parses depth (in km) from a coordinate string like "+4012.6+14218.2-44000/".
@@ -84,7 +84,7 @@ export function parseCoordinatesFromCod(cod) {
 /**
  * Parses updated magnitude, depth, and coordinates from a VXSE61 special report feed entry.
  * No JSON download is required — values are taken directly from the feed entry.
- * @param {Object} entry - Feed entry with ttl === SPECIAL_REPORT_TITLE
+ * @param {Object} entry - Feed entry with ttl === SPECIAL_TITLE
  * @returns {{ magnitude: number|null, depth: number|null, coordinates: { latitude: number, longitude: number }|null }}
  */
 export function parseSpecialReportOverrides(entry) {
@@ -136,7 +136,7 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
 
     // Filter for target reports (震源・震度情報 only)
     const rawTargetEntries = feedEntries.filter(
-      entry => entry.ttl === '震源・震度情報' && entry.json
+      entry => entry.ttl === NORMAL_TITLE && entry.json
     );
 
     // Sort newest first by rdt
@@ -167,7 +167,7 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
     // If multiple special reports exist for the same event, keep the newest (by rdt).
     const specialEntriesByEid = new Map();
     for (const entry of feedEntries) {
-      if (entry.ttl === SPECIAL_REPORT_TITLE && entry.eid) {
+      if (entry.ttl === SPECIAL_TITLE && entry.eid) {
         const existing = specialEntriesByEid.get(entry.eid);
         if (!existing || (entry.rdt && (!existing.rdt || entry.rdt > existing.rdt))) {
           specialEntriesByEid.set(entry.eid, entry);
@@ -198,11 +198,11 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
     // Fetch LPGM JSON feed (parallel)
     const lpgmEntriesByEid = new Map();
     try {
-      const lpgmRes = await fetch("https://www.jma.go.jp/bosai/ltpgm/data/list.json");
+      const lpgmRes = await fetch(`${FEED_LPGM_BASE_URL}list.json`);
       if (lpgmRes.ok) {
         const lpgmList = await lpgmRes.json();
         for (const entry of lpgmList) {
-          if (entry.ttl === "長周期地震動に関する観測情報" && entry.eid && entry.json) {
+          if (entry.ttl === LPGM_TITLE && entry.eid && entry.json) {
             const existing = lpgmEntriesByEid.get(entry.eid);
             // Keep newest by rdt if multiple exist
             if (!existing || (entry.rdt && (!existing.rdt || entry.rdt > existing.rdt))) {
@@ -330,7 +330,7 @@ async function _buildFlashReport(eid, intensityEntry, epicenterEntry, areaCodes)
 
 async function _processEntry(entry, areaCodes, seenEventIds, lpgmEntry) {
   // Check if this is a target entry (震源・震度情報)
-  if (entry.ttl !== '震源・震度情報' || !entry.json) {
+  if (entry.ttl !== NORMAL_TITLE || !entry.json) {
     return null;
   }
 
@@ -364,7 +364,7 @@ async function _processEntry(entry, areaCodes, seenEventIds, lpgmEntry) {
 
     if (lpgmEntry) {
       try {
-        const lpgmRes = await fetch(`https://www.jma.go.jp/bosai/ltpgm/data/${lpgmEntry.json}`, {
+        const lpgmRes = await fetch(`${FEED_LPGM_BASE_URL}${lpgmEntry.json}`, {
           method: 'GET',
           mode: 'cors',
           cache: 'no-cache'

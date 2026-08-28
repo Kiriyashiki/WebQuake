@@ -676,6 +676,7 @@ async function boot() {
   // Preload audio files so they don't hang fetch() during OS sleep/resume
   preloadAudio("/sfx/ping.wav");
   preloadAudio("/sfx/eew.wav");
+  preloadAudio("/sfx/flash.wav");
 
   // Fetch initial reports
   _updateStatus("loading");
@@ -711,6 +712,14 @@ async function boot() {
 
     _updateStatus("live");
 
+    // Track normal reports we've already played audio for
+    const playedNormalReports = new Set();
+    for (const report of reports) {
+      if (!report.isFlashReport) {
+        playedNormalReports.add(report.eventId);
+      }
+    }
+
     // Initialize live mode
     initLiveModeToggle((isEnabled) => {
       if (isEnabled) {
@@ -724,7 +733,12 @@ async function boot() {
               console.info("[eq-viewer] New entry:", report.eventId);
 
               // Play notification sound
-              playAudio("/sfx/ping.wav");
+              if (report.isFlashReport) {
+                playAudio("/sfx/flash.wav");
+              } else if (!playedNormalReports.has(report.eventId)) {
+                playedNormalReports.add(report.eventId);
+                playAudio("/sfx/ping.wav");
+              }
 
               const added = addReportToSidebar(report, onReportSelect);
               if (added) {
@@ -765,6 +779,15 @@ async function boot() {
             },
             onUpdatedEntry: (entry, report) => {
               console.info("[eq-viewer] Updated entry:", report.eventId);
+
+              // Play notification sound
+              if (report.isFlashReport) {
+                playAudio("/sfx/flash.wav");
+              } else if (!playedNormalReports.has(report.eventId)) {
+                playedNormalReports.add(report.eventId);
+                playAudio("/sfx/ping.wav");
+              }
+
               const updated = updateReportInSidebar(report, onReportSelect);
               if (updated) {
                 // If the report is currently displayed on the map, refresh it

@@ -1,22 +1,11 @@
 /**
- * Audio playback utilities using the Web Audio API.
+ * Audio playback utilities.
+ * Uses HTMLAudioElement with Blob URLs to prevent Tauri IPC hangs during OS sleep
+ * and bypass WebKitGTK Web Audio API playback bugs.
  */
 
-/** @type {AudioContext|null} */
-let _ctx = null;
-
-/** @type {Map<string, AudioBuffer>} */
-const _bufferCache = new Map();
-
-/**
- * Returns the shared AudioContext, creating it on first use.
- */
-function _getContext() {
-  if (!_ctx) {
-    _ctx = new AudioContext();
-  }
-  return _ctx;
-}
+/** @type {Map<string, HTMLAudioElement>} */
+const _audioCache = new Map();
 
 /**
  * Preloads an audio file into the buffer cache.
@@ -25,16 +14,18 @@ function _getContext() {
  */
 export async function preloadAudio(path) {
   try {
-    if (_bufferCache.has(path)) return;
+    if (_audioCache.has(path)) return;
     
-    const ctx = _getContext();
     const response = await fetch(path);
     if (!response.ok) {
       throw new Error(`Fetch failed: HTTP ${response.status}`);
     }
     const arrayBuffer = await response.arrayBuffer();
-    const buffer = await ctx.decodeAudioData(arrayBuffer);
-    _bufferCache.set(path, buffer);
+    const blob = new Blob([arrayBuffer], { type: 'audio/wav' });
+    const url = URL.createObjectURL(blob);
+    
+    const audio = new Audio(url);
+    _audioCache.set(path, audio);
   } catch (err) {
     console.warn(`[audio] Failed to preload ${path}:`, err);
   }
@@ -46,31 +37,20 @@ export async function preloadAudio(path) {
  */
 export async function playAudio(path) {
   try {
-    const ctx = _getContext();
+    let audio = _audioCache.get(path);
 
-    // Resume context if it was suspended (e.g. by autoplay policy or OS sleep)
-    if (ctx.state === 'suspended') {
-      await ctx.resume();
-    }
-
-    let buffer = _bufferCache.get(path);
-
-    if (!buffer) {
+    if (!audio) {
       // Fallback if not preloaded
       await preloadAudio(path);
-      buffer = _bufferCache.get(path);
-      if (!buffer) return;
+      audio = _audioCache.get(path);
+      if (!audio) return;
     }
 
     console.debug(`[audio] Playing audio ${path}`);
 
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    source.connect(ctx.destination);
-    source.onended = () => {
-      source.disconnect();
-    };
-    source.start();
+    // Clone the node to allow overlapping playback of the same sound
+    const clone = audio.cloneNode();
+    clone.play().catch(e => console.warn(`[audio] Playback prevented:`, e));
   } catch (err) {
     console.warn(`[audio] Failed to play ${path}:`, err);
   }
