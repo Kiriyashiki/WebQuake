@@ -17,9 +17,10 @@
  *   震源に関する情報    → VXSE52 (epicenter flash)
  *   震源・震度に関する情報 → VXSE53 (normal report)
  *   顕著な地震の震源要素更新のお知らせ → VXSE61 (special update)
+ *   長周期地震動に関する観測情報 → VXSE62 (LPGM report)
  */
 
-import { FLASH_INTENSITY_TITLE, FLASH_EPICENTER_TITLE, SPECIAL_TITLE, NORMAL_TITLE } from './reportUtils.js';
+import { FLASH_INTENSITY_TITLE, FLASH_EPICENTER_TITLE, SPECIAL_TITLE, NORMAL_TITLE, LPGM_TITLE } from './reportUtils.js';
 import { XML_FEED_URL } from './constants.js';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -33,6 +34,7 @@ const ATOM_TITLE_TO_TTL = {
   '震源に関する情報':    FLASH_EPICENTER_TITLE,    // VXSE52
   '震源・震度に関する情報': NORMAL_TITLE,       // VXSE53 → same ttl as JSON
   '顕著な地震の震源要素更新のお知らせ': SPECIAL_TITLE, // VXSE61
+  '長周期地震動に関する観測情報': LPGM_TITLE, // VXSE62
 };
 
 /** Set of Atom titles that we should process */

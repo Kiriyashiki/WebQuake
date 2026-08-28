@@ -24,7 +24,7 @@ import {
   buildFlashEpicenterReport,
   parseFlashIntensityJson,
 } from "./reportUtils.js";
-import { parseLpgmXml, parseLpgmJson } from "./lpgmUtils.js";
+import { parseLpgmXml } from "./lpgmUtils.js";
 import JMAEarthquakeReport from "./jmaEarthquakeReport.js";
 import { fetchXmlFeedEntries, parseFlashIntensityXml } from "./xmlFeedParser.js";
 
@@ -659,20 +659,6 @@ async function _fetchAndParseEntry(entry, areaCodes, lpgmEntry) {
     if (lpgmEntry) {
       if (lpgmEntry._xmlDoc) {
         displayReport.lpgmInfo = parseLpgmXml(lpgmEntry._xmlDoc);
-      } else if (lpgmEntry.json) {
-        try {
-          const lpgmRes = await fetch(`https://www.jma.go.jp/bosai/ltpgm/data/${lpgmEntry.json}`, {
-            method: "GET",
-            mode: "cors",
-            cache: "no-cache",
-          });
-          if (lpgmRes.ok) {
-            const lpgmJson = await lpgmRes.json();
-            displayReport.lpgmInfo = parseLpgmJson(lpgmJson);
-          }
-        } catch (err) {
-          console.warn("[live-mode] Failed to fetch LPGM JSON:", err);
-        }
       }
     }
 
