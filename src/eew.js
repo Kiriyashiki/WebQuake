@@ -1,5 +1,11 @@
 import maplibregl from "maplibre-gl";
-import { formatTimeJSTWithSeconds, INTENSITY_CONFIG, USE_TEST_SERVER } from "./constants.js";
+import {
+  formatTimeJSTWithSeconds,
+  INTENSITY_CONFIG,
+  USE_TEST_SERVER,
+  TEST_GMPE_OVERRIDE,
+  haversineDistance
+} from "./constants.js";
 import { playAudio } from "./audio.js";
 import {
   updateCityAreasVisibility,
@@ -76,6 +82,52 @@ fetch("/city_forecast_map.csv")
     });
   })
   .catch((err) => console.error("[EEW] Could not load city_forecast_map.csv:", err));
+
+let stationsData = [];
+fetch("/stations.csv")
+  .then((res) => res.text())
+  .then((csvText) => {
+    const lines = csvText.trim().split("\n");
+    for (let i = 1; i < lines.length; i++) {
+      if (!lines[i]) continue;
+      const parts = lines[i].split(";");
+      if (parts.length >= 8) {
+        stationsData.push({
+          lat: Number.parseFloat(parts[4]),
+          lon: Number.parseFloat(parts[5]),
+          cityCode: parts[6],
+          arv: Number.parseFloat(parts[7]),
+        });
+      }
+    }
+  })
+  .catch((err) => console.error("[EEW] Could not load stations.csv:", err));
+
+function calculateGmpe(magnitude, depthKm, epicentralDistance, arv) {
+  const hypocentralDistance = Math.hypot(epicentralDistance, depthKm);
+  const faultFactor = 0.0028 * 10.0 ** (0.5 * magnitude);
+  const d2 = Math.max(hypocentralDistance - faultFactor, 3.0);
+  const sourceEnergy = magnitude * 0.58 + 0.0038 * depthKm - 1.29;
+  const geometricDecay = Math.log10(d2 + faultFactor);
+  const anelasticDecay = 0.002 * d2;
+  const siteAmplification = Math.log10(arv * 1.31);
+  const log10a = sourceEnergy - geometricDecay - anelasticDecay + siteAmplification;
+  const shindo = 2.68 + 1.72 * log10a;
+  return shindo;
+}
+
+function floatToShindo(val) {
+  if (val < 0.5) return "0";
+  if (val < 1.5) return "1";
+  if (val < 2.5) return "2";
+  if (val < 3.5) return "3";
+  if (val < 4.5) return "4";
+  if (val < 5.0) return "5-";
+  if (val < 5.5) return "5+";
+  if (val < 6.0) return "6-";
+  if (val < 6.5) return "6+";
+  return "7";
+}
 
 // For restoring map state
 let mapInteractionTimeout = null;
@@ -1242,16 +1294,84 @@ function updateMapForEew() {
 
   const mergedForecast = mergeForecasts(Array.from(activeEews.values()));
 
-  // Create mock observations for map highlighter
-  const mockObservations = [];
-  if (mergedForecast.length > 0) {
-    const prefMock = { areas: [] };
+  const localPredictions = new Map();
+  const eews = Array.from(activeEews.values()).sort((a, b) => a.receivedAt - b.receivedAt);
+
+  for (const eew of eews) {
+    if (eew.isCancelled) continue;
+    const msg = eew.msg;
+    if (!msg.Hypocenter?.Coordinate) continue;
+
+    const isPlum = msg.Magnitude === "1.0" && msg.Hypocenter.Depth === "10km";
+    if (isPlum) continue;
+
+    let depthKm = Number.parseInt(msg.Hypocenter.Depth, 10);
+    if (Number.isNaN(depthKm) || depthKm >= 150) continue;
+
+    let mag = Number.parseFloat(msg.Magnitude);
+    if (Number.isNaN(mag)) continue;
+
+    const [eqLon, eqLat] = msg.Hypocenter.Coordinate;
+
+    for (const station of stationsData) {
+      const distance = haversineDistance(station.lat, station.lon, eqLat, eqLon);
+      let arv = station.arv;
+      if (arv === null || arv <= 0.0 || Number.isNaN(arv)) {
+        arv = 1.0;
+      }
+      const shindoFloat = calculateGmpe(mag, depthKm, distance, arv);
+      const shindoStr = floatToShindo(shindoFloat);
+
+      if (shindoStr === "0") continue;
+
+      let finalShindo = shindoStr;
+
+      if (!TEST_GMPE_OVERRIDE) {
+        if (getIntVal(finalShindo) > getIntVal("3")) {
+          finalShindo = "3";
+        }
+      }
+
+      const areaCodeStr = cityForecastMap.get(station.cityCode);
+      if (areaCodeStr) {
+        const existing = localPredictions.get(areaCodeStr);
+        if (!existing || getIntVal(finalShindo) > getIntVal(existing)) {
+          localPredictions.set(areaCodeStr, finalShindo);
+        }
+      }
+    }
+  }
+
+  const finalMapIntensities = new Map();
+
+  if (TEST_GMPE_OVERRIDE) {
     for (const f of mergedForecast) {
       if (f.Intensity.To === "0" || f.Intensity.To === "over" || f.Intensity.To === "不明")
         continue;
+      finalMapIntensities.set(String(f.Code), f.Intensity.To);
+    }
+    for (const [areaCode, localInt] of localPredictions.entries()) {
+      finalMapIntensities.set(areaCode, localInt);
+    }
+  } else {
+    for (const [areaCode, localInt] of localPredictions.entries()) {
+      finalMapIntensities.set(areaCode, localInt);
+    }
+    for (const f of mergedForecast) {
+      if (f.Intensity.To === "0" || f.Intensity.To === "over" || f.Intensity.To === "不明")
+        continue;
+      finalMapIntensities.set(String(f.Code), f.Intensity.To);
+    }
+  }
+
+  // Create mock observations for map highlighter
+  const mockObservations = [];
+  if (finalMapIntensities.size > 0) {
+    const prefMock = { areas: [] };
+    for (const [code, maxInt] of finalMapIntensities.entries()) {
       prefMock.areas.push({
-        code: f.Code,
-        maxInt: f.Intensity.To,
+        code: String(code),
+        maxInt: maxInt,
         cities: [],
       });
     }
@@ -1282,7 +1402,6 @@ function updateMapForEew() {
   let hasValidEpicenter = false;
 
   let i = 0;
-  const eews = Array.from(activeEews.values()).sort((a, b) => a.receivedAt - b.receivedAt);
   for (const eew of eews) {
     i++;
     const msg = eew.msg;

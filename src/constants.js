@@ -1,32 +1,33 @@
 // ─── API Feed URLs ──────────────────────────────────────────────────────────
-export const FEED_URL_LATEST = 'https://www.jma.go.jp/bosai/quake/data/list.json';
-export const FEED_DATA_BASE_URL = 'https://www.jma.go.jp/bosai/quake/data/';
-export const FEED_LPGM_BASE_URL = 'https://www.jma.go.jp/bosai/ltpgm/data/';
-export const EQDB_API_URL = 'https://www.data.jma.go.jp/eqdb/data/shindo/api/';
-export const XML_FEED_URL = 'https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml';
+export const FEED_URL_LATEST = "https://www.jma.go.jp/bosai/quake/data/list.json";
+export const FEED_DATA_BASE_URL = "https://www.jma.go.jp/bosai/quake/data/";
+export const FEED_LPGM_BASE_URL = "https://www.jma.go.jp/bosai/ltpgm/data/";
+export const EQDB_API_URL = "https://www.data.jma.go.jp/eqdb/data/shindo/api/";
+export const XML_FEED_URL = "https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml";
 
 // ─── Debug ──────────────────────────────────────────────────────────────────
 export const USE_TEST_SERVER = false;
+export const TEST_GMPE_OVERRIDE = false;
 
 // ─── Intensity Configuration (JMA Shindo Scale) ──────────────────────────────
 export const INTENSITY_CONFIG = {
-  "1":  { color: "#6B7878", fontColor: "#FFFFFF", img: "1.png" },
-  "2":  { color: "#1E6EE6", fontColor: "#FFFFFF", img: "2.png" },
-  "3":  { color: "#32B464", fontColor: "#FFFFFF", img: "3.png" },
-  "4":  { color: "#FFE05D", fontColor: "#000000", img: "4.png" },
+  1: { color: "#6B7878", fontColor: "#FFFFFF", img: "1.png" },
+  2: { color: "#1E6EE6", fontColor: "#FFFFFF", img: "2.png" },
+  3: { color: "#32B464", fontColor: "#FFFFFF", img: "3.png" },
+  4: { color: "#FFE05D", fontColor: "#000000", img: "4.png" },
   "5-": { color: "#FFAA13", fontColor: "#000000", img: "5minus.png" },
   "5+": { color: "#EF6F12", fontColor: "#000000", img: "5plus.png" },
   "6-": { color: "#E40000", fontColor: "#FFFFFF", img: "6minus.png" },
   "6+": { color: "#A00000", fontColor: "#FFFFFF", img: "6plus.png" },
-  "7":  { color: "#5D0092", fontColor: "#FFFFFF", img: "7.png" }
+  7: { color: "#5D0092", fontColor: "#FFFFFF", img: "7.png" },
 };
 
 // ─── LPGM Configuration (JMA LPGM Scale) ──────────────────────────────
 export const LPGM_CONFIG = {
-  "1":  { color: "#32B464", fontColor: "#FFFFFF", img: "l1.png" },
-  "2":  { color: "#FFE05D", fontColor: "#000000", img: "l2.png" },
-  "3": { color: "#FFAA13", fontColor: "#000000", img: "l3.png" },
-  "4": { color: "#E40000", fontColor: "#FFFFFF", img: "l4.png" }
+  1: { color: "#32B464", fontColor: "#FFFFFF", img: "l1.png" },
+  2: { color: "#FFE05D", fontColor: "#000000", img: "l2.png" },
+  3: { color: "#FFAA13", fontColor: "#000000", img: "l3.png" },
+  4: { color: "#E40000", fontColor: "#FFFFFF", img: "l4.png" },
 };
 
 // ─── Map Colour Palette ──────────────────────────────────────────────────────
@@ -68,7 +69,7 @@ function hexToRgba(hex, opacity) {
 /**
  * Builds intensity color expressions for MapLibre style.
  * Returns a case expression that maps intensity levels to full-opacity or reduced-opacity colors.
- * @param {boolean} isDimmed - If true, returns 40% opacity colors; else full opacity
+ * @param {boolean} isDimmed - If true, returns 70% opacity colors; else full opacity
  * @param {string} fallback - Default color when no intensity is set (default: "transparent")
  * @returns {Array} MapLibre case expression
  */
@@ -109,16 +110,16 @@ export function buildLpgmColorExpression(isDimmed = false, fallback = "transpare
  */
 export function formatTimeJST(ms) {
   const date = new Date(ms);
-  
+
   // Convert to JST (UTC+9) by adding 9 hours to the UTC timestamp
-  const jstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
-  
+  const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+
   const year = jstDate.getUTCFullYear();
   const month = String(jstDate.getUTCMonth() + 1).padStart(2, "0");
   const day = String(jstDate.getUTCDate()).padStart(2, "0");
   const hours = String(jstDate.getUTCHours()).padStart(2, "0");
   const minutes = String(jstDate.getUTCMinutes()).padStart(2, "0");
-  
+
   return `${year}/${month}/${day} ${hours}:${minutes}`;
 }
 
@@ -127,17 +128,30 @@ export function formatTimeJST(ms) {
  */
 export function formatTimeJSTWithSeconds(ms) {
   const date = new Date(ms);
-  
+
   // Convert to JST (UTC+9) by adding 9 hours to the UTC timestamp
-  const jstDate = new Date(date.getTime() + (9 * 60 * 60 * 1000));
-  
+  const jstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+
   const year = jstDate.getUTCFullYear();
   const month = String(jstDate.getUTCMonth() + 1).padStart(2, "0");
   const day = String(jstDate.getUTCDate()).padStart(2, "0");
   const hours = String(jstDate.getUTCHours()).padStart(2, "0");
   const minutes = String(jstDate.getUTCMinutes()).padStart(2, "0");
   const seconds = String(jstDate.getUTCSeconds()).padStart(2, "0");
-  
+
   return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
 }
 
+function haversineDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}

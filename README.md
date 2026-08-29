@@ -51,6 +51,7 @@ pnpm run build
     - <a href="https://www.data.jma.go.jp/developer/multilingual.html">Area/City names</a>: Name definition of area/city codes
     - <a href="https://www.data.jma.go.jp/eqdb/data/shindo/">EQDB</a>: Historical Earthquake data
     - <a href="https://www.data.jma.go.jp/eqev/data/bulletin/catalog/appendix/trtime/trt_e.html">Travel time tables</a>: EEW P and S waves
+- [NIED (防災科研)](https://www.bosai.go.jp/): <a href="https://www.j-shis.bosai.go.jp/">J-SHIS</a>: Site amplification factors
 - <a href="https://axis.prioris.jp/">AXIS</a>: EEW source
 - <a href="https://jquake.net/">JQuake</a>: Intensity color scale
 - <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>: Map data of lakes

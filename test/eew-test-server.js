@@ -46,8 +46,8 @@ function addHours(date, hours) {
   return date;
 }
 
-function generateTime() {
-  const d = addHours(new Date(), 9);
+function generateTime(offsetSec = 0) {
+  const d = addHours(new Date(), 9 - offsetSec / 3600);
   // Return format: 2026-07-31T07:50:30+09:00
   return d.toISOString().replace("Z", "+09:00");
 }
@@ -235,6 +235,7 @@ async function runScenario(ws, scenario) {
     let msg = createBaseMsg(eventId1, 1, false, false);
     msg.Intensity = "不明";
     msg.Forecast = [];
+    msg.OriginDateTime = generateTime(40);
     msg.Hypocenter.Depth = "410km";
     msg.Magnitude = "5.8";
     sendMsg(ws, msg);
