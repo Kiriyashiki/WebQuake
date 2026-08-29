@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('node:fs');
 
 const forecast = JSON.parse(fs.readFileSync('public/forecast_areas.geojson'));
 const cities = JSON.parse(fs.readFileSync('public/municipalities.geojson'));

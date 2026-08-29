@@ -235,7 +235,7 @@ async function fetchHistoryList(params) {
  * @param {string} areaCodesCsv - Pre-loaded jma-area-codes.csv content
  * @returns {Promise<Object|null>} Report JSON or null on failure
  */
-async function fetchEqdbEvent(eventId, boundsData, forecastAreas, municipalities, areaCodesCsv) {
+async function fetchEqdbEvent(eventId, boundsData, forecastAreas, municipalities, areaCodesCsv, cityForecastCsv) {
   try {
     const boundary = '----bound';
     const body = `--${boundary}\r\nContent-Disposition: form-data; name="mode"\r\n\r\nevent\r\n--${boundary}\r\nContent-Disposition: form-data; name="id"\r\n\r\n${eventId}\r\n--${boundary}--\r\n`;
@@ -267,6 +267,25 @@ async function fetchEqdbEvent(eventId, boundsData, forecastAreas, municipalities
       }
     });
     const resolvedHypocenterCode = hypocenterCodeMap.get(hyp.name) || null;
+
+    // Parse the city to forecast area mapping
+    const cityToAreaMap = new Map();
+    if (cityForecastCsv) {
+      cityForecastCsv.split('\n').forEach(line => {
+        const parts = line.split(',');
+        if (parts.length >= 2) {
+          cityToAreaMap.set(parts[0].trim(), parts[1].trim());
+        }
+      });
+    }
+
+    // Map forecast area names for quick lookup
+    const forecastAreaNames = new Map();
+    for (const feature of forecastAreas.features) {
+      if (feature.properties?.code) {
+        forecastAreaNames.set(feature.properties.code, feature.properties.name);
+      }
+    }
 
     // Map municipalities for quick O(1) lookup by regioncode
     const cityPolygons = new Map();
@@ -324,49 +343,7 @@ async function fetchEqdbEvent(eventId, boundsData, forecastAreas, municipalities
       return R * c;
     }
 
-    function findForecastArea(point, cityBbox) {
-      for (const feature of forecastAreas.features) {
-        if (feature.geometry === null) { continue; }
-        if (pointInPolygon(point, feature)) {
-          return { code: feature.properties.code, name: feature.properties.name || null };
-        }
-      }
-      if (cityBbox) {
-        const [cMinLon, cMinLat, cMaxLon, cMaxLat] = cityBbox;
-        const centroid = [(cMinLon + cMaxLon) / 2, (cMinLat + cMaxLat) / 2];
-        for (const feature of forecastAreas.features) {
-          if (feature.geometry === null) { continue; }
-          if (pointInPolygon(centroid, feature)) {
-            return { code: feature.properties.code, name: feature.properties.name || null };
-          }
-        }
-      }
-      let bestCode = null;
-      let bestName = null;
-      let minAreaDist = Infinity;
-      for (const feature of forecastAreas.features) {
-        if (feature.geometry === null) { continue; }
-        const coords = feature.geometry.coordinates;
-        const processAreaRing = (ring) => {
-          for (const [lon, lat] of ring) {
-            const dist = haversineDistance(point[1], point[0], lat, lon);
-            if (dist < minAreaDist) {
-              minAreaDist = dist;
-              bestCode = feature.properties.code;
-              bestName = feature.properties.name || null;
-            }
-          }
-        };
-        if (feature.geometry.type === 'Polygon') {
-          for (const ring of coords) processAreaRing(ring);
-        } else if (feature.geometry.type === 'MultiPolygon') {
-          for (const poly of coords) {
-            for (const ring of poly) processAreaRing(ring);
-          }
-        }
-      }
-      return { code: bestCode || 'UNKNOWN_AREA', name: bestName };
-    }
+
 
     // Create observation point features
     const stationPoints = observations.map(obs => ({
@@ -409,10 +386,8 @@ async function fetchEqdbEvent(eventId, boundsData, forecastAreas, municipalities
       if (!cityInt) continue;
 
       // STEP C: Assign to Forecast Area
-      const representativePoint = [validStations[0].lon, validStations[0].lat];
-      const bestArea = findForecastArea(representativePoint, bbox);
-      const areaCode = bestArea.code;
-      const areaName = bestArea.name;
+      const areaCode = cityToAreaMap.get(cityCode) || 'UNKNOWN_AREA';
+      const areaName = forecastAreaNames.get(areaCode) || null;
 
       // Pref code is first 2 digits of city code
       const prefCode = cityCode.substring(0, 2);
@@ -496,9 +471,8 @@ async function fetchEqdbEvent(eventId, boundsData, forecastAreas, municipalities
           if (existingCityEntry) {
             existingCityEntry.MaxInt = getMaxInt([existingCityEntry.MaxInt, station.int]);
           } else {
-            const bestArea = findForecastArea([station.lon, station.lat], boundsData.cities[bestCityCode]);
-            const areaCode = bestArea.code;
-            const areaName = bestArea.name;
+            const areaCode = cityToAreaMap.get(bestCityCode) || 'UNKNOWN_AREA';
+            const areaName = forecastAreaNames.get(areaCode) || null;
 
             if (!prefMap.has(prefCode)) {
               prefMap.set(prefCode, { code: prefCode, name: null, areas: new Map() });
@@ -581,11 +555,12 @@ let _geoDataCache = null;
 async function loadGeoData() {
   if (_geoDataCache) return _geoDataCache;
 
-  const [bounds, forecastRes, muniRes, areaCodesCsv] = await Promise.all([
+  const [bounds, forecastRes, muniRes, areaCodesCsv, cityForecastRes] = await Promise.all([
     loadBoundsData(),
     fetch('/forecast_areas.geojson'),
     fetch('/municipalities.geojson'),
     loadAreaCodesRawCsv(),
+    fetch('/city_forecast_map.csv')
   ]);
 
   _geoDataCache = {
@@ -593,6 +568,7 @@ async function loadGeoData() {
     forecastAreas: await forecastRes.json(),
     municipalities: await muniRes.json(),
     areaCodesCsv,
+    cityForecastCsv: await cityForecastRes.text(),
   };
 
   return _geoDataCache;
@@ -642,6 +618,7 @@ export async function fetchHistoryReports(searchParams, areaCodes = new Map(), o
           geoData.forecastAreas,
           geoData.municipalities,
           geoData.areaCodesCsv,
+          geoData.cityForecastCsv
         );
 
         if (!reportJson) return null;
