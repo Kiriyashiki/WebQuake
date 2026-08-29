@@ -8,9 +8,10 @@ import {
   fitBoundsToObservations,
   highlightObservations,
   updateLpgmVisibility,
+  hideHomeLocationIntensity,
 } from "./map.js";
 import { createRubyHtml } from "./areaCodes.js";
-import { getCityAreasState } from "./sidebarUI.js";
+import { getCityAreasState, getHomeIntensityState } from "./sidebarUI.js";
 import { updateMapLegend } from "./main.js";
 
 // Detect Tauri runtime — when running as a desktop app, we can bypass CORS
@@ -18,11 +19,13 @@ import { updateMapLegend } from "./main.js";
 const IS_TAURI = Boolean(window.__TAURI_INTERNALS__);
 let tauriFetch = null;
 if (IS_TAURI) {
-  import("@tauri-apps/plugin-http").then((mod) => {
-    tauriFetch = mod.fetch;
-  }).catch((err) => {
-    console.warn("[EEW] Failed to load Tauri HTTP plugin, falling back to browser fetch.", err);
-  });
+  import("@tauri-apps/plugin-http")
+    .then((mod) => {
+      tauriFetch = mod.fetch;
+    })
+    .catch((err) => {
+      console.warn("[EEW] Failed to load Tauri HTTP plugin, falling back to browser fetch.", err);
+    });
 }
 
 let eewSocket = null;
@@ -45,21 +48,34 @@ let areaCodes = null;
 let eewEpicenterMarkers = [];
 
 let travelTimeData = null;
-fetch('/tjma2001.csv')
-  .then(res => res.text())
-  .then(csvText => {
+fetch("/tjma2001.csv")
+  .then((res) => res.text())
+  .then((csvText) => {
     travelTimeData = {};
-    const lines = csvText.trim().split('\n');
+    const lines = csvText.trim().split("\n");
     for (let i = 1; i < lines.length; i++) {
       if (!lines[i]) continue;
-      const [depth, distance, p_time, s_time] = lines[i].split(',').map(Number);
+      const [depth, distance, p_time, s_time] = lines[i].split(",").map(Number);
       if (!travelTimeData[depth]) {
         travelTimeData[depth] = [];
       }
       travelTimeData[depth].push({ distance, p_time, s_time });
     }
   })
-  .catch(err => console.error("[EEW] Could not load tjma2001.csv:", err));
+  .catch((err) => console.error("[EEW] Could not load tjma2001.csv:", err));
+
+let cityForecastMap = new Map();
+fetch("/city_forecast_map.csv")
+  .then((res) => res.text())
+  .then((csvText) => {
+    csvText.split("\n").forEach((line) => {
+      const parts = line.split(",");
+      if (parts.length >= 2) {
+        cityForecastMap.set(parts[0].trim(), parts[1].trim());
+      }
+    });
+  })
+  .catch((err) => console.error("[EEW] Could not load city_forecast_map.csv:", err));
 
 // For restoring map state
 let mapInteractionTimeout = null;
@@ -78,6 +94,8 @@ export function clearEewMapDisplay() {
     clearTimeout(mapInteractionTimeout);
     mapInteractionTimeout = null;
   }
+
+  hideHomeLocationIntensity();
 
   for (const marker of eewEpicenterMarkers) {
     marker.remove();
@@ -402,16 +420,22 @@ function scheduleTokenRefresh() {
   if (!localStorage.getItem("eew-token-expiry")) {
     const expiry = getEndOfMonthUTC(new Date());
     localStorage.setItem("eew-token-expiry", String(expiry));
-    console.debug("[EEW] Token expiry set to end of current month:", new Date(expiry).toISOString());
+    console.debug(
+      "[EEW] Token expiry set to end of current month:",
+      new Date(expiry).toISOString(),
+    );
   }
 
   // Run immediately, then every 24 hours
   checkTokenRefresh();
   if (tokenRefreshTimer) clearTimeout(tokenRefreshTimer);
-  tokenRefreshTimer = setTimeout(function tick() {
-    checkTokenRefresh();
-    tokenRefreshTimer = setTimeout(tick, 24 * 60 * 60 * 1000);
-  }, 24 * 60 * 60 * 1000);
+  tokenRefreshTimer = setTimeout(
+    function tick() {
+      checkTokenRefresh();
+      tokenRefreshTimer = setTimeout(tick, 24 * 60 * 60 * 1000);
+    },
+    24 * 60 * 60 * 1000,
+  );
 }
 
 /**
@@ -438,7 +462,9 @@ async function checkTokenRefresh() {
   const msUntilExpiry = expiry - now.getTime();
   const daysUntilExpiry = msUntilExpiry / (1000 * 60 * 60 * 24);
   if (daysUntilExpiry > 7) {
-    console.debug(`[EEW] Token expiry in ${Math.round(daysUntilExpiry)} days, no refresh needed yet.`);
+    console.debug(
+      `[EEW] Token expiry in ${Math.round(daysUntilExpiry)} days, no refresh needed yet.`,
+    );
     return;
   }
 
@@ -512,9 +538,9 @@ function alertTokenExpiry() {
   localStorage.setItem("eew-token-expiry-alerted", "true");
   alert(
     "EEW token could not be refreshed and will expire at the end of this month. " +
-    "Please check your AXIS subscription or update your token in Settings.\n" +
-    "EEWトークンの更新に失敗しました。今月末にトークンが無効になります。" +
-    "AXISのサブスクリプションを確認するか、「設定」でトークンを更新してください。",
+      "Please check your AXIS subscription or update your token in Settings.\n" +
+      "EEWトークンの更新に失敗しました。今月末にトークンが無効になります。" +
+      "AXISのサブスクリプションを確認するか、「設定」でトークンを更新してください。",
   );
 }
 
@@ -792,13 +818,13 @@ function getCircleCoords(centerLat, centerLng, radiusKm, points = 64) {
   for (let i = 0; i <= points; i++) {
     const brng = (i / points) * 2 * Math.PI;
     const lat2 = Math.asin(
-      Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(brng)
+      Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(brng),
     );
     let lon2 =
       lon1 +
       Math.atan2(
         Math.sin(brng) * Math.sin(d) * Math.cos(lat1),
-        Math.cos(d) - Math.sin(lat1) * Math.sin(lat2)
+        Math.cos(d) - Math.sin(lat1) * Math.sin(lat2),
       );
     coords.push([(lon2 * 180) / Math.PI, (lat2 * 180) / Math.PI]);
   }
@@ -860,15 +886,15 @@ function stopWaveAnimation() {
 
 function getTravelDistance(depth, time, phase) {
   if (!travelTimeData || !travelTimeData[depth]) return 0;
-  
+
   const data = travelTimeData[depth];
-  
+
   let prev = data[0];
   for (let i = 1; i < data.length; i++) {
     const curr = data[i];
-    const prevTime = phase === 'P' ? prev.p_time : prev.s_time;
-    const currTime = phase === 'P' ? curr.p_time : curr.s_time;
-    
+    const prevTime = phase === "P" ? prev.p_time : prev.s_time;
+    const currTime = phase === "P" ? curr.p_time : curr.s_time;
+
     if (time >= prevTime && time <= currTime) {
       if (currTime === prevTime) return prev.distance;
       const ratio = (time - prevTime) / (currTime - prevTime);
@@ -876,12 +902,12 @@ function getTravelDistance(depth, time, phase) {
     }
     prev = curr;
   }
-  
-  const lastTime = phase === 'P' ? prev.p_time : prev.s_time;
+
+  const lastTime = phase === "P" ? prev.p_time : prev.s_time;
   if (time > lastTime) {
     return prev.distance;
   }
-  
+
   return 0;
 }
 
@@ -919,13 +945,13 @@ function updateWaves() {
 
     let depth = Number.parseInt(msg.Hypocenter.Depth, 10);
     if (Number.isNaN(depth)) depth = 10;
-    
+
     // Convert to multiple of 10 for table lookup, cap at 700km
     depth = Math.round(depth / 10) * 10;
     if (depth > 700) depth = 700;
 
-    const pRad = getTravelDistance(depth, t, 'P');
-    const sRad = getTravelDistance(depth, t, 'S');
+    const pRad = getTravelDistance(depth, t, "P");
+    const sRad = getTravelDistance(depth, t, "S");
 
     if (pRad >= 2000) {
       continue;
@@ -1234,6 +1260,20 @@ function updateMapForEew() {
 
   highlightObservations(mapInstance, mockObservations);
 
+  if (getHomeIntensityState) {
+    // Update home intensity display for EEW
+    const homeCityCode = localStorage.getItem("home-city");
+    const homeAreaCode = Number.parseInt(cityForecastMap.get(homeCityCode));
+
+    if (homeAreaCode) {
+      const forecastArea = mergedForecast.find((f) => f.Code === homeAreaCode);
+      const forecastInt = forecastArea ? forecastArea.Intensity.To : null;
+      updateEewHomeLocationDisplay(homeCityCode, forecastInt);
+    } else {
+      updateEewHomeLocationDisplay(homeCityCode, null);
+    }
+  }
+
   // Add EEW epicenters
   let minLng = Infinity,
     minLat = Infinity,
@@ -1283,7 +1323,59 @@ function updateMapForEew() {
       false,
       "1",
       hasValidEpicenter ? { longitude: minLng, latitude: minLat } : null,
-      6.5
+      6.5,
     );
   }
+}
+
+function updateEewHomeLocationDisplay(cityCode, intensityStr) {
+  const display = document.getElementById("home-intensity-display");
+  if (!display) return;
+
+  const cityInfo = cityNames.get(cityCode) || { ja: "不明", en: "Unknown" };
+
+  display.querySelector(".tooltip-ja").textContent = cityInfo.ja;
+  display.querySelector(".tooltip-en").textContent = cityInfo.en;
+
+  const intensityContainer = display.querySelector(".tooltip-intensity-container");
+
+  if (intensityStr && intensityStr !== "0" && intensityStr !== "over" && intensityStr !== "不明") {
+    const config = INTENSITY_CONFIG[intensityStr];
+    if (config) {
+      const img = intensityContainer.querySelector("img");
+      if (img) {
+        img.style.display = "";
+        img.src = `/img/shindo/${config.img}`;
+        img.alt = `Intensity ${intensityStr}`;
+        img.title = `Forecasted Intensity: ${intensityStr}`;
+      }
+
+      const placeholder = intensityContainer.querySelector(".tooltip-intensity-placeholder");
+      if (placeholder) placeholder.style.display = "none";
+
+      intensityContainer.classList.remove("hidden");
+      display.style.borderTopColor = config.color;
+      display.querySelector(".tooltip-code").style.color = config.color;
+    }
+  } else {
+    const img = intensityContainer.querySelector("img");
+    if (img) img.style.display = "none";
+
+    let placeholder = intensityContainer.querySelector(".tooltip-intensity-placeholder");
+    if (placeholder) {
+      placeholder.style.display = "";
+    } else {
+      placeholder = document.createElement("div");
+      placeholder.className = "tooltip-intensity-placeholder";
+      placeholder.textContent = "-";
+      intensityContainer.appendChild(placeholder);
+    }
+
+    intensityContainer.classList.remove("hidden");
+    const defaultColor = "#1e2e44";
+    display.style.borderTopColor = defaultColor;
+    display.querySelector(".tooltip-code").style.color = defaultColor;
+  }
+
+  display.classList.remove("hidden");
 }
