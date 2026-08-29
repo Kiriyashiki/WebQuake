@@ -1,5 +1,5 @@
 import { EQDB_API_URL, haversineDistance } from './constants.js';
-import { loadAreaCodesRawCsv, loadBoundsData } from './areaCodes.js';
+import { loadAreaCodesRawCsv, loadBoundsData, loadCityForecastMapCsv } from './areaCodes.js';
 import { parseReport, buildDisplayReport } from './reportUtils.js';
 
 // ─── Utility functions (from generateEqdbReport.js) ─────────────────────────
@@ -538,16 +538,29 @@ async function fetchEqdbEvent(eventId, boundsData, forecastAreas, municipalities
 // ─── Cached geo data (loaded once) ──────────────────────────────────────────
 
 let _geoDataCache = null;
+let _geoDataClearTimeout = null;
+
+function resetGeoDataTimeout() {
+  if (_geoDataClearTimeout) {
+    clearTimeout(_geoDataClearTimeout);
+  }
+  _geoDataClearTimeout = setTimeout(() => {
+    _geoDataCache = null;
+    console.info("[history] Released geo data cache due to inactivity.");
+  }, 5 * 60 * 1000);
+}
 
 async function loadGeoData() {
+  resetGeoDataTimeout();
+  
   if (_geoDataCache) return _geoDataCache;
 
-  const [bounds, forecastRes, muniRes, areaCodesCsv, cityForecastRes] = await Promise.all([
+  const [bounds, forecastRes, muniRes, areaCodesCsv, cityForecastCsv] = await Promise.all([
     loadBoundsData(),
     fetch('/forecast_areas.geojson'),
     fetch('/municipalities.geojson'),
     loadAreaCodesRawCsv(),
-    fetch('/city_forecast_map.csv')
+    loadCityForecastMapCsv()
   ]);
 
   _geoDataCache = {
@@ -555,7 +568,7 @@ async function loadGeoData() {
     forecastAreas: await forecastRes.json(),
     municipalities: await muniRes.json(),
     areaCodesCsv,
-    cityForecastCsv: await cityForecastRes.text(),
+    cityForecastCsv,
   };
 
   return _geoDataCache;

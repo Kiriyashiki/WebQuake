@@ -142,7 +142,7 @@ export function formatTimeJSTWithSeconds(ms) {
   return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
 }
 
-function haversineDistance(lat1, lon1, lat2, lon2) {
+export function haversineDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;

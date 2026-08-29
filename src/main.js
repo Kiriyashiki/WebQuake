@@ -8,6 +8,7 @@ import {
   loadPrefectureCodes,
   loadCityNames,
   loadStationNames,
+  loadBoundsData,
 } from "./areaCodes.js";
 import {
   initMap,
@@ -119,11 +120,8 @@ async function boot() {
   // Load feature bounds
   let featureBounds = null;
   try {
-    const res = await fetch("/bounds.json");
-    if (res.ok) {
-      featureBounds = await res.json();
-      console.info(`[eq-viewer] Loaded feature bounds.`);
-    }
+    featureBounds = await loadBoundsData();
+    console.info(`[eq-viewer] Loaded feature bounds.`);
   } catch (err) {
     console.warn("[eq-viewer] Could not load bounds.json:", err.message);
   }

@@ -10,6 +10,8 @@ let _prefectureCodesPromise = null;
 let _cityNamesPromise = null;
 let _rawCsvPromise = null;
 let _boundsPromise = null;
+let _stationsCsvPromise = null;
+let _cityForecastCsvPromise = null;
 
 // ─── Area Codes ──────────────────────────────────────────────────────────────
 
@@ -143,6 +145,21 @@ export function loadCityNames() {
 let _stationNamesPromise = null;
 
 /**
+ * Returns the raw text of stations.csv (cached).
+ * Shared between loadStationNames() and EEW.
+ * @returns {Promise<string>}
+ */
+export function loadStationsCsvText() {
+  if (!_stationsCsvPromise) {
+    _stationsCsvPromise = fetch('/stations.csv').then(res => {
+      if (!res.ok) throw new Error(`Failed to load stations CSV: ${res.status}`);
+      return res.text();
+    });
+  }
+  return _stationsCsvPromise;
+}
+
+/**
  * Loads stations.csv data into Maps keyed by code and nameja.
  *
  * CSV format (semicolon-delimited, with header):
@@ -153,10 +170,7 @@ let _stationNamesPromise = null;
 export function loadStationNames() {
   if (!_stationNamesPromise) {
     _stationNamesPromise = (async () => {
-      const res = await fetch('/stations.csv');
-      if (!res.ok) throw new Error(`Failed to load stations CSV: ${res.status}`);
-
-      const text = await res.text();
+      const text = await loadStationsCsvText();
       const byCode = new Map();
       const byName = new Map();
 
@@ -205,6 +219,23 @@ export function loadBoundsData() {
     })();
   }
   return _boundsPromise;
+}
+
+// ─── City Forecast Map ─────────────────────────────────────────────────────────
+
+/**
+ * Returns the raw text of city_forecast_map.csv (cached).
+ * Shared between EEW and historyMode.
+ * @returns {Promise<string>}
+ */
+export function loadCityForecastMapCsv() {
+  if (!_cityForecastCsvPromise) {
+    _cityForecastCsvPromise = fetch('/city_forecast_map.csv').then(res => {
+      if (!res.ok) throw new Error(`Failed to load city_forecast_map.csv: ${res.status}`);
+      return res.text();
+    });
+  }
+  return _cityForecastCsvPromise;
 }
 
 // ─── Utilities ───────────────────────────────────────────────────────────────

@@ -16,7 +16,7 @@ import {
   updateLpgmVisibility,
   hideHomeLocationIntensity,
 } from "./map.js";
-import { createRubyHtml } from "./areaCodes.js";
+import { createRubyHtml, loadCityForecastMapCsv, loadStationsCsvText } from "./areaCodes.js";
 import { getCityAreasState, getHomeIntensityState } from "./sidebarUI.js";
 import { updateMapLegend } from "./main.js";
 
@@ -54,54 +54,60 @@ let areaCodes = null;
 let eewEpicenterMarkers = [];
 
 let travelTimeData = null;
-fetch("/tjma2001.csv")
-  .then((res) => res.text())
-  .then((csvText) => {
-    travelTimeData = {};
-    const lines = csvText.trim().split("\n");
-    for (let i = 1; i < lines.length; i++) {
-      if (!lines[i]) continue;
-      const [depth, distance, p_time, s_time] = lines[i].split(",").map(Number);
-      if (!travelTimeData[depth]) {
-        travelTimeData[depth] = [];
-      }
-      travelTimeData[depth].push({ distance, p_time, s_time });
-    }
-  })
-  .catch((err) => console.error("[EEW] Could not load tjma2001.csv:", err));
-
 let cityForecastMap = new Map();
-fetch("/city_forecast_map.csv")
-  .then((res) => res.text())
-  .then((csvText) => {
-    csvText.split("\n").forEach((line) => {
-      const parts = line.split(",");
-      if (parts.length >= 2) {
-        cityForecastMap.set(parts[0].trim(), parts[1].trim());
-      }
-    });
-  })
-  .catch((err) => console.error("[EEW] Could not load city_forecast_map.csv:", err));
-
 let stationsData = [];
-fetch("/stations.csv")
-  .then((res) => res.text())
-  .then((csvText) => {
-    const lines = csvText.trim().split("\n");
-    for (let i = 1; i < lines.length; i++) {
-      if (!lines[i]) continue;
-      const parts = lines[i].split(";");
-      if (parts.length >= 8) {
-        stationsData.push({
-          lat: Number.parseFloat(parts[4]),
-          lon: Number.parseFloat(parts[5]),
-          cityCode: parts[6],
-          arv: Number.parseFloat(parts[7]),
-        });
+let _eewDependenciesPromise = null;
+
+async function loadEewDependencies() {
+  if (_eewDependenciesPromise) return _eewDependenciesPromise;
+
+  _eewDependenciesPromise = (async () => {
+    try {
+      const [tjmaRes, cityRes, stationsRes] = await Promise.all([
+        fetch("/tjma2001.csv").then(res => res.text()),
+        loadCityForecastMapCsv(),
+        loadStationsCsvText()
+      ]);
+
+      travelTimeData = {};
+      const tjmaLines = tjmaRes.trim().split("\n");
+      for (let i = 1; i < tjmaLines.length; i++) {
+        if (!tjmaLines[i]) continue;
+        const [depth, distance, p_time, s_time] = tjmaLines[i].split(",").map(Number);
+        if (!travelTimeData[depth]) {
+          travelTimeData[depth] = [];
+        }
+        travelTimeData[depth].push({ distance, p_time, s_time });
       }
+
+      cityRes.split("\n").forEach((line) => {
+        const parts = line.split(",");
+        if (parts.length >= 2) {
+          cityForecastMap.set(parts[0].trim(), parts[1].trim());
+        }
+      });
+
+      const stationsLines = stationsRes.trim().split("\n");
+      for (let i = 1; i < stationsLines.length; i++) {
+        if (!stationsLines[i]) continue;
+        const parts = stationsLines[i].split(";");
+        if (parts.length >= 8) {
+          stationsData.push({
+            lat: Number.parseFloat(parts[4]),
+            lon: Number.parseFloat(parts[5]),
+            cityCode: parts[6],
+            arv: Number.parseFloat(parts[7]),
+          });
+        }
+      }
+      console.info("[EEW] Loaded dependencies.");
+    } catch (err) {
+      console.error("[EEW] Could not load dependencies:", err);
     }
-  })
-  .catch((err) => console.error("[EEW] Could not load stations.csv:", err));
+  })();
+
+  return _eewDependenciesPromise;
+}
 
 function calculateGmpe(magnitude, depthKm, epicentralDistance, arv) {
   const hypocentralDistance = Math.hypot(epicentralDistance, depthKm);
@@ -273,6 +279,8 @@ function onMapInteract() {
 async function connectEew() {
   if (!eewToken) return;
   if (eewSocket) disconnectEew();
+
+  await loadEewDependencies();
 
   updateEewStatus("connecting");
 
