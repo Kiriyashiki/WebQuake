@@ -93,7 +93,7 @@ export async function fetchXmlFeedEntries(options = {}) {
     const maxAgeMatch = cacheControl.match(/max-age=(\d+)/);
     const maxAge = maxAgeMatch ? Number.parseInt(maxAgeMatch[1], 10) : 60;
     const age = Number.parseInt(feedRes.headers.get('age') || '0', 10);
-    
+
     // Schedule next poll when age reaches maxAge + 1s to be safe
     nextIntervalMs = Math.max((maxAge - age + 1), 1) * 1000;
     

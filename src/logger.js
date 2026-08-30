@@ -36,6 +36,14 @@ export async function initLogger() {
     console.log = (...args) => { originalLog(...args); trace(formatArgs(args)).catch(()=>{}); };
 
     console.info("[logger] Log pipeline attached — session logs will be written to disk.");
+
+    window.addEventListener("error", (event) => {
+      console.error("[Uncaught Error]", event.error ? event.error.stack || event.error : event.message);
+    });
+
+    window.addEventListener("unhandledrejection", (event) => {
+      console.error("[Unhandled Rejection]", event.reason ? event.reason.stack || event.reason : event.reason);
+    });
   } catch (err) {
     console.warn("[logger] Failed to attach Tauri log plugin:", err);
   }

@@ -35,14 +35,12 @@
 }
 
 .settings-popup-content {
-  background: rgba(11, 16, 24, 0.95);
+  background: rgba(11, 16, 24, 0.98);
   border: 1px solid var(--border-hi);
   border-radius: 6px;
   box-shadow: 0 4px 24px rgba(0,0,0,0.7);
   width: auto;
   max-width: 90%;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .settings-popup-header {

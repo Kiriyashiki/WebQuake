@@ -18,6 +18,30 @@ pub fn run() {
     let _ = fs::remove_file(&latest);
   }
 
+  // ─── Panic Hook ────────────────────────────────────────────────────────
+  let panic_log_path = log_dir.join("panic.log");
+  std::panic::set_hook(Box::new(move |info| {
+    let mut msg = String::new();
+    if let Some(s) = info.payload().downcast_ref::<&str>() {
+      msg.push_str(s);
+    } else if let Some(s) = info.payload().downcast_ref::<String>() {
+      msg.push_str(s);
+    } else {
+      msg.push_str("Unknown panic");
+    }
+    let location = info.location().map_or("unknown location".to_string(), |l| format!("{}:{}", l.file(), l.line()));
+    let panic_msg = format!("Panic occurred: '{}' at {}\n", msg, location);
+    
+    // Log to standard error
+    eprintln!("{}", panic_msg);
+    
+    // Append to panic.log
+    use std::io::Write;
+    if let Ok(mut file) = std::fs::OpenOptions::new().create(true).append(true).open(&panic_log_path) {
+      let _ = file.write_all(panic_msg.as_bytes());
+    }
+  }));
+
   tauri::Builder::default()
     .plugin(
       tauri_plugin_log::Builder::new()

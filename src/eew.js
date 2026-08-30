@@ -1388,7 +1388,7 @@ function updateMapForEew() {
 
   highlightObservations(mapInstance, mockObservations);
 
-  if (getHomeIntensityState) {
+  if (getHomeIntensityState()) {
     // Update home intensity display for EEW
     const homeCityCode = localStorage.getItem("home-city");
     const homeAreaCode = Number.parseInt(cityForecastMap.get(homeCityCode));

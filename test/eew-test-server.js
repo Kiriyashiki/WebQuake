@@ -1,7 +1,7 @@
 const { WebSocketServer } = require("ws");
 
 // Configure which scenario to run (S1, S2, S3, S4, S5, S6)
-const SCENARIO = "S1";
+const SCENARIO = "S7";
 const PORT = 8565;
 
 const wss = new WebSocketServer({ port: PORT });
@@ -174,7 +174,13 @@ async function runScenario(ws, scenario) {
     msg2.Hypocenter.Coordinate = [128.0, 26.0];
     msg2.Intensity = "4";
     msg2.Magnitude = "5.2";
-    msg2.Forecast = [{ Code: 800, Name: "沖縄県本島北部", Intensity: { From: "4", To: "4", Description: "最大震度4" } }];
+    msg2.Forecast = [
+      {
+        Code: 800,
+        Name: "沖縄県本島北部",
+        Intensity: { From: "4", To: "4", Description: "最大震度4" },
+      },
+    ];
     sendMsg(ws, msg2);
 
     await sleep(3000);
@@ -244,5 +250,308 @@ async function runScenario(ws, scenario) {
     msg.Serial = 2;
     msg.Flag.is_final = true;
     sendMsg(ws, msg);
+  } else if (scenario === "S7") {
+    // S7: full real extract
+    await sleep(3000);
+    sendMsg(ws, {
+      Title: '緊急地震速報（予報）',
+      OriginDateTime: '2026-08-30T00:17:05+09:00',
+      ReportDateTime: '2026-08-30T00:17:15+09:00',
+      EventID: '20260830001711',
+      Serial: 1,
+      Hypocenter: {
+        Code: 473,
+        Name: '千葉県東方沖',
+        Coordinate: [ 140.9, 35.8 ],
+        Depth: '40km',
+        Description: '北緯35.8度 東経140.9度 深さ約40km'
+      },
+      Intensity: '3',
+      Magnitude: '4.4',
+      Flag: { is_final: false, is_cancel: false, is_training: false },
+      Forecast: [],
+      Text: ''
+    });
+    
+    await sleep(800);
+    sendMsg(ws, {
+      Title: '緊急地震速報（予報）',
+      OriginDateTime: '2026-08-30T00:17:06+09:00',
+      ReportDateTime: '2026-08-30T00:17:16+09:00',
+      EventID: '20260830001711',
+      Serial: 2,
+      Hypocenter: {
+        Code: 473,
+        Name: '千葉県東方沖',
+        Coordinate: [ 141.0, 35.8 ],
+        Depth: '30km',
+        Description: '北緯35.8度 東経141.0度 深さ約30km'
+      },
+      Intensity: '2',
+      Magnitude: '4.2',
+      Flag: { is_final: false, is_cancel: false, is_training: false },
+      Forecast: [],
+      Text: ''
+    });
+
+    await sleep(400);
+    sendMsg(ws, {
+      Title: '緊急地震速報（予報）',
+      OriginDateTime: '2026-08-30T00:17:06+09:00',
+      ReportDateTime: '2026-08-30T00:17:16+09:00',
+      EventID: '20260830001711',
+      Serial: 3,
+      Hypocenter: {
+        Code: 473,
+        Name: '千葉県東方沖',
+        Coordinate: [ 140.9, 35.8 ],
+        Depth: '20km',
+        Description: '北緯35.8度 東経140.9度 深さ約20km'
+      },
+      Intensity: '3',
+      Magnitude: '4.0',
+      Flag: { is_final: false, is_cancel: false, is_training: false },
+      Forecast: [],
+      Text: ''
+    });
+
+    await sleep(200);
+    sendMsg(ws, {
+      Title: '緊急地震速報（予報）',
+      OriginDateTime: '2026-08-30T00:17:06+09:00',
+      ReportDateTime: '2026-08-30T00:17:16+09:00',
+      EventID: '20260830001711',
+      Serial: 4,
+      Hypocenter: {
+        Code: 473,
+        Name: '千葉県東方沖',
+        Coordinate: [ 140.9, 35.8 ],
+        Depth: '30km',
+        Description: '北緯35.8度 東経140.9度 深さ約30km'
+      },
+      Intensity: '3',
+      Magnitude: '4.2',
+      Flag: { is_final: false, is_cancel: false, is_training: false },
+      Forecast: [],
+      Text: ''
+    });
+
+    await sleep(600);
+    sendMsg(ws, {
+      Title: '緊急地震速報（予報）',
+      OriginDateTime: '2026-08-30T00:17:06+09:00',
+      ReportDateTime: '2026-08-30T00:17:17+09:00',
+      EventID: '20260830001711',
+      Serial: 5,
+      Hypocenter: {
+        Code: 473,
+        Name: '千葉県東方沖',
+        Coordinate: [ 140.9, 35.8 ],
+        Depth: '20km',
+        Description: '北緯35.8度 東経140.9度 深さ約20km'
+      },
+      Intensity: '3',
+      Magnitude: '4.0',
+      Flag: { is_final: false, is_cancel: false, is_training: false },
+      Forecast: [],
+      Text: ''
+    });
+
+    await sleep(100);
+    sendMsg(ws, {
+      Title: '緊急地震速報（予報）',
+      OriginDateTime: '2026-08-30T00:17:06+09:00',
+      ReportDateTime: '2026-08-30T00:17:17+09:00',
+      EventID: '20260830001711',
+      Serial: 6,
+      Hypocenter: {
+        Code: 473,
+        Name: '千葉県東方沖',
+        Coordinate: [ 140.9, 35.8 ],
+        Depth: '20km',
+        Description: '北緯35.8度 東経140.9度 深さ約20km'
+      },
+      Intensity: '3',
+      Magnitude: '4.6',
+      Flag: { is_final: false, is_cancel: false, is_training: false },
+      Forecast: [],
+      Text: ''
+    });
+
+    await sleep(200);
+    sendMsg(ws, {
+      Title: '緊急地震速報（予報）',
+      OriginDateTime: '2026-08-30T00:17:06+09:00',
+      ReportDateTime: '2026-08-30T00:17:17+09:00',
+      EventID: '20260830001711',
+      Serial: 7,
+      Hypocenter: {
+        Code: 473,
+        Name: '千葉県東方沖',
+        Coordinate: [ 140.9, 35.8 ],
+        Depth: '20km',
+        Description: '北緯35.8度 東経140.9度 深さ約20km'
+      },
+      Intensity: '3',
+      Magnitude: '4.6',
+      Flag: { is_final: false, is_cancel: false, is_training: false },
+      Forecast: [],
+      Text: ''
+    });
+
+    await sleep(100);
+    sendMsg(ws, {
+      Title: '緊急地震速報（予報）',
+      OriginDateTime: '2026-08-30T00:17:06+09:00',
+      ReportDateTime: '2026-08-30T00:17:17+09:00',
+      EventID: '20260830001711',
+      Serial: 8,
+      Hypocenter: {
+        Code: 473,
+        Name: '千葉県東方沖',
+        Coordinate: [ 140.9, 35.8 ],
+        Depth: '20km',
+        Description: '北緯35.8度 東経140.9度 深さ約20km'
+      },
+      Intensity: '4',
+      Magnitude: '4.6',
+      Flag: { is_final: false, is_cancel: false, is_training: false },
+      Forecast: [
+        {
+          Code: 340,
+          Name: "千葉県北東部",
+          Intensity: {
+            From: "4",
+            To: "4",
+            Description: "最大震度4程度"
+          }
+        }
+      ],
+      Text: ''
+    });
+
+    await sleep(3600);
+    sendMsg(ws, {
+      Title: '緊急地震速報（予報）',
+      OriginDateTime: '2026-08-30T00:17:06+09:00',
+      ReportDateTime: '2026-08-30T00:17:21+09:00',
+      EventID: '20260830001711',
+      Serial: 9,
+      Hypocenter: {
+        Code: 473,
+        Name: '千葉県東方沖',
+        Coordinate: [ 140.9, 35.8 ],
+        Depth: '30km',
+        Description: '北緯35.8度 東経140.9度 深さ約30km'
+      },
+      Intensity: '4',
+      Magnitude: '4.7',
+      Flag: { is_final: false, is_cancel: false, is_training: false },
+      Forecast: [
+        {
+          Code: 340,
+          Name: "千葉県北東部",
+          Intensity: {
+            From: "4",
+            To: "4",
+            Description: "最大震度4程度"
+          }
+        }
+      ],
+      Text: ''
+    });
+
+    await sleep(1100);
+    sendMsg(ws, {
+      Title: '緊急地震速報（予報）',
+      OriginDateTime: '2026-08-30T00:17:06+09:00',
+      ReportDateTime: '2026-08-30T00:17:22+09:00',
+      EventID: '20260830001711',
+      Serial: 10,
+      Hypocenter: {
+        Code: 473,
+        Name: '千葉県東方沖',
+        Coordinate: [ 140.9, 35.8 ],
+        Depth: '30km',
+        Description: '北緯35.8度 東経140.9度 深さ約30km'
+      },
+      Intensity: '4',
+      Magnitude: '4.7',
+      Flag: { is_final: false, is_cancel: false, is_training: false },
+      Forecast: [
+        {
+          Code: 340,
+          Name: "千葉県北東部",
+          Intensity: {
+            From: "4",
+            To: "4",
+            Description: "最大震度4程度"
+          }
+        }
+      ],
+      Text: ''
+    });
+
+    await sleep(19100);
+    sendMsg(ws, {
+      Title: '緊急地震速報（予報）',
+      OriginDateTime: '2026-08-30T00:17:05+09:00',
+      ReportDateTime: '2026-08-30T00:17:41+09:00',
+      EventID: '20260830001711',
+      Serial: 11,
+      Hypocenter: {
+        Code: 473,
+        Name: '千葉県東方沖',
+        Coordinate: [ 140.9, 35.8 ],
+        Depth: '40km',
+        Description: '北緯35.8度 東経140.9度 深さ約40km'
+      },
+      Intensity: '4',
+      Magnitude: '4.9',
+      Flag: { is_final: false, is_cancel: false, is_training: false },
+      Forecast: [
+        {
+          Code: 340,
+          Name: "千葉県北東部",
+          Intensity: {
+            From: "4",
+            To: "4",
+            Description: "最大震度4程度"
+          }
+        }
+      ],
+      Text: ''
+    });
+
+    await sleep(16200);
+    sendMsg(ws, {
+      Title: '緊急地震速報（予報）',
+      OriginDateTime: '2026-08-30T00:17:05+09:00',
+      ReportDateTime: '2026-08-30T00:17:57+09:00',
+      EventID: '20260830001711',
+      Serial: 12,
+      Hypocenter: {
+        Code: 473,
+        Name: '千葉県東方沖',
+        Coordinate: [ 140.9, 35.8 ],
+        Depth: '40km',
+        Description: '北緯35.8度 東経140.9度 深さ約40km'
+      },
+      Intensity: '4',
+      Magnitude: '4.9',
+      Flag: { is_final: true, is_cancel: false, is_training: false },
+      Forecast: [
+        {
+          Code: 340,
+          Name: "千葉県北東部",
+          Intensity: {
+            From: "4",
+            To: "4",
+            Description: "最大震度4程度"
+          }
+        }
+      ],
+      Text: ''
+    });
   }
 }

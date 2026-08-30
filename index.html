@@ -407,10 +407,14 @@
     </div>
 
     <script type="module" src="/src/main.js"></script>
-    <script
-    src="https://stats.hainaut.xyz/api/script.js"
-    data-site-id="ab4fba6ddf2e"
-    defer
-    ></script>
+    <script>
+      if (!window.__TAURI_INTERNALS__) {
+        const s = document.createElement("script");
+        s.src = "https://stats.hainaut.xyz/api/script.js";
+        s.dataset.siteId = "ab4fba6ddf2e";
+        s.defer = true;
+        document.head.appendChild(s);
+      }
+    </script>
   </body>
 </html>

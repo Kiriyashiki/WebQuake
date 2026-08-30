@@ -5,11 +5,10 @@
   pointer-events: none;
   z-index: 50;
   padding: 10px 14px 11px;
-  background: rgba(11, 16, 24, 0.95);
+  background: rgba(11, 16, 24, 0.98);
   border: 1px solid var(--border-hi);
   border-top: 2px solid var(--accent2);
   border-radius: 4px;
-  backdrop-filter: blur(8px);
   min-width: 160px;
   width: max-content;
   box-shadow: 0 4px 24px rgba(0,0,0,.6);

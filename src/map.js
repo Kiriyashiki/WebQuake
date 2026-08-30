@@ -406,11 +406,10 @@ export function initMap(
         if (newId === hoveredId) {
           // Just update tooltip position with current intensity
           const state = map.getFeatureState({ source: sourceName, id: newId });
-          const { left, top } = container.getBoundingClientRect();
           showTooltip(
             tooltip,
-            e.originalEvent.clientX - left,
-            e.originalEvent.clientY - top,
+            e.point.x,
+            e.point.y,
             newId,
             isCityLayer ? cityNames?.get(String(newId)) : areaCodes.get(Number(newId)),
             _lpgmVisible ? state?.lpgmIntensity : state?.intensity,
@@ -429,11 +428,10 @@ export function initMap(
         map.setFeatureState({ source: sourceName, id: hoveredId }, { hover: true });
 
         const state = map.getFeatureState({ source: sourceName, id: hoveredId });
-        const { left, top } = container.getBoundingClientRect();
         showTooltip(
           tooltip,
-          e.originalEvent.clientX - left,
-          e.originalEvent.clientY - top,
+          e.point.x,
+          e.point.y,
           hoveredId,
           isCityLayer ? cityNames?.get(String(hoveredId)) : areaCodes.get(Number(hoveredId)),
           _lpgmVisible ? state?.lpgmIntensity : state?.intensity,
@@ -476,12 +474,11 @@ export function initMap(
 
         if (newId === hoveredShakemapId) {
           const state = map.getFeatureState({ source: "shakemap", id: newId });
-          const { left, top } = container.getBoundingClientRect();
           const stationName = feature.properties?.name || "";
           showTooltip(
             tooltip,
-            e.originalEvent.clientX - left,
-            e.originalEvent.clientY - top,
+            e.point.x,
+            e.point.y,
             newId,
             _getShakemapTooltipInfo(stationName),
             state?.intensity,
@@ -498,12 +495,11 @@ export function initMap(
         map.setFeatureState({ source: "shakemap", id: hoveredShakemapId }, { hover: true });
 
         const state = map.getFeatureState({ source: "shakemap", id: hoveredShakemapId });
-        const { left, top } = container.getBoundingClientRect();
         const stationName = feature.properties?.name || "";
         showTooltip(
           tooltip,
-          e.originalEvent.clientX - left,
-          e.originalEvent.clientY - top,
+          e.point.x,
+          e.point.y,
           hoveredShakemapId,
           _getShakemapTooltipInfo(stationName),
           state?.intensity,
