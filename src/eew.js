@@ -64,9 +64,9 @@ async function loadEewDependencies() {
   _eewDependenciesPromise = (async () => {
     try {
       const [tjmaRes, cityRes, stationsRes] = await Promise.all([
-        fetch("/tjma2001.csv").then(res => res.text()),
+        fetch("/tjma2001.csv").then((res) => res.text()),
         loadCityForecastMapCsv(),
-        loadStationsCsvText()
+        loadStationsCsvText(),
       ]);
 
       travelTimeData = {};
@@ -363,6 +363,8 @@ function connectToWebSocket(serverUrl) {
     try {
       const data = JSON.parse(message);
       if (data?.channel === "eew" && data.message) {
+        console.debug(Date.now());
+        console.debug(data.message);
         handleEewMessage(data.message);
       }
     } catch (err) {
@@ -476,14 +478,18 @@ function resetTokenRefreshState() {
 function scheduleTokenRefresh() {
   if (!IS_TAURI) return;
 
-  // If we don't have a stored expiry yet, assume end of current month
-  if (!localStorage.getItem("eew-token-expiry")) {
+  // If we don't have a stored expiry yet, or it's in the past but the token
+  // still works, push the expiry to the end of the current month.
+  const storedExpiry = localStorage.getItem("eew-token-expiry");
+  if (!storedExpiry || Number(storedExpiry) < Date.now()) {
     const expiry = getEndOfMonthUTC(new Date());
     localStorage.setItem("eew-token-expiry", String(expiry));
     console.debug(
-      "[EEW] Token expiry set to end of current month:",
+      "[EEW] Token expiry updated to end of current month:",
       new Date(expiry).toISOString(),
     );
+    // Remove the last refresh check so we can check again if needed
+    localStorage.removeItem("eew-token-last-refresh-check");
   }
 
   // Run immediately, then every 24 hours
@@ -699,7 +705,9 @@ export function handlePossibleEewReport(report) {
 }
 
 function updateEewUI(isNewEew = false) {
+  console.debug(`[eq-viewer-eew] updateEewUI: START (isNewEew=${isNewEew})`);
   if (activeEews.size === 0) {
+    console.debug("[eq-viewer-eew] updateEewUI: no active EEWs, cleaning up");
     clearEewMapDisplay();
     stopWaveAnimation();
 
@@ -756,6 +764,7 @@ function updateEewUI(isNewEew = false) {
 
   // Store previous report and switch map to EEW if a brand new EEW arrived
   if (isNewEew) {
+    console.debug("[eq-viewer-eew] updateEewUI: handling brand new EEW");
     isEewMapActive = true;
     const currentActive = document.querySelector(".eq-item.active");
     if (currentActive?.closest("#eq-list") || currentActive?.closest("#history-list")) {
@@ -783,10 +792,12 @@ function updateEewUI(isNewEew = false) {
 
   if (carouselIndex >= eews.length) carouselIndex = 0;
 
+  console.debug("[eq-viewer-eew] updateEewUI: rendering current EEW");
   renderCurrentEew();
 }
 
 function renderCurrentEew() {
+  console.debug("[eq-viewer-eew] renderCurrentEew: START");
   const eews = Array.from(activeEews.values()).sort((a, b) => a.receivedAt - b.receivedAt);
   if (eews.length === 0) return;
 
@@ -843,6 +854,7 @@ function renderCurrentEew() {
   const listItem = container.querySelector(".eew-list-item");
   if (listItem) {
     listItem.addEventListener("click", () => {
+      console.debug("[eq-viewer-eew] EEW list item clicked");
       // If a normal report was clicked, it becomes active. Deactivate it.
       const currentActive = document.querySelector(".eq-item.active");
       if (currentActive) {
@@ -852,15 +864,20 @@ function renderCurrentEew() {
       isEewMapActive = true;
       renderEewInfoBox(msg, isCancelled, isWarning, isPlum, eews.length, carouselIndex + 1);
       updateMapForEew();
-      updateWaves();
+
+      // Defer wave updates to avoid synchronous source operations right after layout changes
+      setTimeout(updateWaves, 50);
     });
   }
 
   // Render info box and map only if EEW is active and no normal report is currently active
   const currentActive = document.querySelector(".eq-item.active");
   if (isEewMapActive && !currentActive) {
+    console.debug("[eq-viewer-eew] renderCurrentEew: rendering info box");
     renderEewInfoBox(msg, isCancelled, isWarning, isPlum, eews.length, carouselIndex + 1);
+    console.debug("[eq-viewer-eew] renderCurrentEew: updating map for EEW");
     updateMapForEew();
+    console.debug("[eq-viewer-eew] renderCurrentEew: COMPLETE");
   }
 }
 
@@ -891,10 +908,13 @@ function getCircleCoords(centerLat, centerLng, radiusKm, points = 64) {
   return coords;
 }
 
-function startWaveAnimation() {
-  if (waveInterval) return;
+function ensureWaveSources() {
+  if (!mapInstance || !mapInstance.isStyleLoaded()) {
+    return false;
+  }
 
-  if (mapInstance && !mapInstance.getSource("eew-p-wave")) {
+  if (!mapInstance.getSource("eew-p-wave")) {
+    console.debug("[eq-viewer-eew] ensureWaveSources: adding p-wave source and layer");
     mapInstance.addSource("eew-p-wave", {
       type: "geojson",
       data: { type: "FeatureCollection", features: [] },
@@ -910,7 +930,9 @@ function startWaveAnimation() {
       },
     });
   }
-  if (mapInstance && !mapInstance.getSource("eew-s-wave")) {
+
+  if (!mapInstance.getSource("eew-s-wave")) {
+    console.debug("[eq-viewer-eew] ensureWaveSources: adding s-wave source and layer");
     mapInstance.addSource("eew-s-wave", {
       type: "geojson",
       data: { type: "FeatureCollection", features: [] },
@@ -926,9 +948,23 @@ function startWaveAnimation() {
       },
     });
   }
+  return true;
+}
 
+function startWaveAnimation() {
+  console.debug("[eq-viewer-eew] startWaveAnimation: START");
+  if (waveInterval) return;
+
+  console.debug("[eq-viewer-eew] startWaveAnimation: setting interval");
   waveInterval = setInterval(updateWaves, 500);
-  updateWaves();
+
+  // Defer the initial wave update to avoid interacting with MapLibre sources
+  // synchronously in the same tick as layout property changes, which can
+  // crash WebKit2GTK's WebGL context.
+  setTimeout(() => {
+    console.debug("[eq-viewer-eew] startWaveAnimation: initial updateWaves");
+    updateWaves();
+  }, 50);
 }
 
 function stopWaveAnimation() {
@@ -945,7 +981,7 @@ function stopWaveAnimation() {
 }
 
 function getTravelDistance(depth, time, phase) {
-  if (!travelTimeData || !travelTimeData[depth]) return 0;
+  if (!travelTimeData?.[depth]) return 0;
 
   const data = travelTimeData[depth];
 
@@ -974,6 +1010,8 @@ function getTravelDistance(depth, time, phase) {
 function updateWaves() {
   if (!mapInstance) return;
   if (document.hidden) return;
+
+  ensureWaveSources();
 
   const pSrc = mapInstance.getSource("eew-p-wave");
   const sSrc = mapInstance.getSource("eew-s-wave");
@@ -1286,173 +1324,244 @@ function getIntVal(v) {
 }
 
 function updateMapForEew() {
+  console.debug("[eq-viewer-eew] updateMapForEew: START");
   if (!mapInstance) return;
   if (!isEewMapActive || activeEews.size === 0 || document.querySelector(".eq-item.active")) {
+    console.debug("[eq-viewer-eew] updateMapForEew: aborted early (not active)");
     return;
   }
 
+  console.debug("[eq-viewer-eew] updateMapForEew: removing old markers");
   for (const marker of eewEpicenterMarkers) marker.remove();
   eewEpicenterMarkers = [];
 
+  console.debug("[eq-viewer-eew] updateMapForEew: clearing normal UI elements");
   clearEpicenter(mapInstance); // Clear normal epicenter
   updateCityAreasVisibility(mapInstance, false); // Force Cities off temporarily
   updateShakemapVisibility(mapInstance, false); // Force Shakemap off temporarily
   updateLpgmVisibility(mapInstance, false); // Force LPGM off temporarily
   updateMapLegend(false); // Restore standard legend
 
-  const mergedForecast = mergeForecasts(Array.from(activeEews.values()));
-
-  const localPredictions = new Map();
-  const eews = Array.from(activeEews.values()).sort((a, b) => a.receivedAt - b.receivedAt);
-
-  for (const eew of eews) {
-    if (eew.isCancelled) continue;
-    const msg = eew.msg;
-    if (!msg.Hypocenter?.Coordinate) continue;
-
-    const isPlum = msg.Magnitude === "1.0" && msg.Hypocenter.Depth === "10km";
-    if (isPlum) continue;
-
-    let depthKm = Number.parseInt(msg.Hypocenter.Depth, 10);
-    if (Number.isNaN(depthKm) || depthKm >= 150) continue;
-
-    let mag = Number.parseFloat(msg.Magnitude);
-    if (Number.isNaN(mag)) continue;
-
-    const [eqLon, eqLat] = msg.Hypocenter.Coordinate;
-
-    for (const station of stationsData) {
-      const distance = haversineDistance(station.lat, station.lon, eqLat, eqLon);
-      let arv = station.arv;
-      if (arv === null || arv <= 0.0 || Number.isNaN(arv)) {
-        arv = 1.0;
-      }
-      const shindoFloat = calculateGmpe(mag, depthKm, distance, arv);
-      const shindoStr = floatToShindo(shindoFloat);
-
-      if (shindoStr === "0") continue;
-
-      let finalShindo = shindoStr;
-
-      if (!TEST_GMPE_OVERRIDE) {
-        if (getIntVal(finalShindo) > getIntVal("3")) {
-          finalShindo = "3";
-        }
-      }
-
-      const areaCodeStr = cityForecastMap.get(station.cityCode);
-      if (areaCodeStr) {
-        const existing = localPredictions.get(areaCodeStr);
-        if (!existing || getIntVal(finalShindo) > getIntVal(existing)) {
-          localPredictions.set(areaCodeStr, finalShindo);
-        }
-      }
+  console.debug("[eq-viewer-eew] updateMapForEew: scheduling phase 2 via setTimeout");
+  // Give MapLibre a moment to apply layout property changes before setting feature states.
+  setTimeout(() => {
+    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: START");
+    // Guard: EEW state may have changed during the delay
+    if (!isEewMapActive || activeEews.size === 0 || document.querySelector(".eq-item.active")) {
+      return;
     }
-  }
 
-  const finalMapIntensities = new Map();
+    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: calculating GMPE");
+    const mergedForecast = mergeForecasts(Array.from(activeEews.values()));
+    const eews = Array.from(activeEews.values()).sort((a, b) => a.receivedAt - b.receivedAt);
 
-  if (TEST_GMPE_OVERRIDE) {
-    for (const f of mergedForecast) {
-      if (f.Intensity.To === "0" || f.Intensity.To === "over" || f.Intensity.To === "不明")
-        continue;
-      finalMapIntensities.set(String(f.Code), f.Intensity.To);
-    }
-    for (const [areaCode, localInt] of localPredictions.entries()) {
-      finalMapIntensities.set(areaCode, localInt);
-    }
-  } else {
-    for (const [areaCode, localInt] of localPredictions.entries()) {
-      finalMapIntensities.set(areaCode, localInt);
-    }
-    for (const f of mergedForecast) {
-      if (f.Intensity.To === "0" || f.Intensity.To === "over" || f.Intensity.To === "不明")
-        continue;
-      finalMapIntensities.set(String(f.Code), f.Intensity.To);
-    }
-  }
+    // Track the highest estimated intensity for each individual station across all EEWs
+    const stationMaxInts = new Int32Array(stationsData.length).fill(0);
 
-  // Create mock observations for map highlighter
-  const mockObservations = [];
-  if (finalMapIntensities.size > 0) {
-    const prefMock = { areas: [] };
-    for (const [code, maxInt] of finalMapIntensities.entries()) {
-      prefMock.areas.push({
-        code: String(code),
-        maxInt: maxInt,
-        cities: [],
-      });
-    }
-    mockObservations.push(prefMock);
-  }
-
-  highlightObservations(mapInstance, mockObservations);
-
-  if (getHomeIntensityState()) {
-    // Update home intensity display for EEW
-    const homeCityCode = localStorage.getItem("home-city");
-    const homeAreaCode = Number.parseInt(cityForecastMap.get(homeCityCode));
-
-    if (homeAreaCode) {
-      const forecastArea = mergedForecast.find((f) => f.Code === homeAreaCode);
-      const forecastInt = forecastArea ? forecastArea.Intensity.To : null;
-      updateEewHomeLocationDisplay(homeCityCode, forecastInt);
-    } else {
-      updateEewHomeLocationDisplay(homeCityCode, null);
-    }
-  }
-
-  // Add EEW epicenters
-  let minLng = Infinity,
-    minLat = Infinity,
-    maxLng = -Infinity,
-    maxLat = -Infinity;
-  let hasValidEpicenter = false;
-
-  let i = 0;
-  for (const eew of eews) {
-    i++;
-    const msg = eew.msg;
-    if (msg.Hypocenter?.Coordinate) {
-      const [lon, lat] = msg.Hypocenter.Coordinate;
-      hasValidEpicenter = true;
-      if (lon < minLng) minLng = lon;
-      if (lat < minLat) minLat = lat;
-      if (lon > maxLng) maxLng = lon;
-      if (lat > maxLat) maxLat = lat;
+    for (const eew of eews) {
+      if (eew.isCancelled) continue;
+      const msg = eew.msg;
+      if (!msg.Hypocenter?.Coordinate) continue;
 
       const isPlum = msg.Magnitude === "1.0" && msg.Hypocenter.Depth === "10km";
-      const isCancel = eew.isCancelled;
+      if (isPlum) continue;
 
-      let icon = "epicenter-eew.png";
-      if (isCancel) icon = "epicenter-cancel.png";
-      else if (isPlum) icon = "epicenter-plum.png";
+      let depthKm = Number.parseInt(msg.Hypocenter.Depth, 10);
+      if (Number.isNaN(depthKm) || depthKm >= 150) continue;
 
-      const markerEl = document.createElement("div");
-      markerEl.className = "epicenter-eew-marker";
-      markerEl.innerHTML = `<img src="/img/${icon}" style="width:32px; height:32px;" />`;
-      if (eews.length > 1) {
-        markerEl.innerHTML += `<div style="position:absolute; top:-20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); color:#fff; padding:2px 6px; border-radius:4px; font-size:12px; font-weight:bold;">${i}</div>`;
+      let mag = Number.parseFloat(msg.Magnitude);
+      if (Number.isNaN(mag)) continue;
+
+      const [eqLon, eqLat] = msg.Hypocenter.Coordinate;
+
+      for (let i = 0; i < stationsData.length; i++) {
+        const station = stationsData[i];
+        const distance = haversineDistance(station.lat, station.lon, eqLat, eqLon);
+        let arv = station.arv;
+        if (arv === null || arv <= 0.0 || Number.isNaN(arv)) {
+          arv = 1.0;
+        }
+        const shindoFloat = calculateGmpe(mag, depthKm, distance, arv);
+        const shindoStr = floatToShindo(shindoFloat);
+
+        if (shindoStr === "0") continue;
+
+        let finalShindo = shindoStr;
+
+        if (!TEST_GMPE_OVERRIDE) {
+          if (getIntVal(finalShindo) > getIntVal("3")) {
+            finalShindo = "3";
+          }
+        }
+
+        const val = getIntVal(finalShindo);
+        if (val > stationMaxInts[i]) {
+          stationMaxInts[i] = val;
+        }
+      }
+    }
+
+    // Group station intensities by forecast area
+    const areaInts = new Map();
+    for (let i = 0; i < stationsData.length; i++) {
+      const val = stationMaxInts[i];
+      if (val === 0) continue;
+
+      const areaCodeStr = cityForecastMap.get(stationsData[i].cityCode);
+      if (areaCodeStr) {
+        let arr = areaInts.get(areaCodeStr);
+        if (!arr) {
+          arr = [];
+          areaInts.set(areaCodeStr, arr);
+        }
+        arr.push(val);
+      }
+    }
+
+    const getIntStr = (val) => {
+      if (val === 70) return "7";
+      if (val === 65) return "6+";
+      if (val === 60) return "6-";
+      if (val === 55) return "5+";
+      if (val === 50) return "5-";
+      return String(val / 10);
+    };
+
+    // Determine the area's intensity by requiring at least 2 stations
+    const localPredictions = new Map();
+    for (const [areaCodeStr, vals] of areaInts.entries()) {
+      if (vals.length >= 2) {
+        vals.sort((a, b) => b - a); // descending
+        const secondHighestVal = vals[1];
+        if (secondHighestVal > 0) {
+          localPredictions.set(areaCodeStr, getIntStr(secondHighestVal));
+        }
+      }
+    }
+
+    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: merging GMPE and forecast");
+    const finalMapIntensities = new Map();
+
+    if (TEST_GMPE_OVERRIDE) {
+      for (const f of mergedForecast) {
+        if (f.Intensity.To === "0" || f.Intensity.To === "over" || f.Intensity.To === "不明")
+          continue;
+        finalMapIntensities.set(String(f.Code), f.Intensity.To);
+      }
+      for (const [areaCode, localInt] of localPredictions.entries()) {
+        finalMapIntensities.set(areaCode, localInt);
+      }
+    } else {
+      for (const [areaCode, localInt] of localPredictions.entries()) {
+        finalMapIntensities.set(areaCode, localInt);
+      }
+      for (const f of mergedForecast) {
+        if (f.Intensity.To === "0" || f.Intensity.To === "over" || f.Intensity.To === "不明")
+          continue;
+        finalMapIntensities.set(String(f.Code), f.Intensity.To);
+      }
+    }
+
+    // Create mock observations for map highlighter
+    const mockObservations = [];
+    if (finalMapIntensities.size > 0) {
+      const prefMock = { areas: [] };
+      for (const [code, maxInt] of finalMapIntensities.entries()) {
+        prefMock.areas.push({
+          code: String(code),
+          maxInt: maxInt,
+          cities: [],
+        });
+      }
+      mockObservations.push(prefMock);
+    }
+
+    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: highlighting observations");
+    highlightObservations(mapInstance, mockObservations);
+    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: highlights applied");
+
+    console.debug("[eq-viewer-eew] updateMapForEew: scheduling phase 3 via rAF");
+    // Defer marker placement and camera movement to the next animation frame
+    // to avoid overwhelming WebKit2GTK's WebGL context
+    requestAnimationFrame(() => {
+      console.debug("[eq-viewer-eew] updateMapForEew Phase 3: START");
+      // Guard: EEW state may have changed by the time this frame fires
+      if (!isEewMapActive || activeEews.size === 0 || document.querySelector(".eq-item.active")) {
+        return;
       }
 
-      const marker = new maplibregl.Marker({ element: markerEl })
-        .setLngLat([lon, lat])
-        .addTo(mapInstance);
-      eewEpicenterMarkers.push(marker);
-    }
-  }
+      if (getHomeIntensityState()) {
+        // Update home intensity display for EEW
+        const homeCityCode = localStorage.getItem("home-city");
+        const homeAreaCodeStr = cityForecastMap.get(homeCityCode);
 
-  if (!isUserInteractingWithMap && featureBounds) {
-    fitBoundsToObservations(
-      mapInstance,
-      mockObservations,
-      featureBounds,
-      false,
-      "1",
-      hasValidEpicenter ? { longitude: minLng, latitude: minLat } : null,
-      6.5,
-    );
-  }
+        if (homeAreaCodeStr) {
+          const forecastArea = mergedForecast.find(
+            (f) => f.Code === Number.parseInt(homeAreaCodeStr),
+          );
+          const forecastInt = forecastArea ? forecastArea.Intensity.To : null;
+          updateEewHomeLocationDisplay(homeCityCode, forecastInt || null); // Only use EEW intensities, without GMPE
+        } else {
+          updateEewHomeLocationDisplay(homeCityCode, null);
+        }
+      }
+
+      // Add EEW epicenters
+      console.debug("[eq-viewer-eew] updateMapForEew Phase 3: placing markers");
+      let minLng = Infinity,
+        minLat = Infinity,
+        maxLng = -Infinity,
+        maxLat = -Infinity;
+      let hasValidEpicenter = false;
+
+      let i = 0;
+      for (const eew of eews) {
+        i++;
+        const msg = eew.msg;
+        if (msg.Hypocenter?.Coordinate) {
+          const [lon, lat] = msg.Hypocenter.Coordinate;
+          hasValidEpicenter = true;
+          if (lon < minLng) minLng = lon;
+          if (lat < minLat) minLat = lat;
+          if (lon > maxLng) maxLng = lon;
+          if (lat > maxLat) maxLat = lat;
+
+          const isPlum = msg.Magnitude === "1.0" && msg.Hypocenter.Depth === "10km";
+          const isCancel = eew.isCancelled;
+
+          let icon = "epicenter-eew.png";
+          if (isCancel) icon = "epicenter-cancel.png";
+          else if (isPlum) icon = "epicenter-plum.png";
+
+          const markerEl = document.createElement("div");
+          markerEl.className = "epicenter-eew-marker";
+          markerEl.innerHTML = `<img src="/img/${icon}" style="width:32px; height:32px;" />`;
+          if (eews.length > 1) {
+            markerEl.innerHTML += `<div style="position:absolute; top:-20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); color:#fff; padding:2px 6px; border-radius:4px; font-size:12px; font-weight:bold;">${i}</div>`;
+          }
+
+          const marker = new maplibregl.Marker({ element: markerEl })
+            .setLngLat([lon, lat])
+            .addTo(mapInstance);
+          eewEpicenterMarkers.push(marker);
+        }
+      }
+
+      console.debug("[eq-viewer-eew] updateMapForEew Phase 3: fitting bounds");
+      if (!isUserInteractingWithMap && featureBounds) {
+        fitBoundsToObservations(
+          mapInstance,
+          mockObservations,
+          featureBounds,
+          false,
+          "1",
+          hasValidEpicenter ? { longitude: minLng, latitude: minLat } : null,
+          6.5,
+        );
+      }
+      console.debug("[eq-viewer-eew] updateMapForEew Phase 3: COMPLETE");
+    });
+  }, 50);
 }
 
 function updateEewHomeLocationDisplay(cityCode, intensityStr) {

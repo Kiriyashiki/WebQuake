@@ -519,9 +519,16 @@ async function boot() {
   }
 
   // Initialize sidebar with earthquake reports
+  let reportSelectTimer = null;
   const onReportSelect = (report) => {
     console.debug("[eq-viewer] Selected report:", report.eventId, report.hypocenterJa);
     console.debug("[eq-viewer] Map style loaded:", map.isStyleLoaded());
+
+    // Cancel any pending map update from a previous report selection
+    if (reportSelectTimer) {
+      clearTimeout(reportSelectTimer);
+      reportSelectTimer = null;
+    }
 
     // Clear EEW map display (markers, wave animations, autozoom timeout)
     clearEewMapDisplay();
@@ -559,40 +566,61 @@ async function boot() {
     // Give MapLibre a moment to apply layout property changes before setting feature states.
     // If setFeatureState is called on a source whose layers were just made visible in the same tick,
     // MapLibre often drops the feature states.
-    setTimeout(() => {
-      // Highlight areas on map based on observation intensity
-      highlightObservations(map, report.observations);
-      const boundsFitted = fitBoundsToObservations(
-        map,
-        report.observations,
-        featureBounds,
-        report.isFlashReport ? false : getCityAreasState(),
-        report.maxIntensity,
-        report.coordinates,
-      );
+    reportSelectTimer = setTimeout(() => {
+      reportSelectTimer = null;
+      try {
+        console.debug("[eq-viewer] Map update: clearing old highlights");
+        // Highlight areas on map based on observation intensity
+        highlightObservations(map, report.observations);
+        console.debug("[eq-viewer] Map update: highlights applied");
 
-      // Display epicenter marker
-      if (report.coordinates) {
-        displayEpicenter(map, report.coordinates);
-        if (!boundsFitted) {
-          map.flyTo({
-            center: [report.coordinates.longitude, report.coordinates.latitude],
-            zoom: 6,
-            essential: true,
-          });
-        }
-      } else {
-        clearEpicenter(map);
-      }
+        // Defer camera movement to the next animation frame to avoid
+        // overwhelming WebKit2GTK's WebGL context
+        requestAnimationFrame(() => {
+          try {
+            console.debug("[eq-viewer] Map update: fitting bounds");
+            const boundsFitted = fitBoundsToObservations(
+              map,
+              report.observations,
+              featureBounds,
+              report.isFlashReport ? false : getCityAreasState(),
+              report.maxIntensity,
+              report.coordinates,
+            );
+            console.debug("[eq-viewer] Map update: bounds fitted =", boundsFitted);
 
-      // Display home location intensity if enabled
-      if (getHomeIntensityState()) {
-        const homeLocation = getHomeLocation();
-        if (homeLocation.cityCode && report.observations) {
-          displayHomeLocationIntensity(homeLocation.cityCode, report.observations, cityNames);
-        }
-      } else {
-        hideHomeLocationIntensity();
+            // Display epicenter marker
+            if (report.coordinates) {
+              displayEpicenter(map, report.coordinates);
+              console.debug("[eq-viewer] Map update: epicenter placed");
+              if (!boundsFitted) {
+                map.flyTo({
+                  center: [report.coordinates.longitude, report.coordinates.latitude],
+                  zoom: 6,
+                  essential: true,
+                });
+                console.debug("[eq-viewer] Map update: flyTo issued");
+              }
+            } else {
+              clearEpicenter(map);
+            }
+
+            // Display home location intensity if enabled
+            if (getHomeIntensityState()) {
+              const homeLocation = getHomeLocation();
+              if (homeLocation.cityCode && report.observations) {
+                displayHomeLocationIntensity(homeLocation.cityCode, report.observations, cityNames);
+              }
+            } else {
+              hideHomeLocationIntensity();
+            }
+            console.debug("[eq-viewer] Map update: complete");
+          } catch (err) {
+            console.error("[eq-viewer] Error in map camera update:", err);
+          }
+        });
+      } catch (err) {
+        console.error("[eq-viewer] Error in map highlight update:", err);
       }
     }, 50);
   };

@@ -1,7 +1,7 @@
 const { WebSocketServer } = require("ws");
 
 // Configure which scenario to run (S1, S2, S3, S4, S5, S6)
-const SCENARIO = "S7";
+const SCENARIO = "S1";
 const PORT = 8565;
 
 const wss = new WebSocketServer({ port: PORT });

@@ -5,6 +5,7 @@ dist/
 test/package-lock.json
 test/package.json
 test/pnpm-lock.yaml
+test/testfeed.*
 pnpm-workspace.yaml
 extra/shakemap.geojson
 extra/tjma2001

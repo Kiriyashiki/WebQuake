@@ -45,6 +45,7 @@ pub fn run() {
   tauri::Builder::default()
     .plugin(
       tauri_plugin_log::Builder::new()
+        .max_file_size(1_000_000)
         .level(log::LevelFilter::Debug)
         .targets([
           tauri_plugin_log::Target::new(

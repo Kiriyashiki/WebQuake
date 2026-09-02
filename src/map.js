@@ -764,7 +764,7 @@ export function highlightShakemapObservations(map, observations) {
 
           const cleanName = _cleanStationName(station.name);
           let finalJa = cleanName;
-          let finalEn = station.enName ? station.enName.replace(/\*/g, "") : "";
+          let finalEn = station.enName ? station.enName.replaceAll('*', "") : "";
 
           // Use CSV names if available (match by code first, then by JP name)
           if (_stationNamesCsv) {
@@ -829,13 +829,27 @@ export function clearShakemapHighlights(map) {
  * @param {boolean} isLpgm - If true, uses maxLgInt instead of maxInt
  */
 export function highlightObservations(map, observations, isLpgm = false) {
+  // Guard: do not touch feature states if the style hasn't fully loaded yet.
+  if (!map.isStyleLoaded()) {
+    // Defer until the map is idle (style loaded + rendered)
+    const handler = () => {
+      highlightObservations(map, observations, isLpgm);
+    };
+    map.once("idle", handler);
+    return;
+  }
+
   // Reset every currently highlighted feature first
   // MapLibre does not provide a bulk-reset, so we track them.
   highlightObservations._active?.forEach(({ source, id }) => {
-    map.setFeatureState(
-      { source, id },
-      { intensity: null, lpgmIntensity: null, highlighted: false },
-    );
+    try {
+      map.setFeatureState(
+        { source, id },
+        { intensity: null, lpgmIntensity: null, highlighted: false },
+      );
+    } catch (_) {
+      // Feature may no longer exist in the source
+    }
   });
   highlightObservations._active = [];
 
@@ -854,17 +868,25 @@ export function highlightObservations(map, observations, isLpgm = false) {
         featureState.intensity = intensityVal;
       }
 
-      map.setFeatureState({ source: "forecast_areas", id: areaId }, featureState);
+      try {
+        map.setFeatureState({ source: "forecast_areas", id: areaId }, featureState);
+      } catch (_) {
+        // Feature may not exist in the source
+      }
       highlightObservations._active.push({ source: "forecast_areas", id: areaId });
 
       // Highlight city areas
       if (area.cities) {
         for (const city of area.cities) {
           const cityId = String(city.code).padStart(7, "0");
-          map.setFeatureState(
-            { source: "cities", id: cityId },
-            { highlighted: true, intensity: city.maxInt },
-          );
+          try {
+            map.setFeatureState(
+              { source: "cities", id: cityId },
+              { highlighted: true, intensity: city.maxInt },
+            );
+          } catch (_) {
+            // Feature may not exist in the source
+          }
           highlightObservations._active.push({ source: "cities", id: cityId });
         }
       }
@@ -957,6 +979,14 @@ export function fitBoundsToObservations(
   }
 
   if (hasBounds) {
+    // Prevent degenerate bounds (point) from causing NaN zoom
+    if (minLng === maxLng && minLat === maxLat) {
+      minLng -= 0.05;
+      maxLng += 0.05;
+      minLat -= 0.05;
+      maxLat += 0.05;
+    }
+
     map.fitBounds(
       [
         [minLng, minLat],
