@@ -48,6 +48,14 @@ function buildStyle(useCityAreas = true) {
         data: "/shakemap.geojson",
         promoteId: "name",
       },
+      "eew-p-wave": {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      },
+      "eew-s-wave": {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      },
     },
     layers: [
       // Ocean / void background
@@ -245,6 +253,26 @@ function buildStyle(useCityAreas = true) {
             1,
             ["case", ["boolean", ["feature-state", "hover"], false], 1.6, 0],
           ],
+        },
+      },
+      {
+        id: "eew-p-wave-layer",
+        type: "line",
+        source: "eew-p-wave",
+        paint: {
+          "line-color": "#3498db", // Blue for P wave
+          "line-width": 2,
+          "line-opacity": ["get", "opacity"],
+        },
+      },
+      {
+        id: "eew-s-wave-layer",
+        type: "line",
+        source: "eew-s-wave",
+        paint: {
+          "line-color": "#e74c3c", // Red for S wave
+          "line-width": 2,
+          "line-opacity": ["get", "opacity"],
         },
       },
     ],

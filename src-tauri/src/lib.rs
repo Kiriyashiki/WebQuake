@@ -1,6 +1,45 @@
 use tauri::Manager;
 use std::fs;
 
+#[tauri::command]
+fn play_sound(name: String) {
+  std::thread::spawn(move || {
+    let sound_bytes = match name.as_str() {
+      "ping" | "/sfx/ping.wav" => include_bytes!("../../public/sfx/ping.wav").as_slice(),
+      "eew" | "/sfx/eew.wav" => include_bytes!("../../public/sfx/eew.wav").as_slice(),
+      "flash" | "/sfx/flash.wav" => include_bytes!("../../public/sfx/flash.wav").as_slice(),
+      _ => return,
+    };
+
+    #[cfg(target_os = "linux")]
+    {
+      use std::process::{Command, Stdio};
+      use std::io::Write;
+
+      let players: [(&str, &[&str]); 3] = [
+        ("pw-play", &["-"]),
+        ("paplay", &["/dev/stdin"]),
+        ("aplay", &["-q", "-"]),
+      ];
+      for (player, args) in players {
+        if let Ok(mut child) = Command::new(player)
+          .args(args)
+          .stdin(Stdio::piped())
+          .stdout(Stdio::null())
+          .stderr(Stdio::null())
+          .spawn()
+        {
+          if let Some(mut stdin) = child.stdin.take() {
+            let _ = stdin.write_all(sound_bytes);
+          }
+          let _ = child.wait();
+          return;
+        }
+      }
+    }
+  });
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   // ─── Log file rotation ────────────────────────────────────────────
@@ -43,6 +82,7 @@ pub fn run() {
   }));
 
   tauri::Builder::default()
+    .invoke_handler(tauri::generate_handler![play_sound])
     .plugin(
       tauri_plugin_log::Builder::new()
         .max_file_size(1_000_000)

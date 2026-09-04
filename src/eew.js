@@ -908,49 +908,6 @@ function getCircleCoords(centerLat, centerLng, radiusKm, points = 64) {
   return coords;
 }
 
-function ensureWaveSources() {
-  if (!mapInstance || !mapInstance.isStyleLoaded()) {
-    return false;
-  }
-
-  if (!mapInstance.getSource("eew-p-wave")) {
-    console.debug("[eq-viewer-eew] ensureWaveSources: adding p-wave source and layer");
-    mapInstance.addSource("eew-p-wave", {
-      type: "geojson",
-      data: { type: "FeatureCollection", features: [] },
-    });
-    mapInstance.addLayer({
-      id: "eew-p-wave-layer",
-      type: "line",
-      source: "eew-p-wave",
-      paint: {
-        "line-color": "#3498db", // Blue for P wave
-        "line-width": 2,
-        "line-opacity": ["get", "opacity"],
-      },
-    });
-  }
-
-  if (!mapInstance.getSource("eew-s-wave")) {
-    console.debug("[eq-viewer-eew] ensureWaveSources: adding s-wave source and layer");
-    mapInstance.addSource("eew-s-wave", {
-      type: "geojson",
-      data: { type: "FeatureCollection", features: [] },
-    });
-    mapInstance.addLayer({
-      id: "eew-s-wave-layer",
-      type: "line",
-      source: "eew-s-wave",
-      paint: {
-        "line-color": "#e74c3c", // Red for S wave
-        "line-width": 2,
-        "line-opacity": ["get", "opacity"],
-      },
-    });
-  }
-  return true;
-}
-
 function startWaveAnimation() {
   console.debug("[eq-viewer-eew] startWaveAnimation: START");
   if (waveInterval) return;
@@ -1010,8 +967,6 @@ function getTravelDistance(depth, time, phase) {
 function updateWaves() {
   if (!mapInstance) return;
   if (document.hidden) return;
-
-  ensureWaveSources();
 
   const pSrc = mapInstance.getSource("eew-p-wave");
   const sSrc = mapInstance.getSource("eew-s-wave");
@@ -1535,9 +1490,18 @@ function updateMapForEew() {
 
           const markerEl = document.createElement("div");
           markerEl.className = "epicenter-eew-marker";
-          markerEl.innerHTML = `<img src="/img/${icon}" style="width:32px; height:32px;" />`;
+          markerEl.style.width = "32px";
+          markerEl.style.height = "32px";
+          markerEl.innerHTML = `<img src="/img/${icon}" style="width:32px; height:32px; display:block;" />`;
           if (eews.length > 1) {
-            markerEl.innerHTML += `<div style="position:absolute; top:-20px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); color:#fff; padding:2px 6px; border-radius:4px; font-size:12px; font-weight:bold;">${i}</div>`;
+            const labelPositions = [
+              "bottom: 100%; left: 50%; transform: translateX(-50%);", // 1: top
+              "top: 100%; left: 50%; transform: translateX(-50%);", // 2: bottom
+              "right: 100%; top: 50%; transform: translateY(-50%);", // 3: left
+              "left: 100%; top: 50%; transform: translateY(-50%);", // 4: right
+            ];
+            const posStyle = labelPositions[(i - 1) % labelPositions.length];
+            markerEl.innerHTML += `<div style="position:absolute; ${posStyle} background:rgba(0,0,0,0.7); color:#fff; padding:2px 6px; border-radius:4px; font-size:14px; font-weight:bold; line-height:1; white-space:nowrap; pointer-events:none;">${i}</div>`;
           }
 
           const marker = new maplibregl.Marker({ element: markerEl })
