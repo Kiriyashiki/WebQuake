@@ -1076,6 +1076,13 @@ function renderEewInfoBox(msg, isCancelled, isWarning, isPlum, totalCount, curre
   const coordinates = infoBox.querySelector(".info-coordinates");
   const timeEl = infoBox.querySelector(".info-time");
 
+  const volcanoRow = infoBox.querySelector(".info-box-volcano-row");
+  if (volcanoRow) volcanoRow.classList.add("hidden");
+  const magRow = infoBox.querySelector(".info-box-magnitude-row") || magnitude?.closest(".info-box-row");
+  if (magRow) magRow.classList.remove("hidden");
+  const depthRow = infoBox.querySelector(".info-box-depth-row") || depth?.closest(".info-box-row");
+  if (depthRow) depthRow.classList.remove("hidden");
+
   let labelColor = isCancelled ? "#7f8c8d" : isWarning ? "#e84c3d" : "#f39c12";
   let labelText = isCancelled ? "Cancelled" : isWarning ? "EEW (Warning)" : "EEW (Forecast)";
   if (totalCount > 1) labelText = `[${currentIndex}/${totalCount}] ` + labelText;

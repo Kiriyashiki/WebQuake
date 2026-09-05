@@ -20,7 +20,7 @@
  *   長周期地震動に関する観測情報 → VXSE62 (LPGM report)
  */
 
-import { FLASH_INTENSITY_TITLE, FLASH_EPICENTER_TITLE, SPECIAL_TITLE, NORMAL_TITLE, LPGM_TITLE } from './reportUtils.js';
+import { FLASH_INTENSITY_TITLE, FLASH_EPICENTER_TITLE, SPECIAL_TITLE, NORMAL_TITLE, LPGM_TITLE, DISTANT_EARTHQUAKE_TITLE } from './reportUtils.js';
 import { XML_FEED_URL } from './constants.js';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -33,6 +33,7 @@ const ATOM_TITLE_TO_TTL = {
   '震度速報':            FLASH_INTENSITY_TITLE,    // VXSE51
   '震源に関する情報':    FLASH_EPICENTER_TITLE,    // VXSE52
   '震源・震度に関する情報': NORMAL_TITLE,       // VXSE53 → same ttl as JSON
+  '遠地地震に関する情報': DISTANT_EARTHQUAKE_TITLE, // VXSE53 distant earthquake / overseas reports
   '顕著な地震の震源要素更新のお知らせ': SPECIAL_TITLE, // VXSE61
   '長周期地震動に関する観測情報': LPGM_TITLE, // VXSE62
 };
@@ -134,13 +135,14 @@ export async function fetchXmlFeedEntries(options = {}) {
     if (!dataUrl) continue;
 
     const updated = _atomText(atomEntry, 'updated');
+    const content = _atomText(atomEntry, 'content');
 
     // Check cache: skip fetch if we already have this entry with same timestamp
     const cached = _entryCache.get(dataUrl);
     if (cached && cached.updated === updated) {
       fromCache.push(cached.entry);
     } else {
-      toFetch.push({ title, dataUrl, updated });
+      toFetch.push({ title, dataUrl, updated, content });
     }
   }
 
@@ -242,16 +244,19 @@ async function _fetchAndNormalizeXmlEntry(atomEntry, options = {}) {
     // Map the Atom title to the JSON `ttl` equivalent
     const ttl = ATOM_TITLE_TO_TTL[atomEntry.title] || atomEntry.title;
 
+    const isDistant = atomEntry.title?.includes('遠地地震に関する情報') || atomEntry.content?.includes('遠地地震に関する情報');
+
     // Build the normalized entry based on report type
     const baseEntry = {
       eid: eventId,
       ttl,
       rdt: atomEntry.updated || null,
+      isDistantEarthquake: isDistant || undefined,
       _xmlDoc: doc,          // Carry the parsed XML doc for later use
       _xmlUrl: atomEntry.dataUrl,
     };
 
-    if (atomEntry.title === '震源・震度に関する情報') {
+    if (atomEntry.title === '震源・震度に関する情報' || atomEntry.title === '遠地地震に関する情報') {
       return _normalizeVXSE53Entry(baseEntry, doc);
     }
 
@@ -423,6 +428,7 @@ export function parseFlashIntensityXml(xmlDoc) {
  * in both namespaced and non-namespaced contexts.
  */
 function _atomText(parent, tagName) {
+  if (!parent || typeof parent.getElementsByTagName !== 'function') return null;
   const el = parent.getElementsByTagName(tagName)[0];
   return el ? el.textContent.trim() : null;
 }
@@ -431,6 +437,7 @@ function _atomText(parent, tagName) {
  * Returns the href attribute of the first <link type="application/xml"> in an entry.
  */
 function _atomLinkHref(atomEntry) {
+  if (!atomEntry || typeof atomEntry.getElementsByTagName !== 'function') return null;
   const links = atomEntry.getElementsByTagName('link');
   for (const link of links) {
     if (link.getAttribute('type') === 'application/xml') {
@@ -444,6 +451,7 @@ function _atomLinkHref(atomEntry) {
  * Returns text content of the first element matching tagName in a parsed XML doc.
  */
 function _xmlText(doc, tagName) {
+  if (!doc || typeof doc.getElementsByTagName !== 'function') return null;
   const el = doc.getElementsByTagName(tagName)[0];
   return el ? el.textContent.trim() : null;
 }
@@ -452,6 +460,7 @@ function _xmlText(doc, tagName) {
  * Returns text content of the first direct child element with the given local name.
  */
 function _directChildText(parent, tagName) {
+  if (!parent?.children) return null;
   for (const child of parent.children) {
     if (child.localName === tagName) return child.textContent.trim();
   }

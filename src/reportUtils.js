@@ -54,6 +54,7 @@ export function parseReport(jsonData) {
 export function buildDisplayReport(jmaReport, areaCodes, extraFields = {}) {
   const { fallbackName, ...rest } = extraFields;
   const hypocenterCodeEntry = areaCodes.get(jmaReport.hypocenterCode) || {};
+  const resolvedJa = hypocenterCodeEntry.ja || fallbackName || jmaReport.hypocenterName || '不明';
 
   return {
     eventId: jmaReport.eventId,
@@ -61,13 +62,17 @@ export function buildDisplayReport(jmaReport, areaCodes, extraFields = {}) {
     magnitude: jmaReport.magnitude,
     maxIntensity: jmaReport.maxIntensity,
     hypocenterCode: jmaReport.hypocenterCode,
-    hypocenterJa: hypocenterCodeEntry.ja || fallbackName || '不明',
+    hypocenterJa: resolvedJa,
     hypocenterKana: hypocenterCodeEntry.kana || 'ふめい',
-    hypocenterEn: hypocenterCodeEntry.en || 'Unknown',
+    hypocenterEn: hypocenterCodeEntry.en || jmaReport.hypocenterEnName || (hypocenterCodeEntry.ja ? 'Unknown' : (jmaReport.hypocenterName || 'Unknown')),
     coordinates: jmaReport.coordinates,
     depth: jmaReport.depth,
     observations: jmaReport.observations,
     jmaReport,
+    headTitle: jmaReport.headTitle || extraFields.headTitle || null,
+    freeFormComment: jmaReport.freeFormComment || extraFields.freeFormComment || null,
+    isDistantEarthquake: !!(jmaReport.isDistantEarthquake || extraFields.isDistantEarthquake || extraFields.ttl === DISTANT_EARTHQUAKE_TITLE || extraFields.feedTitle === DISTANT_EARTHQUAKE_TITLE),
+    isVolcano: !!(jmaReport.isVolcano || extraFields.isVolcano),
     ...rest,
   };
 }
@@ -82,6 +87,9 @@ export const FLASH_EPICENTER_TITLE = '震源に関する情報';
 
 /** Title for 震源・震度情報 (normal report) */
 export const NORMAL_TITLE = '震源・震度情報';
+
+/** Title for 遠地地震に関する情報 (distant earthquake / volcano reports — VXSE5e / VXSE53) */
+export const DISTANT_EARTHQUAKE_TITLE = '遠地地震に関する情報';
 
 /** Title for VXSE61 (special report for notable earthquakes) */
 export const SPECIAL_TITLE = '顕著な地震の震源要素更新のお知らせ';
@@ -182,13 +190,15 @@ export function buildFlashEpicenterReport(feedEntry, areaCodes, priorObservation
   let coordinates = null;
   let depth = null;
   if (feedEntry.cod) {
-    const match = /^([+-]\d+\.?\d*)([+-]\d+\.?\d*)([+-]\d+\.?\d*)\/$/u.exec(feedEntry.cod);
+    const match = /^([+-]\d+\.?\d*)([+-]\d+\.?\d*)(?:([+-]\d+\.?\d*))?\/$/u.exec(feedEntry.cod);
     if (match) {
       coordinates = {
         latitude: Number.parseFloat(match[1]),
         longitude: Number.parseFloat(match[2]),
       };
-      depth = Math.abs(Number.parseFloat(match[3])) / 1000;
+      if (match[3]) {
+        depth = Math.abs(Number.parseFloat(match[3])) / 1000;
+      }
     }
   }
 

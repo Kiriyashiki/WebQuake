@@ -18,6 +18,7 @@ import {
   FLASH_INTENSITY_TITLE,
   FLASH_EPICENTER_TITLE,
   NORMAL_TITLE,
+  DISTANT_EARTHQUAKE_TITLE,
   SPECIAL_TITLE,
   LPGM_TITLE,
   buildFlashIntensityReport,
@@ -217,10 +218,13 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
       return nextIntervalMs;
     }
 
-    // Filter for target entries only (震源・震度情報)
+    // Filter for target entries only (震源・震度情報 or 遠地地震に関する情報)
     // In XML mode, entries have _xmlDoc instead of json
     const targetEntries = entries.filter(
-      (entry) => entry.ttl === NORMAL_TITLE && (entry.json || entry._xmlDoc) && entry.rdt,
+      (entry) =>
+        (entry.ttl === NORMAL_TITLE || entry.ttl === DISTANT_EARTHQUAKE_TITLE) &&
+        (entry.json || entry._xmlDoc) &&
+        entry.rdt,
     );
 
     // Collect VXSE61 special report entries from the feed
@@ -624,6 +628,8 @@ async function _fetchAndParseEntry(entry, areaCodes, lpgmEntry) {
       displayReport = buildDisplayReport(jmaReport, areaCodes, {
         feedRdt: entry.rdt,
         feedJson: entry.json || null,
+        ttl: entry.ttl,
+        fallbackName: entry.anm,
       });
     }
 
@@ -647,6 +653,8 @@ async function _fetchAndParseEntry(entry, areaCodes, lpgmEntry) {
       displayReport = buildDisplayReport(jmaReport, areaCodes, {
         feedRdt: entry.rdt,
         feedJson: entry.json,
+        ttl: entry.ttl,
+        fallbackName: entry.anm,
       });
     }
 

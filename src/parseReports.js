@@ -13,6 +13,7 @@ import {
   FLASH_INTENSITY_TITLE,
   FLASH_EPICENTER_TITLE,
   NORMAL_TITLE,
+  DISTANT_EARTHQUAKE_TITLE,
   SPECIAL_TITLE,
   parseFlashIntensityJson,
   buildFlashIntensityReport,
@@ -43,7 +44,7 @@ export function parseDepthFromCod(cod) {
  */
 export function parseCoordinatesFromCod(cod) {
   if (!cod) return null;
-  const match = /^([+-])(\d+)(\.\d+)?([+-])(\d+)(\.\d+)?([+-]\d+\.?\d*)\/$/u.exec(cod);
+  const match = /^([+-])(\d+)(\.\d+)?([+-])(\d+)(\.\d+)?(?:[+-]\d+\.?\d*)?\/$/u.exec(cod);
   if (!match) return null;
 
   const [, s1, int1, frac1 = '', s2, int2, frac2 = ''] = match;
@@ -134,9 +135,9 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
     // Fetch JSON feed
     const feedEntries = await fetchFeedEntries(FEED_URL_LATEST);
 
-    // Filter for target reports (震源・震度情報 only)
+    // Filter for target reports (震源・震度情報 or 遠地地震に関する情報)
     const rawTargetEntries = feedEntries.filter(
-      entry => entry.ttl === NORMAL_TITLE && entry.json
+      entry => (entry.ttl === NORMAL_TITLE || entry.ttl === DISTANT_EARTHQUAKE_TITLE) && entry.json
     );
 
     // Sort newest first by rdt
@@ -153,8 +154,9 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
       if (ageMs > PRUNE_MAX_AGE_MS) continue;
 
       if (keptCount >= PRUNE_MAX_REPORTS) {
+        const isDistant = entry.ttl === DISTANT_EARTHQUAKE_TITLE;
         const maxInt = entry.maxi || "";
-        if (!maxInt || maxInt === "1" || maxInt === "2") {
+        if (!isDistant && (!maxInt || maxInt === "1" || maxInt === "2")) {
           continue;
         }
       }
@@ -329,8 +331,8 @@ async function _buildFlashReport(eid, intensityEntry, epicenterEntry, areaCodes)
 }
 
 async function _processEntry(entry, areaCodes, seenEventIds, lpgmEntry) {
-  // Check if this is a target entry (震源・震度情報)
-  if (entry.ttl !== NORMAL_TITLE || !entry.json) {
+  // Check if this is a target entry (震源・震度情報 or 遠地地震に関する情報)
+  if ((entry.ttl !== NORMAL_TITLE && entry.ttl !== DISTANT_EARTHQUAKE_TITLE) || !entry.json) {
     return null;
   }
 
@@ -360,6 +362,8 @@ async function _processEntry(entry, areaCodes, seenEventIds, lpgmEntry) {
     const displayReport = buildDisplayReport(jmaReport, areaCodes, {
       feedRdt: entry.rdt,
       feedJson: entry.json,
+      ttl: entry.ttl,
+      fallbackName: entry.anm,
     });
 
     if (lpgmEntry) {

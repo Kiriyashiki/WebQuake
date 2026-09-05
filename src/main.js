@@ -579,6 +579,13 @@ async function boot() {
         requestAnimationFrame(() => {
           try {
             console.debug("[eq-viewer] Map update: fitting bounds");
+            const isDistant = !!(
+              report.isDistantEarthquake ||
+              (report.headTitle && report.headTitle.includes("遠地地震に関する情報")) ||
+              (report.title && report.title.includes("遠地地震に関する情報")) ||
+              (report.ttl && report.ttl.includes("遠地地震に関する情報"))
+            );
+            const zoom = isDistant ? 4.5 : 7.5;
             const boundsFitted = fitBoundsToObservations(
               map,
               report.observations,
@@ -586,6 +593,7 @@ async function boot() {
               report.isFlashReport ? false : getCityAreasState(),
               report.maxIntensity,
               report.coordinates,
+              zoom,
             );
             console.debug("[eq-viewer] Map update: bounds fitted =", boundsFitted);
 
@@ -596,7 +604,7 @@ async function boot() {
               if (!boundsFitted) {
                 map.flyTo({
                   center: [report.coordinates.longitude, report.coordinates.latitude],
-                  zoom: 6,
+                  zoom: isDistant ? 4.5 : 6,
                   essential: true,
                 });
                 console.debug("[eq-viewer] Map update: flyTo issued");
@@ -985,6 +993,29 @@ function _displayMapInfoBox(report, map) {
     }
   }
 
+  // Handle volcano report: remove/hide magnitude and depth rows, replace with volcano notice
+  const magRow = infoBox.querySelector(".info-box-magnitude-row") || magnitude?.closest(".info-box-row");
+  const depthRow = infoBox.querySelector(".info-box-depth-row") || depth?.closest(".info-box-row");
+  let volcanoRow = infoBox.querySelector(".info-box-volcano-row");
+
+  if (report.isVolcano) {
+    if (magRow) magRow.classList.add("hidden");
+    if (depthRow) depthRow.classList.add("hidden");
+    if (!volcanoRow) {
+      volcanoRow = document.createElement("div");
+      volcanoRow.className = "info-box-row info-box-volcano-row";
+      if (magRow) {
+        magRow.parentNode.insertBefore(volcanoRow, magRow);
+      }
+    }
+    volcanoRow.innerHTML = `<span class="info-label info-bold-label">LARGE VOLCANIC ERUPTION • 大規模な噴火</span>`;
+    volcanoRow.classList.remove("hidden");
+  } else {
+    if (magRow) magRow.classList.remove("hidden");
+    if (depthRow) depthRow.classList.remove("hidden");
+    if (volcanoRow) volcanoRow.classList.add("hidden");
+  }
+
   // Populate details
   if (magnitude) {
     magnitude.textContent =
@@ -1067,8 +1098,7 @@ function _displayMapInfoBox(report, map) {
     const lpgmHeader = lpgmWrapper.querySelector(".lpgm-toggle-header");
 
     if (
-      !report.lpgmInfo ||
-      !report.lpgmInfo.observations ||
+      !report.lpgmInfo?.observations ||
       report.lpgmInfo.observations.length === 0
     ) {
       lpgmWrapper.classList.add("hidden");

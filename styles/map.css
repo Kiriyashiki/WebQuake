@@ -311,6 +311,10 @@
   display: none;
 }
 
+.info-bold-label {
+  font-weight: 600;
+}
+
 /* ── Flash Report Badge ────────────────────────────────────────── */
 
 .info-box-flash-badge {
