@@ -2,8 +2,11 @@
  * Initialises the MapLibre GL map, loads GeoJSON layers, and wires up
  * the forecast-area hover tooltip.
  */
-import maplibregl from "maplibre-gl";
+import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+
+maplibregl.setWorkerUrl(workerUrl);
 import {
   INTENSITY_CONFIG,
   LPGM_CONFIG,
