@@ -4,9 +4,11 @@ import { parseReport, buildDisplayReport } from './reportUtils.js';
 
 // ─── Utility functions (from generateEqdbReport.js) ─────────────────────────
 
-function formatIntensity(rawInt) {
+export const EQDB_MIN_DATE = '2000-01-01';
+
+export function formatIntensity(rawInt) {
   if (!rawInt) return null;
-  let val = rawInt.replace('震度', '');
+  let val = String(rawInt).replace('震度', '').trim();
   const map = {
     '５弱': '5-',
     '５強': '5+',
@@ -16,9 +18,55 @@ function formatIntensity(rawInt) {
     '２': '2',
     '３': '3',
     '４': '4',
-    '７': '7'
+    '７': '7',
+    '5弱': '5-',
+    '5強': '5+',
+    '6弱': '6-',
+    '6強': '6+',
+    '1': '1',
+    '2': '2',
+    '3': '3',
+    '4': '4',
+    '7': '7',
+    '5-': '5-',
+    '5+': '5+',
+    '6-': '6-',
+    '6+': '6+',
   };
   return map[val] || val;
+}
+
+/**
+ * Normalizes a date string or Date object to YYYY-MM-DD format.
+ * Supports YYYY-MM-DD, DD-MM-YYYY, DD/MM/YYYY, and Date instances.
+ * @param {string|Date} date
+ * @returns {string|null}
+ */
+export function normalizeDateString(date) {
+  if (!date) return null;
+  if (date instanceof Date) {
+    return date.toISOString().slice(0, 10);
+  }
+  const str = String(date).trim();
+  const dmyMatch = /^(\d{2})[-/](\d{2})[-/](\d{4})$/.exec(str);
+  if (dmyMatch) {
+    return `${dmyMatch[3]}-${dmyMatch[2]}-${dmyMatch[1]}`;
+  }
+  return str;
+}
+
+/**
+ * Clamps a date string so it is never earlier than EQDB_MIN_DATE (2000-01-01).
+ * @param {string|Date} date
+ * @param {string} [fallback=EQDB_MIN_DATE]
+ * @returns {string}
+ */
+export function clampMinDate(date, fallback = EQDB_MIN_DATE) {
+  const normalized = normalizeDateString(date);
+  if (!normalized || normalized < EQDB_MIN_DATE) {
+    return fallback;
+  }
+  return normalized;
 }
 
 /** Converts JST time string to a strict GMT/UTC ISO string */
@@ -123,7 +171,7 @@ export function getSearchPreset(preset, maxDate) {
   switch (preset) {
     case 'year':
     default: {
-      const oneYearAgo = getDateOneYearAgo();
+      const oneYearAgo = clampMinDate(getDateOneYearAgo());
       return {
         dateFrom: oneYearAgo,
         dateTo: oneYearAgo,
@@ -137,7 +185,7 @@ export function getSearchPreset(preset, maxDate) {
     }
     case 'large':
       return {
-        dateFrom: '2004-01-01',
+        dateFrom: EQDB_MIN_DATE,
         dateTo: maxDate,
         magMin: '0.0',
         magMax: '9.9',
@@ -148,7 +196,7 @@ export function getSearchPreset(preset, maxDate) {
       };
     case 'deep':
       return {
-        dateFrom: '2004-01-01',
+        dateFrom: EQDB_MIN_DATE,
         dateTo: maxDate,
         magMin: '0.0',
         magMax: '9.9',
@@ -176,13 +224,19 @@ export function getSearchPreset(preset, maxDate) {
  * @returns {Promise<Array>} Array of event objects with { id, ot, name, ... }
  */
 async function fetchHistoryList(params) {
+  const dateFrom = clampMinDate(params.dateFrom, EQDB_MIN_DATE);
+  let dateTo = normalizeDateString(params.dateTo) || dateFrom;
+  if (dateTo < EQDB_MIN_DATE) {
+    dateTo = EQDB_MIN_DATE;
+  }
+
   const boundary = '----bound';
 
   const fields = [
     { name: 'mode', value: 'search' },
-    { name: 'dateTimeF[]', value: params.dateFrom },
+    { name: 'dateTimeF[]', value: dateFrom },
     { name: 'dateTimeF[]', value: '00:00' },
-    { name: 'dateTimeT[]', value: params.dateTo },
+    { name: 'dateTimeT[]', value: dateTo },
     { name: 'dateTimeT[]', value: '23:59' },
     { name: 'mag[]', value: params.magMin },
     { name: 'mag[]', value: params.magMax },
@@ -575,7 +629,173 @@ async function loadGeoData() {
 }
 
 /**
- * Fetches history event list and builds full reports in batches.
+ * Resolves Japanese and English hypocenter names from area codes mapping.
+ * @param {string} name - Hypocenter name in Japanese
+ * @param {Map} [areaCodes] - Area codes Map (code -> { ja, kana, en })
+ * @returns {{ ja: string, kana: string, en: string, code: number|null }}
+ */
+function resolveHypocenterNames(name, areaCodes) {
+  if (!name) {
+    return { ja: '不明', kana: 'ふめい', en: 'Unknown', code: null };
+  }
+
+  if (areaCodes && areaCodes.size > 0) {
+    for (const [code, entry] of areaCodes.entries()) {
+      if (entry.ja === name) {
+        return {
+          ja: entry.ja,
+          kana: entry.kana || 'ふめい',
+          en: entry.en || name || 'Unknown',
+          code: code,
+        };
+      }
+    }
+  }
+
+  return {
+    ja: name,
+    kana: 'ふめい',
+    en: name || 'Unknown',
+    code: null,
+  };
+}
+
+/**
+ * Builds a base report object from an EQDB search result event.
+ * Contains lightweight fields needed for the sidebar entry display without
+ * fetching and parsing full observation/geometry data.
+ *
+ * @param {Object} event - Search result item from EQDB API
+ * @param {Map} [areaCodes] - Area code mappings
+ * @returns {Object} Base report object
+ */
+export function buildHistoryBaseReport(event, areaCodes = new Map()) {
+  const names = resolveHypocenterNames(event?.name, areaCodes);
+
+  let originTime = null;
+  if (event?.ot) {
+    const isoFormatted = event.ot.replaceAll('/', '-').replace(' ', 'T') + '+09:00';
+    const ms = Date.parse(isoFormatted);
+    if (!Number.isNaN(ms)) {
+      originTime = Math.floor(ms / 1000);
+    }
+  }
+
+  const magNum = event?.mag != null && event?.mag !== '' ? Number.parseFloat(event.mag) : null;
+  const magnitude = (magNum !== null && !Number.isNaN(magNum)) ? magNum : null;
+
+  const lat = event?.lat != null && event?.lat !== '' ? Number.parseFloat(event.lat) : null;
+  const lon = event?.lon != null && event?.lon !== '' ? Number.parseFloat(event.lon) : null;
+  const coordinates = (lat !== null && lon !== null && !Number.isNaN(lat) && !Number.isNaN(lon))
+    ? { latitude: lat, longitude: lon }
+    : null;
+
+  const depthMatch = event?.dep ? String(event.dep).match(/(\d+)/) : null;
+  const depth = depthMatch ? Number.parseInt(depthMatch[1], 10) : null;
+
+  return {
+    eventId: event?.id,
+    originTime,
+    magnitude,
+    maxIntensity: formatIntensity(event?.maxI),
+    hypocenterCode: names.code,
+    hypocenterJa: names.ja,
+    hypocenterKana: names.kana,
+    hypocenterEn: names.en,
+    coordinates,
+    depth,
+    observations: null,
+    isHistory: true,
+    isBaseReport: true,
+    isFullReport: false,
+    rawEvent: event,
+  };
+}
+
+// ─── Cache of full reports ───────────────────────────────────────────────────
+
+const _fullReportCache = new Map();
+const _inFlightPromises = new Map();
+
+/**
+ * Clears the in-memory cache of full history reports.
+ */
+export function clearHistoryReportCache() {
+  _fullReportCache.clear();
+  _inFlightPromises.clear();
+}
+
+/**
+ * Fetches and builds the full report for a single event ID or base report.
+ * Results are cached in memory to avoid redundant network and geo calculations.
+ *
+ * @param {string|Object} eventOrId - Event ID string or base report object
+ * @param {Map} [areaCodes] - Area code name mappings
+ * @returns {Promise<Object|null>} Display-ready full report object or null
+ */
+export async function fetchHistoryReport(eventOrId, areaCodes = new Map()) {
+  const eventId = typeof eventOrId === 'string'
+    ? eventOrId
+    : (eventOrId?.eventId || eventOrId?.id);
+
+  if (!eventId) return null;
+
+  if (typeof eventOrId === 'object' && eventOrId?.observations && !eventOrId?.isBaseReport) {
+    return eventOrId;
+  }
+
+  if (_fullReportCache.has(eventId)) {
+    return _fullReportCache.get(eventId);
+  }
+
+  if (_inFlightPromises.has(eventId)) {
+    return _inFlightPromises.get(eventId);
+  }
+
+  const promise = (async () => {
+    try {
+      const fallbackName = typeof eventOrId === 'object'
+        ? (eventOrId.hypocenterJa || eventOrId.name || null)
+        : null;
+
+      const geoData = await loadGeoData();
+      const reportJson = await fetchEqdbEvent(
+        eventId,
+        geoData.bounds,
+        geoData.forecastAreas,
+        geoData.municipalities,
+        geoData.areaCodesCsv,
+        geoData.cityForecastCsv
+      );
+
+      if (!reportJson) return null;
+
+      const jmaReport = parseReport(reportJson);
+      const fullReport = buildDisplayReport(jmaReport, areaCodes, {
+        fallbackName,
+        isHistory: true,
+      });
+
+      fullReport.isFullReport = true;
+      fullReport.isBaseReport = false;
+      _fullReportCache.set(eventId, fullReport);
+      return fullReport;
+    } catch (err) {
+      console.error(`[history] Failed to fetch and build report for ${eventId}:`, err);
+      return null;
+    } finally {
+      _inFlightPromises.delete(eventId);
+    }
+  })();
+
+  _inFlightPromises.set(eventId, promise);
+  return promise;
+}
+
+/**
+ * Loads base information needed for sidebar display for each search result item.
+ * Slices the event list and builds lightweight base reports without fetching
+ * or building the whole report for each event.
  *
  * @param {Object} searchParams - Search parameters (dateFrom, dateTo, magMin, magMax, depMin, depMax, maxInt, sort)
  * @param {Map} areaCodes - Area code name mappings
@@ -584,6 +804,7 @@ async function loadGeoData() {
  * @param {number} [options.offset=0] - Offset into the event list
  * @param {Function} [options.onReportFetched] - Callback(report) called for each report
  * @param {Function} [options.onProgress] - Callback(processed, total) for progress
+ * @param {Array} [options.cachedEventList] - Pre-fetched event list
  * @returns {Promise<{reports: Array, totalEvents: number, eventList: Array}>}
  */
 export async function fetchHistoryReports(searchParams, areaCodes = new Map(), options = {}) {
@@ -591,64 +812,30 @@ export async function fetchHistoryReports(searchParams, areaCodes = new Map(), o
   const reports = [];
 
   try {
-    // 1. Fetch the list of events (or use cached list)
     const eventList = cachedEventList || await fetchHistoryList(searchParams);
 
-    if (eventList.length === 0) {
-      return { reports, totalEvents: 0, eventList };
+    if (!eventList || eventList.length === 0) {
+      return { reports, totalEvents: 0, eventList: [] };
     }
 
-    // Slice for pagination
     const eventsToProcess = eventList.slice(offset, offset + limit);
     const totalToProcess = eventsToProcess.length;
-    let processedCount = 0;
 
     if (onProgress) onProgress(0, totalToProcess);
 
-    // 2. Load geo data for report building
-    const geoData = await loadGeoData();
-
-    // 3. Process events in batches (max 2 concurrent to be polite to API)
-    for (let i = 0; i < eventsToProcess.length; i += 2) {
-      const batch = eventsToProcess.slice(i, i + 2);
-      const batchPromises = batch.map(async (event) => {
-        const reportJson = await fetchEqdbEvent(
-          event.id,
-          geoData.bounds,
-          geoData.forecastAreas,
-          geoData.municipalities,
-          geoData.areaCodesCsv,
-          geoData.cityForecastCsv
-        );
-
-        if (!reportJson) return null;
-
-        const jmaReport = parseReport(reportJson);
-
-        return buildDisplayReport(jmaReport, areaCodes, {
-          fallbackName: event.name,
-          isHistory: true,
-        });
-      });
-
-      const batchResults = await Promise.all(batchPromises);
-
-      for (const report of batchResults) {
-        processedCount++;
-        if (report) {
-          reports.push(report);
-          if (onReportFetched) onReportFetched(report);
-        }
-        if (onProgress) onProgress(processedCount, totalToProcess);
-      }
+    for (let i = 0; i < eventsToProcess.length; i++) {
+      const event = eventsToProcess[i];
+      const baseReport = buildHistoryBaseReport(event, areaCodes);
+      reports.push(baseReport);
+      if (onReportFetched) onReportFetched(baseReport);
+      if (onProgress) onProgress(i + 1, totalToProcess);
     }
+
+    return { reports, totalEvents: eventList.length, eventList };
   } catch (err) {
     console.error('[history] Failed to fetch history reports:', err);
+    return { reports, totalEvents: 0, eventList: [] };
   }
-
-  // The API already returns entries sorted by the specified sort mode,
-  // so we preserve that order.
-  return { reports, totalEvents: (options.cachedEventList || []).length, eventList: options.cachedEventList || [] };
 }
 
 /**

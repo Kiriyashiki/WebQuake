@@ -356,6 +356,11 @@
   border-color: rgba(232,76,61,.3);
 }
 
+.eq-item.loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
 .eq-content {
   display: flex;
   gap: 12px;

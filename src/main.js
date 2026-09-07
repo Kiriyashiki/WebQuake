@@ -52,8 +52,11 @@ import { startLivePolling, stopLivePolling } from "./liveMode.js";
 import {
   fetchHistoryReports,
   fetchHistoryEventList,
+  fetchHistoryReport,
+  buildHistoryBaseReport,
   getSearchPreset,
   fetchEqdbMaxDate,
+  EQDB_MIN_DATE,
 } from "./historyMode.js";
 import { initEewSettings, handlePossibleEewReport, clearEewMapDisplay } from "./eew.js";
 
@@ -238,11 +241,11 @@ async function boot() {
     const dateFromEl = document.getElementById("history-date-from");
     const dateToEl = document.getElementById("history-date-to");
     if (dateFromEl) {
-      dateFromEl.min = "2004-01-01";
+      dateFromEl.min = EQDB_MIN_DATE;
       dateFromEl.max = maxDate;
     }
     if (dateToEl) {
-      dateToEl.min = "2004-01-01";
+      dateToEl.min = EQDB_MIN_DATE;
       dateToEl.max = maxDate;
     }
   });
@@ -259,8 +262,18 @@ async function boot() {
       return params;
     }
 
-    const dateFrom = document.getElementById("history-date-from")?.value || "2004-01-01";
-    const dateTo = document.getElementById("history-date-to")?.value || _eqdbMaxDate;
+    const dateFromEl = document.getElementById("history-date-from");
+    const dateToEl = document.getElementById("history-date-to");
+    let dateFrom = dateFromEl?.value || EQDB_MIN_DATE;
+    if (dateFrom < EQDB_MIN_DATE) {
+      dateFrom = EQDB_MIN_DATE;
+      if (dateFromEl) dateFromEl.value = EQDB_MIN_DATE;
+    }
+    let dateTo = dateToEl?.value || _eqdbMaxDate;
+    if (dateTo && dateTo < EQDB_MIN_DATE) {
+      dateTo = EQDB_MIN_DATE;
+      if (dateToEl) dateToEl.value = EQDB_MIN_DATE;
+    }
     const minInt = document.getElementById("history-min-intensity")?.value || "1";
     const magMin = document.getElementById("history-mag-min")?.value || "0.0";
     const magMax = document.getElementById("history-mag-max")?.value || "9.9";
@@ -348,7 +361,7 @@ async function boot() {
         offset: 0,
         cachedEventList: _historyCachedEventList,
         onReportFetched: (report) => {
-          _addHistoryReportItem(historyList, report, onReportSelect);
+          _addHistoryReportItem(historyList, report, onReportSelect, areaCodes);
         },
         onProgress: (processed, total) => {
           if (progressEl) progressEl.textContent = `${processed}/${total}`;
@@ -408,7 +421,7 @@ async function boot() {
         offset: _historyLoadedCount,
         cachedEventList: _historyCachedEventList,
         onReportFetched: (report) => {
-          _addHistoryReportItem(historyList, report, onReportSelect);
+          _addHistoryReportItem(historyList, report, onReportSelect, areaCodes);
         },
         onProgress: (processed, total) => {
           if (progressEl) progressEl.textContent = `${processed}/${total}`;
@@ -438,7 +451,7 @@ async function boot() {
   /**
    * Adds a report item to the history list.
    */
-  function _addHistoryReportItem(historyList, report, onReportSelect) {
+  function _addHistoryReportItem(historyList, report, onReportSelect, areaCodes) {
     const item = document.createElement("li");
     item.className = "eq-item";
     item.dataset.eventId = report.eventId;
@@ -483,12 +496,56 @@ async function boot() {
     item.style.borderColor = borderColor;
     item.style.borderWidth = "2px";
 
-    item.addEventListener("click", () => {
+    let currentReport = report;
+    let fetchPromise = null;
+
+    item.addEventListener("click", async () => {
       // Clear active from both live and history lists
       document.querySelectorAll(".eq-item").forEach((el) => el.classList.remove("active"));
       item.classList.add("active");
 
-      if (onReportSelect) onReportSelect(report);
+      if (!onReportSelect) return;
+
+      // If full report is already built, select it immediately
+      if (currentReport && currentReport.observations && !currentReport.isBaseReport) {
+        onReportSelect(currentReport);
+        return;
+      }
+
+      // Show loading indicator
+      const loadingContainer = document.getElementById("history-loading-container");
+      const progressEl = document.getElementById("history-loading-progress");
+      if (loadingContainer) {
+        loadingContainer.classList.remove("hidden");
+        if (progressEl) progressEl.textContent = "Loading... · 読み込み中...";
+      }
+      item.classList.add("loading");
+
+      try {
+        if (!fetchPromise) {
+          fetchPromise = fetchHistoryReport(currentReport, areaCodes);
+        }
+        const fullReport = await fetchPromise;
+        if (fullReport) {
+          currentReport = fullReport;
+          const idx = historyReports.findIndex((r) => r.eventId === fullReport.eventId);
+          if (idx !== -1) {
+            historyReports[idx] = fullReport;
+          }
+          // Only trigger onReportSelect if this item is still the active one
+          if (item.classList.contains("active")) {
+            onReportSelect(fullReport);
+          }
+        }
+      } catch (err) {
+        console.error("[eq-viewer] Failed to load full history report:", err);
+        fetchPromise = null;
+      } finally {
+        item.classList.remove("loading");
+        if (loadingContainer) {
+          loadingContainer.classList.add("hidden");
+        }
+      }
     });
 
     // Append in API-returned order (already sorted by selected sort mode)
