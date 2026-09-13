@@ -1003,6 +1003,9 @@ function _displayMapInfoBox(report, map) {
   const eewSerialRow = infoBox.querySelector(".eew-serial-row");
   if (eewSerialRow) eewSerialRow.remove();
 
+  const eewSourceRow = infoBox.querySelector(".eew-source-row");
+  if (eewSourceRow) eewSourceRow.remove();
+
   const eewIntensityPlaceholder = infoBox.querySelector(".eew-intensity-placeholder");
   if (eewIntensityPlaceholder) eewIntensityPlaceholder.remove();
 

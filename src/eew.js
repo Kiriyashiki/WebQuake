@@ -4,7 +4,7 @@ import {
   INTENSITY_CONFIG,
   USE_TEST_SERVER,
   TEST_GMPE_OVERRIDE,
-  haversineDistance
+  haversineDistance,
 } from "./constants.js";
 import { playAudio } from "./audio.js";
 import {
@@ -19,30 +19,14 @@ import {
 import { createRubyHtml, loadCityForecastMapCsv, loadStationsCsvText } from "./areaCodes.js";
 import { getCityAreasState, getHomeIntensityState } from "./sidebarUI.js";
 import { updateMapLegend } from "./main.js";
+import {
+  getProvider,
+  getAvailableProviders,
+  getActiveProvider,
+  setActiveProvider,
+} from "./eewProviders.js";
 
-// Detect Tauri runtime — when running as a desktop app, we can bypass CORS
-// by using Tauri's HTTP plugin which makes requests through Rust's HTTP client.
-const IS_TAURI = Boolean(window.__TAURI_INTERNALS__);
-let tauriFetch = null;
-if (IS_TAURI) {
-  import("@tauri-apps/plugin-http")
-    .then((mod) => {
-      tauriFetch = mod.fetch;
-    })
-    .catch((err) => {
-      console.warn("[EEW] Failed to load Tauri HTTP plugin, falling back to browser fetch.", err);
-    });
-}
-
-let eewSocket = null;
 let activeEews = new Map(); // EventID -> EEW Object
-let retrySec = 100;
-let retryCount = 0;
-let reconnectTimer = null;
-let heartbeatTimer = null;
-let eewToken = "";
-let hasConnectedOnce = false;
-let tokenRefreshTimer = null;
 
 // For map and carousel
 let carouselIndex = 0;
@@ -115,7 +99,7 @@ function calculateGmpe(magnitude, depthKm, epicentralDistance, arv) {
   const faultShift = 10.0 ** (0.5 * mw - 1.85) / 2.0;
   const d2 = Math.max(hypocentralDistance - faultShift, 3.0);
   const saturationTerm = 0.0028 * 10.0 ** (0.5 * mw);
-  const sourceEnergy = 0.58 * mw + 0.0038 * depthKm - 1.29; 
+  const sourceEnergy = 0.58 * mw + 0.0038 * depthKm - 1.29;
   const geometricDecay = Math.log10(d2 + saturationTerm);
   const anelasticDecay = 0.002 * d2;
   const siteAmplification = Math.log10(arv * 1.31);
@@ -162,6 +146,14 @@ export function clearEewMapDisplay() {
   }
   eewEpicenterMarkers = [];
 
+  const infoBox = document.getElementById("map-info-box");
+  if (infoBox) {
+    const eewSerialRow = infoBox.querySelector(".eew-serial-row");
+    if (eewSerialRow) eewSerialRow.remove();
+    const eewSourceRow = infoBox.querySelector(".eew-source-row");
+    if (eewSourceRow) eewSourceRow.remove();
+  }
+
   if (mapInstance) {
     const pSrc = mapInstance.getSource("eew-p-wave");
     const sSrc = mapInstance.getSource("eew-s-wave");
@@ -180,47 +172,141 @@ export function initEewSettings(map, bounds, cities, areas) {
   areaCodes = areas;
 
   const toggleEl = document.getElementById("eew-toggle");
-  const tokenEl = document.getElementById("eew-token-input");
+  const providerSelectEl = document.getElementById("eew-provider-select");
+  const tokenGroupEl = document.getElementById("eew-token-group");
+  const tokenLabelEl = document.getElementById("eew-token-label");
+  const tokenInputEl = document.getElementById("eew-token-input");
+  const axisInfoEl = document.getElementById("eew-axis-info");
 
-  if (!toggleEl || !tokenEl) return;
+  if (!toggleEl) return;
+
+  const availableProviders = getAvailableProviders();
+
+  // Populate provider selector dropdown
+  if (providerSelectEl) {
+    providerSelectEl.innerHTML = "";
+    for (const provider of availableProviders) {
+      const option = document.createElement("option");
+      option.value = provider.id;
+      option.textContent = provider.name;
+      providerSelectEl.appendChild(option);
+    }
+  }
+
+  // Determine active provider
+  const savedProviderId = localStorage.getItem("eew-provider");
+  let currentProvider = availableProviders.find((p) => p.id === savedProviderId);
+  if (!currentProvider) {
+    if (USE_TEST_SERVER && availableProviders.some((p) => p.id === "test")) {
+      currentProvider = availableProviders.find((p) => p.id === "test");
+    } else {
+      currentProvider = availableProviders[0] || getProvider("axis");
+    }
+  }
+  setActiveProvider(currentProvider);
+  if (providerSelectEl) {
+    providerSelectEl.value = currentProvider.id;
+  }
+
+  function updateProviderSettingsUI() {
+    const p = getActiveProvider();
+    if (!p) return;
+
+    if (p.requiresToken) {
+      if (tokenGroupEl) tokenGroupEl.classList.remove("hidden");
+      if (tokenLabelEl) tokenLabelEl.textContent = p.tokenLabel || `${p.name} Token • トークン:`;
+      if (tokenInputEl) {
+        tokenInputEl.placeholder = p.tokenPlaceholder || "Bearer Token";
+        tokenInputEl.value = p.getToken();
+      }
+    } else if (tokenGroupEl) tokenGroupEl.classList.add("hidden");
+
+    if (axisInfoEl) {
+      if (p.id === "axis") {
+        axisInfoEl.classList.remove("hidden");
+      } else {
+        axisInfoEl.classList.add("hidden");
+      }
+    }
+  }
+
+  updateProviderSettingsUI();
 
   const savedEnabled = localStorage.getItem("eew-enabled") === "true";
-  const savedToken = localStorage.getItem("eew-token") || "";
-
   toggleEl.checked = savedEnabled;
-  tokenEl.value = savedToken;
-  eewToken = savedToken;
 
-  if (savedEnabled && savedToken) {
-    hasConnectedOnce = false;
-    connectEew();
+  if (savedEnabled) {
+    const p = getActiveProvider();
+    if (!p.requiresToken || p.getToken()) {
+      connectEew();
+    }
   }
 
   toggleEl.addEventListener("change", (e) => {
     const isEnabled = e.target.checked;
     localStorage.setItem("eew-enabled", isEnabled ? "true" : "false");
     if (isEnabled) {
-      hasConnectedOnce = false;
+      const p = getActiveProvider();
+      if (p.requiresToken && !p.getToken()) {
+        alert(
+          "Please enter a token in Settings before enabling EEW.\nEEWを有効にする前に、「設定」でトークンを入力してください。",
+        );
+        toggleEl.checked = false;
+        localStorage.setItem("eew-enabled", "false");
+        return;
+      }
       connectEew();
     } else {
       disconnectEew();
     }
   });
 
-  tokenEl.addEventListener("change", (e) => {
-    const token = e.target.value.trim();
-    localStorage.setItem("eew-token", token);
-    eewToken = token;
-    // User manually changed the token — reset refresh tracking state
-    resetTokenRefreshState();
-    if (toggleEl.checked) {
-      disconnectEew();
-      if (token) {
-        hasConnectedOnce = false;
-        connectEew();
+  if (providerSelectEl) {
+    providerSelectEl.addEventListener("change", (e) => {
+      const newProviderId = e.target.value;
+      const newProvider = getProvider(newProviderId);
+      if (!newProvider) return;
+
+      localStorage.setItem("eew-provider", newProviderId);
+      const wasConnected = toggleEl.checked;
+
+      if (wasConnected) {
+        disconnectEew();
       }
-    }
-  });
+
+      setActiveProvider(newProvider);
+      updateProviderSettingsUI();
+
+      if (wasConnected) {
+        if (!newProvider.requiresToken || newProvider.getToken()) {
+          connectEew();
+        } else {
+          alert(
+            `Please enter a token for ${newProvider.name} in Settings.\n「設定」で${newProvider.name}のトークンを入力してください。`,
+          );
+          toggleEl.checked = false;
+          localStorage.setItem("eew-enabled", "false");
+        }
+      }
+    });
+  }
+
+  if (tokenInputEl) {
+    tokenInputEl.addEventListener("change", (e) => {
+      const p = getActiveProvider();
+      if (!p) return;
+      const token = e.target.value.trim();
+      p.setToken(token);
+      p.resetTokenState?.();
+
+      if (toggleEl.checked) {
+        disconnectEew();
+        if (token) {
+          connectEew();
+        }
+      }
+    });
+  }
 
   // Track map interactions to pause fitBounds
   map.on("mousedown", onMapInteract);
@@ -233,7 +319,6 @@ export function initEewSettings(map, bounds, cities, areas) {
       if (toggleEl.checked) {
         console.info("[EEW] Manual reconnect triggered");
         disconnectEew();
-        hasConnectedOnce = false;
         connectEew();
       }
     });
@@ -279,354 +364,61 @@ function onMapInteract() {
 }
 
 async function connectEew() {
-  if (!eewToken) return;
-  if (eewSocket) disconnectEew();
+  const provider = getActiveProvider();
+  if (!provider) return;
+
+  if (provider.requiresToken && !provider.getToken()) {
+    console.warn(`[EEW] Provider ${provider.name} requires a token, but none is set.`);
+    return;
+  }
+
+  disconnectEew();
 
   await loadEewDependencies();
 
   updateEewStatus("connecting");
 
-  let targetServer = "wss://ws.axis.prioris.jp";
-
-  if (USE_TEST_SERVER) {
-    targetServer = "ws://localhost:8565";
-  } else {
-    try {
-      const fetchFn = tauriFetch || fetch;
-      const res = await fetchFn("https://axis.prioris.jp/api/server/list/", {
-        headers: {
-          Authorization: `Bearer ${eewToken}`,
-        },
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.servers && data.servers.length > 0) {
-          targetServer = data.servers[0];
-        }
-      } else if (res.status === 401) {
-        console.warn("[EEW] 401 Unauthorized. Invalid token.");
-        alert(
-          "EEW connection failed: Invalid Token (401). Please check your token in Settings.\n接続に失敗しました：トークンが無効である可能性があります。「設定」でトークンを確認してください。",
-        );
-        disconnectEew();
-        const toggleEl = document.getElementById("eew-toggle");
-        if (toggleEl) {
-          toggleEl.checked = false;
-          localStorage.setItem("eew-enabled", "false");
-          updateEewStatus("error"); // Will hide the status container
-        }
-        return; // Stop connection flow completely
-      } else {
-        console.warn(
-          "[EEW] Failed to get server list, HTTP " +
-            res.status +
-            ". Falling back to default server.",
-        );
+  provider.connect({
+    onStatusChange: (status) => {
+      updateEewStatus(status);
+    },
+    onMessage: (normalizedMsg) => {
+      handleEewMessage(normalizedMsg, provider.name);
+    },
+    onAuthError: (errorMessage) => {
+      alert(errorMessage);
+      disconnectEew();
+      const toggleEl = document.getElementById("eew-toggle");
+      if (toggleEl) {
+        toggleEl.checked = false;
+        localStorage.setItem("eew-enabled", "false");
+        updateEewStatus("error");
       }
-    } catch (err) {
-      console.warn("[EEW] Fetch error (likely CORS). Falling back to default server.", err);
-    }
-  }
-
-  connectToWebSocket(targetServer);
-}
-
-function connectToWebSocket(serverUrl) {
-  const wsUrl = serverUrl.endsWith("/socket")
-    ? `${serverUrl}?token=${encodeURIComponent(eewToken)}`
-    : `${serverUrl}/socket?token=${encodeURIComponent(eewToken)}`;
-
-  console.info("[EEW] Connecting to", serverUrl);
-  eewSocket = new WebSocket(wsUrl);
-
-  eewSocket.onopen = () => {
-    console.info("[EEW] WebSocket Connected. Waiting for hello...");
-  };
-
-  eewSocket.onmessage = (event) => {
-    const message = event.data;
-    if (typeof message === "string") {
-      if (message === "hello") {
-        console.info("[EEW] Received hello from server. Connection fully established.");
-        hasConnectedOnce = true;
-        updateEewStatus("connected");
-        retrySec = 100;
-        retryCount = 0;
-        startHeartbeat();
-        scheduleTokenRefresh();
-        return;
-      } else if (message === "hb") {
-        return;
+    },
+    onTokenUpdated: (newToken) => {
+      const tokenInputEl = document.getElementById("eew-token-input");
+      if (tokenInputEl && provider.requiresToken) {
+        tokenInputEl.value = newToken;
       }
-    }
-
-    // Attempt JSON decode
-    try {
-      const data = JSON.parse(message);
-      if (data?.channel === "eew" && data.message) {
-        console.debug(Date.now());
-        console.debug(data.message);
-        handleEewMessage(data.message);
-      }
-    } catch (err) {
-      // Not JSON, ignore
-    }
-  };
-
-  eewSocket.onclose = (event) => {
-    console.info(`[EEW] Connection closed (code: ${event.code}, reason: ${event.reason})`);
-    eewSocket = null;
-    if (heartbeatTimer) {
-      clearTimeout(heartbeatTimer);
-      heartbeatTimer = null;
-    }
-    retryConnection();
-  };
-
-  eewSocket.onerror = (err) => {
-    console.warn("[EEW] WebSocket error occurred");
-  };
-}
-
-function retryConnection() {
-  if (!document.getElementById("eew-toggle")?.checked) {
-    updateEewStatus("error");
-    return;
-  }
-
-  retrySec = retrySec * 2;
-  if (retrySec > 300000) {
-    retrySec = 300000;
-  }
-
-  retryCount++;
-
-  if (!hasConnectedOnce && retryCount > 5) {
-    console.warn("[EEW] Failed to connect after 5 retries. Assuming invalid token.");
-    alert(
-      "EEW connection failed: Token may be invalid. Please check your token in Settings.\n接続に失敗しました：トークンが無効である可能性があります。「設定」でトークンを確認してください。",
-    );
-    disconnectEew();
-    const toggleEl = document.getElementById("eew-toggle");
-    if (toggleEl) {
-      toggleEl.checked = false;
-      localStorage.setItem("eew-enabled", "false");
-      updateEewStatus("error"); // Will hide the status container
-    }
-    return;
-  }
-
-  console.info(`[EEW] Retry: ${retryCount} (delay ${retrySec}ms)`);
-  updateEewStatus("connecting");
-  reconnectTimer = setTimeout(connectEew, retrySec);
+    },
+  });
 }
 
 function disconnectEew() {
   updateEewStatus("error");
-  if (reconnectTimer) clearTimeout(reconnectTimer);
-  if (heartbeatTimer) {
-    clearTimeout(heartbeatTimer);
-    heartbeatTimer = null;
-  }
-  if (tokenRefreshTimer) {
-    clearTimeout(tokenRefreshTimer);
-    tokenRefreshTimer = null;
-  }
-  if (eewSocket) {
-    eewSocket.onclose = null;
-    eewSocket.close();
-    eewSocket = null;
+  const provider = getActiveProvider();
+  if (provider) {
+    provider.disconnect();
   }
   clearAllEews();
 }
 
-// ─── Token Refresh (Tauri only) ──────────────────────────────────────────────
-// AXIS tokens expire at month's end. In the last 7 days, the refresh API can
-// issue a new token valid through next month. We poll at most once per day.
-
-/**
- * Returns the end-of-month timestamp (UTC, last millisecond) for a given date.
- */
-function getEndOfMonthUTC(date) {
-  const y = date.getUTCFullYear();
-  const m = date.getUTCMonth();
-  // Day 0 of next month = last day of current month
-  return new Date(Date.UTC(y, m + 1, 0, 23, 59, 59, 999)).getTime();
-}
-
-/**
- * Returns the UTC date string (YYYY-MM-DD) for a given timestamp.
- */
-function toUTCDateString(ms) {
-  const d = new Date(ms);
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
-}
-
-/**
- * Resets token refresh tracking when the user manually changes the token.
- */
-function resetTokenRefreshState() {
-  localStorage.removeItem("eew-token-expiry");
-  localStorage.removeItem("eew-token-last-refresh-check");
-  localStorage.removeItem("eew-token-expiry-alerted");
-}
-
-/**
- * Called after a successful EEW connection ("hello" received).
- * Sets the token expiry if not already set, then runs the refresh check
- * and schedules a 24-hour recurring timer.
- */
-function scheduleTokenRefresh() {
-  if (!IS_TAURI) return;
-
-  // If we don't have a stored expiry yet, or it's in the past but the token
-  // still works, push the expiry to the end of the current month.
-  const storedExpiry = localStorage.getItem("eew-token-expiry");
-  if (!storedExpiry || Number(storedExpiry) < Date.now()) {
-    const expiry = getEndOfMonthUTC(new Date());
-    localStorage.setItem("eew-token-expiry", String(expiry));
-    console.debug(
-      "[EEW] Token expiry updated to end of current month:",
-      new Date(expiry).toISOString(),
-    );
-    // Remove the last refresh check so we can check again if needed
-    localStorage.removeItem("eew-token-last-refresh-check");
-  }
-
-  // Run immediately, then every 24 hours
-  checkTokenRefresh();
-  if (tokenRefreshTimer) clearTimeout(tokenRefreshTimer);
-  tokenRefreshTimer = setTimeout(
-    function tick() {
-      checkTokenRefresh();
-      tokenRefreshTimer = setTimeout(tick, 24 * 60 * 60 * 1000);
-    },
-    24 * 60 * 60 * 1000,
-  );
-}
-
-/**
- * Checks whether the AXIS token should be refreshed.
- * Only calls the API if running in Tauri, we're in the last 7 days of the
- * expiry month, and we haven't already checked today.
- */
-async function checkTokenRefresh() {
-  if (!IS_TAURI || !tauriFetch || !eewToken) return;
-
-  const now = new Date();
-  const todayStr = toUTCDateString(now.getTime());
-
-  // Don't check more than once per day
-  const lastCheck = localStorage.getItem("eew-token-last-refresh-check");
-  if (lastCheck === todayStr) {
-    console.debug("[EEW] Token refresh already checked today, skipping.");
-    return;
-  }
-
-  // Only check in the last 7 days before expiry
-  const expiry = Number(localStorage.getItem("eew-token-expiry"));
-  if (!expiry) return;
-  const msUntilExpiry = expiry - now.getTime();
-  const daysUntilExpiry = msUntilExpiry / (1000 * 60 * 60 * 24);
-  if (daysUntilExpiry > 7) {
-    console.debug(
-      `[EEW] Token expiry in ${Math.round(daysUntilExpiry)} days, no refresh needed yet.`,
-    );
-    return;
-  }
-
-  console.info(`[EEW] Token expiry in ${Math.round(daysUntilExpiry)} days, attempting refresh...`);
-
-  try {
-    const res = await tauriFetch("https://axis.prioris.jp/api/token/refresh/", {
-      headers: {
-        Authorization: `Bearer ${eewToken}`,
-      },
-    });
-
-    // Record that we checked today regardless of outcome
-    localStorage.setItem("eew-token-last-refresh-check", todayStr);
-
-    if (res.status === 402) {
-      // Contract expired
-      console.warn("[EEW] Token refresh failed: contract has expired (402).");
-      alertTokenExpiry();
-      return;
-    }
-
-    if (!res.ok) {
-      console.warn(`[EEW] Token refresh failed with HTTP ${res.status}.`);
-      alertTokenExpiry();
-      return;
-    }
-
-    const data = await res.json();
-
-    if (data.status === "generate a new token" && data.token) {
-      // Success — new token issued
-      console.info("[EEW] Token refreshed successfully.");
-      eewToken = data.token;
-      localStorage.setItem("eew-token", data.token);
-      localStorage.removeItem("eew-token-expiry-alerted");
-
-      // New token is valid until end of next month
-      const nextMonthDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 15));
-      const newExpiry = getEndOfMonthUTC(nextMonthDate);
-      localStorage.setItem("eew-token-expiry", String(newExpiry));
-      console.debug("[EEW] New token expiry:", new Date(newExpiry).toISOString());
-
-      // Update the token input field if it exists
-      const tokenEl = document.getElementById("eew-token-input");
-      if (tokenEl) tokenEl.value = data.token;
-
-      // Reconnect with the new token
-      disconnectEew();
-      hasConnectedOnce = false;
-      connectEew();
-    } else if (data.status === "not due for refresh yet") {
-      // Not time yet — will retry tomorrow (lastCheck date is already saved)
-      console.debug("[EEW] Token refresh not due yet, will retry tomorrow.");
-    } else {
-      console.warn("[EEW] Unexpected token refresh response:", data);
-      alertTokenExpiry();
-    }
-  } catch (err) {
-    console.warn("[EEW] Token refresh request failed:", err);
-    // Don't save lastCheck on network errors so we can retry sooner
-  }
-}
-
-/**
- * Alerts the user once that their token may expire soon.
- * The flag resets when the token is manually changed or successfully refreshed.
- */
-function alertTokenExpiry() {
-  if (localStorage.getItem("eew-token-expiry-alerted") === "true") return;
-  localStorage.setItem("eew-token-expiry-alerted", "true");
-  alert(
-    "EEW token could not be refreshed and will expire at the end of this month. " +
-      "Please check your AXIS subscription or update your token in Settings.\n" +
-      "EEWトークンの更新に失敗しました。今月末にトークンが無効になります。" +
-      "AXISのサブスクリプションを確認するか、「設定」でトークンを更新してください。",
-  );
-}
-
-function startHeartbeat() {
-  if (heartbeatTimer) clearTimeout(heartbeatTimer);
-  heartbeatTimer = setTimeout(() => {
-    if (eewSocket?.readyState === WebSocket.OPEN) {
-      eewSocket.send("hb");
-      startHeartbeat();
-    }
-  }, 30000);
-}
-
-function handleEewMessage(msg) {
+export function handleEewMessage(msg, providerName = null) {
   if (!msg?.Title) return;
   if (msg.Flag?.is_training) return;
 
   const eventId = msg.EventID;
+  const srcName = providerName || getActiveProvider()?.name || "AXIS";
 
   // Check if cancel
   if (msg.Flag?.is_cancel) {
@@ -634,6 +426,7 @@ function handleEewMessage(msg) {
       const eew = activeEews.get(eventId);
       eew.isCancelled = true;
       eew.msg = msg;
+      eew.providerName = srcName;
 
       setTimeout(() => {
         removeEew(eventId);
@@ -646,6 +439,7 @@ function handleEewMessage(msg) {
     const eew = activeEews.get(eventId) || { receivedAt: Date.now() };
     eew.msg = msg;
     eew.isFinal = msg.Flag?.is_final;
+    eew.providerName = srcName;
     activeEews.set(eventId, eew);
 
     if (eew.isFinal) {
@@ -808,6 +602,7 @@ function renderCurrentEew() {
   const isCancelled = currentEew.isCancelled;
   const isWarning = msg.Title.includes("警報");
   const isPlum = msg.Magnitude === "1.0" && msg.Hypocenter.Depth === "10km";
+  const providerName = currentEew.providerName || getActiveProvider()?.name || "AXIS";
 
   const hypoCodeNum = parseInt(msg.Hypocenter.Code);
   const hypoInfo = areaCodes
@@ -864,7 +659,15 @@ function renderCurrentEew() {
       }
       globalThis.__currentReport = null;
       isEewMapActive = true;
-      renderEewInfoBox(msg, isCancelled, isWarning, isPlum, eews.length, carouselIndex + 1);
+      renderEewInfoBox(
+        msg,
+        isCancelled,
+        isWarning,
+        isPlum,
+        eews.length,
+        carouselIndex + 1,
+        providerName,
+      );
       updateMapForEew();
 
       // Defer wave updates to avoid synchronous source operations right after layout changes
@@ -876,7 +679,15 @@ function renderCurrentEew() {
   const currentActive = document.querySelector(".eq-item.active");
   if (isEewMapActive && !currentActive) {
     console.debug("[eq-viewer-eew] renderCurrentEew: rendering info box");
-    renderEewInfoBox(msg, isCancelled, isWarning, isPlum, eews.length, carouselIndex + 1);
+    renderEewInfoBox(
+      msg,
+      isCancelled,
+      isWarning,
+      isPlum,
+      eews.length,
+      carouselIndex + 1,
+      providerName,
+    );
     console.debug("[eq-viewer-eew] renderCurrentEew: updating map for EEW");
     updateMapForEew();
     console.debug("[eq-viewer-eew] renderCurrentEew: COMPLETE");
@@ -1057,7 +868,15 @@ function updateWaves() {
   }
 }
 
-function renderEewInfoBox(msg, isCancelled, isWarning, isPlum, totalCount, currentIndex) {
+function renderEewInfoBox(
+  msg,
+  isCancelled,
+  isWarning,
+  isPlum,
+  totalCount,
+  currentIndex,
+  providerName = "AXIS",
+) {
   const infoBox = document.getElementById("map-info-box");
   if (!infoBox) return;
   infoBox.classList.remove("hidden");
@@ -1080,7 +899,8 @@ function renderEewInfoBox(msg, isCancelled, isWarning, isPlum, totalCount, curre
 
   const volcanoRow = infoBox.querySelector(".info-box-volcano-row");
   if (volcanoRow) volcanoRow.classList.add("hidden");
-  const magRow = infoBox.querySelector(".info-box-magnitude-row") || magnitude?.closest(".info-box-row");
+  const magRow =
+    infoBox.querySelector(".info-box-magnitude-row") || magnitude?.closest(".info-box-row");
   if (magRow) magRow.classList.remove("hidden");
   const depthRow = infoBox.querySelector(".info-box-depth-row") || depth?.closest(".info-box-row");
   if (depthRow) depthRow.classList.remove("hidden");
@@ -1161,6 +981,18 @@ function renderEewInfoBox(msg, isCancelled, isWarning, isPlum, totalCount, curre
   serialRow.innerHTML = `
     <span class="info-label">Report • 報</span>
     <span class="info-value mono">#${msg.Serial} ${msg.Flag.is_final ? "(Final)" : ""}</span>
+  `;
+
+  // Add Extra row for Source
+  let sourceRow = detailsContainer.querySelector(".eew-source-row");
+  if (!sourceRow) {
+    sourceRow = document.createElement("div");
+    sourceRow.className = "info-box-row eew-source-row";
+    detailsContainer.appendChild(sourceRow);
+  }
+  sourceRow.innerHTML = `
+    <span class="info-label">Source • 受信元</span>
+    <span class="info-value mono">${providerName || "AXIS"}</span>
   `;
 
   // Forecast Observations

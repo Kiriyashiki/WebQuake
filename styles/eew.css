@@ -3,8 +3,12 @@
 #eew-list-container {
   margin-bottom: 4px;
 }
-#eew-list-container.hidden {
-  display: none;
+#eew-list-container.hidden,
+#eew-token-group.hidden,
+#eew-provider-info.hidden,
+#eew-axis-info.hidden,
+#eew-status-container.hidden {
+  display: none !important;
 }
 
 .eew-list-item {
