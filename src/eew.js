@@ -110,11 +110,13 @@ async function loadEewDependencies() {
 }
 
 function calculateGmpe(magnitude, depthKm, epicentralDistance, arv) {
+  const mw = magnitude - 0.171;
   const hypocentralDistance = Math.hypot(epicentralDistance, depthKm);
-  const faultFactor = 0.0028 * 10.0 ** (0.5 * magnitude);
-  const d2 = Math.max(hypocentralDistance - faultFactor, 3.0);
-  const sourceEnergy = magnitude * 0.58 + 0.0038 * depthKm - 1.29;
-  const geometricDecay = Math.log10(d2 + faultFactor);
+  const faultShift = 10.0 ** (0.5 * mw - 1.85) / 2.0;
+  const d2 = Math.max(hypocentralDistance - faultShift, 3.0);
+  const saturationTerm = 0.0028 * 10.0 ** (0.5 * mw);
+  const sourceEnergy = 0.58 * mw + 0.0038 * depthKm - 1.29; 
+  const geometricDecay = Math.log10(d2 + saturationTerm);
   const anelasticDecay = 0.002 * d2;
   const siteAmplification = Math.log10(arv * 1.31);
   const log10a = sourceEnergy - geometricDecay - anelasticDecay + siteAmplification;

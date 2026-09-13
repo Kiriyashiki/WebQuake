@@ -3739,7 +3739,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 2020730;須坂市須坂;すざかしすざか;Suzaka City Suzaka;36.65;138.31;2020700;1.0207
 2021131;中野市豊津;なかのしとよつ;Nakano City Toyotsu;36.77;138.32;2021100;0.8858
 2021132;中野市三好町;なかのしみよしちょう;Nakano City Miyoshi Town;36.74;138.37;2021100;1.0267
-2021200;大町市役所;おおまちしやくしょ;O Town City Hall;36.50;137.85;2021200;0.9833
+2021200;大町市役所;おおまちしやくしょ;Omachi City Hall;36.50;137.85;2021200;0.9833
 1944233;小菅村小菅小学校;こすげむらこすげしょうがっこう;Kosuge Village Kosuge Elementary School;35.76;138.94;1944200;0.8088
 2040731;阿智村浪合;あちむらなみあい;Achi Village Namiai;35.37;137.69;2040700;0.5689
 2020330;上田市上丸子;うえだしかみまるこ;Ueda City Kamimaruko;36.32;138.27;2020300;0.9983
@@ -3772,7 +3772,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 2038630;中川村大草;なかがわむらおおくさ;Nakagawa Village Okusa;35.63;137.95;2038600;1.0008
 2038830;宮田村役場;みやだむらやくば;Miyada Village Town Office;35.77;137.94;2038800;0.7743
 2040230;松川町元大島;まつかわまちもとおおじま;Matsukawa Town Motoojima;35.60;137.91;2040200;0.8193
-2040330;長野高森町下市田;ながのたかもりまちしもいちだ;Nagano Takamori Town City Moichida;35.55;137.88;2040300;0.8638
+2040330;長野高森町下市田;ながのたかもりまちしもいちだ;Nagano Takamori Town Shimoichida;35.55;137.88;2040300;0.8638
 2040430;阿南町東條;あなんちょうひがしじょう;Anan Town Higashijo;35.32;137.82;2040400;0.6689
 2020535;飯田市南信濃;いいだしみなみしなの;Iida City Minamishinano;35.32;137.93;2020500;0.8763
 2020332;上田市真田町長;うえだしさなだまちおさ;Ueda City Sanada Town Osa;36.44;138.30;2020300;0.7681
