@@ -5,10 +5,32 @@
 }
 #eew-list-container.hidden,
 #eew-token-group.hidden,
+#eew-port-group.hidden,
 #eew-provider-info.hidden,
 #eew-axis-info.hidden,
-#eew-status-container.hidden {
+#eew-status-container.hidden,
+#eew-test-banner.hidden {
   display: none !important;
+}
+
+#eew-test-banner {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  background: rgba(185, 28, 28, 0.9);
+  color: #ffffff;
+  border: 1px solid rgba(239, 68, 68, 0.8);
+  border-radius: 4px;
+  padding: 6px 18px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 .eew-list-item {

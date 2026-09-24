@@ -16,7 +16,12 @@ import {
   updateLpgmVisibility,
   hideHomeLocationIntensity,
 } from "./map.js";
-import { createRubyHtml, loadCityForecastMapCsv, loadStationsCsvText } from "./areaCodes.js";
+import {
+  createRubyHtml,
+  loadCityForecastMapCsv,
+  loadStationsCsvText,
+  loadAreaNameToCodeMap,
+} from "./areaCodes.js";
 import { getCityAreasState, getHomeIntensityState } from "./sidebarUI.js";
 import { updateMapLegend } from "./main.js";
 import {
@@ -24,7 +29,10 @@ import {
   getAvailableProviders,
   getActiveProvider,
   setActiveProvider,
+  isPlumEew,
 } from "./eewProviders.js";
+
+export { isPlumEew };
 
 let activeEews = new Map(); // EventID -> EEW Object
 
@@ -51,6 +59,7 @@ async function loadEewDependencies() {
         fetch("/tjma2001.csv").then((res) => res.text()),
         loadCityForecastMapCsv(),
         loadStationsCsvText(),
+        loadAreaNameToCodeMap().catch(() => {}),
       ]);
 
       travelTimeData = {};
@@ -127,12 +136,18 @@ let isUserInteractingWithMap = false;
 let isEewMapActive = false;
 let previousReport = null; // Store currently opened normal report to restore after EEWs clear
 
+
 /**
  * Clears EEW visual elements from the map when a normal report is selected.
  */
 export function clearEewMapDisplay() {
   isEewMapActive = false;
   isUserInteractingWithMap = false;
+
+  const testBanner = document.getElementById("eew-test-banner");
+  if (testBanner) {
+    testBanner.classList.add("hidden");
+  }
 
   if (mapInteractionTimeout) {
     clearTimeout(mapInteractionTimeout);
@@ -176,6 +191,8 @@ export function initEewSettings(map, bounds, cities, areas) {
   const tokenGroupEl = document.getElementById("eew-token-group");
   const tokenLabelEl = document.getElementById("eew-token-label");
   const tokenInputEl = document.getElementById("eew-token-input");
+  const portGroupEl = document.getElementById("eew-port-group");
+  const portInputEl = document.getElementById("eew-port-input");
   const axisInfoEl = document.getElementById("eew-axis-info");
 
   if (!toggleEl) return;
@@ -219,7 +236,19 @@ export function initEewSettings(map, bounds, cities, areas) {
         tokenInputEl.placeholder = p.tokenPlaceholder || "Bearer Token";
         tokenInputEl.value = p.getToken();
       }
-    } else if (tokenGroupEl) tokenGroupEl.classList.add("hidden");
+    } else if (tokenGroupEl) {
+      tokenGroupEl.classList.add("hidden");
+    }
+
+    if (p.requiresPort) {
+      if (portGroupEl) portGroupEl.classList.remove("hidden");
+      if (portInputEl) {
+        portInputEl.value = p.getPort();
+        portInputEl.placeholder = p.defaultPort || "11311";
+      }
+    } else if (portGroupEl) {
+      portGroupEl.classList.add("hidden");
+    }
 
     if (axisInfoEl) {
       if (p.id === "axis") {
@@ -308,6 +337,20 @@ export function initEewSettings(map, bounds, cities, areas) {
     });
   }
 
+  if (portInputEl) {
+    portInputEl.addEventListener("change", (e) => {
+      const p = getActiveProvider();
+      if (!p) return;
+      const port = e.target.value.trim() || p.defaultPort || "11311";
+      p.setPort(port);
+
+      if (toggleEl.checked) {
+        disconnectEew();
+        connectEew();
+      }
+    });
+  }
+
   // Track map interactions to pause fitBounds
   map.on("mousedown", onMapInteract);
   map.on("wheel", onMapInteract);
@@ -345,6 +388,9 @@ export function updateEewStatus(state) {
   } else if (state === "connected") {
     dot.className = "dot-live";
     text.textContent = "EEW: Connected";
+  } else if (state === "upstream-disconnected") {
+    dot.className = "dot-loading";
+    text.textContent = "EEW: Upstream disconnected";
   } else if (state === "error") {
     dot.className = "dot-error";
     text.textContent = "EEW: Disconnected";
@@ -383,7 +429,7 @@ async function connectEew() {
       updateEewStatus(status);
     },
     onMessage: (normalizedMsg) => {
-      handleEewMessage(normalizedMsg, provider.name);
+      handleEewMessage(normalizedMsg, provider);
     },
     onAuthError: (errorMessage) => {
       alert(errorMessage);
@@ -413,12 +459,36 @@ function disconnectEew() {
   clearAllEews();
 }
 
-export function handleEewMessage(msg, providerName = null) {
+export function handleEewMessage(msg, providerInfo = null) {
   if (!msg?.Title) return;
-  if (msg.Flag?.is_training) return;
 
   const eventId = msg.EventID;
-  const srcName = providerName || getActiveProvider()?.name || "AXIS";
+  const activeProv = getActiveProvider();
+  let srcName = "";
+  let providerId = "";
+  let disableGmpe = false;
+
+  if (providerInfo && typeof providerInfo === "object") {
+    srcName = providerInfo.name;
+    providerId = providerInfo.id;
+    disableGmpe = Boolean(providerInfo.disableGmpe);
+  } else if (typeof providerInfo === "string") {
+    srcName = providerInfo;
+    const matched = getProvider(providerInfo) || (activeProv?.name === providerInfo ? activeProv : null);
+    if (matched) {
+      providerId = matched.id;
+      disableGmpe = Boolean(matched.disableGmpe);
+    } else if (providerInfo.toLowerCase().includes("dmdss") || providerInfo.toLowerCase().includes("client")) {
+      providerId = "dmdss";
+      disableGmpe = true;
+    }
+  } else if (activeProv) {
+    srcName = activeProv.name;
+    providerId = activeProv.id;
+    disableGmpe = Boolean(activeProv.disableGmpe);
+  }
+
+  const isTest = Boolean(msg.isTest || msg.Flag?.is_training);
 
   // Check if cancel
   if (msg.Flag?.is_cancel) {
@@ -427,6 +497,9 @@ export function handleEewMessage(msg, providerName = null) {
       eew.isCancelled = true;
       eew.msg = msg;
       eew.providerName = srcName;
+      eew.providerId = providerId;
+      eew.disableGmpe = disableGmpe;
+      eew.isTest = isTest;
 
       setTimeout(() => {
         removeEew(eventId);
@@ -440,6 +513,9 @@ export function handleEewMessage(msg, providerName = null) {
     eew.msg = msg;
     eew.isFinal = msg.Flag?.is_final;
     eew.providerName = srcName;
+    eew.providerId = providerId;
+    eew.disableGmpe = disableGmpe;
+    eew.isTest = isTest;
     activeEews.set(eventId, eew);
 
     if (eew.isFinal) {
@@ -601,15 +677,32 @@ function renderCurrentEew() {
   const msg = currentEew.msg;
   const isCancelled = currentEew.isCancelled;
   const isWarning = msg.Title.includes("警報");
-  const isPlum = msg.Magnitude === "1.0" && msg.Hypocenter.Depth === "10km";
-  const providerName = currentEew.providerName || getActiveProvider()?.name || "AXIS";
+  const isPlum = isPlumEew(msg);
+  const isLowAccuracy = Boolean(msg.isLowAccuracy);
+  const isTest = Boolean(currentEew.isTest || msg.isTest || msg.Flag?.is_training);
+  const providerName = currentEew.providerName || getActiveProvider()?.name;
 
-  const hypoCodeNum = parseInt(msg.Hypocenter.Code);
+  let hypoCodeNum = Number.parseInt(msg.Hypocenter?.Code);
+  if ((!hypoCodeNum || Number.isNaN(hypoCodeNum)) && msg.Hypocenter?.Name && areaCodes) {
+    for (const [code, info] of areaCodes.entries()) {
+      if (info.ja === msg.Hypocenter.Name) {
+        hypoCodeNum = code;
+        if (msg.Hypocenter) msg.Hypocenter.Code = code;
+        break;
+      }
+    }
+  }
   const hypoInfo = areaCodes
     ? areaCodes.get(hypoCodeNum) || { ja: msg.Hypocenter.Name, en: "Unknown", kana: "" }
     : { ja: msg.Hypocenter.Name, en: "Unknown", kana: "" };
 
-  let labelColor = isCancelled ? "#7f8c8d" : isWarning ? "#e84c3d" : "#f39c12";
+  let labelColor = isCancelled
+    ? "#7f8c8d"
+    : isWarning
+      ? "#e84c3d"
+      : isLowAccuracy
+        ? "#1e6ee6"
+        : "#f39c12";
   let labelText = isCancelled
     ? "Cancelled • キャンセル"
     : isWarning
@@ -670,6 +763,15 @@ function renderCurrentEew() {
       );
       updateMapForEew();
 
+      const testBanner = document.getElementById("eew-test-banner");
+      if (testBanner) {
+        if (isTest) {
+          testBanner.classList.remove("hidden");
+        } else {
+          testBanner.classList.add("hidden");
+        }
+      }
+
       // Defer wave updates to avoid synchronous source operations right after layout changes
       setTimeout(updateWaves, 50);
     });
@@ -677,6 +779,15 @@ function renderCurrentEew() {
 
   // Render info box and map only if EEW is active and no normal report is currently active
   const currentActive = document.querySelector(".eq-item.active");
+  const testBanner = document.getElementById("eew-test-banner");
+  if (testBanner) {
+    if (isTest && isEewMapActive && !currentActive) {
+      testBanner.classList.remove("hidden");
+    } else {
+      testBanner.classList.add("hidden");
+    }
+  }
+
   if (isEewMapActive && !currentActive) {
     console.debug("[eq-viewer-eew] renderCurrentEew: rendering info box");
     renderEewInfoBox(
@@ -803,7 +914,7 @@ function updateWaves() {
     const msg = eew.msg;
     if (!msg?.Hypocenter || eew.isCancelled) continue;
 
-    const isPlum = msg.Magnitude === "1.0" && msg.Hypocenter.Depth === "10km";
+    const isPlum = isPlumEew(msg);
     if (isPlum) continue;
 
     const originTime = new Date(msg.OriginDateTime).getTime();
@@ -863,7 +974,7 @@ function updateWaves() {
   if (pSrc) pSrc.setData({ type: "FeatureCollection", features: pFeatures });
   if (sSrc) sSrc.setData({ type: "FeatureCollection", features: sFeatures });
 
-  if (allFinished && activeEews.size === 0) {
+  if (allFinished) {
     stopWaveAnimation();
   }
 }
@@ -875,7 +986,7 @@ function renderEewInfoBox(
   isPlum,
   totalCount,
   currentIndex,
-  providerName = "AXIS",
+  providerName,
 ) {
   const infoBox = document.getElementById("map-info-box");
   if (!infoBox) return;
@@ -905,11 +1016,27 @@ function renderEewInfoBox(
   const depthRow = infoBox.querySelector(".info-box-depth-row") || depth?.closest(".info-box-row");
   if (depthRow) depthRow.classList.remove("hidden");
 
-  let labelColor = isCancelled ? "#7f8c8d" : isWarning ? "#e84c3d" : "#f39c12";
+  const isLowAccuracy = Boolean(msg.isLowAccuracy);
+  let labelColor = isCancelled
+    ? "#7f8c8d"
+    : isWarning
+      ? "#e84c3d"
+      : isLowAccuracy
+        ? "#1e6ee6"
+        : "#f39c12";
   let labelText = isCancelled ? "Cancelled" : isWarning ? "EEW (Warning)" : "EEW (Forecast)";
   if (totalCount > 1) labelText = `[${currentIndex}/${totalCount}] ` + labelText;
 
-  const hypoCodeNum = Number.parseInt(msg.Hypocenter.Code);
+  let hypoCodeNum = Number.parseInt(msg.Hypocenter?.Code);
+  if ((!hypoCodeNum || isNaN(hypoCodeNum)) && msg.Hypocenter?.Name && areaCodes) {
+    for (const [code, info] of areaCodes.entries()) {
+      if (info.ja === msg.Hypocenter.Name) {
+        hypoCodeNum = code;
+        if (msg.Hypocenter) msg.Hypocenter.Code = code;
+        break;
+      }
+    }
+  }
   const hypoInfo = areaCodes
     ? areaCodes.get(hypoCodeNum) || { ja: msg.Hypocenter.Name, en: "Unknown", kana: "" }
     : { ja: msg.Hypocenter.Name, en: "Unknown", kana: "" };
@@ -948,21 +1075,22 @@ function renderEewInfoBox(
     }
   }
 
-  magnitude.textContent = isPlum ? "--" : `M ${msg.Magnitude}`;
-  depth.textContent = isPlum ? "--" : msg.Hypocenter.Depth;
+  const isPlumMethod = isPlum !== undefined ? Boolean(isPlum) : isPlumEew(msg);
+  magnitude.textContent = isPlumMethod ? "--" : `M ${msg.Magnitude}`;
+  depth.textContent = isPlumMethod ? "--" : msg.Hypocenter?.Depth ?? "--";
 
-  if (isPlum) {
+  if (isPlumMethod) {
     const coordsLabel = coordinates.previousElementSibling;
     if (coordsLabel) coordsLabel.textContent = "PLUM method • PLUM法による仮定震源要素";
     coordinates.textContent = "";
-  } else if (msg.Hypocenter.Coordinate) {
+  } else if (msg.Hypocenter?.Coordinate) {
     const coordsLabel = coordinates.previousElementSibling;
-    if (coordsLabel) coordsLabel.textContent = "Coordinates";
+    if (coordsLabel) coordsLabel.textContent = "Coordinates • 北緯東経";
     const [lon, lat] = msg.Hypocenter.Coordinate;
     coordinates.textContent = `${lat.toFixed(1)} ; ${lon.toFixed(1)}`;
   } else {
     const coordsLabel = coordinates.previousElementSibling;
-    if (coordsLabel) coordsLabel.textContent = "Coordinates";
+    if (coordsLabel) coordsLabel.textContent = "Coordinates • 北緯東経";
     coordinates.textContent = "--";
   }
 
@@ -992,7 +1120,7 @@ function renderEewInfoBox(
   }
   sourceRow.innerHTML = `
     <span class="info-label">Source • 受信元</span>
-    <span class="info-value mono">${providerName || "AXIS"}</span>
+    <span class="info-value mono">${providerName}</span>
   `;
 
   // Forecast Observations
@@ -1147,92 +1275,105 @@ function updateMapForEew() {
       return;
     }
 
-    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: calculating GMPE");
+    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: preparing map intensities");
     const mergedForecast = mergeForecasts(Array.from(activeEews.values()));
     const eews = Array.from(activeEews.values()).sort((a, b) => a.receivedAt - b.receivedAt);
 
-    // Track the highest estimated intensity for each individual station across all EEWs
-    const stationMaxInts = new Int32Array(stationsData.length).fill(0);
+    const activeProv = getActiveProvider();
+    const isGmpeDisabled = Boolean(
+      activeProv?.disableGmpe ||
+      activeProv?.id === "dmdss" ||
+      (eews.length > 0 && eews.every((e) => e.disableGmpe || e.providerId === "dmdss" || e.isCancelled))
+    );
 
-    for (const eew of eews) {
-      if (eew.isCancelled) continue;
-      const msg = eew.msg;
-      if (!msg.Hypocenter?.Coordinate) continue;
+    const localPredictions = new Map();
 
-      const isPlum = msg.Magnitude === "1.0" && msg.Hypocenter.Depth === "10km";
-      if (isPlum) continue;
+    if (!isGmpeDisabled) {
+      console.debug("[eq-viewer-eew] updateMapForEew Phase 2: calculating GMPE");
+      // Track the highest estimated intensity for each individual station across all EEWs
+      const stationMaxInts = new Int32Array(stationsData.length).fill(0);
 
-      let depthKm = Number.parseInt(msg.Hypocenter.Depth, 10);
-      if (Number.isNaN(depthKm) || depthKm >= 150) continue;
+      for (const eew of eews) {
+        if (eew.isCancelled || eew.disableGmpe || eew.providerId === "dmdss") continue;
+        const msg = eew.msg;
+        if (!msg.Hypocenter?.Coordinate) continue;
 
-      let mag = Number.parseFloat(msg.Magnitude);
-      if (Number.isNaN(mag)) continue;
+        const isPlum = isPlumEew(msg);
+        if (isPlum) continue;
 
-      const [eqLon, eqLat] = msg.Hypocenter.Coordinate;
+        let depthKm = Number.parseInt(msg.Hypocenter.Depth, 10);
+        if (Number.isNaN(depthKm) || depthKm >= 150) continue;
 
-      for (let i = 0; i < stationsData.length; i++) {
-        const station = stationsData[i];
-        const distance = haversineDistance(station.lat, station.lon, eqLat, eqLon);
-        let arv = station.arv;
-        if (arv === null || arv <= 0.0 || Number.isNaN(arv)) {
-          arv = 1.0;
-        }
-        const shindoFloat = calculateGmpe(mag, depthKm, distance, arv);
-        const shindoStr = floatToShindo(shindoFloat);
+        let mag = Number.parseFloat(msg.Magnitude);
+        if (Number.isNaN(mag)) continue;
 
-        if (shindoStr === "0") continue;
+        const [eqLon, eqLat] = msg.Hypocenter.Coordinate;
 
-        let finalShindo = shindoStr;
+        for (let i = 0; i < stationsData.length; i++) {
+          const station = stationsData[i];
+          const distance = haversineDistance(station.lat, station.lon, eqLat, eqLon);
+          let arv = station.arv;
+          if (arv === null || arv <= 0.0 || Number.isNaN(arv)) {
+            arv = 1.0;
+          }
+          const shindoFloat = calculateGmpe(mag, depthKm, distance, arv);
+          const shindoStr = floatToShindo(shindoFloat);
 
-        if (!TEST_GMPE_OVERRIDE) {
-          if (getIntVal(finalShindo) > getIntVal("3")) {
-            finalShindo = "3";
+          if (shindoStr === "0") continue;
+
+          let finalShindo = shindoStr;
+
+          if (!TEST_GMPE_OVERRIDE) {
+            if (getIntVal(finalShindo) > getIntVal("3")) {
+              finalShindo = "3";
+            }
+          }
+
+          const val = getIntVal(finalShindo);
+          if (val > stationMaxInts[i]) {
+            stationMaxInts[i] = val;
           }
         }
+      }
 
-        const val = getIntVal(finalShindo);
-        if (val > stationMaxInts[i]) {
-          stationMaxInts[i] = val;
+      // Group station intensities by forecast area
+      const areaInts = new Map();
+      for (let i = 0; i < stationsData.length; i++) {
+        const val = stationMaxInts[i];
+        if (val === 0) continue;
+
+        const areaCodeStr = cityForecastMap.get(stationsData[i].cityCode);
+        if (areaCodeStr) {
+          let arr = areaInts.get(areaCodeStr);
+          if (!arr) {
+            arr = [];
+            areaInts.set(areaCodeStr, arr);
+          }
+          arr.push(val);
         }
       }
-    }
 
-    // Group station intensities by forecast area
-    const areaInts = new Map();
-    for (let i = 0; i < stationsData.length; i++) {
-      const val = stationMaxInts[i];
-      if (val === 0) continue;
+      const getIntStr = (val) => {
+        if (val === 70) return "7";
+        if (val === 65) return "6+";
+        if (val === 60) return "6-";
+        if (val === 55) return "5+";
+        if (val === 50) return "5-";
+        return String(val / 10);
+      };
 
-      const areaCodeStr = cityForecastMap.get(stationsData[i].cityCode);
-      if (areaCodeStr) {
-        let arr = areaInts.get(areaCodeStr);
-        if (!arr) {
-          arr = [];
-          areaInts.set(areaCodeStr, arr);
-        }
-        arr.push(val);
-      }
-    }
-
-    const getIntStr = (val) => {
-      if (val === 70) return "7";
-      if (val === 65) return "6+";
-      if (val === 60) return "6-";
-      if (val === 55) return "5+";
-      if (val === 50) return "5-";
-      return String(val / 10);
-    };
-
-    // Determine the area's intensity by requiring at least 2 stations
-    const localPredictions = new Map();
-    for (const [areaCodeStr, vals] of areaInts.entries()) {
-      if (vals.length >= 2) {
-        vals.sort((a, b) => b - a); // descending
-        const secondHighestVal = vals[1];
-        if (secondHighestVal > 0) {
-          localPredictions.set(areaCodeStr, getIntStr(secondHighestVal));
+      // Determine the area's intensity by requiring at least 2 stations
+      for (const [areaCodeStr, vals] of areaInts.entries()) {
+        if (vals.length >= 2) {
+          vals.sort((a, b) => b - a); // descending
+          const secondHighestVal = vals[1];
+          if (secondHighestVal > 0) {
+            localPredictions.set(areaCodeStr, getIntStr(secondHighestVal));
+          }
         }
       }
+    } else {
+      console.debug("[eq-viewer-eew] updateMapForEew Phase 2: skipping GMPE calculation (disabled for provider)");
     }
 
     console.debug("[eq-viewer-eew] updateMapForEew Phase 2: merging GMPE and forecast");
@@ -1322,7 +1463,7 @@ function updateMapForEew() {
           if (lon > maxLng) maxLng = lon;
           if (lat > maxLat) maxLat = lat;
 
-          const isPlum = msg.Magnitude === "1.0" && msg.Hypocenter.Depth === "10km";
+          const isPlum = isPlumEew(msg);
           const isCancel = eew.isCancelled;
 
           let icon = "epicenter-eew.png";

@@ -1,4 +1,5 @@
 import { USE_TEST_SERVER } from "./constants.js";
+import { loadAreaNameToCodeMap, getAreaCodeByName } from "./areaCodes.js";
 
 // Detect Tauri runtime — when running as a desktop app, we can bypass CORS
 // by using Tauri's HTTP plugin which makes requests through Rust's HTTP client.
@@ -15,6 +16,21 @@ if (IS_TAURI) {
 }
 
 /**
+ * Determines whether an EEW is PLUM-method only.
+ */
+export function isPlumEew(msg) {
+  if (!msg) return false;
+  if (msg.isPlumOnly) {
+    return true;
+  }
+  const mag = String(msg.Magnitude ?? "").trim();
+  const depth = String(msg.Hypocenter?.Depth ?? "").trim().toLowerCase().replace(/\s+/g, "");
+  const isDummyMag = mag === "1.0" || mag === "1" || Number.parseFloat(mag) === 1.0;
+  const isDummyDepth = depth === "10km" || depth === "10";
+  return isDummyMag && isDummyDepth;
+}
+
+/**
  * Base EEW Data Provider
  */
 export class BaseEewProvider {
@@ -22,18 +38,24 @@ export class BaseEewProvider {
     id,
     name,
     requiresToken = false,
+    requiresPort = false,
+    defaultPort = "",
     tokenLabel = "Token • トークン:",
     tokenPlaceholder = "Bearer Token",
     tauriOnly = false,
     infoHtml = null,
+    disableGmpe = false,
   }) {
     this.id = id;
     this.name = name;
     this.requiresToken = requiresToken;
+    this.requiresPort = requiresPort;
+    this.defaultPort = defaultPort;
     this.tokenLabel = tokenLabel;
     this.tokenPlaceholder = tokenPlaceholder;
     this.tauriOnly = tauriOnly;
     this.infoHtml = infoHtml;
+    this.disableGmpe = disableGmpe;
     this.callbacks = null;
   }
 
@@ -56,6 +78,16 @@ export class BaseEewProvider {
     localStorage.removeItem(`eew-token-${this.id}`);
   }
 
+  getPort() {
+    if (typeof localStorage === "undefined") return this.defaultPort;
+    return localStorage.getItem(`eew-port-${this.id}`) || this.defaultPort;
+  }
+
+  setPort(port) {
+    if (typeof localStorage === "undefined") return;
+    localStorage.setItem(`eew-port-${this.id}`, String(port));
+  }
+
   resetTokenState() {
     // Override in subclasses for provider-specific token tracking
   }
@@ -75,6 +107,13 @@ export class BaseEewProvider {
    */
   normalizeMessage(rawMsg) {
     if (!rawMsg?.Title) return null;
+    const isTest = Boolean(rawMsg.isTest || rawMsg.Flag?.is_training);
+    const mag = String(rawMsg.Magnitude ?? "").trim();
+    const depth = String(rawMsg.Hypocenter?.Depth ?? "").trim().toLowerCase().replace(/\s+/g, "");
+    const isDummyMag = mag === "1.0" || mag === "1" || Number.parseFloat(mag) === 1.0;
+    const isDummyDepth = depth === "10km" || depth === "10";
+    const isPlum = Boolean(rawMsg.isPlumOnly) || (isDummyMag && isDummyDepth);
+
     return {
       Title: String(rawMsg.Title || ""),
       EventID: String(rawMsg.EventID || ""),
@@ -95,10 +134,13 @@ export class BaseEewProvider {
       Flag: {
         is_final: Boolean(rawMsg.Flag?.is_final),
         is_cancel: Boolean(rawMsg.Flag?.is_cancel),
-        is_training: Boolean(rawMsg.Flag?.is_training),
+        is_training: isTest,
       },
       Forecast: Array.isArray(rawMsg.Forecast) ? rawMsg.Forecast : [],
       Text: rawMsg.Text || "",
+      isTest: isTest,
+      isLowAccuracy: Boolean(rawMsg.isLowAccuracy),
+      isPlumOnly: isPlum,
     };
   }
 }
@@ -116,6 +158,8 @@ export class WebSocketEewProvider extends BaseEewProvider {
     this.heartbeatTimer = null;
     this.hasConnectedOnce = false;
     this.isManualDisconnect = false;
+    this.expectsHello = options.expectsHello ?? true;
+    this.useHeartbeat = options.useHeartbeat ?? true;
   }
 
   /**
@@ -165,13 +209,22 @@ export class WebSocketEewProvider extends BaseEewProvider {
     }
 
     this.socket.onopen = () => {
-      console.info(`[EEW][${this.name}] WebSocket Connected. Waiting for hello...`);
+      console.info(`[EEW][${this.name}] WebSocket Connected.`);
+      if (!this.expectsHello) {
+        this.hasConnectedOnce = true;
+        this.retrySec = 100;
+        this.retryCount = 0;
+        if (this.useHeartbeat) this.startHeartbeat();
+        this.onConnectionEstablished?.();
+      } else {
+        console.info(`[EEW][${this.name}] Waiting for hello...`);
+      }
     };
 
     this.socket.onmessage = (event) => {
       const message = event.data;
       if (typeof message === "string") {
-        if (message === "hello") {
+        if (this.expectsHello && message === "hello") {
           console.info(
             `[EEW][${this.name}] Received hello from server. Connection fully established.`,
           );
@@ -179,10 +232,10 @@ export class WebSocketEewProvider extends BaseEewProvider {
           this.callbacks?.onStatusChange?.("connected");
           this.retrySec = 100;
           this.retryCount = 0;
-          this.startHeartbeat();
+          if (this.useHeartbeat) this.startHeartbeat();
           this.onConnectionEstablished?.();
           return;
-        } else if (message === "hb") {
+        } else if (this.useHeartbeat && message === "hb") {
           return;
         }
       }
@@ -252,6 +305,14 @@ export class WebSocketEewProvider extends BaseEewProvider {
         );
         this.callbacks?.onAuthError?.(
           "EEW connection failed: Token may be invalid. Please check your token in Settings.\n接続に失敗しました：トークンが無効である可能性があります。「設定」でトークンを確認してください。",
+        );
+      } else if (this.requiresPort) {
+        console.warn(`[EEW][${this.name}] Failed to connect to local websocket on port ${this.getPort()}.`);
+        this.callbacks?.onAuthError?.(
+          "EEW connection failed: Unable to connect to DMDSS EEW Client.\n" +
+          "Please check if the port is correct in Settings and if EEW Client is running with external services enabled.\n\n" +
+          "接続に失敗しました：DMDSS EEW Clientに接続できません。\n" +
+          "「設定」でポート番号を確認し、EEW Clientの外部連携機能が有効になっているか確認してください。"
         );
       } else {
         console.warn(`[EEW][${this.name}] Failed to connect after 5 retries.`);
@@ -637,6 +698,230 @@ export class TestEewProvider extends WebSocketEewProvider {
   async getWebSocketUrl() {
     return "ws://localhost:8565";
   }
+
+  normalizeMessage(rawMsg) {
+    const msg = super.normalizeMessage(rawMsg);
+    if (msg) {
+      msg.isTest = true;
+      msg.Flag.is_training = true;
+    }
+    return msg;
+  }
+}
+
+/**
+ * DMDSS EEW Client Provider
+ * Connects to local websocket running in EEW Client on 127.0.0.1:<port> (Tauri only).
+ */
+export class DmdssEewProvider extends WebSocketEewProvider {
+  constructor() {
+    super({
+      id: "dmdss",
+      name: "DMDSS EEW Client",
+      requiresToken: false,
+      requiresPort: true,
+      defaultPort: "11311",
+      tauriOnly: true,
+      expectsHello: false,
+      useHeartbeat: false,
+      disableGmpe: true,
+    });
+    this.userPoint = null;
+    this.lastServerStatus = null;
+    this.nameToCodeMap = new Map();
+  }
+
+  setAreaCodesFromCsv(csvText) {
+    if (!csvText) return;
+    this.nameToCodeMap.clear();
+    for (const raw of csvText.split("\n")) {
+      const line = raw.trim();
+      if (!line || line.startsWith("#")) continue;
+      const parts = line.split(";");
+      if (parts.length < 2) continue;
+      const code = Number.parseInt(parts[0], 10);
+      const ja = parts[1]?.trim();
+      if (!Number.isNaN(code) && ja) {
+        this.nameToCodeMap.set(ja, code);
+      }
+    }
+  }
+
+  async loadAreaCodes(csvText = null) {
+    if (csvText) {
+      this.setAreaCodesFromCsv(csvText);
+      return this.nameToCodeMap;
+    }
+    if (this.nameToCodeMap.size > 0) return this.nameToCodeMap;
+    try {
+      const map = await loadAreaNameToCodeMap();
+      for (const [name, code] of map.entries()) {
+        this.nameToCodeMap.set(name, code);
+      }
+    } catch (err) {
+      console.warn("[EEW][DMDSS] Could not load area codes CSV:", err);
+    }
+    return this.nameToCodeMap;
+  }
+
+  getAreaCode(name) {
+    if (!name) return 0;
+    const trimmed = name.trim();
+    if (this.nameToCodeMap.has(trimmed)) {
+      return this.nameToCodeMap.get(trimmed);
+    }
+    const cached = getAreaCodeByName(trimmed);
+    if (cached != null) {
+      this.nameToCodeMap.set(trimmed, cached);
+      return cached;
+    }
+    if (typeof globalThis !== "undefined" && globalThis.__areaCodes) {
+      for (const [code, info] of globalThis.__areaCodes.entries()) {
+        if (info.ja === trimmed) {
+          this.nameToCodeMap.set(trimmed, code);
+          return code;
+        }
+      }
+    }
+    return 0;
+  }
+
+  async connect(callbacks) {
+    await this.loadAreaCodes().catch(() => {});
+    return super.connect(callbacks);
+  }
+
+  async getWebSocketUrl() {
+    const port = this.getPort() || "11311";
+    return `ws://127.0.0.1:${port}`;
+  }
+
+  onConnectionEstablished() {
+    if (this.lastServerStatus === "open") {
+      this.callbacks?.onStatusChange?.("connected");
+    } else {
+      this.callbacks?.onStatusChange?.("upstream-disconnected");
+    }
+  }
+
+  handleIncomingRawMessage(raw) {
+    try {
+      const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (!data?.type) return;
+
+      if (data.type === "start") {
+        console.info(`[EEW][DMDSS] Connected to EEW Client v${data.version}`);
+        return;
+      }
+
+      if (data.type === "user-point") {
+        this.userPoint = data.location;
+        console.debug("[EEW][DMDSS] Received user-point:", data.location);
+        return;
+      }
+
+      if (data.type === "server-status") {
+        this.lastServerStatus = data.status;
+        console.info(`[EEW][DMDSS] Upstream server status: ${data.status}`);
+        if (data.status === "open") {
+          this.callbacks?.onStatusChange?.("connected");
+        } else {
+          this.callbacks?.onStatusChange?.("upstream-disconnected");
+        }
+        return;
+      }
+
+      if (data.type === "eew") {
+        const normalized = this.normalizeDmdssEew(data);
+        if (normalized) {
+          this.callbacks?.onMessage?.(normalized);
+        }
+      }
+    } catch (err) {
+      console.warn("[EEW][DMDSS] Error parsing message:", err);
+    }
+  }
+
+  normalizeDmdssEew(data) {
+    const isWarning = Boolean(data.isWarning);
+    const isCancel = Boolean(data.isCanceled);
+    const isFinal = Boolean(data.isLastInfo);
+    const isTest = Boolean(data.isTest);
+    const mag = String(data.magnitude ?? "").trim();
+    const depth = String(data.depth != null ? `${data.depth}km` : "").trim().toLowerCase().replace(/\s+/g, "");
+    const isDummyMag = mag === "1.0" || mag === "1" || Number.parseFloat(mag) === 1.0;
+    const isDummyDepth = depth === "10km" || depth === "10";
+    const isPlumOnly = Boolean(data.isPlumOnly) || (isDummyMag && isDummyDepth);
+
+    // Low accuracy: in the 'accuracy' field, value '1' in either 'epicenters' values is a low-accuracy EEW
+    const epicentersAcc = data.accuracy?.epicenters;
+    const isLowAccuracy =
+      !isWarning && Array.isArray(epicentersAcc) && epicentersAcc.some((v) => String(v) === "1");
+
+    // Look up hypocenter code by epicenterName from area code data
+    const epicenterName = (data.epicenterName || "").trim();
+    const hypoCode = this.getAreaCode(epicenterName);
+
+    const forecasts = Array.isArray(data.regionForecasts)
+      ? data.regionForecasts.map((rf) => {
+          const maxIntStr = String(rf.maxInt || rf.to || "0");
+          return {
+            Code: Number(rf.code) || rf.code,
+            Intensity: {
+              From: maxIntStr,
+              To: maxIntStr,
+              Description: `最大震度${maxIntStr}`,
+            },
+          };
+        })
+      : [];
+
+    let intensityStr = "不明";
+    if (data.maxInt?.to) {
+      intensityStr = String(data.maxInt.to);
+    } else if (data.maxInt && typeof data.maxInt === "string") {
+      intensityStr = data.maxInt;
+    }
+
+    return {
+      Title: isWarning ? "緊急地震速報（警報）" : "緊急地震速報（予報）",
+      EventID: String(data.eventId || ""),
+      Serial: Number(data.serial) || data.serial || 1,
+      OriginDateTime:
+        data.originTime || data.arrivalTime || data.pressTime || new Date().toISOString(),
+      ReportDateTime: data.pressTime || data.processTime || new Date().toISOString(),
+      Hypocenter: {
+        Code: hypoCode,
+        Name: data.epicenterName || "不明",
+        Coordinate:
+          Array.isArray(data.epicenterLocation) && data.epicenterLocation.length >= 2
+            ? [Number(data.epicenterLocation[0]), Number(data.epicenterLocation[1])]
+            : null,
+        Depth: data.depth != null ? `${data.depth}km` : "--",
+        Description: "",
+      },
+      Intensity: intensityStr,
+      Magnitude: data.magnitude != null ? String(data.magnitude) : "--",
+      Flag: {
+        is_final: isFinal,
+        is_cancel: isCancel,
+        is_training: isTest,
+      },
+      Forecast: forecasts,
+      Text: "",
+      isTest: isTest,
+      isPlumOnly: isPlumOnly,
+      isLowAccuracy: isLowAccuracy,
+      pointForecast: data.pointForecast || null,
+      maxLgInt: data.maxLgInt || null,
+      accuracy: data.accuracy || null,
+    };
+  }
+
+  disconnect() {
+    this.lastServerStatus = null;
+    super.disconnect();
+  }
 }
 
 // ─── Provider Registry ───────────────────────────────────────────────────────
@@ -644,6 +929,7 @@ const providers = new Map();
 
 export const axisProvider = new AxisEewProvider();
 export const testProvider = new TestEewProvider();
+export const dmdssProvider = new DmdssEewProvider();
 
 export function registerProvider(provider) {
   providers.set(provider.id, provider);
@@ -651,6 +937,7 @@ export function registerProvider(provider) {
 
 registerProvider(axisProvider);
 registerProvider(testProvider);
+registerProvider(dmdssProvider);
 
 export function getProvider(id) {
   return providers.get(id);

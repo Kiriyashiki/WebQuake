@@ -6,6 +6,8 @@
 
 // ─── Promise caches ──────────────────────────────────────────────────────────
 let _areaCodesPromise = null;
+let _areaNameToCodePromise = null;
+let _areaNameToCodeMap = new Map();
 let _prefectureCodesPromise = null;
 let _cityNamesPromise = null;
 let _rawCsvPromise = null;
@@ -56,12 +58,54 @@ export function loadAreaCodes() {
 
         if (!Number.isNaN(code)) {
           map.set(code, { ja, kana, en });
+          if (ja) {
+            _areaNameToCodeMap.set(ja, code);
+          }
         }
       }
       return map;
     });
   }
   return _areaCodesPromise;
+}
+
+/**
+ * Loads a Map from Japanese area name to numeric area code.
+ * @returns {Promise<Map<string, number>>}
+ */
+export function loadAreaNameToCodeMap() {
+  if (!_areaNameToCodePromise) {
+    _areaNameToCodePromise = loadAreaCodesRawCsv().then(text => {
+      const map = new Map();
+      for (const raw of text.split('\n')) {
+        const line = raw.trim();
+        if (!line || line.startsWith('#')) continue;
+
+        const parts = line.split(';');
+        if (parts.length < 2) continue;
+
+        const code = Number.parseInt(parts[0], 10);
+        const ja   = parts[1]?.trim() ?? '';
+
+        if (!Number.isNaN(code) && ja) {
+          map.set(ja, code);
+          _areaNameToCodeMap.set(ja, code);
+        }
+      }
+      return map;
+    });
+  }
+  return _areaNameToCodePromise;
+}
+
+/**
+ * Synchronous lookup from cached name-to-code map, or null if not yet loaded/found.
+ * @param {string} name
+ * @returns {number|null}
+ */
+export function getAreaCodeByName(name) {
+  if (!name) return null;
+  return _areaNameToCodeMap.get(name) ?? null;
 }
 
 // ─── Prefecture Codes ────────────────────────────────────────────────────────

@@ -201,6 +201,11 @@
         <main id="map-container">
           <div id="map"></div>
 
+          <!-- Test EEW Banner -->
+          <div id="eew-test-banner" class="hidden">
+            <span>TEST DATA • 訓練データ</span>
+          </div>
+
           <!-- Report info box at top-left -->
           <div id="map-info-box" class="map-info-box hidden">
             <div class="info-box-content">
@@ -343,6 +348,10 @@
                   <div id="eew-token-group" class="dropdown-group" style="margin-top: 10px;">
                     <label id="eew-token-label" for="eew-token-input">AXIS Token • トークン:</label>
                     <input type="password" id="eew-token-input" class="search-input" placeholder="Bearer Token" style="width: 100%; box-sizing: border-box;" />
+                  </div>
+                  <div id="eew-port-group" class="dropdown-group hidden" style="margin-top: 10px;">
+                    <label id="eew-port-label" for="eew-port-input">Port Number • ポート番号:</label>
+                    <input type="number" id="eew-port-input" class="search-input" placeholder="11311" style="width: 100%; box-sizing: border-box;" />
                   </div>
                   <div id="eew-provider-info" style="margin-top: 10px;">
                     <p id="eew-axis-info">
