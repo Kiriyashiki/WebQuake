@@ -358,6 +358,43 @@ export function getAllReports() {
   return _currentReports;
 }
 
+let _prefSelectEl = null;
+let _citySelectEl = null;
+let _markerToggleEl = null;
+let _updateCityOptions = null;
+let _onHomeLocationChange = null;
+
+/**
+ * Programmatically updates the home location in the UI and localStorage.
+ * @param {string|number} prefCode - Prefecture code (e.g. 13 or "13")
+ * @param {string} cityCode - City code (e.g. "1310400")
+ */
+export function setHomeLocationUI(prefCode, cityCode) {
+  const prefStr = String(prefCode).padStart(2, "0");
+  const cityStr = String(cityCode);
+
+  localStorage.setItem("home-prefecture", prefStr);
+  localStorage.setItem("home-city", cityStr);
+
+  if (_prefSelectEl) {
+    _prefSelectEl.value = prefStr;
+  }
+  if (_updateCityOptions) {
+    _updateCityOptions(prefStr);
+  }
+  if (_citySelectEl) {
+    _citySelectEl.value = cityStr;
+  }
+
+  if (_onHomeLocationChange) {
+    _onHomeLocationChange({
+      prefectureCode: Number(prefStr),
+      cityCode: cityStr,
+      showMarker: _markerToggleEl ? _markerToggleEl.checked : false,
+    });
+  }
+}
+
 /**
  * Initializes the home location settings with prefecture and city dropdowns.
  * @param {Map<number, {name, kana, enName}>} prefectureCodes - Prefecture code mappings
@@ -368,6 +405,11 @@ export function initHomeLocationSettings(prefectureCodes, cityNames, onHomeLocat
   const prefSelectEl = document.getElementById("home-prefecture-select");
   const citySelectEl = document.getElementById("home-city-select");
   const markerToggleEl = document.getElementById("home-marker-toggle");
+
+  _prefSelectEl = prefSelectEl;
+  _citySelectEl = citySelectEl;
+  _markerToggleEl = markerToggleEl;
+  _onHomeLocationChange = onHomeLocationChange;
 
   if (!prefSelectEl || !citySelectEl || !markerToggleEl) return;
 
@@ -408,6 +450,8 @@ export function initHomeLocationSettings(prefectureCodes, cityNames, onHomeLocat
       citySelectEl.value = citiesInPref[0][0];
     }
   };
+
+  _updateCityOptions = updateCityOptions;
 
   // Initial city population
   updateCityOptions(savedPref);

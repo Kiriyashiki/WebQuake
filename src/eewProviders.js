@@ -45,6 +45,7 @@ export class BaseEewProvider {
     tauriOnly = false,
     infoHtml = null,
     disableGmpe = false,
+    supportsHomeSync = false,
   }) {
     this.id = id;
     this.name = name;
@@ -56,7 +57,20 @@ export class BaseEewProvider {
     this.tauriOnly = tauriOnly;
     this.infoHtml = infoHtml;
     this.disableGmpe = disableGmpe;
+    this.supportsHomeSync = supportsHomeSync;
     this.callbacks = null;
+  }
+
+  getHomeSync() {
+    if (typeof localStorage === "undefined") return true;
+    const val = localStorage.getItem(`eew-sync-home-${this.id}`);
+    if (val === null) return true; // Enabled by default
+    return val === "true";
+  }
+
+  setHomeSync(enabled) {
+    if (typeof localStorage === "undefined") return;
+    localStorage.setItem(`eew-sync-home-${this.id}`, enabled ? "true" : "false");
   }
 
   isAvailable() {
@@ -725,6 +739,7 @@ export class DmdssEewProvider extends WebSocketEewProvider {
       expectsHello: false,
       useHeartbeat: false,
       disableGmpe: true,
+      supportsHomeSync: true,
     });
     this.userPoint = null;
     this.lastServerStatus = null;
@@ -817,6 +832,7 @@ export class DmdssEewProvider extends WebSocketEewProvider {
       if (data.type === "user-point") {
         this.userPoint = data.location;
         console.debug("[EEW][DMDSS] Received user-point:", data.location);
+        this.callbacks?.onUserPoint?.(data.location);
         return;
       }
 

@@ -58,7 +58,7 @@ import {
   fetchEqdbMaxDate,
   EQDB_MIN_DATE,
 } from "./historyMode.js";
-import { initEewSettings, handlePossibleEewReport, clearEewMapDisplay } from "./eew.js";
+import { initEewSettings, handlePossibleEewReport, clearEewMapDisplay, updateHomeIntensityForActiveEews, getIsEewMapActive } from "./eew.js";
 
 // In Tauri, external links don't open in the browser by default.
 // Intercept them and use the opener plugin to launch in the system browser.
@@ -723,7 +723,7 @@ async function boot() {
       clearHomeMarker(map);
     }
 
-    // Update home intensity display if a report is currently open
+    // Update home intensity display if a report is currently open or EEW is active
     const activeItem = document.querySelector(".eq-item.active");
     if (activeItem) {
       const activeReport = globalThis.__currentReport;
@@ -732,6 +732,8 @@ async function boot() {
       } else {
         hideHomeLocationIntensity();
       }
+    } else if (getIsEewMapActive() && getHomeIntensityState()) {
+      updateHomeIntensityForActiveEews();
     }
   });
 
@@ -740,18 +742,22 @@ async function boot() {
     console.debug("[eq-viewer] Home intensity:", isEnabled ? "enabled" : "disabled");
 
     const activeItem = document.querySelector(".eq-item.active");
-    if (!activeItem || !isEnabled) {
+    if (!isEnabled) {
       hideHomeLocationIntensity();
       return;
     }
 
-    // If there's an active report, display the home intensity
-    const activeReport = globalThis.__currentReport;
-    if (activeReport) {
-      const homeLocation = getHomeLocation();
-      if (homeLocation.cityCode) {
-        displayHomeLocationIntensity(homeLocation.cityCode, activeReport.observations, cityNames);
+    if (activeItem) {
+      // If there's an active report, display the home intensity
+      const activeReport = globalThis.__currentReport;
+      if (activeReport) {
+        const homeLocation = getHomeLocation();
+        if (homeLocation.cityCode) {
+          displayHomeLocationIntensity(homeLocation.cityCode, activeReport.observations, cityNames);
+        }
       }
+    } else if (getIsEewMapActive()) {
+      updateHomeIntensityForActiveEews();
     }
   });
 

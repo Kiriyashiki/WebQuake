@@ -1,3 +1,5 @@
+import { haversineDistance } from "./constants.js";
+
 /**
  * Loads and caches data files used across modules.
  * All loaders use promise caching to avoid redundant network fetches —
@@ -14,6 +16,8 @@ let _rawCsvPromise = null;
 let _boundsPromise = null;
 let _stationsCsvPromise = null;
 let _cityForecastCsvPromise = null;
+let _municipalitiesPromise = null;
+let _cityPolygonsMap = null;
 
 // ─── Area Codes ──────────────────────────────────────────────────────────────
 
@@ -293,4 +297,148 @@ export function loadCityForecastMapCsv() {
 export function createRubyHtml(text, kana) {
   if (!kana) return text;
   return `<ruby>${text}<rt>${kana}</rt></ruby>`;
+}
+
+// ─── Municipalities GeoJSON & Coordinate Lookup ──────────────────────────────
+
+/**
+ * Loads municipalities.geojson data (cached).
+ * @returns {Promise<Object>}
+ */
+export function loadMunicipalitiesGeojson() {
+  if (!_municipalitiesPromise) {
+    _municipalitiesPromise = fetch('/municipalities.geojson').then(res => {
+      if (!res.ok) throw new Error(`Failed to load municipalities.geojson: ${res.status}`);
+      return res.json();
+    });
+  }
+  return _municipalitiesPromise;
+}
+
+function pointInPolygon(point, polygon) {
+  const [px, py] = point;
+
+  function checkRing(ring) {
+    let inside = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const xi = ring[i][0], yi = ring[i][1];
+      const xj = ring[j][0], yj = ring[j][1];
+      const intersect = ((yi > py) !== (yj > py)) &&
+        (px < (xj - xi) * (py - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  const coords = polygon.geometry.coordinates;
+  if (polygon.geometry.type === 'Polygon') {
+    let inside = checkRing(coords[0]);
+    for (let i = 1; i < coords.length; i++) {
+      if (checkRing(coords[i])) inside = !inside;
+    }
+    return inside;
+  } else if (polygon.geometry.type === 'MultiPolygon') {
+    for (const poly of coords) {
+      let inside = checkRing(poly[0]);
+      for (let i = 1; i < poly.length; i++) {
+        if (checkRing(poly[i])) inside = !inside;
+      }
+      if (inside) return true;
+    }
+    return false;
+  }
+  return false;
+}
+
+/**
+ * Finds the matching city code and prefecture code for given [lon, lat] coordinates.
+ * Uses bounding box filtering and point-in-polygon matching with a distance-based fallback.
+ * @param {number} lon
+ * @param {number} lat
+ * @returns {Promise<{ cityCode: string, prefCode: string, name: string } | null>}
+ */
+export async function findCityForCoordinates(lon, lat) {
+  if (typeof lon !== "number" || typeof lat !== "number" || Number.isNaN(lon) || Number.isNaN(lat)) {
+    return null;
+  }
+
+  const [boundsData, municipalities] = await Promise.all([
+    loadBoundsData(),
+    loadMunicipalitiesGeojson(),
+  ]);
+
+  if (!boundsData?.cities || !municipalities?.features) {
+    return null;
+  }
+
+  if (!_cityPolygonsMap) {
+    _cityPolygonsMap = new Map();
+    for (const feature of municipalities.features) {
+      if (feature.properties?.regioncode) {
+        _cityPolygonsMap.set(feature.properties.regioncode.toString(), feature);
+      }
+    }
+  }
+
+  // STEP A: Fast Bounding Box Filter
+  const candidates = [];
+  for (const [cityCode, bbox] of Object.entries(boundsData.cities)) {
+    if (lon >= bbox[0] && lon <= bbox[2] && lat >= bbox[1] && lat <= bbox[3]) {
+      candidates.push(cityCode);
+    }
+  }
+
+  // STEP B: Precise Point-in-Polygon Filter
+  for (const cityCode of candidates) {
+    const feat = _cityPolygonsMap.get(cityCode);
+    if (feat && pointInPolygon([lon, lat], feat)) {
+      return {
+        cityCode,
+        prefCode: cityCode.substring(0, 2),
+        name: feat.properties?.name || "",
+      };
+    }
+  }
+
+  // STEP C: Fallback for points slightly off the coast or on boundaries
+  let bestCityCode = null;
+  let minDistance = 25; // km
+  const searchRadiusDeg = 0.25;
+
+  for (const [cityCode, bbox] of Object.entries(boundsData.cities)) {
+    if (lon >= bbox[0] - searchRadiusDeg && lon <= bbox[2] + searchRadiusDeg &&
+        lat >= bbox[1] - searchRadiusDeg && lat <= bbox[3] + searchRadiusDeg) {
+      const feat = _cityPolygonsMap.get(cityCode);
+      if (!feat) continue;
+
+      const processRing = (ring) => {
+        for (const [rLon, rLat] of ring) {
+          const dist = haversineDistance(lat, lon, rLat, rLon);
+          if (dist < minDistance) {
+            minDistance = dist;
+            bestCityCode = cityCode;
+          }
+        }
+      };
+
+      if (feat.geometry.type === 'Polygon') {
+        processRing(feat.geometry.coordinates[0]);
+      } else if (feat.geometry.type === 'MultiPolygon') {
+        for (const poly of feat.geometry.coordinates) {
+          processRing(poly[0]);
+        }
+      }
+    }
+  }
+
+  if (bestCityCode) {
+    const feat = _cityPolygonsMap.get(bestCityCode);
+    return {
+      cityCode: bestCityCode,
+      prefCode: bestCityCode.substring(0, 2),
+      name: feat?.properties?.name || "",
+    };
+  }
+
+  return null;
 }

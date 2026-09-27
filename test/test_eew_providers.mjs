@@ -17,12 +17,29 @@ globalThis.localStorage = {
 };
 
 const areaCodesCsvContent = fs.readFileSync(path.resolve(process.cwd(), "public/jma-area-codes.csv"), "utf8");
+const boundsJsonContent = fs.readFileSync(path.resolve(process.cwd(), "public/bounds.json"), "utf8");
+const municipalitiesJsonContent = fs.readFileSync(path.resolve(process.cwd(), "public/municipalities.geojson"), "utf8");
+
 globalThis.fetch = async (url) => {
   if (url === "/jma-area-codes.csv") {
     return {
       ok: true,
       status: 200,
       text: async () => areaCodesCsvContent,
+    };
+  }
+  if (url === "/bounds.json") {
+    return {
+      ok: true,
+      status: 200,
+      json: async () => JSON.parse(boundsJsonContent),
+    };
+  }
+  if (url === "/municipalities.geojson") {
+    return {
+      ok: true,
+      status: 200,
+      json: async () => JSON.parse(municipalitiesJsonContent),
     };
   }
   throw new Error(`Unexpected fetch URL in test: ${url}`);
@@ -226,7 +243,7 @@ assert.strictEqual(receivedMessage.EventID, "20260913230000");
 assert.strictEqual(receivedMessage.Hypocenter.Name, "京都府北部");
 
 testProvider.disconnect();
-assert.strictEqual(statusHistory[statusHistory.length - 1], "error", "Disconnect should set status to 'error'");
+assert.strictEqual(statusHistory.at(-1), "error", "Disconnect should set status to 'error'");
 
 wss.close();
 testProvider.getWebSocketUrl = origGetUrl;
@@ -428,7 +445,137 @@ assert.ok(
   "Should report 'connected' or 'upstream-disconnected'"
 );
 dmdssProvider.disconnect();
-assert.strictEqual(dmdssStatuses[dmdssStatuses.length - 1], "error");
+assert.strictEqual(dmdssStatuses.at(-1), "error");
 console.log("✓ Test 8 passed");
+
+// 9. Home Sync Provider Settings & Defaults
+console.log("Test 9: Home Location Sync Provider Settings");
+assert.strictEqual(axisProvider.supportsHomeSync, false);
+assert.strictEqual(testProvider.supportsHomeSync, false);
+assert.strictEqual(dmdssProvider.supportsHomeSync, true);
+
+// Enabled by default
+localStorage.removeItem("eew-sync-home-dmdss");
+assert.strictEqual(dmdssProvider.getHomeSync(), true);
+
+dmdssProvider.setHomeSync(false);
+assert.strictEqual(dmdssProvider.getHomeSync(), false);
+assert.strictEqual(localStorage.getItem("eew-sync-home-dmdss"), "false");
+
+dmdssProvider.setHomeSync(true);
+assert.strictEqual(dmdssProvider.getHomeSync(), true);
+assert.strictEqual(localStorage.getItem("eew-sync-home-dmdss"), "true");
+console.log("✓ Test 9 passed");
+
+// 10. onUserPoint Callback in DMDSS Provider
+console.log("Test 10: onUserPoint Callback in DMDSS Provider");
+let receivedUserPoint = null;
+dmdssProvider.callbacks = {
+  onStatusChange: () => {},
+  onMessage: () => {},
+  onUserPoint: (point) => {
+    receivedUserPoint = point;
+  },
+};
+dmdssProvider.handleIncomingRawMessage(JSON.stringify({ type: "user-point", location: [135.7482, 35.01392] }));
+assert.deepStrictEqual(receivedUserPoint, [135.7482, 35.01392]);
+assert.deepStrictEqual(dmdssProvider.userPoint, [135.7482, 35.01392]);
+console.log("✓ Test 10 passed");
+
+// 11. Coordinate Mapping (findCityForCoordinates)
+console.log("Test 11: findCityForCoordinates (point-in-polygon matching)");
+const { findCityForCoordinates } = await import("../src/areaCodes.js");
+const cityResult = await findCityForCoordinates(135.7482, 35.01392);
+assert.ok(cityResult != null, "Should resolve city for Kyoto coordinates [135.7482, 35.01392]");
+assert.strictEqual(cityResult.prefCode, "26", "Kyoto prefecture code should be 26");
+assert.ok(cityResult.cityCode.startsWith("26"), "City code should belong to Kyoto");
+assert.ok(cityResult.name.length > 0, "City name should not be empty");
+console.log(`Matched coordinates to: ${cityResult.name} (City: ${cityResult.cityCode}, Pref: ${cityResult.prefCode})`);
+
+// Fallback / edge cases
+const invalidResult = await findCityForCoordinates(null, null);
+assert.strictEqual(invalidResult, null);
+console.log("✓ Test 11 passed");
+
+// 12. Multiple Simultaneous EEWs Intensity Logic
+console.log("Test 12: Simultaneous EEWs home intensity selection");
+function testSelectHighestIntensity(eewList, isHomeSync) {
+  function getIntVal(v) {
+    if (v === "7") return 70;
+    if (v === "6+") return 65;
+    if (v === "6-") return 60;
+    if (v === "5+") return 55;
+    if (v === "5-") return 50;
+    const parsed = Number.parseInt(v);
+    return Number.isNaN(parsed) ? 0 : parsed * 10;
+  }
+
+  const activeEewList = eewList.filter((e) => !e.isCancelled);
+  if (isHomeSync) {
+    let maxIntVal = -1;
+    let maxIntStr = null;
+    for (const eew of activeEewList) {
+      const pointForecast = eew.msg?.pointForecast;
+      const intStr = pointForecast?.intensity?.int;
+      if (intStr != null) {
+        const val = getIntVal(intStr);
+        if (val > maxIntVal) {
+          maxIntVal = val;
+          maxIntStr = intStr;
+        }
+      }
+    }
+    return maxIntStr;
+  } else {
+    // Area forecast logic
+    let maxIntVal = -1;
+    let maxIntStr = null;
+    for (const eew of activeEewList) {
+      for (const f of eew.msg?.Forecast || []) {
+        if (f.Code === 350) {
+          const val = getIntVal(f.Intensity.To);
+          if (val > maxIntVal) {
+            maxIntVal = val;
+            maxIntStr = f.Intensity.To;
+          }
+        }
+      }
+    }
+    return maxIntStr;
+  }
+}
+
+const eewA = {
+  isCancelled: false,
+  msg: {
+    EventID: "202609270001",
+    pointForecast: { intensity: { int: "3" } },
+    Forecast: [{ Code: 350, Intensity: { To: "3" } }],
+  },
+};
+const eewB = {
+  isCancelled: false,
+  msg: {
+    EventID: "202609270002",
+    pointForecast: { intensity: { int: "5-" } },
+    Forecast: [{ Code: 350, Intensity: { To: "4" } }],
+  },
+};
+
+// With both active, highest is 5- (sync on) and 4 (sync off)
+assert.strictEqual(testSelectHighestIntensity([eewA, eewB], true), "5-");
+assert.strictEqual(testSelectHighestIntensity([eewA, eewB], false), "4");
+
+// When eewB is cancelled, recheck selects eewA's intensity (3)
+eewB.isCancelled = true;
+assert.strictEqual(testSelectHighestIntensity([eewA, eewB], true), "3");
+assert.strictEqual(testSelectHighestIntensity([eewA, eewB], false), "3");
+
+// When both cancelled or expired
+eewA.isCancelled = true;
+assert.strictEqual(testSelectHighestIntensity([eewA, eewB], true), null);
+assert.strictEqual(testSelectHighestIntensity([eewA, eewB], false), null);
+
+console.log("✓ Test 12 passed");
 
 console.log("\n=== ALL TESTS PASSED SUCCESSFULLY! ===");

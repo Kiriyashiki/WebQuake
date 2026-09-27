@@ -1108,30 +1108,53 @@ export function clearAllEpicenters(map) {
 }
 
 // ─── Home Location marker helpers ────────────────────────────────────────────
+let customHomeCoordinates = null;
+
 /**
- * Adds or updates the home location marker at the center of a city bounds.
+ * Sets custom coordinates for the home marker (in-memory only).
+ * @param {Array<number>|null} coords - [lon, lat] or null
+ */
+export function setCustomHomeCoordinates(coords) {
+  customHomeCoordinates = Array.isArray(coords) && coords.length >= 2 ? coords : null;
+}
+
+/**
+ * Gets custom coordinates for the home marker.
+ * @returns {Array<number>|null}
+ */
+export function getCustomHomeCoordinates() {
+  return customHomeCoordinates;
+}
+
+/**
+ * Creates and adds the home location marker to the map.
  * @param {maplibregl.Map} map
  * @param {string} cityCode - The city code (7-digit string)
  * @param {Object} featureBounds - The loaded bounds.json object
  * @returns {maplibregl.Marker|null}
  */
 function addHomeMarker(map, cityCode, featureBounds) {
-  if (!cityCode || !featureBounds?.cities) {
+  if (!cityCode) {
     return null;
   }
-
-  const bounds = featureBounds.cities[cityCode];
-  if (!bounds) {
-    return null;
-  }
-
-  // Calculate center of bounds: [minLng, minLat, maxLng, maxLat]
-  const centerLng = (bounds[0] + bounds[2]) / 2;
-  const centerLat = (bounds[1] + bounds[3]) / 2;
 
   // Remove existing home marker if any
   if (map._homeMarker) {
     map._homeMarker.remove();
+  }
+
+  let centerLng, centerLat;
+  if (customHomeCoordinates) {
+    [centerLng, centerLat] = customHomeCoordinates;
+  } else {
+    if (!featureBounds?.cities) return null;
+    const bounds = featureBounds.cities[cityCode];
+    if (!bounds) {
+      return null;
+    }
+    // Calculate center of bounds: [minLng, minLat, maxLng, maxLat]
+    centerLng = (bounds[0] + bounds[2]) / 2;
+    centerLat = (bounds[1] + bounds[3]) / 2;
   }
 
   // Create marker element

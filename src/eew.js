@@ -15,14 +15,18 @@ import {
   highlightObservations,
   updateLpgmVisibility,
   hideHomeLocationIntensity,
+  displayHomeMarker,
+  setCustomHomeCoordinates,
+  getCustomHomeCoordinates,
 } from "./map.js";
 import {
   createRubyHtml,
   loadCityForecastMapCsv,
   loadStationsCsvText,
   loadAreaNameToCodeMap,
+  findCityForCoordinates,
 } from "./areaCodes.js";
-import { getCityAreasState, getHomeIntensityState } from "./sidebarUI.js";
+import { getCityAreasState, getHomeIntensityState, setHomeLocationUI, getHomeLocation } from "./sidebarUI.js";
 import { updateMapLegend } from "./main.js";
 import {
   getProvider,
@@ -193,6 +197,8 @@ export function initEewSettings(map, bounds, cities, areas) {
   const tokenInputEl = document.getElementById("eew-token-input");
   const portGroupEl = document.getElementById("eew-port-group");
   const portInputEl = document.getElementById("eew-port-input");
+  const homeSyncGroupEl = document.getElementById("eew-home-sync-group");
+  const homeSyncToggleEl = document.getElementById("eew-home-sync-toggle");
   const axisInfoEl = document.getElementById("eew-axis-info");
 
   if (!toggleEl) return;
@@ -248,6 +254,13 @@ export function initEewSettings(map, bounds, cities, areas) {
       }
     } else if (portGroupEl) {
       portGroupEl.classList.add("hidden");
+    }
+
+    if (p.supportsHomeSync) {
+      if (homeSyncGroupEl) homeSyncGroupEl.classList.remove("hidden");
+      if (homeSyncToggleEl) homeSyncToggleEl.checked = p.getHomeSync();
+    } else if (homeSyncGroupEl) {
+      homeSyncGroupEl.classList.add("hidden");
     }
 
     if (axisInfoEl) {
@@ -306,6 +319,16 @@ export function initEewSettings(map, bounds, cities, areas) {
       setActiveProvider(newProvider);
       updateProviderSettingsUI();
 
+      if (!newProvider.supportsHomeSync || !newProvider.getHomeSync()) {
+        setCustomHomeCoordinates(null);
+        const homeLoc = getHomeLocation();
+        if (homeLoc.showMarker && featureBounds) {
+          displayHomeMarker(mapInstance, homeLoc.cityCode, featureBounds);
+        }
+      } else if (newProvider.supportsHomeSync && newProvider.getHomeSync() && newProvider.userPoint) {
+        applyEewClientUserPoint(newProvider.userPoint);
+      }
+
       if (wasConnected) {
         if (!newProvider.requiresToken || newProvider.getToken()) {
           connectEew();
@@ -347,6 +370,29 @@ export function initEewSettings(map, bounds, cities, areas) {
       if (toggleEl.checked) {
         disconnectEew();
         connectEew();
+      }
+    });
+  }
+
+  if (homeSyncToggleEl) {
+    homeSyncToggleEl.addEventListener("change", async (e) => {
+      const p = getActiveProvider();
+      if (!p || !p.supportsHomeSync) return;
+      const enabled = e.target.checked;
+      p.setHomeSync(enabled);
+
+      if (!enabled) {
+        setCustomHomeCoordinates(null);
+        const homeLoc = getHomeLocation();
+        if (homeLoc.showMarker && featureBounds) {
+          displayHomeMarker(mapInstance, homeLoc.cityCode, featureBounds);
+        }
+      } else if (p.userPoint) {
+        await applyEewClientUserPoint(p.userPoint);
+      }
+
+      if (isEewMapActive && activeEews.size > 0) {
+        updateHomeIntensityForActiveEews();
       }
     });
   }
@@ -431,6 +477,12 @@ async function connectEew() {
     onMessage: (normalizedMsg) => {
       handleEewMessage(normalizedMsg, provider);
     },
+    onUserPoint: async (location) => {
+      const p = getActiveProvider();
+      if (p?.supportsHomeSync && p.getHomeSync()) {
+        await applyEewClientUserPoint(location);
+      }
+    },
     onAuthError: (errorMessage) => {
       alert(errorMessage);
       disconnectEew();
@@ -505,6 +557,9 @@ export function handleEewMessage(msg, providerInfo = null) {
         removeEew(eventId);
       }, 15000);
       updateEewUI(false);
+      if (isEewMapActive && activeEews.size > 0) {
+        updateHomeIntensityForActiveEews();
+      }
     }
   } else {
     // Forecast or Warning
@@ -546,6 +601,9 @@ function removeEew(eventId) {
   if (activeEews.has(eventId)) {
     activeEews.delete(eventId);
     updateEewUI(false);
+    if (isEewMapActive && activeEews.size > 0) {
+      updateHomeIntensityForActiveEews();
+    }
   }
 }
 
@@ -1136,7 +1194,7 @@ function renderEewInfoBox(
       disclaimer = document.createElement("div");
       disclaimer.className = "eew-forecast-disclaimer";
       disclaimer.style.cssText =
-        "font-size: 11px; color: var(--text-dim); text-align: center; padding: 4px; background: rgba(0,0,0,0.2); border-radius: 4px; margin-bottom: 6px;";
+        "font-size: 11px; color: var(--text-dim); text-align: center; padding: 2px; background: rgba(0,0,0,0.2); border-radius: 4px;";
       disclaimer.textContent = "Estimated intensities • 予想震度";
       observationsContainer.appendChild(disclaimer);
     }
@@ -1427,21 +1485,7 @@ function updateMapForEew() {
         return;
       }
 
-      if (getHomeIntensityState()) {
-        // Update home intensity display for EEW
-        const homeCityCode = localStorage.getItem("home-city");
-        const homeAreaCodeStr = cityForecastMap.get(homeCityCode);
-
-        if (homeAreaCodeStr) {
-          const forecastArea = mergedForecast.find(
-            (f) => f.Code === Number.parseInt(homeAreaCodeStr),
-          );
-          const forecastInt = forecastArea ? forecastArea.Intensity.To : null;
-          updateEewHomeLocationDisplay(homeCityCode, forecastInt || null); // Only use EEW intensities, without GMPE
-        } else {
-          updateEewHomeLocationDisplay(homeCityCode, null);
-        }
-      }
+      updateHomeIntensityForActiveEews();
 
       // Add EEW epicenters
       console.debug("[eq-viewer-eew] updateMapForEew Phase 3: placing markers");
@@ -1560,4 +1604,104 @@ function updateEewHomeLocationDisplay(cityCode, intensityStr) {
   }
 
   display.classList.remove("hidden");
+}
+
+/**
+ * Returns whether the map is currently displaying EEW data.
+ * @returns {boolean}
+ */
+export function getIsEewMapActive() {
+  return isEewMapActive;
+}
+
+/**
+ * Applies a user-point location from EEW Client:
+ * sets custom coordinates, maps coordinates to city and prefecture,
+ * updates UI/localStorage, and refreshes marker and EEW intensity.
+ * @param {Array<number>} location - [lon, lat]
+ */
+export async function applyEewClientUserPoint(location) {
+  if (!Array.isArray(location) || location.length < 2) return;
+  const [lon, lat] = location;
+  if (typeof lon !== "number" || typeof lat !== "number" || Number.isNaN(lon) || Number.isNaN(lat)) return;
+
+  setCustomHomeCoordinates([lon, lat]);
+
+  const match = await findCityForCoordinates(lon, lat);
+  if (match) {
+    setHomeLocationUI(match.prefCode, match.cityCode);
+  }
+
+  const homeLoc = getHomeLocation();
+  if (homeLoc.showMarker && featureBounds && mapInstance) {
+    displayHomeMarker(mapInstance, homeLoc.cityCode, featureBounds);
+  }
+
+  if (isEewMapActive && activeEews.size > 0) {
+    updateHomeIntensityForActiveEews();
+  }
+}
+
+/**
+ * Updates the home location intensity display for all active EEWs.
+ * Uses EEW Client pointForecast if home sync is on; otherwise uses forecast area matching.
+ * In case of simultaneous EEWs, selects the highest predicted intensity.
+ */
+export function updateHomeIntensityForActiveEews() {
+  if (!getHomeIntensityState()) {
+    hideHomeLocationIntensity();
+    return;
+  }
+
+  if (!isEewMapActive || activeEews.size === 0) {
+    hideHomeLocationIntensity();
+    return;
+  }
+
+  if (document.querySelector(".eq-item.active")) {
+    return;
+  }
+
+  const activeEewList = Array.from(activeEews.values()).filter((e) => !e.isCancelled);
+  const homeLocation = getHomeLocation();
+  const homeCityCode = homeLocation?.cityCode || (typeof localStorage !== "undefined" ? localStorage.getItem("home-city") : null);
+
+  if (!homeCityCode) {
+    hideHomeLocationIntensity();
+    return;
+  }
+
+  const provider = getActiveProvider();
+  const isHomeSyncOn = Boolean(provider?.supportsHomeSync && provider.getHomeSync());
+
+  if (isHomeSyncOn) {
+    let maxIntVal = -1;
+    let maxIntStr = null;
+
+    for (const eew of activeEewList) {
+      const pointForecast = eew.msg?.pointForecast;
+      const intStr = pointForecast?.intensity?.int;
+      if (intStr != null) {
+        const val = getIntVal(intStr);
+        if (val > maxIntVal) {
+          maxIntVal = val;
+          maxIntStr = intStr;
+        }
+      }
+    }
+
+    updateEewHomeLocationDisplay(homeCityCode, maxIntStr);
+  } else {
+    const mergedForecast = mergeForecasts(activeEewList);
+    const homeAreaCodeStr = cityForecastMap?.get(homeCityCode);
+    if (homeAreaCodeStr) {
+      const forecastArea = mergedForecast.find(
+        (f) => f.Code === Number.parseInt(homeAreaCodeStr),
+      );
+      const forecastInt = forecastArea ? forecastArea.Intensity.To : null;
+      updateEewHomeLocationDisplay(homeCityCode, forecastInt || null);
+    } else {
+      updateEewHomeLocationDisplay(homeCityCode, null);
+    }
+  }
 }
