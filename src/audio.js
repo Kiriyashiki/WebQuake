@@ -1,5 +1,3 @@
-const IS_TAURI = Boolean(window.__TAURI_INTERNALS__);
-
 /** @type {AudioContext|null} */
 let _ctx = null;
 
@@ -28,14 +26,10 @@ if (typeof window !== "undefined") {
 }
 
 /**
- * Preloads an audio file into memory.
- * In Tauri, sounds are embedded into the native binary for zero-latency playback.
- * In browser, decodes into AudioBuffer.
+ * Preloads an audio file into memory and decodes into AudioBuffer.
  * @param {string} path - Path to the audio file (e.g. '/sfx/ping.wav')
  */
 export async function preloadAudio(path) {
-  if (IS_TAURI) return;
-
   try {
     if (_bufferCache.has(path)) return;
     const ctx = _getContext();
@@ -54,25 +48,12 @@ export async function preloadAudio(path) {
 }
 
 /**
- * Plays an audio file by path.
- * In Tauri, uses native Rust playback via pw-play/paplay/aplay to bypass WebKitGTK GStreamer deadlocks.
- * In browser, uses Web Audio API with pre-decoded AudioBuffers.
+ * Plays an audio file by path using Web Audio API with pre-decoded AudioBuffers.
  * @param {string} path - Path to the audio file
  */
 export async function playAudio(path) {
   console.debug(`[audio] Playing audio ${path}`);
 
-  // 1. Native Tauri playback: completely bypasses WebKitGTK and GStreamer deadlocks
-  if (IS_TAURI && window.__TAURI_INTERNALS__?.invoke) {
-    try {
-      await window.__TAURI_INTERNALS__.invoke("play_sound", { name: path });
-      return;
-    } catch (err) {
-      console.warn(`[audio] Native play_sound failed, falling back to Web Audio:`, err);
-    }
-  }
-
-  // 2. Web Audio API fallback (for browser or if native command failed)
   try {
     const ctx = _getContext();
     if (!ctx) return;

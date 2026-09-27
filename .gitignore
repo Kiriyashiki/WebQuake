@@ -1,5 +1,6 @@
 node_modules/
 dist/
+release/
 *.tar.gz
 *.zip
 test/package-lock.json

@@ -28,18 +28,7 @@ import {
 import { parseLpgmXml } from "./lpgmUtils.js";
 import JMAEarthquakeReport from "./jmaEarthquakeReport.js";
 import { fetchXmlFeedEntries, parseFlashIntensityXml } from "./xmlFeedParser.js";
-
-const IS_TAURI = Boolean(window.__TAURI_INTERNALS__);
-let tauriFetch = null;
-if (IS_TAURI) {
-  import("@tauri-apps/plugin-http")
-    .then((mod) => {
-      tauriFetch = mod.fetch;
-    })
-    .catch((err) => {
-      console.warn("[live-mode] Failed to load Tauri HTTP plugin.", err);
-    });
-}
+import { isDesktop, desktopFetch } from "./desktopBridge.js";
 
 /**
  * Tracks the last seen normal report entries with their updated timestamps.
@@ -120,8 +109,8 @@ export function startLivePolling(areaCodes, callbacks = {}, initialReports = [])
 
   _currentInterval = POLL_INTERVAL;
   if (_pollingTimeoutId === null) {
-    if (IS_TAURI) {
-      // Start immediately for Tauri to align timing with server right away
+    if (isDesktop) {
+      // Start immediately for Desktop to align timing with server right away
       _runPollCycle(areaCodes, callbacks);
     } else {
       _pollingTimeoutId = setTimeout(() => {
@@ -204,12 +193,9 @@ function _runPollCycle(areaCodes, callbacks) {
 async function _pollLatestFeed(areaCodes, callbacks = {}) {
   try {
     const options = {};
-    if (IS_TAURI) {
-      if (!tauriFetch) {
-        const mod = await import("@tauri-apps/plugin-http");
-        tauriFetch = mod.fetch;
-      }
-      options.tauriFetch = tauriFetch;
+    if (isDesktop) {
+      options.desktopFetch = desktopFetch;
+      options.tauriFetch = desktopFetch; // backward compatibility
     }
 
     const { entries, nextIntervalMs, notModified } = await fetchXmlFeedEntries(options);

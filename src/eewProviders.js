@@ -1,19 +1,7 @@
 import { USE_TEST_SERVER } from "./constants.js";
 import { loadAreaNameToCodeMap, getAreaCodeByName } from "./areaCodes.js";
 
-// Detect Tauri runtime — when running as a desktop app, we can bypass CORS
-// by using Tauri's HTTP plugin which makes requests through Rust's HTTP client.
-const IS_TAURI = typeof window !== "undefined" && Boolean(window.__TAURI_INTERNALS__);
-let tauriFetch = null;
-if (IS_TAURI) {
-  import("@tauri-apps/plugin-http")
-    .then((mod) => {
-      tauriFetch = mod.fetch;
-    })
-    .catch((err) => {
-      console.warn("[EEW] Failed to load Tauri HTTP plugin, falling back to browser fetch.", err);
-    });
-}
+import { isDesktop, desktopFetch } from "./desktopBridge.js";
 
 /**
  * Determines whether an EEW is PLUM-method only.
@@ -43,6 +31,7 @@ export class BaseEewProvider {
     tokenLabel = "Token • トークン:",
     tokenPlaceholder = "Bearer Token",
     tauriOnly = false,
+    desktopOnly = false,
     infoHtml = null,
     disableGmpe = false,
     supportsHomeSync = false,
@@ -54,7 +43,8 @@ export class BaseEewProvider {
     this.defaultPort = defaultPort;
     this.tokenLabel = tokenLabel;
     this.tokenPlaceholder = tokenPlaceholder;
-    this.tauriOnly = tauriOnly;
+    this.desktopOnly = desktopOnly || tauriOnly;
+    this.tauriOnly = this.desktopOnly;
     this.infoHtml = infoHtml;
     this.disableGmpe = disableGmpe;
     this.supportsHomeSync = supportsHomeSync;
@@ -74,7 +64,7 @@ export class BaseEewProvider {
   }
 
   isAvailable() {
-    return !(this.tauriOnly && !IS_TAURI);
+    return !(this.desktopOnly && !isDesktop);
   }
 
   getToken() {
@@ -516,7 +506,7 @@ export class AxisEewProvider extends WebSocketEewProvider {
 
     let targetServer = "wss://ws.axis.prioris.jp";
     try {
-      const fetchFn = tauriFetch || fetch;
+      const fetchFn = isDesktop ? desktopFetch : fetch;
       const res = await fetchFn("https://axis.prioris.jp/api/server/list/", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -552,9 +542,9 @@ export class AxisEewProvider extends WebSocketEewProvider {
     this.scheduleTokenRefresh();
   }
 
-  // ─── Token Refresh (Tauri only) ──────────────────────────────────────────────
+  // ─── Token Refresh (Desktop only) ──────────────────────────────────────────────
   scheduleTokenRefresh() {
-    if (!IS_TAURI) return;
+    if (!isDesktop) return;
 
     const storedExpiry = this.getStoredExpiry();
     if (!storedExpiry || Number(storedExpiry) < Date.now()) {
@@ -597,7 +587,7 @@ export class AxisEewProvider extends WebSocketEewProvider {
 
   async checkTokenRefresh() {
     const token = this.getToken();
-    if (!IS_TAURI || !tauriFetch || !token) return;
+    if (!isDesktop || !token) return;
 
     const now = new Date();
     const todayStr = this.toUTCDateString(now.getTime());
@@ -624,7 +614,7 @@ export class AxisEewProvider extends WebSocketEewProvider {
     );
 
     try {
-      const res = await tauriFetch("https://axis.prioris.jp/api/token/refresh/", {
+      const res = await desktopFetch("https://axis.prioris.jp/api/token/refresh/", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -735,6 +725,7 @@ export class DmdssEewProvider extends WebSocketEewProvider {
       requiresToken: false,
       requiresPort: true,
       defaultPort: "11311",
+      desktopOnly: true,
       tauriOnly: true,
       expectsHello: false,
       useHeartbeat: false,

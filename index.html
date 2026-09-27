@@ -434,7 +434,7 @@
 
     <script type="module" src="/src/main.js"></script>
     <script>
-      if (!window.__TAURI_INTERNALS__) {
+      if (!window.__TAURI_INTERNALS__ && !window.__ELECTRON__ && !window.__DESKTOP__) {
         const s = document.createElement("script");
         s.src = "https://stats.hainaut.xyz/api/script.js";
         s.dataset.siteId = "ab4fba6ddf2e";

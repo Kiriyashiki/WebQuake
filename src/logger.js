@@ -1,15 +1,13 @@
-const IS_TAURI = Boolean(window.__TAURI_INTERNALS__);
+import { checkIsDesktop, desktopLog } from "./desktopBridge.js";
 
 /**
  * Initializes the logging pipeline.
  * Must be called once, as early as possible in the app lifecycle.
  */
 export async function initLogger() {
-  if (!IS_TAURI) return;
+  if (!checkIsDesktop()) return;
 
   try {
-    const { info, warn, error, debug, trace } = await import("@tauri-apps/plugin-log");
-
     const originalInfo = console.info;
     const originalWarn = console.warn;
     const originalError = console.error;
@@ -17,23 +15,44 @@ export async function initLogger() {
     const originalLog = console.log;
 
     const formatArgs = (args) => {
-      return args.map(arg => {
-        if (typeof arg === 'object') {
-          try {
-            return JSON.stringify(arg);
-          } catch (e) {
-            return String(arg);
+      return args
+        .map((arg) => {
+          if (typeof arg === "object") {
+            try {
+              return JSON.stringify(arg);
+            } catch (e) {
+              return String(arg);
+            }
           }
-        }
-        return String(arg);
-      }).join(" ");
+          return String(arg);
+        })
+        .join(" ");
     };
 
-    console.info = (...args) => { originalInfo(...args); info(formatArgs(args)).catch(()=>{}); };
-    console.warn = (...args) => { originalWarn(...args); warn(formatArgs(args)).catch(()=>{}); };
-    console.error = (...args) => { originalError(...args); error(formatArgs(args)).catch(()=>{}); };
-    console.debug = (...args) => { originalDebug(...args); debug(formatArgs(args)).catch(()=>{}); };
-    console.log = (...args) => { originalLog(...args); trace(formatArgs(args)).catch(()=>{}); };
+    const logToDesktop = (level, args) => {
+      desktopLog(level, formatArgs(args));
+    };
+
+    console.info = (...args) => {
+      originalInfo(...args);
+      logToDesktop("info", args);
+    };
+    console.warn = (...args) => {
+      originalWarn(...args);
+      logToDesktop("warn", args);
+    };
+    console.error = (...args) => {
+      originalError(...args);
+      logToDesktop("error", args);
+    };
+    console.debug = (...args) => {
+      originalDebug(...args);
+      logToDesktop("debug", args);
+    };
+    console.log = (...args) => {
+      originalLog(...args);
+      logToDesktop("trace", args);
+    };
 
     console.info("[logger] Log pipeline attached — session logs will be written to disk.");
 
@@ -45,6 +64,6 @@ export async function initLogger() {
       console.error("[Unhandled Rejection]", event.reason ? event.reason.stack || event.reason : event.reason);
     });
   } catch (err) {
-    console.warn("[logger] Failed to attach Tauri log plugin:", err);
+    console.warn("[logger] Failed to attach desktop log pipeline:", err);
   }
 }

@@ -895,7 +895,7 @@ function startWaveAnimation() {
   if (waveInterval) return;
 
   console.debug("[eq-viewer-eew] startWaveAnimation: setting interval");
-  waveInterval = setInterval(updateWaves, 500);
+  waveInterval = setInterval(updateWaves, 250);
 
   // Defer the initial wave update to avoid interacting with MapLibre sources
   // synchronously in the same tick as layout property changes, which can

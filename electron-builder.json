@@ -1,0 +1,35 @@
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "xyz.hainaut.kyoquake",
+  "productName": "KyoQuake",
+  "executableName": "kyoquake",
+  "directories": {
+    "output": "release"
+  },
+  "publish": null,
+  "files": [
+    "dist/**/*",
+    "electron/**/*",
+    "package.json"
+  ],
+  "linux": {
+    "target": [
+      "AppImage",
+      "deb",
+      "rpm"
+    ],
+    "category": "Utility",
+    "icon": "src-tauri/icons/icon.png",
+    "synopsis": "Earthquake reports viewer for Japan",
+    "description": "Displays information from earthquake reports published by the Japan Meteorological Agency (JMA · 気象庁).",
+    "maintainer": "Kiriyashiki",
+    "syncDesktopName": true
+  },
+  "deb": {
+    "priority": "optional",
+    "packageCategory": "utils"
+  },
+  "rpm": {
+    "fpm": ["--rpm-os", "linux"]
+  }
+}

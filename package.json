@@ -1,13 +1,20 @@
 {
     "name": "webquake",
-    "version": "0.4.1",
+    "version": "0.4.2",
+    "description": "Earthquake reports viewer for Japan (JMA)",
+    "author": "Kiriyashiki",
+    "desktopName": "kyoquake.desktop",
     "private": true,
     "type": "module",
+    "main": "electron/main.js",
     "scripts": {
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview",
-        "tauri": "tauri"
+        "tauri": "tauri",
+        "electron": "electron . --no-sandbox",
+        "electron:dev": "electron . --no-sandbox --dev",
+        "electron:build:linux": "vite build && electron-builder --linux AppImage deb rpm --publish never"
     },
     "dependencies": {
         "@tauri-apps/plugin-http": "^2.7.0",
@@ -18,6 +25,8 @@
     "devDependencies": {
         "@tauri-apps/cli": "^2.12.0",
         "@turf/turf": "^7.4.0",
+        "electron": "^44.4.5",
+        "electron-builder": "^26.15.3",
         "vite": "^8.3.1"
     }
 }

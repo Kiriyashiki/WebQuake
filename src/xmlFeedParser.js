@@ -76,7 +76,7 @@ export async function fetchXmlFeedEntries(options = {}) {
   if (_lastModified) headers['If-Modified-Since'] = _lastModified;
   if (_eTag) headers['If-None-Match'] = _eTag;
 
-  const fetchFn = options.tauriFetch || fetch;
+  const fetchFn = options.desktopFetch || options.tauriFetch || fetch;
 
   // 1. Fetch the Atom feed index (lightweight — just the feed XML)
   const feedRes = await fetchFn(XML_FEED_URL, {
@@ -89,7 +89,7 @@ export async function fetchXmlFeedEntries(options = {}) {
   let nextIntervalMs = null;
   let notModified = false;
 
-  if (options.tauriFetch) {
+  if (options.desktopFetch || options.tauriFetch) {
     const cacheControl = feedRes.headers.get('cache-control') || '';
     const maxAgeMatch = cacheControl.match(/max-age=(\d+)/);
     const maxAge = maxAgeMatch ? Number.parseInt(maxAgeMatch[1], 10) : 60;
@@ -212,7 +212,7 @@ document.addEventListener('reports-pruned', (e) => {
  */
 async function _fetchAndNormalizeXmlEntry(atomEntry, options = {}) {
   try {
-    const fetchFn = options.tauriFetch || fetch;
+    const fetchFn = options.desktopFetch || options.tauriFetch || fetch;
     const res = await fetchFn(atomEntry.dataUrl, {
       method: 'GET',
       mode: 'cors',
