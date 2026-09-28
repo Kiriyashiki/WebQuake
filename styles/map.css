@@ -214,16 +214,18 @@
 }
 
 .info-box-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px 12px;
   flex-shrink: 0;
 }
 
 .info-box-location {
-  flex: 1;
+  grid-column: 1;
+  grid-row: 1;
   min-width: 0;
+  align-self: start;
 }
 
 .info-box-location-ja {
@@ -245,10 +247,13 @@
 }
 
 .info-box-intensity-container {
+  grid-column: 2;
+  grid-row: 1;
   flex-shrink: 0;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: right;
+  align-items: end;
+  align-self: flex-end;
 }
 
 .info-box-intensity-img {
@@ -318,10 +323,14 @@
 /* ── Flash Report Badge ────────────────────────────────────────── */
 
 .info-box-flash-badge {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: start;
+  align-self: center;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-top: 4px;
+  margin-top: 0;
   padding: 2px 8px;
   background: rgba(245, 158, 11, 0.15);
   border: 1px solid rgba(245, 158, 11, 0.5);
@@ -331,6 +340,21 @@
 }
 
 .info-box-flash-badge.hidden {
+  display: none;
+}
+
+.info-box-eew-serial {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: center;
+  align-self: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.info-box-eew-serial.hidden {
   display: none;
 }
 

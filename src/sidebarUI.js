@@ -186,9 +186,12 @@ export function initCityAreasToggle(onToggle) {
   const toggleEl = document.getElementById("city-areas-toggle");
   if (!toggleEl) return;
 
-  // Load saved state from localStorage, default to true
-  const savedState = localStorage.getItem("city-areas-enabled") === "true";
-  toggleEl.checked = savedState;
+  let savedState = localStorage.getItem("city-areas-enabled");
+  if (savedState == null) {
+    savedState = "true";
+    localStorage.setItem("city-areas-enabled", "true");
+  }
+  toggleEl.checked = savedState === "true";
 
   // Set initial callback
   if (onToggle) onToggle(savedState);

@@ -1,6 +1,6 @@
 [package]
 name = "KyoQuake"
-version = "0.4.2"
+version = "0.4.3"
 description = "KyoQuake"
 authors = ["Kiriyashiki"]
 license = "MIT"

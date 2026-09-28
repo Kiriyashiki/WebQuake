@@ -578,4 +578,18 @@ assert.strictEqual(testSelectHighestIntensity([eewA, eewB], false), null);
 
 console.log("✓ Test 12 passed");
 
+// 13. EEW Report Number Formatting
+console.log("Test 13: EEW Report Number Formatting");
+function formatEewSerial(msg) {
+  const isFinal = Boolean(msg.Flag?.is_final);
+  const serialNum = msg.Serial ?? "";
+  return serialNum ? `#${serialNum}${isFinal ? " Final" : ""}` : (isFinal ? "Final" : "");
+}
+
+assert.strictEqual(formatEewSerial({ Serial: 1, Flag: { is_final: false } }), "#1");
+assert.strictEqual(formatEewSerial({ Serial: 5, Flag: { is_final: false } }), "#5");
+assert.strictEqual(formatEewSerial({ Serial: 3, Flag: { is_final: true } }), "#3 Final");
+assert.strictEqual(formatEewSerial({ Serial: 12, Flag: { is_final: true } }), "#12 Final");
+console.log("✓ Test 13 passed");
+
 console.log("\n=== ALL TESTS PASSED SUCCESSFULLY! ===");

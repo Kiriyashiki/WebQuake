@@ -4,6 +4,7 @@ import {
   INTENSITY_CONFIG,
   USE_TEST_SERVER,
   TEST_GMPE_OVERRIDE,
+  LPGM_CONFIG,
   haversineDistance,
 } from "./constants.js";
 import { playAudio } from "./audio.js";
@@ -17,7 +18,6 @@ import {
   hideHomeLocationIntensity,
   displayHomeMarker,
   setCustomHomeCoordinates,
-  getCustomHomeCoordinates,
 } from "./map.js";
 import {
   createRubyHtml,
@@ -26,7 +26,12 @@ import {
   loadAreaNameToCodeMap,
   findCityForCoordinates,
 } from "./areaCodes.js";
-import { getCityAreasState, getHomeIntensityState, setHomeLocationUI, getHomeLocation } from "./sidebarUI.js";
+import {
+  getCityAreasState,
+  getHomeIntensityState,
+  setHomeLocationUI,
+  getHomeLocation,
+} from "./sidebarUI.js";
 import { updateMapLegend } from "./main.js";
 import {
   getProvider,
@@ -140,7 +145,6 @@ let isUserInteractingWithMap = false;
 let isEewMapActive = false;
 let previousReport = null; // Store currently opened normal report to restore after EEWs clear
 
-
 /**
  * Clears EEW visual elements from the map when a normal report is selected.
  */
@@ -171,6 +175,11 @@ export function clearEewMapDisplay() {
     if (eewSerialRow) eewSerialRow.remove();
     const eewSourceRow = infoBox.querySelector(".eew-source-row");
     if (eewSourceRow) eewSourceRow.remove();
+    const eewSerial = infoBox.querySelector(".info-box-eew-serial");
+    if (eewSerial) {
+      eewSerial.textContent = "";
+      eewSerial.classList.add("hidden");
+    }
   }
 
   if (mapInstance) {
@@ -325,7 +334,11 @@ export function initEewSettings(map, bounds, cities, areas) {
         if (homeLoc.showMarker && featureBounds) {
           displayHomeMarker(mapInstance, homeLoc.cityCode, featureBounds);
         }
-      } else if (newProvider.supportsHomeSync && newProvider.getHomeSync() && newProvider.userPoint) {
+      } else if (
+        newProvider.supportsHomeSync &&
+        newProvider.getHomeSync() &&
+        newProvider.userPoint
+      ) {
         applyEewClientUserPoint(newProvider.userPoint);
       }
 
@@ -377,7 +390,7 @@ export function initEewSettings(map, bounds, cities, areas) {
   if (homeSyncToggleEl) {
     homeSyncToggleEl.addEventListener("change", async (e) => {
       const p = getActiveProvider();
-      if (!p || !p.supportsHomeSync) return;
+      if (!p?.supportsHomeSync) return;
       const enabled = e.target.checked;
       p.setHomeSync(enabled);
 
@@ -430,16 +443,16 @@ export function updateEewStatus(state) {
 
   if (state === "connecting") {
     dot.className = "dot-loading";
-    text.textContent = "EEW: Connecting";
+    text.textContent = " EEW: Connecting";
   } else if (state === "connected") {
     dot.className = "dot-live";
-    text.textContent = "EEW: Connected";
+    text.textContent = " EEW: Connected";
   } else if (state === "upstream-disconnected") {
     dot.className = "dot-loading";
-    text.textContent = "EEW: Upstream disconnected";
+    text.textContent = " EEW: Upstream disconnected";
   } else if (state === "error") {
     dot.className = "dot-error";
-    text.textContent = "EEW: Disconnected";
+    text.textContent = " EEW: Disconnected";
   }
 }
 
@@ -526,11 +539,15 @@ export function handleEewMessage(msg, providerInfo = null) {
     disableGmpe = Boolean(providerInfo.disableGmpe);
   } else if (typeof providerInfo === "string") {
     srcName = providerInfo;
-    const matched = getProvider(providerInfo) || (activeProv?.name === providerInfo ? activeProv : null);
+    const matched =
+      getProvider(providerInfo) || (activeProv?.name === providerInfo ? activeProv : null);
     if (matched) {
       providerId = matched.id;
       disableGmpe = Boolean(matched.disableGmpe);
-    } else if (providerInfo.toLowerCase().includes("dmdss") || providerInfo.toLowerCase().includes("client")) {
+    } else if (
+      providerInfo.toLowerCase().includes("dmdss") ||
+      providerInfo.toLowerCase().includes("client")
+    ) {
       providerId = "dmdss";
       disableGmpe = true;
     }
@@ -771,13 +788,13 @@ function renderCurrentEew() {
   const container = document.getElementById("eew-list-container");
   let listHtml = `
     <div class="eew-list-item" style="border-top: 4px solid ${labelColor};">
-      <div class="eew-list-header" style="color: ${labelColor}; font-weight: bold; font-size: 11px; margin-bottom: 4px;">
+      <div class="eew-list-header" style="color: ${labelColor}; font-weight: bold; font-size: 12px; margin-bottom: 4px;">
          ${eews.length > 1 ? `[${carouselIndex + 1}/${eews.length}] ` : ""}${labelText}
       </div>
       <div class="eq-content">
         <div class="eq-left">
           <div class="eq-location-ja">${hypoInfo.ja}</div>
-          <div class="eq-location-en" style="font-size: 11px; color: var(--text-dim); margin-bottom: 4px;">${hypoInfo.en}</div>
+          <div class="eq-location-en">${hypoInfo.en}</div>
           <div class="eq-footer">
             <div class="eq-mag">
               <span class="eq-mag-label">M</span>
@@ -1054,8 +1071,6 @@ function renderEewInfoBox(
   if (mapTogglesWrapper) mapTogglesWrapper.classList.add("hidden");
 
   const lpgmRow = infoBox.querySelector(".info-box-lpgm-row");
-  if (lpgmRow) lpgmRow.classList.add("hidden");
-
   const locationJa = infoBox.querySelector(".info-box-location-ja");
   const locationEn = infoBox.querySelector(".info-box-location-en");
   const flashBadge = infoBox.querySelector(".info-box-flash-badge");
@@ -1086,7 +1101,7 @@ function renderEewInfoBox(
   if (totalCount > 1) labelText = `[${currentIndex}/${totalCount}] ` + labelText;
 
   let hypoCodeNum = Number.parseInt(msg.Hypocenter?.Code);
-  if ((!hypoCodeNum || isNaN(hypoCodeNum)) && msg.Hypocenter?.Name && areaCodes) {
+  if ((!hypoCodeNum || Number.isNaN(hypoCodeNum)) && msg.Hypocenter?.Name && areaCodes) {
     for (const [code, info] of areaCodes.entries()) {
       if (info.ja === msg.Hypocenter.Name) {
         hypoCodeNum = code;
@@ -1113,6 +1128,7 @@ function renderEewInfoBox(
   if (msg.Intensity && msg.Intensity !== "不明") {
     const intensityConfig = INTENSITY_CONFIG[msg.Intensity] || INTENSITY_CONFIG["1"];
     intensityImg.src = `/img/shindo/${intensityConfig.img}`;
+    intensityImg.title = `Intensity: ${msg.Intensity}`;
     intensityImg.style.display = "block";
     const existingPlaceholder = intensityContainer.querySelector(".eew-intensity-placeholder");
     if (existingPlaceholder) existingPlaceholder.remove();
@@ -1127,7 +1143,7 @@ function renderEewInfoBox(
       placeholder = document.createElement("div");
       placeholder.className = "eew-intensity-placeholder";
       placeholder.style.cssText =
-        "width:60px; height:60px; border-radius:3px; background:#1e2e44; display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px; font-weight:bold;";
+        "width:54px; height:54px; border-radius:3px; background:#1e2e44; display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px; font-weight:bold;";
       placeholder.textContent = "-";
       intensityContainer.appendChild(placeholder);
     }
@@ -1135,7 +1151,7 @@ function renderEewInfoBox(
 
   const isPlumMethod = isPlum !== undefined ? Boolean(isPlum) : isPlumEew(msg);
   magnitude.textContent = isPlumMethod ? "--" : `M ${msg.Magnitude}`;
-  depth.textContent = isPlumMethod ? "--" : msg.Hypocenter?.Depth ?? "--";
+  depth.textContent = isPlumMethod ? "--" : (msg.Hypocenter?.Depth ?? "--");
 
   if (isPlumMethod) {
     const coordsLabel = coordinates.previousElementSibling;
@@ -1156,18 +1172,41 @@ function renderEewInfoBox(
     timeEl.textContent = formatTimeJSTWithSeconds(new Date(msg.OriginDateTime).getTime());
   }
 
-  // Add Extra row for Serial and Final
-  const detailsContainer = infoBox.querySelector(".info-box-details");
-  let serialRow = detailsContainer.querySelector(".eew-serial-row");
-  if (!serialRow) {
-    serialRow = document.createElement("div");
-    serialRow.className = "info-box-row eew-serial-row";
-    detailsContainer.appendChild(serialRow);
+  const lpgmValue = infoBox.querySelector(".info-lpgm");
+  if (lpgmRow && lpgmValue) {
+    if (msg.maxLgInt) {
+      let maxLg = msg.maxLgInt;
+      lpgmValue.textContent = `CLASS ${maxLg}`;
+      if (typeof maxLg === "string") {
+        maxLg = Number.parseInt(maxLg);
+      }
+      const lpgmConfig = LPGM_CONFIG[maxLg];
+      if (lpgmConfig) {
+        lpgmValue.style.backgroundColor = lpgmConfig.color;
+        lpgmValue.style.color = lpgmConfig.fontColor;
+        lpgmValue.style.padding = "2px 6px";
+        lpgmValue.style.borderRadius = "4px";
+      }
+      lpgmRow.classList.remove("hidden");
+    } else {
+      lpgmRow.classList.add("hidden");
+      lpgmValue.textContent = "";
+      lpgmValue.style.backgroundColor = "";
+    }
   }
-  serialRow.innerHTML = `
-    <span class="info-label">Report • 報</span>
-    <span class="info-value mono">#${msg.Serial} ${msg.Flag.is_final ? "(Final)" : ""}</span>
-  `;
+
+  // Set Serial and Final under intensity image
+  const serialEl = infoBox.querySelector(".info-box-eew-serial");
+  if (serialEl) {
+    const isFinal = Boolean(msg.Flag?.is_final);
+    const serialNum = msg.Serial ?? "";
+    serialEl.textContent = serialNum ? `#${serialNum}${isFinal ? " Final" : ""}` : (isFinal ? "Final" : "");
+    serialEl.classList.remove("hidden");
+  }
+
+  const detailsContainer = infoBox.querySelector(".info-box-details");
+  const oldSerialRow = detailsContainer?.querySelector(".eew-serial-row");
+  if (oldSerialRow) oldSerialRow.remove();
 
   // Add Extra row for Source
   let sourceRow = detailsContainer.querySelector(".eew-source-row");
@@ -1341,7 +1380,8 @@ function updateMapForEew() {
     const isGmpeDisabled = Boolean(
       activeProv?.disableGmpe ||
       activeProv?.id === "dmdss" ||
-      (eews.length > 0 && eews.every((e) => e.disableGmpe || e.providerId === "dmdss" || e.isCancelled))
+      (eews.length > 0 &&
+        eews.every((e) => e.disableGmpe || e.providerId === "dmdss" || e.isCancelled)),
     );
 
     const localPredictions = new Map();
@@ -1431,7 +1471,9 @@ function updateMapForEew() {
         }
       }
     } else {
-      console.debug("[eq-viewer-eew] updateMapForEew Phase 2: skipping GMPE calculation (disabled for provider)");
+      console.debug(
+        "[eq-viewer-eew] updateMapForEew Phase 2: skipping GMPE calculation (disabled for provider)",
+      );
     }
 
     console.debug("[eq-viewer-eew] updateMapForEew Phase 2: merging GMPE and forecast");
@@ -1623,7 +1665,8 @@ export function getIsEewMapActive() {
 export async function applyEewClientUserPoint(location) {
   if (!Array.isArray(location) || location.length < 2) return;
   const [lon, lat] = location;
-  if (typeof lon !== "number" || typeof lat !== "number" || Number.isNaN(lon) || Number.isNaN(lat)) return;
+  if (typeof lon !== "number" || typeof lat !== "number" || Number.isNaN(lon) || Number.isNaN(lat))
+    return;
 
   setCustomHomeCoordinates([lon, lat]);
 
@@ -1664,7 +1707,9 @@ export function updateHomeIntensityForActiveEews() {
 
   const activeEewList = Array.from(activeEews.values()).filter((e) => !e.isCancelled);
   const homeLocation = getHomeLocation();
-  const homeCityCode = homeLocation?.cityCode || (typeof localStorage !== "undefined" ? localStorage.getItem("home-city") : null);
+  const homeCityCode =
+    homeLocation?.cityCode ||
+    (typeof localStorage !== "undefined" ? localStorage.getItem("home-city") : null);
 
   if (!homeCityCode) {
     hideHomeLocationIntensity();
@@ -1695,9 +1740,7 @@ export function updateHomeIntensityForActiveEews() {
     const mergedForecast = mergeForecasts(activeEewList);
     const homeAreaCodeStr = cityForecastMap?.get(homeCityCode);
     if (homeAreaCodeStr) {
-      const forecastArea = mergedForecast.find(
-        (f) => f.Code === Number.parseInt(homeAreaCodeStr),
-      );
+      const forecastArea = mergedForecast.find((f) => f.Code === Number.parseInt(homeAreaCodeStr));
       const forecastInt = forecastArea ? forecastArea.Intensity.To : null;
       updateEewHomeLocationDisplay(homeCityCode, forecastInt || null);
     } else {

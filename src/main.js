@@ -1007,6 +1007,12 @@ function _displayMapInfoBox(report, map) {
   const eewSourceRow = infoBox.querySelector(".eew-source-row");
   if (eewSourceRow) eewSourceRow.remove();
 
+  const eewSerial = infoBox.querySelector(".info-box-eew-serial");
+  if (eewSerial) {
+    eewSerial.textContent = "";
+    eewSerial.classList.add("hidden");
+  }
+
   const eewIntensityPlaceholder = infoBox.querySelector(".eew-intensity-placeholder");
   if (eewIntensityPlaceholder) eewIntensityPlaceholder.remove();
 
@@ -1131,7 +1137,7 @@ function _displayMapInfoBox(report, map) {
   const lpgmRow = infoBox.querySelector(".info-box-lpgm-row");
   const lpgmValue = infoBox.querySelector(".info-lpgm");
   if (lpgmRow && lpgmValue) {
-    if (report.lpgmInfo && report.lpgmInfo.maxLgInt) {
+    if (report.lpgmInfo?.maxLgInt) {
       const maxLg = report.lpgmInfo.maxLgInt;
       lpgmValue.textContent = `CLASS ${maxLg}`;
       const lpgmConfig = LPGM_CONFIG[maxLg];

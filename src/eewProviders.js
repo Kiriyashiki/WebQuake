@@ -12,7 +12,10 @@ export function isPlumEew(msg) {
     return true;
   }
   const mag = String(msg.Magnitude ?? "").trim();
-  const depth = String(msg.Hypocenter?.Depth ?? "").trim().toLowerCase().replace(/\s+/g, "");
+  const depth = String(msg.Hypocenter?.Depth ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "");
   const isDummyMag = mag === "1.0" || mag === "1" || Number.parseFloat(mag) === 1.0;
   const isDummyDepth = depth === "10km" || depth === "10";
   return isDummyMag && isDummyDepth;
@@ -113,7 +116,10 @@ export class BaseEewProvider {
     if (!rawMsg?.Title) return null;
     const isTest = Boolean(rawMsg.isTest || rawMsg.Flag?.is_training);
     const mag = String(rawMsg.Magnitude ?? "").trim();
-    const depth = String(rawMsg.Hypocenter?.Depth ?? "").trim().toLowerCase().replace(/\s+/g, "");
+    const depth = String(rawMsg.Hypocenter?.Depth ?? "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "");
     const isDummyMag = mag === "1.0" || mag === "1" || Number.parseFloat(mag) === 1.0;
     const isDummyDepth = depth === "10km" || depth === "10";
     const isPlum = Boolean(rawMsg.isPlumOnly) || (isDummyMag && isDummyDepth);
@@ -311,12 +317,14 @@ export class WebSocketEewProvider extends BaseEewProvider {
           "EEW connection failed: Token may be invalid. Please check your token in Settings.\n接続に失敗しました：トークンが無効である可能性があります。「設定」でトークンを確認してください。",
         );
       } else if (this.requiresPort) {
-        console.warn(`[EEW][${this.name}] Failed to connect to local websocket on port ${this.getPort()}.`);
+        console.warn(
+          `[EEW][${this.name}] Failed to connect to local websocket on port ${this.getPort()}.`,
+        );
         this.callbacks?.onAuthError?.(
           "EEW connection failed: Unable to connect to DMDSS EEW Client.\n" +
-          "Please check if the port is correct in Settings and if EEW Client is running with external services enabled.\n\n" +
-          "接続に失敗しました：DMDSS EEW Clientに接続できません。\n" +
-          "「設定」でポート番号を確認し、EEW Clientの外部連携機能が有効になっているか確認してください。"
+            "Please check if the port is correct in Settings and if EEW Client is running with external services enabled.\n\n" +
+            "接続に失敗しました：DMDSS EEW Clientに接続できません。\n" +
+            "「設定」でポート番号を確認し、EEW Clientの外部連携機能が有効になっているか確認してください。",
         );
       } else {
         console.warn(`[EEW][${this.name}] Failed to connect after 5 retries.`);
@@ -855,7 +863,10 @@ export class DmdssEewProvider extends WebSocketEewProvider {
     const isFinal = Boolean(data.isLastInfo);
     const isTest = Boolean(data.isTest);
     const mag = String(data.magnitude ?? "").trim();
-    const depth = String(data.depth != null ? `${data.depth}km` : "").trim().toLowerCase().replace(/\s+/g, "");
+    const depth = String(data.depth != null ? `${data.depth}km` : "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "");
     const isDummyMag = mag === "1.0" || mag === "1" || Number.parseFloat(mag) === 1.0;
     const isDummyDepth = depth === "10km" || depth === "10";
     const isPlumOnly = Boolean(data.isPlumOnly) || (isDummyMag && isDummyDepth);
@@ -890,6 +901,13 @@ export class DmdssEewProvider extends WebSocketEewProvider {
       intensityStr = data.maxInt;
     }
 
+    let lpgmStr = "";
+    if (data.maxLgInt?.to) {
+      lpgmStr = String(data.maxLgInt.to);
+    } else if (data.maxLgInt && typeof data.maxLgInt === "string") {
+      lpgmStr = data.maxLgInt;
+    }
+
     return {
       Title: isWarning ? "緊急地震速報（警報）" : "緊急地震速報（予報）",
       EventID: String(data.eventId || ""),
@@ -920,7 +938,7 @@ export class DmdssEewProvider extends WebSocketEewProvider {
       isPlumOnly: isPlumOnly,
       isLowAccuracy: isLowAccuracy,
       pointForecast: data.pointForecast || null,
-      maxLgInt: data.maxLgInt || null,
+      maxLgInt: lpgmStr,
       accuracy: data.accuracy || null,
     };
   }
