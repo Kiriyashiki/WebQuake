@@ -23,8 +23,8 @@
   --japan-line: #1e2e44;
 
   /* Typography */
-  --font-display: 'M PLUS 1P', 'Syne', sans-serif;
-  --font-mono:    'IBM Plex Mono', 'M PLUS 1P', monospace;
+  --font-display: 'M PLUS 1p', 'M PLUS 1P', 'Syne', sans-serif;
+  --font-mono:    'IBM Plex Mono', 'M PLUS 1p', 'M PLUS 1P', monospace;
 
   /* Layout */
   --topbar-h:    52px;

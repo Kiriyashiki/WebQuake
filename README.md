@@ -27,12 +27,13 @@ A desktop app version for various platforms is also available for download [here
 It has the same features as the web app, with some added features that cannot work on the web version:
 - Smarter live feed polling logic to reduce bandwidth use
 - Better handling of the AXIS connection, with automatic token renewal
+- Integration with EEW Client by DMDATA.JP's external services
 
 ## Dev
 
 This project uses Vite.js with NodeJS, and is written in vanilla JavaScript.<br>
 The prefered package manager is pnpm.<br>
-Tauri is used for the desktop apps.
+Tauri (Windows, macOS) and Electron (Linux) is used for the desktop apps.
 
 ### Build
 
