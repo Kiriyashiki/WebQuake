@@ -1,66 +1,60 @@
 import "../styles/index.css";
 import { initLogger } from "./logger.js";
-import { formatTimeJST, formatTimeJSTWithSeconds, INTENSITY_CONFIG, LPGM_CONFIG } from "./constants.js";
-import { playAudio, preloadAudio } from "./audio.js";
+import { fetchEarthquakeReports } from "./parseReports.js";
 import {
-  createRubyHtml,
   loadAreaCodes,
   loadPrefectureCodes,
+  loadBoundsData,
   loadCityNames,
   loadStationNames,
-  loadBoundsData,
 } from "./areaCodes.js";
 import {
   initMap,
   highlightObservations,
+  fitBoundsToObservations,
   displayEpicenter,
   clearEpicenter,
-  clearAllEpicenters,
-  updateCityAreasVisibility,
-  updateShakemapVisibility,
-  highlightShakemapObservations,
-  clearShakemapHighlights,
-  isShakemapVisible,
-  updateLpgmVisibility,
-  isLpgmVisible,
-  fitBoundsToObservations,
   displayHomeMarker,
   clearHomeMarker,
   displayHomeLocationIntensity,
   hideHomeLocationIntensity,
+  updateCityAreasVisibility,
+  updateShakemapVisibility,
+  clearShakemapHighlights,
+  clearAllEpicenters,
+  isShakemapVisible,
+  isLpgmVisible,
+  updateLpgmVisibility,
 } from "./map.js";
-import { fetchEarthquakeReports } from "./parseReports.js";
 import {
-  createReportItem,
+  addReportToSidebar,
+  updateReportInSidebar,
+  initAutoOpenToggle,
+  getAutoOpenState,
+  initCityAreasToggle,
+  getCityAreasState,
+  initLiveModeToggle,
+  initHomeLocationSettings,
+  getHomeLocation,
+  initHomeIntensityToggle,
+  getHomeIntensityState,
   updateSidebarLoading,
   updateSidebarLoadingPopup,
   hideSidebarLoadingPopup,
-  initLiveModeToggle,
-  initAutoOpenToggle,
-  initCityAreasToggle,
-  initHomeLocationSettings,
-  getHomeLocation,
-  addReportToSidebar,
-  updateReportInSidebar,
-  getAutoOpenState,
-  getCityAreasState,
-  initHomeIntensityToggle,
-  getHomeIntensityState,
   syncLiveModeToggleVisuals,
 } from "./sidebarUI.js";
-import { renderObservationsList } from "./observationsList.js";
 import { startLivePolling, stopLivePolling } from "./liveMode.js";
+import { playAudio, preloadAudio } from "./audio.js";
 import {
-  fetchHistoryReports,
-  fetchHistoryEventList,
-  fetchHistoryReport,
-  buildHistoryBaseReport,
-  getSearchPreset,
-  fetchEqdbMaxDate,
-  EQDB_MIN_DATE,
-} from "./historyMode.js";
-import { initEewSettings, handlePossibleEewReport, clearEewMapDisplay, updateHomeIntensityForActiveEews, getIsEewMapActive } from "./eew.js";
-
+  initEewSettings,
+  handlePossibleEewReport,
+  clearEewMapDisplay,
+  updateHomeIntensityForActiveEews,
+  getIsEewMapActive,
+} from "./eew.js";
+import { initHistoryController } from "./historyController.js";
+import { initSettingsModal } from "./settingsManager.js";
+import { displayMapInfoBox, updateMapLegend } from "./mapInfoBox.js";
 import { isDesktop, desktopOpenUrl } from "./desktopBridge.js";
 
 // In desktop apps (Tauri and Electron), external links launch in the system browser
@@ -76,57 +70,60 @@ if (isDesktop) {
   });
 }
 
+export { updateMapLegend };
+
+/**
+ * Updates the status indicator in the top-right.
+ * @param {'idle' | 'loading' | 'live' | 'error'} state
+ */
+function _updateStatus(state) {
+  const dot = document.getElementById("status-dot");
+  const text = document.getElementById("status-text");
+  if (!dot || !text) return;
+
+  dot.className = `dot-${state}`;
+  const labels = {
+    idle: "Idle",
+    loading: "Fetching reports...",
+    live: "Live Mode Active",
+    error: "Error",
+  };
+  text.textContent = labels[state] || state;
+}
+
+/**
+ * Main application bootstrap function.
+ */
 async function boot() {
   await initLogger();
   syncLiveModeToggleVisuals();
+  _updateStatus("loading");
 
-  // Load area code name mappings
-  let areaCodes = new Map();
-  try {
-    areaCodes = await loadAreaCodes();
-    console.info(`[eq-viewer] Loaded ${areaCodes.size} area code entries.`);
-  } catch (err) {
-    console.warn("[eq-viewer] Could not load area codes CSV:", err.message);
-  }
-
-  // Load prefecture code name mappings
-  let prefectureCodes = new Map();
-  try {
-    prefectureCodes = await loadPrefectureCodes();
-    console.info(`[eq-viewer] Loaded ${prefectureCodes.size} prefecture code entries.`);
-  } catch (err) {
-    console.warn("[eq-viewer] Could not load prefecture codes CSV:", err.message);
-  }
-
-  // Load city name mappings
-  let cityNames = new Map();
-  try {
-    cityNames = await loadCityNames();
-    console.info(`[eq-viewer] Loaded ${cityNames.size} city names.`);
-  } catch (err) {
-    console.warn("[eq-viewer] Could not load city.json:", err.message);
-  }
-
-  // Load station names mappings
-  let stationNames = { byCode: new Map(), byName: new Map() };
-  try {
-    stationNames = await loadStationNames();
-    console.info(`[eq-viewer] Loaded ${stationNames.byCode.size} station names.`);
-  } catch (err) {
-    console.warn("[eq-viewer] Could not load stations.csv:", err.message);
-  }
-
-  // Load feature bounds
-  let featureBounds = null;
-  try {
-    featureBounds = await loadBoundsData();
-    console.info(`[eq-viewer] Loaded feature bounds.`);
-  } catch (err) {
-    console.warn("[eq-viewer] Could not load bounds.json:", err.message);
-  }
-
-  // Boot the map
   const mapEl = document.getElementById("map");
+  if (!mapEl) {
+    console.error("[eq-viewer] Map element not found");
+    _updateStatus("error");
+    return;
+  }
+
+  // Load geographic and code data concurrently
+  let areaCodes, prefectureCodes, cityNames, stationNames, featureBounds;
+  try {
+    [areaCodes, prefectureCodes, cityNames, stationNames, featureBounds] =
+      await Promise.all([
+        loadAreaCodes(),
+        loadPrefectureCodes(),
+        loadCityNames(),
+        loadStationNames(),
+        loadBoundsData(),
+      ]);
+  } catch (err) {
+    console.error("[eq-viewer] Failed to load essential metadata:", err);
+    _updateStatus("error");
+    return;
+  }
+
+  // Initialize MapLibre map instance
   const map = initMap(mapEl, areaCodes, cityNames, stationNames, getCityAreasState);
 
   // Expose for later modules / debugging
@@ -146,445 +143,49 @@ async function boot() {
     });
   }
 
-  // ─── Sidebar Tab Switching ─────────────────────────────────────────────────
-  let historyReports = [];
-  let _historyCachedEventList = null;
-  let _historyLoadedCount = 0;
-  let _currentHistoryPreset = "year";
-  let _eqdbMaxDate = null;
-
-  const tabButtons = document.querySelectorAll(".sidebar-tab");
-  const liveTabContent = document.getElementById("live-tab-content");
-  const historyTabContent = document.getElementById("history-tab-content");
-
-  tabButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const tabName = btn.dataset.tab;
-
-      // Update active tab button
-      tabButtons.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      // Show/hide content (no clearing — preserves DOM)
-      if (tabName === "live") {
-        liveTabContent.classList.add("active");
-        historyTabContent.classList.remove("active");
-      } else {
-        liveTabContent.classList.remove("active");
-        historyTabContent.classList.add("active");
-      }
-    });
-  });
-
-  // ─── History Search Controls ────────────────────────────────────────────────
-
-  const presetButtons = document.querySelectorAll(".search-preset-btn");
-  const customFields = document.getElementById("history-custom-fields");
-  const searchBtn = document.getElementById("history-search-btn");
-  const loadMoreBtn = document.getElementById("history-load-more-btn");
-
-  // Preset button handling
-  presetButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const preset = btn.dataset.preset;
-
-      // Update active state
-      presetButtons.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      _currentHistoryPreset = preset;
-
-      // Show/hide custom fields
-      if (preset === "custom") {
-        customFields.classList.remove("hidden");
-      } else {
-        customFields.classList.add("hidden");
-        // Populate fields from preset so they're visible if user switches to custom later
-        _applyPresetToFields(preset);
-      }
-    });
-  });
-
-  /**
-   * Applies a preset's values to the custom search fields.
-   */
-  function _applyPresetToFields(preset) {
-    const params = getSearchPreset(preset, _eqdbMaxDate);
-    const dateFromEl = document.getElementById("history-date-from");
-    const dateToEl = document.getElementById("history-date-to");
-    const minIntEl = document.getElementById("history-min-intensity");
-    const magMinEl = document.getElementById("history-mag-min");
-    const magMaxEl = document.getElementById("history-mag-max");
-    const depMinEl = document.getElementById("history-depth-min");
-    const depMaxEl = document.getElementById("history-depth-max");
-    const sortEl = document.getElementById("history-sort");
-
-    if (dateFromEl) dateFromEl.value = params.dateFrom;
-    if (dateToEl) dateToEl.value = params.dateTo;
-    if (minIntEl) minIntEl.value = params.maxInt;
-    if (magMinEl) magMinEl.value = params.magMin;
-    if (magMaxEl) magMaxEl.value = params.magMax;
-    if (depMinEl) depMinEl.value = params.depMin;
-    if (depMaxEl) depMaxEl.value = params.depMax;
-    if (sortEl) sortEl.value = params.sort;
-  }
-
-  // Fetch EQDB max date, then initialize fields with default preset
-  fetchEqdbMaxDate().then((maxDate) => {
-    _eqdbMaxDate = maxDate;
-    _applyPresetToFields("year");
-
-    // Set date input constraints
-    const dateFromEl = document.getElementById("history-date-from");
-    const dateToEl = document.getElementById("history-date-to");
-    if (dateFromEl) {
-      dateFromEl.min = EQDB_MIN_DATE;
-      dateFromEl.max = maxDate;
-    }
-    if (dateToEl) {
-      dateToEl.min = EQDB_MIN_DATE;
-      dateToEl.max = maxDate;
-    }
-  });
-
-  /**
-   * Reads search parameters from the form fields (or preset).
-   */
-  function _getSearchParams() {
-    if (_currentHistoryPreset !== "custom") {
-      // Use sort from UI even for presets
-      const sortEl = document.getElementById("history-sort");
-      const params = getSearchPreset(_currentHistoryPreset, _eqdbMaxDate);
-      if (sortEl) params.sort = sortEl.value;
-      return params;
-    }
-
-    const dateFromEl = document.getElementById("history-date-from");
-    const dateToEl = document.getElementById("history-date-to");
-    let dateFrom = dateFromEl?.value || EQDB_MIN_DATE;
-    if (dateFrom < EQDB_MIN_DATE) {
-      dateFrom = EQDB_MIN_DATE;
-      if (dateFromEl) dateFromEl.value = EQDB_MIN_DATE;
-    }
-    let dateTo = dateToEl?.value || _eqdbMaxDate;
-    if (dateTo && dateTo < EQDB_MIN_DATE) {
-      dateTo = EQDB_MIN_DATE;
-      if (dateToEl) dateToEl.value = EQDB_MIN_DATE;
-    }
-    const minInt = document.getElementById("history-min-intensity")?.value || "1";
-    const magMin = document.getElementById("history-mag-min")?.value || "0.0";
-    const magMax = document.getElementById("history-mag-max")?.value || "9.9";
-    const depMin = document.getElementById("history-depth-min")?.value || "0";
-    const depMax = document.getElementById("history-depth-max")?.value || "999";
-    const sort = document.getElementById("history-sort")?.value || "S0";
-
-    return {
-      dateFrom,
-      dateTo,
-      magMin: Number.parseFloat(magMin).toFixed(1),
-      magMax: Number.parseFloat(magMax).toFixed(1),
-      depMin: String(Number.parseInt(depMin, 10)).padStart(3, "0"),
-      depMax: String(Number.parseInt(depMax, 10)).padStart(3, "0"),
-      maxInt: minInt,
-      sort,
-    };
-  }
-
-  // Search button handler
-  if (searchBtn) {
-    searchBtn.addEventListener("click", () => {
-      if (searchBtn.classList.contains("loading")) return;
-      _executeHistorySearch(areaCodes, onReportSelect);
-    });
-  }
-
-  // Load More button handler
-  if (loadMoreBtn) {
-    loadMoreBtn.addEventListener("click", () => {
-      if (loadMoreBtn.classList.contains("loading")) return;
-      _loadMoreHistoryReports(areaCodes, onReportSelect);
-    });
-  }
-
-  /**
-   * Executes a new history search: clears old results, fetches event list, loads first 50.
-   */
-  async function _executeHistorySearch(areaCodes, onReportSelect) {
-    const historyList = document.getElementById("history-list");
-    const loadingContainer = document.getElementById("history-loading-container");
-    const progressEl = document.getElementById("history-loading-progress");
-
-    if (!historyList) return;
-
-    // Disable search button
-    searchBtn.classList.add("loading");
-    searchBtn.textContent = "Searching... · 検索中...";
-
-    // Clear previous results
-    historyList.innerHTML = "";
-    historyReports = [];
-    _historyLoadedCount = 0;
-    _historyCachedEventList = null;
-    if (loadMoreBtn) loadMoreBtn.style.display = "none";
-
-    if (loadingContainer) loadingContainer.classList.remove("hidden");
-
-    try {
-      const params = _getSearchParams();
-
-      // 1. Fetch event list
-      _historyCachedEventList = await fetchHistoryEventList(params);
-
-      if (_historyCachedEventList.length === 0) {
-        historyList.innerHTML = `
-          <li class="eq-item placeholder">
-            <span class="mono muted">No results found · 結果なし</span>
-          </li>
-        `;
-        return;
-      }
-
-      // Show result count — remove old summary first
-      const existingSummary = historyList.parentNode.querySelector(".history-results-summary");
-      if (existingSummary) existingSummary.remove();
-      const summaryEl = document.createElement("div");
-      summaryEl.className = "history-results-summary";
-      summaryEl.textContent = `${_historyCachedEventList.length} events found (max 1000)`;
-      historyList.before(summaryEl);
-
-      // 2. Fetch first batch of reports
-      const { reports } = await fetchHistoryReports(params, areaCodes, {
-        limit: 50,
-        offset: 0,
-        cachedEventList: _historyCachedEventList,
-        onReportFetched: (report) => {
-          _addHistoryReportItem(historyList, report, onReportSelect, areaCodes);
-        },
-        onProgress: (processed, total) => {
-          if (progressEl) progressEl.textContent = `${processed}/${total}`;
-        },
-      });
-
-      historyReports = reports;
-      _historyLoadedCount = Math.min(50, _historyCachedEventList.length);
-
-      if (reports.length === 0) {
-        historyList.innerHTML = `
-          <li class="eq-item placeholder">
-            <span class="mono muted">No reports could be loaded · レポートを読み込めませんでした</span>
-          </li>
-        `;
-      }
-
-      // Show Load More if there are more events
-      if (_historyLoadedCount < _historyCachedEventList.length && loadMoreBtn) {
-        loadMoreBtn.style.display = "block";
-        loadMoreBtn.textContent = `Load More (${_historyCachedEventList.length - _historyLoadedCount} remaining) · もっと読み込む`;
-        loadMoreBtn.classList.remove("loading");
-      }
-    } catch (err) {
-      console.error("[eq-viewer] Failed to search history:", err);
-      historyList.innerHTML = `
-        <li class="eq-item placeholder">
-          <span class="mono muted">Error searching · 検索エラー</span>
-        </li>
-      `;
-    } finally {
-      if (loadingContainer) loadingContainer.classList.add("hidden");
-      searchBtn.classList.remove("loading");
-      searchBtn.textContent = "Search · 検索";
-    }
-  }
-
-  /**
-   * Loads the next batch of 50 history reports.
-   */
-  async function _loadMoreHistoryReports(areaCodes, onReportSelect) {
-    if (!_historyCachedEventList || _historyLoadedCount >= _historyCachedEventList.length) return;
-
-    const historyList = document.getElementById("history-list");
-    const loadingContainer = document.getElementById("history-loading-container");
-    const progressEl = document.getElementById("history-loading-progress");
-
-    loadMoreBtn.classList.add("loading");
-    loadMoreBtn.textContent = "Loading... · 読み込み中...";
-    if (loadingContainer) loadingContainer.classList.remove("hidden");
-
-    try {
-      const params = _getSearchParams();
-
-      const { reports } = await fetchHistoryReports(params, areaCodes, {
-        limit: 50,
-        offset: _historyLoadedCount,
-        cachedEventList: _historyCachedEventList,
-        onReportFetched: (report) => {
-          _addHistoryReportItem(historyList, report, onReportSelect, areaCodes);
-        },
-        onProgress: (processed, total) => {
-          if (progressEl) progressEl.textContent = `${processed}/${total}`;
-        },
-      });
-
-      historyReports.push(...reports);
-      _historyLoadedCount = Math.min(_historyLoadedCount + 50, _historyCachedEventList.length);
-
-      // Update or hide Load More
-      const remaining = _historyCachedEventList.length - _historyLoadedCount;
-      if (remaining > 0) {
-        loadMoreBtn.textContent = `Load More (${remaining} remaining) · もっと読み込む`;
-        loadMoreBtn.classList.remove("loading");
-      } else {
-        loadMoreBtn.style.display = "none";
-      }
-    } catch (err) {
-      console.error("[eq-viewer] Failed to load more history:", err);
-      loadMoreBtn.textContent = "Error · エラー";
-    } finally {
-      loadMoreBtn.classList.remove("loading");
-      if (loadingContainer) loadingContainer.classList.add("hidden");
-    }
-  }
-
-  /**
-   * Adds a report item to the history list.
-   */
-  function _addHistoryReportItem(historyList, report, onReportSelect, areaCodes) {
-    let currentReport = report;
-    let fetchPromise = null;
-
-    const item = createReportItem(report, null, async (itemEl) => {
-      // Clear active from both live and history lists
-      document.querySelectorAll(".eq-item").forEach((el) => el.classList.remove("active"));
-      itemEl.classList.add("active");
-
-      if (!onReportSelect) return;
-
-      // If full report is already built, select it immediately
-      if (currentReport && currentReport.observations && !currentReport.isBaseReport) {
-        onReportSelect(currentReport);
-        return;
-      }
-
-      // Show loading indicator
-      const loadingContainer = document.getElementById("history-loading-container");
-      const progressEl = document.getElementById("history-loading-progress");
-      if (loadingContainer) {
-        loadingContainer.classList.remove("hidden");
-        if (progressEl) progressEl.textContent = "Loading... · 読み込み中...";
-      }
-      itemEl.classList.add("loading");
-
-      try {
-        if (!fetchPromise) {
-          fetchPromise = fetchHistoryReport(currentReport, areaCodes);
-        }
-        const fullReport = await fetchPromise;
-        if (fullReport) {
-          currentReport = fullReport;
-          const idx = historyReports.findIndex((r) => r.eventId === fullReport.eventId);
-          if (idx !== -1) {
-            historyReports[idx] = fullReport;
-          }
-          // Only trigger onReportSelect if this item is still the active one
-          if (itemEl.classList.contains("active")) {
-            onReportSelect(fullReport);
-          }
-        }
-      } catch (err) {
-        console.error("[eq-viewer] Failed to load full history report:", err);
-        fetchPromise = null;
-      } finally {
-        itemEl.classList.remove("loading");
-        if (loadingContainer) {
-          loadingContainer.classList.add("hidden");
-        }
-      }
-    });
-
-    // Append in API-returned order (already sorted by selected sort mode)
-    historyList.appendChild(item);
-  }
-
   // Setup settings modal
-  const settingsBtn = document.getElementById("settings-btn");
-  const settingsPopup = document.getElementById("settings-popup");
-  const settingsCloseBtn = document.getElementById("settings-close-btn");
+  initSettingsModal();
 
-  if (settingsBtn && settingsPopup) {
-    settingsBtn.addEventListener("click", () => {
-      settingsPopup.classList.toggle("hidden");
-    });
-
-    if (settingsCloseBtn) {
-      settingsCloseBtn.addEventListener("click", () => {
-        settingsPopup.classList.add("hidden");
-      });
-    }
-
-    settingsPopup.addEventListener("click", (e) => {
-      if (e.target === settingsPopup) {
-        settingsPopup.classList.add("hidden");
-      }
-    });
-  }
-
-  // Initialize sidebar with earthquake reports
+  // Handler for when an earthquake report is selected from sidebar
   let reportSelectTimer = null;
   const onReportSelect = (report) => {
     console.debug("[eq-viewer] Selected report:", report.eventId, report.hypocenterJa);
     console.debug("[eq-viewer] Map style loaded:", map.isStyleLoaded());
 
-    // Cancel any pending map update from a previous report selection
     if (reportSelectTimer) {
       clearTimeout(reportSelectTimer);
       reportSelectTimer = null;
     }
 
-    // Clear EEW map display (markers, wave animations, autozoom timeout)
     clearEewMapDisplay();
-
-    // Store current report in global for settings changes
     globalThis.__currentReport = report;
-
-    // Clear all initial epicenters when a report is opened
     clearAllEpicenters(map);
 
-    // Revert shakemap mode when a report is opened (shakemap is temporary)
     if (isShakemapVisible()) {
       updateShakemapVisibility(map, false);
       clearShakemapHighlights(map);
     }
 
-    // Revert LPGM mode when a report is opened
     if (isLpgmVisible()) {
       updateLpgmVisibility(map, false);
       updateMapLegend(false);
     }
 
-    // Handle city areas visibility for flash reports
-    // Flash reports don't have per-city data, so temporarily switch city mode off
     if (report.isFlashReport) {
       updateCityAreasVisibility(map, false);
     } else {
-      // Restore city areas to user's preferred setting
       updateCityAreasVisibility(map, getCityAreasState());
     }
 
-    // Show info box on map
-    _displayMapInfoBox(report, map);
+    displayMapInfoBox(report, map);
 
-    // Give MapLibre a moment to apply layout property changes before setting feature states.
-    // If setFeatureState is called on a source whose layers were just made visible in the same tick,
-    // MapLibre often drops the feature states.
     reportSelectTimer = setTimeout(() => {
       reportSelectTimer = null;
       try {
         console.debug("[eq-viewer] Map update: clearing old highlights");
-        // Highlight areas on map based on observation intensity
         highlightObservations(map, report.observations);
         console.debug("[eq-viewer] Map update: highlights applied");
 
-        // Defer camera movement to the next animation frame to avoid
-        // overwhelming WebKit2GTK's WebGL context
         requestAnimationFrame(() => {
           try {
             console.debug("[eq-viewer] Map update: fitting bounds");
@@ -606,7 +207,6 @@ async function boot() {
             );
             console.debug("[eq-viewer] Map update: bounds fitted =", boundsFitted);
 
-            // Display epicenter marker
             if (report.coordinates) {
               displayEpicenter(map, report.coordinates);
               console.debug("[eq-viewer] Map update: epicenter placed");
@@ -622,7 +222,6 @@ async function boot() {
               clearEpicenter(map);
             }
 
-            // Display home location intensity if enabled
             if (getHomeIntensityState()) {
               const homeLocation = getHomeLocation();
               if (homeLocation.cityCode && report.observations) {
@@ -642,6 +241,9 @@ async function boot() {
     }, 50);
   };
 
+  // Initialize History tab controller
+  initHistoryController({ areaCodes, onReportSelect });
+
   // Initialize auto-open toggle
   initAutoOpenToggle((isEnabled) => {
     console.debug("[eq-viewer] Auto-open:", isEnabled ? "enabled" : "disabled");
@@ -650,13 +252,10 @@ async function boot() {
   // Initialize city areas toggle
   initCityAreasToggle((isEnabled) => {
     console.debug("[eq-viewer] City areas:", isEnabled ? "enabled" : "disabled");
-
-    // Skip if we're currently viewing a flash report (which forces city areas off anyway)
     if (globalThis.__currentReport?.isFlashReport) return;
 
     updateCityAreasVisibility(map, isEnabled);
 
-    // Re-apply highlights after a delay to ensure MapLibre retains them on the newly visible layer
     if (globalThis.__currentReport) {
       setTimeout(() => {
         if (!map.isStyleLoaded()) return;
@@ -675,7 +274,6 @@ async function boot() {
       clearHomeMarker(map);
     }
 
-    // Update home intensity display if a report is currently open or EEW is active
     const activeItem = document.querySelector(".eq-item.active");
     if (activeItem) {
       const activeReport = globalThis.__currentReport;
@@ -700,7 +298,6 @@ async function boot() {
     }
 
     if (activeItem) {
-      // If there's an active report, display the home intensity
       const activeReport = globalThis.__currentReport;
       if (activeReport) {
         const homeLocation = getHomeLocation();
@@ -737,7 +334,6 @@ async function boot() {
     const reports = await fetchEarthquakeReports(
       areaCodes,
       (report) => {
-        // Add each report to sidebar as it's fetched (maintains newest-first order)
         addReportToSidebar(report, onReportSelect);
 
         if (!initialAutoOpenTriggered && getAutoOpenState()) {
@@ -752,16 +348,8 @@ async function boot() {
     );
 
     hideSidebarLoadingPopup();
-
-    // Display all epicenters on the map only if no report is currently open
-    const activeItem = document.querySelector(".eq-item.active");
-    if (!activeItem) {
-      // displayAllEpicenters(map, reports);
-    }
-
     _updateStatus("live");
 
-    // Track normal reports we've already played audio for
     const playedNormalReports = new Set();
     for (const report of reports) {
       if (!report.isFlashReport) {
@@ -781,7 +369,6 @@ async function boot() {
             onNewEntry: (entry, report) => {
               console.info("[eq-viewer] New entry:", report.eventId);
 
-              // Play notification sound
               if (report.isFlashReport) {
                 playAudio("/sfx/flash.wav");
               } else if (!playedNormalReports.has(report.eventId)) {
@@ -792,23 +379,18 @@ async function boot() {
               const added = addReportToSidebar(report, onReportSelect);
               if (added) {
                 if (report.coordinates) {
-                  // Add new epicenter to map
                   displayEpicenter(map, report.coordinates);
                 }
 
-                // Track most recent new report for auto-open using the publish time (feedRdt)
-                // This correctly handles flash reports which might have null originTime.
                 if (!mostRecentNewReport || report.feedRdt >= mostRecentNewReport.feedRdt) {
                   mostRecentNewReport = report;
                 }
 
-                // Auto-open the most recent new report if enabled
                 const eewCheck = handlePossibleEewReport(report);
                 let shouldAutoOpen = false;
 
                 if (getAutoOpenState()) {
                   if (eewCheck === false) {
-                    // Suppressed because it's a lower intensity EEW
                     shouldAutoOpen = false;
                   } else if (mostRecentNewReport) {
                     shouldAutoOpen = true;
@@ -829,7 +411,6 @@ async function boot() {
             onUpdatedEntry: (entry, report) => {
               console.info("[eq-viewer] Updated entry:", report.eventId);
 
-              // Play notification sound
               if (report.isFlashReport) {
                 playAudio("/sfx/flash.wav");
               } else if (!playedNormalReports.has(report.eventId)) {
@@ -839,7 +420,6 @@ async function boot() {
 
               const updated = updateReportInSidebar(report, onReportSelect);
               if (updated) {
-                // If the report is currently displayed on the map, refresh it
                 const activeItem = document.querySelector(".eq-item.active");
                 if (activeItem && activeItem.dataset.eventId === report.eventId) {
                   console.debug("[eq-viewer] Reloading active report on map");
@@ -863,438 +443,6 @@ async function boot() {
     _updateStatus("error");
     hideSidebarLoadingPopup();
   }
-}
-
-/**
- * Updates the status indicator in the top-right.
- */
-function _updateStatus(state) {
-  const dot = document.getElementById("status-dot");
-  const text = document.getElementById("status-text");
-
-  if (dot) {
-    dot.className = `dot-${state}`;
-  }
-  if (text) {
-    const labels = {
-      idle: "Idle",
-      loading: "Loading…",
-      live: "Loaded",
-      error: "Error",
-    };
-    text.textContent = labels[state] || "Unknown";
-  }
-}
-
-/**
- * Checks whether a report contains per-station (IntensityStation) data.
- * @param {Object} report
- * @returns {boolean}
- */
-function _reportHasStations(report) {
-  if (!report.observations) return false;
-  for (const pref of report.observations) {
-    for (const area of pref.areas) {
-      for (const city of area.cities) {
-        if (city.stations && city.stations.length > 0) return true;
-      }
-    }
-  }
-  return false;
-}
-
-export function updateMapLegend(isLpgm) {
-  const legend = document.getElementById("map-legend");
-  if (!legend) return;
-
-  const title = legend.querySelector(".legend-title");
-  const items = legend.querySelector(".legend-items");
-
-  if (isLpgm) {
-    title.textContent = "長周期地震動階級 · LPGM";
-    items.innerHTML = `
-      <div class="legend-item"><img src="/img/lpgm/l1.png" alt="1" /></div>
-      <div class="legend-item"><img src="/img/lpgm/l2.png" alt="2" /></div>
-      <div class="legend-item"><img src="/img/lpgm/l3.png" alt="3" /></div>
-      <div class="legend-item"><img src="/img/lpgm/l4.png" alt="4" /></div>
-    `;
-  } else {
-    title.textContent = "震度 · INTENSITY";
-    items.innerHTML = `
-      <div class="legend-item"><img src="/img/shindo/1.png" alt="1" /></div>
-      <div class="legend-item"><img src="/img/shindo/2.png" alt="2" /></div>
-      <div class="legend-item"><img src="/img/shindo/3.png" alt="3" /></div>
-      <div class="legend-item"><img src="/img/shindo/4.png" alt="4" /></div>
-      <div class="legend-item"><img src="/img/shindo/5minus.png" alt="5-" /></div>
-      <div class="legend-item"><img src="/img/shindo/5plus.png" alt="5+" /></div>
-      <div class="legend-item"><img src="/img/shindo/6minus.png" alt="6-" /></div>
-      <div class="legend-item"><img src="/img/shindo/6plus.png" alt="6+" /></div>
-      <div class="legend-item"><img src="/img/shindo/7.png" alt="7" /></div>
-    `;
-  }
-}
-
-/**
- * Displays report information in the top-left info box on the map.
- * Shows magnitude, depth, coordinates, time, intensity, and observations list.
- * Handles flash reports with appropriate badges and restricted data display.
- */
-function _displayMapInfoBox(report, map) {
-  const infoBox = document.getElementById("map-info-box");
-  if (!infoBox) return;
-
-  // Populate location
-  const locationJa = infoBox.querySelector(".info-box-location-ja");
-  const locationEn = infoBox.querySelector(".info-box-location-en");
-  const flashBadge = infoBox.querySelector(".info-box-flash-badge");
-  const intensityImg = infoBox.querySelector(".info-box-intensity-img");
-  const magnitude = infoBox.querySelector(".info-magnitude");
-  const depth = infoBox.querySelector(".info-depth");
-  const coordinates = infoBox.querySelector(".info-coordinates");
-  const timeEl = infoBox.querySelector(".info-time");
-
-  if (locationJa)
-    locationJa.innerHTML = createRubyHtml(report.hypocenterJa, report.hypocenterKana) || "不明";
-  if (locationEn) locationEn.textContent = report.hypocenterEn || "Unknown";
-
-  // Clean up EEW specific DOM alterations & placeholders
-  const eewSerialRow = infoBox.querySelector(".eew-serial-row");
-  if (eewSerialRow) eewSerialRow.remove();
-
-  const eewSourceRow = infoBox.querySelector(".eew-source-row");
-  if (eewSourceRow) eewSourceRow.remove();
-
-  const eewSerial = infoBox.querySelector(".info-box-eew-serial");
-  if (eewSerial) {
-    eewSerial.textContent = "";
-    eewSerial.classList.add("hidden");
-  }
-
-  const eewIntensityPlaceholder = infoBox.querySelector(".eew-intensity-placeholder");
-  if (eewIntensityPlaceholder) eewIntensityPlaceholder.remove();
-
-  const existingPlaceholder = infoBox.querySelector(".info-box-intensity-placeholder");
-  if (existingPlaceholder) existingPlaceholder.remove();
-
-  const intensityContainer = infoBox.querySelector(".info-box-intensity-container");
-
-  // Restore flash badge styling
-  if (flashBadge) {
-    flashBadge.style.backgroundColor = "";
-    flashBadge.style.borderColor = "";
-    const badgeText = flashBadge.querySelector(".flash-badge-text");
-    if (badgeText) {
-      badgeText.textContent = "速報 · Flash Report";
-      badgeText.style.color = "";
-    }
-
-    if (report.isFlashReport) {
-      flashBadge.classList.remove("hidden");
-    } else {
-      flashBadge.classList.add("hidden");
-    }
-  }
-
-  // Set intensity image / placeholder
-  const hasIntensity = !!(report.maxIntensity && INTENSITY_CONFIG[report.maxIntensity]);
-  if (hasIntensity) {
-    if (intensityImg) {
-      intensityImg.style.display = "block";
-      const intensityConfig = INTENSITY_CONFIG[report.maxIntensity];
-      intensityImg.src = `/img/shindo/${intensityConfig.img}`;
-      intensityImg.alt = `Intensity ${report.maxIntensity}`;
-      intensityImg.title = `Intensity: ${report.maxIntensity}`;
-    }
-  } else {
-    if (intensityImg) {
-      intensityImg.style.display = "none";
-    }
-    if (intensityContainer) {
-      const placeholder = document.createElement("div");
-      placeholder.className = "info-box-intensity-placeholder";
-      placeholder.textContent = "-";
-      intensityContainer.appendChild(placeholder);
-    }
-  }
-
-  // Handle volcano report: remove/hide magnitude and depth rows, replace with volcano notice
-  const magRow = infoBox.querySelector(".info-box-magnitude-row") || magnitude?.closest(".info-box-row");
-  const depthRow = infoBox.querySelector(".info-box-depth-row") || depth?.closest(".info-box-row");
-  let volcanoRow = infoBox.querySelector(".info-box-volcano-row");
-
-  if (report.isVolcano) {
-    if (magRow) magRow.classList.add("hidden");
-    if (depthRow) depthRow.classList.add("hidden");
-    if (!volcanoRow) {
-      volcanoRow = document.createElement("div");
-      volcanoRow.className = "info-box-row info-box-volcano-row";
-      if (magRow) {
-        magRow.parentNode.insertBefore(volcanoRow, magRow);
-      }
-    }
-    volcanoRow.innerHTML = `<span class="info-label info-bold-label">LARGE VOLCANIC ERUPTION • 大規模な噴火</span>`;
-    volcanoRow.classList.remove("hidden");
-  } else {
-    if (magRow) magRow.classList.remove("hidden");
-    if (depthRow) depthRow.classList.remove("hidden");
-    if (volcanoRow) volcanoRow.classList.add("hidden");
-  }
-
-  // Populate details
-  if (magnitude) {
-    magnitude.textContent =
-      typeof report.magnitude === "number" ? "M " + report.magnitude.toFixed(1) : "--";
-  }
-
-  if (depth) {
-    depth.textContent = typeof report.depth === "number" ? `${report.depth.toFixed(0)} km` : "--";
-  }
-
-  if (coordinates && report.coordinates) {
-    const coordsLabel = coordinates.previousElementSibling;
-    if (coordsLabel) coordsLabel.textContent = "Coordinates • 北緯東経";
-    const { latitude, longitude } = report.coordinates;
-    const precision = report.isHistory || report.hasSpecialReport ? 3 : 1;
-    coordinates.textContent = `${latitude.toFixed(precision)} ; ${longitude.toFixed(precision)}`;
-  } else if (coordinates) {
-    const coordsLabel = coordinates.previousElementSibling;
-    if (coordsLabel) coordsLabel.textContent = "Coordinates • 北緯東経";
-    coordinates.textContent = "--";
-  }
-
-  // Restore observations label
-  const obsLabel = infoBox.querySelector(".observations-list-label");
-  if (obsLabel) obsLabel.textContent = "Observations • 観測";
-
-  const obsWrapper = infoBox.querySelector(".observations-list-wrapper");
-  if (obsWrapper) {
-    const toggleBtn = obsWrapper.querySelector(".observations-list-toggle");
-    if (toggleBtn) toggleBtn.style.display = "";
-  }
-
-  if (timeEl) {
-    if (report.isHistory) {
-      timeEl.textContent = report.originTime
-        ? formatTimeJSTWithSeconds(report.originTime * 1000)
-        : "--";
-    } else {
-      timeEl.textContent = report.originTime
-        ? formatTimeJST(report.originTime * 1000) + " ごろ"
-        : "--";
-    }
-  }
-
-  // Render observations list
-  const observationsContainer = infoBox.querySelector("#observations-list-container");
-  if (observationsContainer && report.observations) {
-    renderObservationsList(
-      observationsContainer,
-      report.observations,
-      globalThis.__areaCodes || new Map(),
-      globalThis.__prefectureCodes || new Map(),
-      { isFlashReport: !!report.isFlashReport },
-    );
-  }
-
-  // Setup LPGM row in details
-  const lpgmRow = infoBox.querySelector(".info-box-lpgm-row");
-  const lpgmValue = infoBox.querySelector(".info-lpgm");
-  if (lpgmRow && lpgmValue) {
-    if (report.lpgmInfo?.maxLgInt) {
-      const maxLg = report.lpgmInfo.maxLgInt;
-      lpgmValue.textContent = `CLASS ${maxLg}`;
-      const lpgmConfig = LPGM_CONFIG[maxLg];
-      if (lpgmConfig) {
-        lpgmValue.style.backgroundColor = lpgmConfig.color;
-        lpgmValue.style.color = lpgmConfig.fontColor;
-        lpgmValue.style.padding = "2px 6px";
-        lpgmValue.style.borderRadius = "4px";
-      }
-      lpgmRow.classList.remove("hidden");
-    } else {
-      lpgmRow.classList.add("hidden");
-      lpgmValue.textContent = "";
-      lpgmValue.style.backgroundColor = "";
-    }
-  }
-
-  // Hide map-toggles-wrapper by default, show if either child is active
-  const mapTogglesWrapper = infoBox.querySelector(".map-toggles-wrapper");
-
-  // Setup LPGM toggle button
-  const lpgmWrapper = infoBox.querySelector(".lpgm-toggle-wrapper");
-  let lpgmAvailable = false;
-  if (lpgmWrapper) {
-    const lpgmHeader = lpgmWrapper.querySelector(".lpgm-toggle-header");
-
-    if (
-      !report.lpgmInfo?.observations ||
-      report.lpgmInfo.observations.length === 0
-    ) {
-      lpgmWrapper.classList.add("hidden");
-    } else {
-      lpgmAvailable = true;
-      lpgmWrapper.classList.remove("hidden");
-      lpgmWrapper.classList.remove("active");
-
-      const newLpgmHeader = lpgmHeader.cloneNode(true);
-      lpgmHeader.parentNode.replaceChild(newLpgmHeader, lpgmHeader);
-
-      newLpgmHeader.addEventListener("click", () => {
-        const isCurrentlyActive = lpgmWrapper.classList.contains("active");
-
-        if (isCurrentlyActive) {
-          lpgmWrapper.classList.remove("active");
-          updateLpgmVisibility(map, false);
-
-          if (report.isFlashReport) {
-            updateCityAreasVisibility(map, false);
-          } else {
-            updateCityAreasVisibility(map, getCityAreasState());
-          }
-
-          updateMapLegend(false);
-          renderObservationsList(
-            observationsContainer,
-            report.observations,
-            globalThis.__areaCodes || new Map(),
-            globalThis.__prefectureCodes || new Map(),
-            { isFlashReport: !!report.isFlashReport },
-          );
-
-          // Re-highlight the normal observations after a tick
-          setTimeout(() => {
-            highlightObservations(map, report.observations, false);
-          }, 50);
-        } else {
-          // If shakemap is active, turn it off first
-          const shakemapWrapper = infoBox.querySelector(".shakemap-toggle-wrapper");
-          if (shakemapWrapper && shakemapWrapper.classList.contains("active")) {
-            shakemapWrapper.querySelector(".shakemap-toggle-header").click();
-          }
-
-          lpgmWrapper.classList.add("active");
-          updateLpgmVisibility(map, true);
-
-          updateMapLegend(true);
-          renderObservationsList(
-            observationsContainer,
-            report.lpgmInfo.observations,
-            globalThis.__areaCodes || new Map(),
-            globalThis.__prefectureCodes || new Map(),
-            { isFlashReport: false, isLpgm: true },
-          );
-
-          // Highlight LPGM observations after a tick
-          setTimeout(() => {
-            highlightObservations(map, report.lpgmInfo.observations, true);
-          }, 50);
-        }
-      });
-    }
-  }
-
-  // Setup shakemap toggle button
-  const shakemapWrapper = infoBox.querySelector(".shakemap-toggle-wrapper");
-  let shakemapAvailable = false;
-  if (shakemapWrapper) {
-    const shakemapHeader = shakemapWrapper.querySelector(".shakemap-toggle-header");
-
-    // Check if report has station data (flash reports don't)
-    const hasStations = _reportHasStations(report);
-    if (!hasStations || report.isFlashReport) {
-      shakemapWrapper.classList.add("hidden");
-    } else {
-      shakemapAvailable = true;
-      shakemapWrapper.classList.remove("hidden");
-
-      // Reset visual state (not active)
-      shakemapWrapper.classList.remove("active");
-
-      // Clone to remove old listeners
-      const newShakemapHeader = shakemapHeader.cloneNode(true);
-      shakemapHeader.parentNode.replaceChild(newShakemapHeader, shakemapHeader);
-
-      newShakemapHeader.addEventListener("click", () => {
-        const isCurrentlyActive = shakemapWrapper.classList.contains("active");
-
-        if (isCurrentlyActive) {
-          // Deactivate: revert to normal mode
-          shakemapWrapper.classList.remove("active");
-          updateShakemapVisibility(map, false);
-          clearShakemapHighlights(map);
-
-          // Restore city/forecast visibility
-          if (report.isFlashReport) {
-            updateCityAreasVisibility(map, false);
-          } else {
-            updateCityAreasVisibility(map, getCityAreasState());
-          }
-
-          // Re-highlight the normal observations after a tick
-          setTimeout(() => {
-            highlightObservations(map, report.observations);
-          }, 50);
-        } else {
-          // If LPGM is active, turn it off first
-          const lpgmWrapper = infoBox.querySelector(".lpgm-toggle-wrapper");
-          if (lpgmWrapper && lpgmWrapper.classList.contains("active")) {
-            lpgmWrapper.querySelector(".lpgm-toggle-header").click();
-          }
-
-          // Activate: switch to shakemap mode
-          shakemapWrapper.classList.add("active");
-          updateShakemapVisibility(map, true);
-
-          // Highlight stations on the shakemap after a tick
-          setTimeout(() => {
-            highlightShakemapObservations(map, report.observations);
-          }, 50);
-        }
-      });
-    }
-  }
-
-  if (mapTogglesWrapper) {
-    if (!shakemapAvailable && !lpgmAvailable) {
-      mapTogglesWrapper.classList.add("hidden");
-    } else {
-      mapTogglesWrapper.classList.remove("hidden");
-    }
-  }
-
-  // Setup observations list toggle
-  const observationsWrapper = infoBox.querySelector(".observations-list-wrapper");
-  if (observationsWrapper) {
-    const header = observationsWrapper.querySelector(".observations-list-header");
-    const toggle = observationsWrapper.querySelector(".observations-list-toggle");
-    const container = observationsWrapper.querySelector(".observations-list-container");
-
-    if (header && toggle && container) {
-      // Set initial state: collapsed on mobile, expanded on desktop
-      const isMobile = window.innerWidth <= 768;
-      if (isMobile) {
-        container.classList.add("collapsed");
-        toggle.classList.remove("rotated");
-      } else {
-        container.classList.remove("collapsed");
-        toggle.classList.add("rotated");
-      }
-
-      // Remove any existing listeners by cloning and replacing
-      const newHeader = header.cloneNode(true);
-      header.parentNode.replaceChild(newHeader, header);
-
-      // Toggle functionality
-      newHeader.addEventListener("click", () => {
-        container.classList.toggle("collapsed");
-        toggle.classList.toggle("rotated");
-      });
-    }
-  }
-
-  // Show the info box
-  infoBox.classList.remove("hidden");
 }
 
 boot().catch(console.error);

@@ -1,38 +1,11 @@
-import * as maplibregl from "maplibre-gl";
-import {
-  formatTimeJSTWithSeconds,
-  INTENSITY_CONFIG,
-  USE_TEST_SERVER,
-  TEST_GMPE_OVERRIDE,
-  LPGM_CONFIG,
-  haversineDistance,
-} from "./constants.js";
+import { USE_TEST_SERVER } from "./constants.js";
 import { playAudio } from "./audio.js";
 import {
-  updateCityAreasVisibility,
-  updateShakemapVisibility,
-  clearEpicenter,
-  fitBoundsToObservations,
-  highlightObservations,
-  updateLpgmVisibility,
-  hideHomeLocationIntensity,
   displayHomeMarker,
   setCustomHomeCoordinates,
 } from "./map.js";
-import {
-  createRubyHtml,
-  loadCityForecastMapCsv,
-  loadStationsCsvText,
-  loadAreaNameToCodeMap,
-  findCityForCoordinates,
-} from "./areaCodes.js";
-import {
-  getCityAreasState,
-  getHomeIntensityState,
-  setHomeLocationUI,
-  getHomeLocation,
-} from "./sidebarUI.js";
-import { updateMapLegend } from "./main.js";
+import { findCityForCoordinates } from "./areaCodes.js";
+import { setHomeLocationUI, getHomeLocation } from "./sidebarUI.js";
 import {
   getProvider,
   getAvailableProviders,
@@ -43,163 +16,29 @@ import {
   setShowTestEew,
 } from "./eewProviders.js";
 
-export { isPlumEew, getShowTestEew, setShowTestEew };
+import { eewState } from "./eew/state.js";
+import { loadEewDependencies, getIntVal } from "./eew/physics.js";
+import { startWaveAnimation } from "./eew/waveAnimation.js";
+import {
+  clearEewMapDisplay,
+  getIsEewMapActive,
+  onMapInteract,
+} from "./eew/eewMap.js";
+import {
+  updateEewUI,
+  updateHomeIntensityForActiveEews,
+} from "./eew/eewUI.js";
 
-let activeEews = new Map(); // EventID -> EEW Object
-
-// For map and carousel
-let carouselIndex = 0;
-let carouselTimer = null;
-let mapInstance = null;
-let featureBounds = null;
-let cityNames = null;
-let areaCodes = null;
-let eewEpicenterMarkers = [];
-
-let travelTimeData = null;
-let cityForecastMap = new Map();
-let stationsData = [];
-let _eewDependenciesPromise = null;
-
-async function loadEewDependencies() {
-  if (_eewDependenciesPromise) return _eewDependenciesPromise;
-
-  _eewDependenciesPromise = (async () => {
-    try {
-      const [tjmaRes, cityRes, stationsRes] = await Promise.all([
-        fetch("/tjma2001.csv").then((res) => res.text()),
-        loadCityForecastMapCsv(),
-        loadStationsCsvText(),
-        loadAreaNameToCodeMap().catch(() => {}),
-      ]);
-
-      travelTimeData = {};
-      const tjmaLines = tjmaRes.trim().split("\n");
-      for (let i = 1; i < tjmaLines.length; i++) {
-        if (!tjmaLines[i]) continue;
-        const [depth, distance, p_time, s_time] = tjmaLines[i].split(",").map(Number);
-        if (!travelTimeData[depth]) {
-          travelTimeData[depth] = [];
-        }
-        travelTimeData[depth].push({ distance, p_time, s_time });
-      }
-
-      cityRes.split("\n").forEach((line) => {
-        const parts = line.split(",");
-        if (parts.length >= 2) {
-          cityForecastMap.set(parts[0].trim(), parts[1].trim());
-        }
-      });
-
-      const stationsLines = stationsRes.trim().split("\n");
-      for (let i = 1; i < stationsLines.length; i++) {
-        if (!stationsLines[i]) continue;
-        const parts = stationsLines[i].split(";");
-        if (parts.length >= 8) {
-          stationsData.push({
-            lat: Number.parseFloat(parts[4]),
-            lon: Number.parseFloat(parts[5]),
-            cityCode: parts[6],
-            arv: Number.parseFloat(parts[7]),
-          });
-        }
-      }
-      console.info("[EEW] Loaded dependencies.");
-    } catch (err) {
-      console.error("[EEW] Could not load dependencies:", err);
-    }
-  })();
-
-  return _eewDependenciesPromise;
-}
-
-function calculateGmpe(magnitude, depthKm, epicentralDistance, arv) {
-  const mw = magnitude - 0.171;
-  const hypocentralDistance = Math.hypot(epicentralDistance, depthKm);
-  const faultShift = 10.0 ** (0.5 * mw - 1.85) / 2.0;
-  const d2 = Math.max(hypocentralDistance - faultShift, 3.0);
-  const saturationTerm = 0.0028 * 10.0 ** (0.5 * mw);
-  const sourceEnergy = 0.58 * mw + 0.0038 * depthKm - 1.29;
-  const geometricDecay = Math.log10(d2 + saturationTerm);
-  const anelasticDecay = 0.002 * d2;
-  const siteAmplification = Math.log10(arv * 1.31);
-  const log10a = sourceEnergy - geometricDecay - anelasticDecay + siteAmplification;
-  const shindo = 2.68 + 1.72 * log10a;
-  return shindo;
-}
-
-function floatToShindo(val) {
-  if (val < 0.5) return "0";
-  if (val < 1.5) return "1";
-  if (val < 2.5) return "2";
-  if (val < 3.5) return "3";
-  if (val < 4.5) return "4";
-  if (val < 5.0) return "5-";
-  if (val < 5.5) return "5+";
-  if (val < 6.0) return "6-";
-  if (val < 6.5) return "6+";
-  return "7";
-}
-
-// For restoring map state
-let mapInteractionTimeout = null;
-let isUserInteractingWithMap = false;
-let isEewMapActive = false;
-let previousReport = null; // Store currently opened normal report to restore after EEWs clear
-
-/**
- * Clears EEW visual elements from the map when a normal report is selected.
- */
-export function clearEewMapDisplay() {
-  isEewMapActive = false;
-  isUserInteractingWithMap = false;
-
-  const testBanner = document.getElementById("eew-test-banner");
-  if (testBanner) {
-    testBanner.classList.add("hidden");
-  }
-
-  if (mapInteractionTimeout) {
-    clearTimeout(mapInteractionTimeout);
-    mapInteractionTimeout = null;
-  }
-
-  hideHomeLocationIntensity();
-
-  for (const marker of eewEpicenterMarkers) {
-    marker.remove();
-  }
-  eewEpicenterMarkers = [];
-
-  const infoBox = document.getElementById("map-info-box");
-  if (infoBox) {
-    const eewSerialRow = infoBox.querySelector(".eew-serial-row");
-    if (eewSerialRow) eewSerialRow.remove();
-    const eewSourceRow = infoBox.querySelector(".eew-source-row");
-    if (eewSourceRow) eewSourceRow.remove();
-    const eewSerial = infoBox.querySelector(".info-box-eew-serial");
-    if (eewSerial) {
-      eewSerial.textContent = "";
-      eewSerial.classList.add("hidden");
-    }
-  }
-
-  if (mapInstance) {
-    const pSrc = mapInstance.getSource("eew-p-wave");
-    const sSrc = mapInstance.getSource("eew-s-wave");
-    if (pSrc) pSrc.setData({ type: "FeatureCollection", features: [] });
-    if (sSrc) sSrc.setData({ type: "FeatureCollection", features: [] });
-  }
-}
+export { isPlumEew, getShowTestEew, setShowTestEew, clearEewMapDisplay, getIsEewMapActive, updateHomeIntensityForActiveEews };
 
 /**
  * Initializes the EEW settings and connects if enabled.
  */
 export function initEewSettings(map, bounds, cities, areas) {
-  mapInstance = map;
-  featureBounds = bounds;
-  cityNames = cities;
-  areaCodes = areas;
+  eewState.mapInstance = map;
+  eewState.featureBounds = bounds;
+  eewState.cityNames = cities;
+  eewState.areaCodes = areas;
 
   const toggleEl = document.getElementById("eew-toggle");
   const providerSelectEl = document.getElementById("eew-provider-select");
@@ -334,8 +173,8 @@ export function initEewSettings(map, bounds, cities, areas) {
       if (!newProvider.supportsHomeSync || !newProvider.getHomeSync()) {
         setCustomHomeCoordinates(null);
         const homeLoc = getHomeLocation();
-        if (homeLoc.showMarker && featureBounds) {
-          displayHomeMarker(mapInstance, homeLoc.cityCode, featureBounds);
+        if (homeLoc.showMarker && eewState.featureBounds) {
+          displayHomeMarker(eewState.mapInstance, homeLoc.cityCode, eewState.featureBounds);
         }
       } else if (
         newProvider.supportsHomeSync &&
@@ -400,14 +239,14 @@ export function initEewSettings(map, bounds, cities, areas) {
       if (!enabled) {
         setCustomHomeCoordinates(null);
         const homeLoc = getHomeLocation();
-        if (homeLoc.showMarker && featureBounds) {
-          displayHomeMarker(mapInstance, homeLoc.cityCode, featureBounds);
+        if (homeLoc.showMarker && eewState.featureBounds) {
+          displayHomeMarker(eewState.mapInstance, homeLoc.cityCode, eewState.featureBounds);
         }
       } else if (p.userPoint) {
         await applyEewClientUserPoint(p.userPoint);
       }
 
-      if (isEewMapActive && activeEews.size > 0) {
+      if (eewState.isEewMapActive && eewState.activeEews.size > 0) {
         updateHomeIntensityForActiveEews();
       }
     });
@@ -420,15 +259,15 @@ export function initEewSettings(map, bounds, cities, areas) {
       setShowTestEew(enabled);
       if (!enabled) {
         let changed = false;
-        for (const [id, eew] of activeEews.entries()) {
+        for (const [id, eew] of eewState.activeEews.entries()) {
           if (eew.isTest) {
-            activeEews.delete(id);
+            eewState.activeEews.delete(id);
             changed = true;
           }
         }
         if (changed) {
           updateEewUI(false);
-          if (isEewMapActive && activeEews.size > 0) {
+          if (eewState.isEewMapActive && eewState.activeEews.size > 0) {
             updateHomeIntensityForActiveEews();
           }
         }
@@ -480,18 +319,6 @@ export function updateEewStatus(state) {
     dot.className = "dot-error";
     text.textContent = " EEW: Disconnected";
   }
-}
-
-function onMapInteract() {
-  if (activeEews.size === 0 || !isEewMapActive || document.querySelector(".eq-item.active")) return;
-  isUserInteractingWithMap = true;
-  if (mapInteractionTimeout) clearTimeout(mapInteractionTimeout);
-  mapInteractionTimeout = setTimeout(() => {
-    isUserInteractingWithMap = false;
-    if (activeEews.size > 0 && isEewMapActive && !document.querySelector(".eq-item.active")) {
-      updateMapForEew(); // Resume fitBounds
-    }
-  }, 5000);
 }
 
 async function connectEew() {
@@ -588,7 +415,7 @@ export function handleEewMessage(msg, providerInfo = null) {
     msg.Flag?.is_training ||
     msg.Title?.includes("訓練") ||
     msg.Title?.includes("テスト") ||
-    (eventId && activeEews.get(eventId)?.isTest)
+    (eventId && eewState.activeEews.get(eventId)?.isTest)
   );
 
   if (isTest && !getShowTestEew()) {
@@ -598,8 +425,8 @@ export function handleEewMessage(msg, providerInfo = null) {
 
   // Check if cancel
   if (msg.Flag?.is_cancel) {
-    if (activeEews.has(eventId)) {
-      const eew = activeEews.get(eventId);
+    if (eewState.activeEews.has(eventId)) {
+      const eew = eewState.activeEews.get(eventId);
       eew.isCancelled = true;
       eew.msg = msg;
       eew.providerName = srcName;
@@ -611,21 +438,21 @@ export function handleEewMessage(msg, providerInfo = null) {
         removeEew(eventId);
       }, 15000);
       updateEewUI(false);
-      if (isEewMapActive && activeEews.size > 0) {
+      if (eewState.isEewMapActive && eewState.activeEews.size > 0) {
         updateHomeIntensityForActiveEews();
       }
     }
   } else {
     // Forecast or Warning
-    const isNew = !activeEews.has(eventId);
-    const eew = activeEews.get(eventId) || { receivedAt: Date.now() };
+    const isNew = !eewState.activeEews.has(eventId);
+    const eew = eewState.activeEews.get(eventId) || { receivedAt: Date.now() };
     eew.msg = msg;
     eew.isFinal = msg.Flag?.is_final;
     eew.providerName = srcName;
     eew.providerId = providerId;
     eew.disableGmpe = disableGmpe;
     eew.isTest = isTest;
-    activeEews.set(eventId, eew);
+    eewState.activeEews.set(eventId, eew);
 
     if (eew.isFinal) {
       setTimeout(
@@ -652,29 +479,27 @@ export function handleEewMessage(msg, providerInfo = null) {
 }
 
 function removeEew(eventId) {
-  if (activeEews.has(eventId)) {
-    activeEews.delete(eventId);
+  if (eewState.activeEews.has(eventId)) {
+    eewState.activeEews.delete(eventId);
     updateEewUI(false);
-    if (isEewMapActive && activeEews.size > 0) {
+    if (eewState.isEewMapActive && eewState.activeEews.size > 0) {
       updateHomeIntensityForActiveEews();
     }
   }
 }
 
 function clearAllEews() {
-  activeEews.clear();
+  eewState.activeEews.clear();
   updateEewUI(false);
 }
 
 export function handlePossibleEewReport(report) {
-  // Call this from liveMode when a normal report is received to auto-open
-  if (activeEews.has(report.eventId)) {
-    // If multiple EEWs, check if highest intensity
+  if (eewState.activeEews.has(report.eventId)) {
     let isHighest = true;
-    const thisEewMsg = activeEews.get(report.eventId).msg;
+    const thisEewMsg = eewState.activeEews.get(report.eventId).msg;
     const thisInt = getIntVal(thisEewMsg.Intensity);
 
-    for (const [id, eew] of activeEews.entries()) {
+    for (const [id, eew] of eewState.activeEews.entries()) {
       if (id !== report.eventId && !eew.isCancelled) {
         const otherInt = getIntVal(eew.msg.Intensity);
         if (otherInt > thisInt) {
@@ -683,1022 +508,11 @@ export function handlePossibleEewReport(report) {
       }
     }
 
-    return isHighest; // true to allow, false to suppress
+    return isHighest;
   }
-  return null; // Not an EEW related report
+  return null;
 }
 
-function updateEewUI(isNewEew = false) {
-  console.debug(`[eq-viewer-eew] updateEewUI: START (isNewEew=${isNewEew})`);
-  if (activeEews.size === 0) {
-    console.debug("[eq-viewer-eew] updateEewUI: no active EEWs, cleaning up");
-    clearEewMapDisplay();
-    stopWaveAnimation();
-
-    // Restore city/area layer visibility to user's preference
-    // (updateMapForEew forced it off while EEWs were active)
-    if (mapInstance) {
-      updateCityAreasVisibility(mapInstance, getCityAreasState());
-    }
-
-    // Remove UI
-    const container = document.getElementById("eew-list-container");
-    if (container) {
-      container.innerHTML = "";
-      container.classList.add("hidden");
-    }
-
-    if (carouselTimer) {
-      clearInterval(carouselTimer);
-      carouselTimer = null;
-    }
-
-    // Resume normal report
-    const activeItem = document.querySelector(".eq-item.active");
-    if (activeItem) {
-      activeItem.click();
-    } else if (previousReport) {
-      const el = document.querySelector(`[data-event-id="${previousReport.eventId}"]`);
-      if (el) el.click();
-      else {
-        const firstEl = document.querySelector(".eq-item");
-        if (firstEl) firstEl.click();
-      }
-    } else {
-      const firstEl = document.querySelector(".eq-item");
-      if (firstEl) firstEl.click();
-    }
-
-    // Force cleanup if nothing was clicked
-    setTimeout(() => {
-      const stillActive = document.querySelector(".eq-item.active");
-      const infoBox = document.getElementById("map-info-box");
-      if (infoBox && !stillActive) infoBox.classList.add("hidden");
-
-      if (!stillActive && mapInstance) {
-        highlightObservations(mapInstance, []);
-      }
-    }, 50);
-
-    return;
-  }
-
-  // Filter active and sort by order received
-  const eews = Array.from(activeEews.values()).sort((a, b) => a.receivedAt - b.receivedAt);
-
-  // Store previous report and switch map to EEW if a brand new EEW arrived
-  if (isNewEew) {
-    console.debug("[eq-viewer-eew] updateEewUI: handling brand new EEW");
-    isEewMapActive = true;
-    const currentActive = document.querySelector(".eq-item.active");
-    if (currentActive?.closest("#eq-list") || currentActive?.closest("#history-list")) {
-      previousReport = globalThis.__currentReport;
-      currentActive.classList.remove("active"); // Deactivate normal report in list
-    }
-  }
-
-  // Render list entry container
-  const container = document.getElementById("eew-list-container");
-  container.classList.remove("hidden");
-
-  if (!carouselTimer && eews.length > 1) {
-    carouselTimer = setInterval(() => {
-      carouselIndex = (carouselIndex + 1) % activeEews.size;
-      renderCurrentEew();
-    }, 4000);
-  } else if (eews.length <= 1) {
-    if (carouselTimer) {
-      clearInterval(carouselTimer);
-      carouselTimer = null;
-    }
-    carouselIndex = 0;
-  }
-
-  if (carouselIndex >= eews.length) carouselIndex = 0;
-
-  console.debug("[eq-viewer-eew] updateEewUI: rendering current EEW");
-  renderCurrentEew();
-}
-
-function renderCurrentEew() {
-  console.debug("[eq-viewer-eew] renderCurrentEew: START");
-  const eews = Array.from(activeEews.values()).sort((a, b) => a.receivedAt - b.receivedAt);
-  if (eews.length === 0) return;
-
-  const currentEew = eews[carouselIndex];
-  const msg = currentEew.msg;
-  const isCancelled = currentEew.isCancelled;
-  const isWarning = msg.Title.includes("警報");
-  const isPlum = isPlumEew(msg);
-  const isLowAccuracy = Boolean(msg.isLowAccuracy);
-  const isTest = Boolean(currentEew.isTest || msg.isTest || msg.Flag?.is_training);
-  const providerName = currentEew.providerName || getActiveProvider()?.name;
-
-  let hypoCodeNum = Number.parseInt(msg.Hypocenter?.Code);
-  if ((!hypoCodeNum || Number.isNaN(hypoCodeNum)) && msg.Hypocenter?.Name && areaCodes) {
-    for (const [code, info] of areaCodes.entries()) {
-      if (info.ja === msg.Hypocenter.Name) {
-        hypoCodeNum = code;
-        if (msg.Hypocenter) msg.Hypocenter.Code = code;
-        break;
-      }
-    }
-  }
-  const hypoInfo = areaCodes
-    ? areaCodes.get(hypoCodeNum) || { ja: msg.Hypocenter.Name, en: "Unknown", kana: "" }
-    : { ja: msg.Hypocenter.Name, en: "Unknown", kana: "" };
-
-  let labelColor = isCancelled
-    ? "#7f8c8d"
-    : isWarning
-      ? "#e84c3d"
-      : isLowAccuracy
-        ? "#1e6ee6"
-        : "#f39c12";
-  let labelText = isCancelled
-    ? "Cancelled • キャンセル"
-    : isWarning
-      ? "EEW (Warning) • 緊急地震速報（警報）"
-      : "EEW (Forecast) • 緊急地震速報（予報）";
-
-  // Render the list entry
-  const container = document.getElementById("eew-list-container");
-  let listHtml = `
-    <div class="eew-list-item" style="border-top: 4px solid ${labelColor};">
-      <div class="eew-list-header" style="color: ${labelColor}; font-weight: bold; font-size: 12px; margin-bottom: 4px;">
-         ${eews.length > 1 ? `[${carouselIndex + 1}/${eews.length}] ` : ""}${labelText}
-      </div>
-      <div class="eq-content">
-        <div class="eq-left">
-          <div class="eq-location-ja">${hypoInfo.ja}</div>
-          <div class="eq-location-en">${hypoInfo.en}</div>
-          <div class="eq-footer">
-            <div class="eq-mag">
-              <span class="eq-mag-label">M</span>
-              ${isPlum ? "--" : msg.Magnitude || "--"}
-            </div>
-            <div class="eq-time">${formatTimeJSTWithSeconds(new Date(msg.OriginDateTime).getTime())}</div>
-          </div>
-        </div>
-        <div class="eq-intensity-container">
-  `;
-
-  if (msg.Intensity && msg.Intensity !== "不明") {
-    const intensityConfig = INTENSITY_CONFIG[msg.Intensity] || INTENSITY_CONFIG["1"];
-    listHtml += `<img src="/img/shindo/${intensityConfig.img}" class="eq-intensity-img" />`;
-  } else {
-    listHtml += `<div class="eew-intensity-placeholder" style="width:60px; height:60px; border-radius:3px; background:#1e2e44; display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px; font-weight:bold;">-</div>`;
-  }
-
-  listHtml += `</div></div></div>`;
-  container.innerHTML = listHtml;
-
-  const listItem = container.querySelector(".eew-list-item");
-  if (listItem) {
-    listItem.addEventListener("click", () => {
-      console.debug("[eq-viewer-eew] EEW list item clicked");
-      // If a normal report was clicked, it becomes active. Deactivate it.
-      const currentActive = document.querySelector(".eq-item.active");
-      if (currentActive) {
-        currentActive.classList.remove("active");
-      }
-      globalThis.__currentReport = null;
-      isEewMapActive = true;
-      renderEewInfoBox(
-        msg,
-        isCancelled,
-        isWarning,
-        isPlum,
-        eews.length,
-        carouselIndex + 1,
-        providerName,
-      );
-      updateMapForEew();
-
-      const testBanner = document.getElementById("eew-test-banner");
-      if (testBanner) {
-        if (isTest) {
-          testBanner.classList.remove("hidden");
-        } else {
-          testBanner.classList.add("hidden");
-        }
-      }
-
-      // Defer wave updates to avoid synchronous source operations right after layout changes
-      setTimeout(updateWaves, 50);
-    });
-  }
-
-  // Render info box and map only if EEW is active and no normal report is currently active
-  const currentActive = document.querySelector(".eq-item.active");
-  const testBanner = document.getElementById("eew-test-banner");
-  if (testBanner) {
-    if (isTest && isEewMapActive && !currentActive) {
-      testBanner.classList.remove("hidden");
-    } else {
-      testBanner.classList.add("hidden");
-    }
-  }
-
-  if (isEewMapActive && !currentActive) {
-    console.debug("[eq-viewer-eew] renderCurrentEew: rendering info box");
-    renderEewInfoBox(
-      msg,
-      isCancelled,
-      isWarning,
-      isPlum,
-      eews.length,
-      carouselIndex + 1,
-      providerName,
-    );
-    console.debug("[eq-viewer-eew] renderCurrentEew: updating map for EEW");
-    updateMapForEew();
-    console.debug("[eq-viewer-eew] renderCurrentEew: COMPLETE");
-  }
-}
-
-// ─── EEW Wave Animation ──────────────────────────────────────────────────────
-
-let waveInterval = null;
-
-function getCircleCoords(centerLat, centerLng, radiusKm, points = 64) {
-  const coords = [];
-  const R = 6371; // Earth radius in km
-  const lat1 = (centerLat * Math.PI) / 180;
-  const lon1 = (centerLng * Math.PI) / 180;
-  const d = radiusKm / R;
-
-  for (let i = 0; i <= points; i++) {
-    const brng = (i / points) * 2 * Math.PI;
-    const lat2 = Math.asin(
-      Math.sin(lat1) * Math.cos(d) + Math.cos(lat1) * Math.sin(d) * Math.cos(brng),
-    );
-    let lon2 =
-      lon1 +
-      Math.atan2(
-        Math.sin(brng) * Math.sin(d) * Math.cos(lat1),
-        Math.cos(d) - Math.sin(lat1) * Math.sin(lat2),
-      );
-    coords.push([(lon2 * 180) / Math.PI, (lat2 * 180) / Math.PI]);
-  }
-  return coords;
-}
-
-function startWaveAnimation() {
-  console.debug("[eq-viewer-eew] startWaveAnimation: START");
-  if (waveInterval) return;
-
-  console.debug("[eq-viewer-eew] startWaveAnimation: setting interval");
-  waveInterval = setInterval(updateWaves, 250);
-
-  // Defer the initial wave update to avoid interacting with MapLibre sources
-  // synchronously in the same tick as layout property changes, which can
-  // crash WebKit2GTK's WebGL context.
-  setTimeout(() => {
-    console.debug("[eq-viewer-eew] startWaveAnimation: initial updateWaves");
-    updateWaves();
-  }, 50);
-}
-
-function stopWaveAnimation() {
-  if (waveInterval) {
-    clearInterval(waveInterval);
-    waveInterval = null;
-  }
-  if (mapInstance?.getSource("eew-p-wave")) {
-    mapInstance.getSource("eew-p-wave").setData({ type: "FeatureCollection", features: [] });
-  }
-  if (mapInstance?.getSource("eew-s-wave")) {
-    mapInstance.getSource("eew-s-wave").setData({ type: "FeatureCollection", features: [] });
-  }
-}
-
-function getTravelDistance(depth, time, phase) {
-  if (!travelTimeData?.[depth]) return 0;
-
-  const data = travelTimeData[depth];
-
-  let prev = data[0];
-  for (let i = 1; i < data.length; i++) {
-    const curr = data[i];
-    const prevTime = phase === "P" ? prev.p_time : prev.s_time;
-    const currTime = phase === "P" ? curr.p_time : curr.s_time;
-
-    if (time >= prevTime && time <= currTime) {
-      if (currTime === prevTime) return prev.distance;
-      const ratio = (time - prevTime) / (currTime - prevTime);
-      return prev.distance + ratio * (curr.distance - prev.distance);
-    }
-    prev = curr;
-  }
-
-  const lastTime = phase === "P" ? prev.p_time : prev.s_time;
-  if (time > lastTime) {
-    return prev.distance;
-  }
-
-  return 0;
-}
-
-function updateWaves() {
-  if (!mapInstance) return;
-  if (document.hidden) return;
-
-  const pSrc = mapInstance.getSource("eew-p-wave");
-  const sSrc = mapInstance.getSource("eew-s-wave");
-
-  // If EEW is not active on the map or user is viewing a normal report, do not draw wave animations
-  if (!isEewMapActive || activeEews.size === 0 || document.querySelector(".eq-item.active")) {
-    if (pSrc) pSrc.setData({ type: "FeatureCollection", features: [] });
-    if (sSrc) sSrc.setData({ type: "FeatureCollection", features: [] });
-    if (activeEews.size === 0) {
-      stopWaveAnimation();
-    }
-    return;
-  }
-
-  const pFeatures = [];
-  const sFeatures = [];
-  const now = Date.now();
-  let allFinished = true;
-
-  for (const eew of activeEews.values()) {
-    const msg = eew.msg;
-    if (!msg?.Hypocenter || eew.isCancelled) continue;
-
-    const isPlum = isPlumEew(msg);
-    if (isPlum) continue;
-
-    const originTime = new Date(msg.OriginDateTime).getTime();
-    const t = Math.max(0, (now - originTime) / 1000);
-
-    let depth = Number.parseInt(msg.Hypocenter.Depth, 10);
-    if (Number.isNaN(depth)) depth = 10;
-
-    // Convert to multiple of 10 for table lookup, cap at 700km
-    depth = Math.round(depth / 10) * 10;
-    if (depth > 700) depth = 700;
-
-    const pRad = getTravelDistance(depth, t, "P");
-    const sRad = getTravelDistance(depth, t, "S");
-
-    if (pRad >= 2000) {
-      continue;
-    }
-    allFinished = false;
-
-    let opacity = 1.0;
-    if (pRad > 1750) {
-      opacity = 1.0 - (pRad - 1750) / 250;
-      if (opacity < 0) opacity = 0;
-    }
-
-    const coords = msg.Hypocenter.Coordinate;
-    if (coords && coords.length >= 2) {
-      const lng = Number.parseFloat(coords[0]);
-      const lat = Number.parseFloat(coords[1]);
-
-      if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
-        if (pRad > 0) {
-          pFeatures.push({
-            type: "Feature",
-            properties: { opacity },
-            geometry: {
-              type: "Polygon",
-              coordinates: [getCircleCoords(lat, lng, pRad, 96)],
-            },
-          });
-        }
-        if (sRad > 0) {
-          sFeatures.push({
-            type: "Feature",
-            properties: { opacity },
-            geometry: {
-              type: "Polygon",
-              coordinates: [getCircleCoords(lat, lng, sRad, 64)],
-            },
-          });
-        }
-      }
-    }
-  }
-
-  if (pSrc) pSrc.setData({ type: "FeatureCollection", features: pFeatures });
-  if (sSrc) sSrc.setData({ type: "FeatureCollection", features: sFeatures });
-
-  if (allFinished) {
-    stopWaveAnimation();
-  }
-}
-
-function renderEewInfoBox(
-  msg,
-  isCancelled,
-  isWarning,
-  isPlum,
-  totalCount,
-  currentIndex,
-  providerName,
-) {
-  const infoBox = document.getElementById("map-info-box");
-  if (!infoBox) return;
-  infoBox.classList.remove("hidden");
-
-  const mapTogglesWrapper = infoBox.querySelector(".map-toggles-wrapper");
-  if (mapTogglesWrapper) mapTogglesWrapper.classList.add("hidden");
-
-  const lpgmRow = infoBox.querySelector(".info-box-lpgm-row");
-  const locationJa = infoBox.querySelector(".info-box-location-ja");
-  const locationEn = infoBox.querySelector(".info-box-location-en");
-  const flashBadge = infoBox.querySelector(".info-box-flash-badge");
-  const intensityImg = infoBox.querySelector(".info-box-intensity-img");
-  const intensityContainer = infoBox.querySelector(".info-box-intensity-container");
-  const magnitude = infoBox.querySelector(".info-magnitude");
-  const depth = infoBox.querySelector(".info-depth");
-  const coordinates = infoBox.querySelector(".info-coordinates");
-  const timeEl = infoBox.querySelector(".info-time");
-
-  const volcanoRow = infoBox.querySelector(".info-box-volcano-row");
-  if (volcanoRow) volcanoRow.classList.add("hidden");
-  const magRow =
-    infoBox.querySelector(".info-box-magnitude-row") || magnitude?.closest(".info-box-row");
-  if (magRow) magRow.classList.remove("hidden");
-  const depthRow = infoBox.querySelector(".info-box-depth-row") || depth?.closest(".info-box-row");
-  if (depthRow) depthRow.classList.remove("hidden");
-
-  const isLowAccuracy = Boolean(msg.isLowAccuracy);
-  let labelColor = isCancelled
-    ? "#7f8c8d"
-    : isWarning
-      ? "#e84c3d"
-      : isLowAccuracy
-        ? "#1e6ee6"
-        : "#f39c12";
-  let labelText = isCancelled ? "Cancelled" : isWarning ? "EEW (Warning)" : "EEW (Forecast)";
-  if (totalCount > 1) labelText = `[${currentIndex}/${totalCount}] ` + labelText;
-
-  let hypoCodeNum = Number.parseInt(msg.Hypocenter?.Code);
-  if ((!hypoCodeNum || Number.isNaN(hypoCodeNum)) && msg.Hypocenter?.Name && areaCodes) {
-    for (const [code, info] of areaCodes.entries()) {
-      if (info.ja === msg.Hypocenter.Name) {
-        hypoCodeNum = code;
-        if (msg.Hypocenter) msg.Hypocenter.Code = code;
-        break;
-      }
-    }
-  }
-  const hypoInfo = areaCodes
-    ? areaCodes.get(hypoCodeNum) || { ja: msg.Hypocenter.Name, en: "Unknown", kana: "" }
-    : { ja: msg.Hypocenter.Name, en: "Unknown", kana: "" };
-
-  locationJa.innerHTML = createRubyHtml(hypoInfo.ja, hypoInfo.kana) || msg.Hypocenter.Name;
-  locationEn.textContent = hypoInfo.en;
-
-  if (flashBadge) {
-    flashBadge.classList.remove("hidden");
-    flashBadge.style.backgroundColor = labelColor + "33";
-    flashBadge.style.borderColor = labelColor;
-    flashBadge.querySelector(".flash-badge-text").textContent = labelText;
-    flashBadge.querySelector(".flash-badge-text").style.color = labelColor;
-  }
-
-  if (msg.Intensity && msg.Intensity !== "不明") {
-    const intensityConfig = INTENSITY_CONFIG[msg.Intensity] || INTENSITY_CONFIG["1"];
-    intensityImg.src = `/img/shindo/${intensityConfig.img}`;
-    intensityImg.title = `Intensity: ${msg.Intensity}`;
-    intensityImg.style.display = "block";
-    const existingPlaceholder = intensityContainer.querySelector(".eew-intensity-placeholder");
-    if (existingPlaceholder) existingPlaceholder.remove();
-    const infoPlaceholder = intensityContainer.querySelector(".info-box-intensity-placeholder");
-    if (infoPlaceholder) infoPlaceholder.remove();
-  } else {
-    intensityImg.style.display = "none";
-    const infoPlaceholder = intensityContainer.querySelector(".info-box-intensity-placeholder");
-    if (infoPlaceholder) infoPlaceholder.remove();
-    let placeholder = intensityContainer.querySelector(".eew-intensity-placeholder");
-    if (!placeholder) {
-      placeholder = document.createElement("div");
-      placeholder.className = "eew-intensity-placeholder";
-      placeholder.style.cssText =
-        "width:54px; height:54px; border-radius:3px; background:#1e2e44; display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px; font-weight:bold;";
-      placeholder.textContent = "-";
-      intensityContainer.appendChild(placeholder);
-    }
-  }
-
-  const isPlumMethod = isPlum !== undefined ? Boolean(isPlum) : isPlumEew(msg);
-  magnitude.textContent = isPlumMethod ? "--" : `M ${msg.Magnitude}`;
-  depth.textContent = isPlumMethod ? "--" : (msg.Hypocenter?.Depth ?? "--");
-
-  if (isPlumMethod) {
-    const coordsLabel = coordinates.previousElementSibling;
-    if (coordsLabel) coordsLabel.textContent = "PLUM method • PLUM法による仮定震源要素";
-    coordinates.textContent = "";
-  } else if (msg.Hypocenter?.Coordinate) {
-    const coordsLabel = coordinates.previousElementSibling;
-    if (coordsLabel) coordsLabel.textContent = "Coordinates • 北緯東経";
-    const [lon, lat] = msg.Hypocenter.Coordinate;
-    coordinates.textContent = `${lat.toFixed(1)} ; ${lon.toFixed(1)}`;
-  } else {
-    const coordsLabel = coordinates.previousElementSibling;
-    if (coordsLabel) coordsLabel.textContent = "Coordinates • 北緯東経";
-    coordinates.textContent = "--";
-  }
-
-  if (timeEl) {
-    timeEl.textContent = formatTimeJSTWithSeconds(new Date(msg.OriginDateTime).getTime());
-  }
-
-  const lpgmValue = infoBox.querySelector(".info-lpgm");
-  if (lpgmRow && lpgmValue) {
-    if (msg.maxLgInt) {
-      let maxLg = msg.maxLgInt;
-      lpgmValue.textContent = `CLASS ${maxLg}`;
-      if (typeof maxLg === "string") {
-        maxLg = Number.parseInt(maxLg);
-      }
-      const lpgmConfig = LPGM_CONFIG[maxLg];
-      if (lpgmConfig) {
-        lpgmValue.style.backgroundColor = lpgmConfig.color;
-        lpgmValue.style.color = lpgmConfig.fontColor;
-        lpgmValue.style.padding = "2px 6px";
-        lpgmValue.style.borderRadius = "4px";
-      }
-      lpgmRow.classList.remove("hidden");
-    } else {
-      lpgmRow.classList.add("hidden");
-      lpgmValue.textContent = "";
-      lpgmValue.style.backgroundColor = "";
-    }
-  }
-
-  // Set Serial and Final under intensity image
-  const serialEl = infoBox.querySelector(".info-box-eew-serial");
-  if (serialEl) {
-    const isFinal = Boolean(msg.Flag?.is_final);
-    const serialNum = msg.Serial ?? "";
-    serialEl.textContent = serialNum ? `#${serialNum}${isFinal ? " Final" : ""}` : (isFinal ? "Final" : "");
-    serialEl.classList.remove("hidden");
-  }
-
-  const detailsContainer = infoBox.querySelector(".info-box-details");
-  const oldSerialRow = detailsContainer?.querySelector(".eew-serial-row");
-  if (oldSerialRow) oldSerialRow.remove();
-
-  // Add Extra row for Source
-  let sourceRow = detailsContainer.querySelector(".eew-source-row");
-  if (!sourceRow) {
-    sourceRow = document.createElement("div");
-    sourceRow.className = "info-box-row eew-source-row";
-    detailsContainer.appendChild(sourceRow);
-  }
-  sourceRow.innerHTML = `
-    <span class="info-label">Source • 受信元</span>
-    <span class="info-value mono">${providerName}</span>
-  `;
-
-  // Forecast Observations
-  const obsHeaderLabel = infoBox.querySelector(".observations-list-label");
-  if (obsHeaderLabel) obsHeaderLabel.textContent = "Forecast • 予想";
-
-  const observationsContainer = infoBox.querySelector("#observations-list-container");
-  if (observationsContainer) {
-    observationsContainer.innerHTML = "";
-
-    let disclaimer = observationsContainer.querySelector(".eew-forecast-disclaimer");
-    if (!disclaimer) {
-      disclaimer = document.createElement("div");
-      disclaimer.className = "eew-forecast-disclaimer";
-      disclaimer.style.cssText =
-        "font-size: 11px; color: var(--text-dim); text-align: center; padding: 2px; background: rgba(0,0,0,0.2); border-radius: 4px;";
-      disclaimer.textContent = "Estimated intensities • 予想震度";
-      observationsContainer.appendChild(disclaimer);
-    }
-
-    // Group and sort Forecast
-    if (msg.Forecast && msg.Forecast.length > 0) {
-      const mergedForecast = mergeForecasts(Array.from(activeEews.values()));
-
-      const forecastByInt = {};
-      for (const f of mergedForecast) {
-        if (f.Intensity.To === "0" || f.Intensity.To === "over" || f.Intensity.To === "不明")
-          continue;
-        const intStr = f.Intensity.To;
-        if (!forecastByInt[intStr]) forecastByInt[intStr] = [];
-        forecastByInt[intStr].push(f);
-      }
-
-      const sortedInts = Object.keys(forecastByInt).sort((a, b) => {
-        const getVal = (v) => {
-          if (v === "7") return 70;
-          if (v === "6+") return 65;
-          if (v === "6-") return 60;
-          if (v === "5+") return 55;
-          if (v === "5-") return 50;
-          return Number.parseInt(v) * 10;
-        };
-        return getVal(b) - getVal(a);
-      });
-
-      for (const intStr of sortedInts) {
-        const config = INTENSITY_CONFIG[intStr] || INTENSITY_CONFIG["1"];
-
-        const section = document.createElement("div");
-        section.className = "observations-intensity-section";
-
-        const header = document.createElement("div");
-        header.className = "observations-intensity-header";
-        header.style.backgroundColor = config.color;
-        header.style.cursor = "default";
-
-        const labelText = `震度 ${intStr.replace("-", "弱").replace("+", "強")}`;
-        header.innerHTML = `<span class="observations-intensity-label" style="color: ${config.fontColor}; padding-left: 8px;">${labelText}</span>`;
-
-        const content = document.createElement("div");
-        content.className = "observations-intensity-content";
-        content.style.borderLeft = "2px solid " + config.color;
-
-        forecastByInt[intStr].forEach((f) => {
-          const codeNum = Number.parseInt(f.Code);
-          const areaInfo = areaCodes
-            ? areaCodes.get(codeNum) || { ja: f.Name, en: f.Code }
-            : { ja: f.Name, en: f.Code };
-
-          const prefDiv = document.createElement("div");
-          prefDiv.className = "observation-area";
-
-          const prefRow = document.createElement("div");
-          prefRow.className = "observation-row area-row";
-          prefRow.innerHTML = `<span class="observation-ja">${areaInfo.ja}</span><span class="observation-dot">·</span><span class="observation-en">${areaInfo.en}</span>`;
-
-          prefDiv.appendChild(prefRow);
-          content.appendChild(prefDiv);
-        });
-
-        section.appendChild(header);
-        section.appendChild(content);
-        observationsContainer.appendChild(section);
-      }
-    }
-
-    // Force open observations and lock it
-    const obsWrapper = infoBox.querySelector(".observations-list-wrapper");
-    if (obsWrapper) {
-      obsWrapper.classList.add("expanded");
-      const toggleBtn = obsWrapper.querySelector(".observations-list-toggle");
-      if (toggleBtn) toggleBtn.style.display = "none"; // Lock toggle
-    }
-  }
-}
-
-function mergeForecasts(eewList) {
-  const map = new Map();
-  for (const eew of eewList) {
-    if (eew.isCancelled || !eew.msg.Forecast) continue;
-    for (const f of eew.msg.Forecast) {
-      const existing = map.get(f.Code);
-      if (!existing) {
-        map.set(f.Code, f);
-      } else {
-        const existingInt = getIntVal(existing.Intensity.To);
-        const newInt = getIntVal(f.Intensity.To);
-        if (newInt > existingInt) {
-          map.set(f.Code, f);
-        }
-      }
-    }
-  }
-  return Array.from(map.values());
-}
-
-function getIntVal(v) {
-  if (v === "7") return 70;
-  if (v === "6+") return 65;
-  if (v === "6-") return 60;
-  if (v === "5+") return 55;
-  if (v === "5-") return 50;
-  const parsed = Number.parseInt(v);
-  return Number.isNaN(parsed) ? 0 : parsed * 10;
-}
-
-function updateMapForEew() {
-  console.debug("[eq-viewer-eew] updateMapForEew: START");
-  if (!mapInstance) return;
-  if (!isEewMapActive || activeEews.size === 0 || document.querySelector(".eq-item.active")) {
-    console.debug("[eq-viewer-eew] updateMapForEew: aborted early (not active)");
-    return;
-  }
-
-  console.debug("[eq-viewer-eew] updateMapForEew: removing old markers");
-  for (const marker of eewEpicenterMarkers) marker.remove();
-  eewEpicenterMarkers = [];
-
-  console.debug("[eq-viewer-eew] updateMapForEew: clearing normal UI elements");
-  clearEpicenter(mapInstance); // Clear normal epicenter
-  updateCityAreasVisibility(mapInstance, false); // Force Cities off temporarily
-  updateShakemapVisibility(mapInstance, false); // Force Shakemap off temporarily
-  updateLpgmVisibility(mapInstance, false); // Force LPGM off temporarily
-  updateMapLegend(false); // Restore standard legend
-
-  console.debug("[eq-viewer-eew] updateMapForEew: scheduling phase 2 via setTimeout");
-  // Give MapLibre a moment to apply layout property changes before setting feature states.
-  setTimeout(() => {
-    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: START");
-    // Guard: EEW state may have changed during the delay
-    if (!isEewMapActive || activeEews.size === 0 || document.querySelector(".eq-item.active")) {
-      return;
-    }
-
-    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: preparing map intensities");
-    const mergedForecast = mergeForecasts(Array.from(activeEews.values()));
-    const eews = Array.from(activeEews.values()).sort((a, b) => a.receivedAt - b.receivedAt);
-
-    const activeProv = getActiveProvider();
-    const isGmpeDisabled = Boolean(
-      activeProv?.disableGmpe ||
-      activeProv?.id === "dmdss" ||
-      (eews.length > 0 &&
-        eews.every((e) => e.disableGmpe || e.providerId === "dmdss" || e.isCancelled)),
-    );
-
-    const localPredictions = new Map();
-
-    if (!isGmpeDisabled) {
-      console.debug("[eq-viewer-eew] updateMapForEew Phase 2: calculating GMPE");
-      // Track the highest estimated intensity for each individual station across all EEWs
-      const stationMaxInts = new Int32Array(stationsData.length).fill(0);
-
-      for (const eew of eews) {
-        if (eew.isCancelled || eew.disableGmpe || eew.providerId === "dmdss") continue;
-        const msg = eew.msg;
-        if (!msg.Hypocenter?.Coordinate) continue;
-
-        const isPlum = isPlumEew(msg);
-        if (isPlum) continue;
-
-        let depthKm = Number.parseInt(msg.Hypocenter.Depth, 10);
-        if (Number.isNaN(depthKm) || depthKm >= 150) continue;
-
-        let mag = Number.parseFloat(msg.Magnitude);
-        if (Number.isNaN(mag)) continue;
-
-        const [eqLon, eqLat] = msg.Hypocenter.Coordinate;
-
-        for (let i = 0; i < stationsData.length; i++) {
-          const station = stationsData[i];
-          const distance = haversineDistance(station.lat, station.lon, eqLat, eqLon);
-          let arv = station.arv;
-          if (arv === null || arv <= 0.0 || Number.isNaN(arv)) {
-            arv = 1.0;
-          }
-          const shindoFloat = calculateGmpe(mag, depthKm, distance, arv);
-          const shindoStr = floatToShindo(shindoFloat);
-
-          if (shindoStr === "0") continue;
-
-          let finalShindo = shindoStr;
-
-          if (!TEST_GMPE_OVERRIDE) {
-            if (getIntVal(finalShindo) > getIntVal("3")) {
-              finalShindo = "3";
-            }
-          }
-
-          const val = getIntVal(finalShindo);
-          if (val > stationMaxInts[i]) {
-            stationMaxInts[i] = val;
-          }
-        }
-      }
-
-      // Group station intensities by forecast area
-      const areaInts = new Map();
-      for (let i = 0; i < stationsData.length; i++) {
-        const val = stationMaxInts[i];
-        if (val === 0) continue;
-
-        const areaCodeStr = cityForecastMap.get(stationsData[i].cityCode);
-        if (areaCodeStr) {
-          let arr = areaInts.get(areaCodeStr);
-          if (!arr) {
-            arr = [];
-            areaInts.set(areaCodeStr, arr);
-          }
-          arr.push(val);
-        }
-      }
-
-      const getIntStr = (val) => {
-        if (val === 70) return "7";
-        if (val === 65) return "6+";
-        if (val === 60) return "6-";
-        if (val === 55) return "5+";
-        if (val === 50) return "5-";
-        return String(val / 10);
-      };
-
-      // Determine the area's intensity by requiring at least 2 stations
-      for (const [areaCodeStr, vals] of areaInts.entries()) {
-        if (vals.length >= 2) {
-          vals.sort((a, b) => b - a); // descending
-          const secondHighestVal = vals[1];
-          if (secondHighestVal > 0) {
-            localPredictions.set(areaCodeStr, getIntStr(secondHighestVal));
-          }
-        }
-      }
-    } else {
-      console.debug(
-        "[eq-viewer-eew] updateMapForEew Phase 2: skipping GMPE calculation (disabled for provider)",
-      );
-    }
-
-    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: merging GMPE and forecast");
-    const finalMapIntensities = new Map();
-
-    if (TEST_GMPE_OVERRIDE) {
-      for (const f of mergedForecast) {
-        if (f.Intensity.To === "0" || f.Intensity.To === "over" || f.Intensity.To === "不明")
-          continue;
-        finalMapIntensities.set(String(f.Code), f.Intensity.To);
-      }
-      for (const [areaCode, localInt] of localPredictions.entries()) {
-        finalMapIntensities.set(areaCode, localInt);
-      }
-    } else {
-      for (const [areaCode, localInt] of localPredictions.entries()) {
-        finalMapIntensities.set(areaCode, localInt);
-      }
-      for (const f of mergedForecast) {
-        if (f.Intensity.To === "0" || f.Intensity.To === "over" || f.Intensity.To === "不明")
-          continue;
-        finalMapIntensities.set(String(f.Code), f.Intensity.To);
-      }
-    }
-
-    // Create mock observations for map highlighter
-    const mockObservations = [];
-    if (finalMapIntensities.size > 0) {
-      const prefMock = { areas: [] };
-      for (const [code, maxInt] of finalMapIntensities.entries()) {
-        prefMock.areas.push({
-          code: String(code),
-          maxInt: maxInt,
-          cities: [],
-        });
-      }
-      mockObservations.push(prefMock);
-    }
-
-    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: highlighting observations");
-    highlightObservations(mapInstance, mockObservations);
-    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: highlights applied");
-
-    console.debug("[eq-viewer-eew] updateMapForEew: scheduling phase 3 via rAF");
-    // Defer marker placement and camera movement to the next animation frame
-    // to avoid overwhelming WebKit2GTK's WebGL context
-    requestAnimationFrame(() => {
-      console.debug("[eq-viewer-eew] updateMapForEew Phase 3: START");
-      // Guard: EEW state may have changed by the time this frame fires
-      if (!isEewMapActive || activeEews.size === 0 || document.querySelector(".eq-item.active")) {
-        return;
-      }
-
-      updateHomeIntensityForActiveEews();
-
-      // Add EEW epicenters
-      console.debug("[eq-viewer-eew] updateMapForEew Phase 3: placing markers");
-      let minLng = Infinity,
-        minLat = Infinity,
-        maxLng = -Infinity,
-        maxLat = -Infinity;
-      let hasValidEpicenter = false;
-
-      let i = 0;
-      for (const eew of eews) {
-        i++;
-        const msg = eew.msg;
-        if (msg.Hypocenter?.Coordinate) {
-          const [lon, lat] = msg.Hypocenter.Coordinate;
-          hasValidEpicenter = true;
-          if (lon < minLng) minLng = lon;
-          if (lat < minLat) minLat = lat;
-          if (lon > maxLng) maxLng = lon;
-          if (lat > maxLat) maxLat = lat;
-
-          const isPlum = isPlumEew(msg);
-          const isCancel = eew.isCancelled;
-
-          let icon = "epicenter-eew.png";
-          if (isCancel) icon = "epicenter-cancel.png";
-          else if (isPlum) icon = "epicenter-plum.png";
-
-          const markerEl = document.createElement("div");
-          markerEl.className = "epicenter-eew-marker";
-          markerEl.style.width = "32px";
-          markerEl.style.height = "32px";
-          markerEl.innerHTML = `<img src="/img/${icon}" style="width:32px; height:32px; display:block;" />`;
-          if (eews.length > 1) {
-            const labelPositions = [
-              "bottom: 100%; left: 50%; transform: translateX(-50%);", // 1: top
-              "top: 100%; left: 50%; transform: translateX(-50%);", // 2: bottom
-              "right: 100%; top: 50%; transform: translateY(-50%);", // 3: left
-              "left: 100%; top: 50%; transform: translateY(-50%);", // 4: right
-            ];
-            const posStyle = labelPositions[(i - 1) % labelPositions.length];
-            markerEl.innerHTML += `<div style="position:absolute; ${posStyle} background:rgba(0,0,0,0.7); color:#fff; padding:2px 6px; border-radius:4px; font-size:14px; font-weight:bold; line-height:1; white-space:nowrap; pointer-events:none;">${i}</div>`;
-          }
-
-          const marker = new maplibregl.Marker({ element: markerEl })
-            .setLngLat([lon, lat])
-            .addTo(mapInstance);
-          eewEpicenterMarkers.push(marker);
-        }
-      }
-
-      console.debug("[eq-viewer-eew] updateMapForEew Phase 3: fitting bounds");
-      if (!isUserInteractingWithMap && featureBounds) {
-        fitBoundsToObservations(
-          mapInstance,
-          mockObservations,
-          featureBounds,
-          false,
-          "1",
-          hasValidEpicenter ? { longitude: minLng, latitude: minLat } : null,
-          6.5,
-        );
-      }
-      console.debug("[eq-viewer-eew] updateMapForEew Phase 3: COMPLETE");
-    });
-  }, 50);
-}
-
-function updateEewHomeLocationDisplay(cityCode, intensityStr) {
-  const display = document.getElementById("home-intensity-display");
-  if (!display) return;
-
-  const cityInfo = cityNames.get(cityCode) || { ja: "不明", en: "Unknown" };
-
-  display.querySelector(".tooltip-ja").textContent = cityInfo.ja;
-  display.querySelector(".tooltip-en").textContent = cityInfo.en;
-
-  const intensityContainer = display.querySelector(".tooltip-intensity-container");
-
-  if (intensityStr && intensityStr !== "0" && intensityStr !== "over" && intensityStr !== "不明") {
-    const config = INTENSITY_CONFIG[intensityStr];
-    if (config) {
-      const img = intensityContainer.querySelector("img");
-      if (img) {
-        img.style.display = "";
-        img.src = `/img/shindo/${config.img}`;
-        img.alt = `Intensity ${intensityStr}`;
-        img.title = `Forecasted Intensity: ${intensityStr}`;
-      }
-
-      const placeholder = intensityContainer.querySelector(".tooltip-intensity-placeholder");
-      if (placeholder) placeholder.style.display = "none";
-
-      intensityContainer.classList.remove("hidden");
-      display.style.borderTopColor = config.color;
-      display.querySelector(".tooltip-code").style.color = config.color;
-    }
-  } else {
-    const img = intensityContainer.querySelector("img");
-    if (img) img.style.display = "none";
-
-    let placeholder = intensityContainer.querySelector(".tooltip-intensity-placeholder");
-    if (placeholder) {
-      placeholder.style.display = "";
-    } else {
-      placeholder = document.createElement("div");
-      placeholder.className = "tooltip-intensity-placeholder";
-      placeholder.textContent = "-";
-      intensityContainer.appendChild(placeholder);
-    }
-
-    intensityContainer.classList.remove("hidden");
-    const defaultColor = "#1e2e44";
-    display.style.borderTopColor = defaultColor;
-    display.querySelector(".tooltip-code").style.color = defaultColor;
-  }
-
-  display.classList.remove("hidden");
-}
-
-/**
- * Returns whether the map is currently displaying EEW data.
- * @returns {boolean}
- */
-export function getIsEewMapActive() {
-  return isEewMapActive;
-}
-
-/**
- * Applies a user-point location from EEW Client:
- * sets custom coordinates, maps coordinates to city and prefecture,
- * updates UI/localStorage, and refreshes marker and EEW intensity.
- * @param {Array<number>} location - [lon, lat]
- */
 export async function applyEewClientUserPoint(location) {
   if (!Array.isArray(location) || location.length < 2) return;
   const [lon, lat] = location;
@@ -1713,75 +527,11 @@ export async function applyEewClientUserPoint(location) {
   }
 
   const homeLoc = getHomeLocation();
-  if (homeLoc.showMarker && featureBounds && mapInstance) {
-    displayHomeMarker(mapInstance, homeLoc.cityCode, featureBounds);
+  if (homeLoc.showMarker && eewState.featureBounds && eewState.mapInstance) {
+    displayHomeMarker(eewState.mapInstance, homeLoc.cityCode, eewState.featureBounds);
   }
 
-  if (isEewMapActive && activeEews.size > 0) {
+  if (eewState.isEewMapActive && eewState.activeEews.size > 0) {
     updateHomeIntensityForActiveEews();
-  }
-}
-
-/**
- * Updates the home location intensity display for all active EEWs.
- * Uses EEW Client pointForecast if home sync is on; otherwise uses forecast area matching.
- * In case of simultaneous EEWs, selects the highest predicted intensity.
- */
-export function updateHomeIntensityForActiveEews() {
-  if (!getHomeIntensityState()) {
-    hideHomeLocationIntensity();
-    return;
-  }
-
-  if (!isEewMapActive || activeEews.size === 0) {
-    hideHomeLocationIntensity();
-    return;
-  }
-
-  if (document.querySelector(".eq-item.active")) {
-    return;
-  }
-
-  const activeEewList = Array.from(activeEews.values()).filter((e) => !e.isCancelled);
-  const homeLocation = getHomeLocation();
-  const homeCityCode =
-    homeLocation?.cityCode ||
-    (typeof localStorage !== "undefined" ? localStorage.getItem("home-city") : null);
-
-  if (!homeCityCode) {
-    hideHomeLocationIntensity();
-    return;
-  }
-
-  const provider = getActiveProvider();
-  const isHomeSyncOn = Boolean(provider?.supportsHomeSync && provider.getHomeSync());
-
-  if (isHomeSyncOn) {
-    let maxIntVal = -1;
-    let maxIntStr = null;
-
-    for (const eew of activeEewList) {
-      const pointForecast = eew.msg?.pointForecast;
-      const intStr = pointForecast?.intensity?.int;
-      if (intStr != null) {
-        const val = getIntVal(intStr);
-        if (val > maxIntVal) {
-          maxIntVal = val;
-          maxIntStr = intStr;
-        }
-      }
-    }
-
-    updateEewHomeLocationDisplay(homeCityCode, maxIntStr);
-  } else {
-    const mergedForecast = mergeForecasts(activeEewList);
-    const homeAreaCodeStr = cityForecastMap?.get(homeCityCode);
-    if (homeAreaCodeStr) {
-      const forecastArea = mergedForecast.find((f) => f.Code === Number.parseInt(homeAreaCodeStr));
-      const forecastInt = forecastArea ? forecastArea.Intensity.To : null;
-      updateEewHomeLocationDisplay(homeCityCode, forecastInt || null);
-    } else {
-      updateEewHomeLocationDisplay(homeCityCode, null);
-    }
   }
 }

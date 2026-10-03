@@ -57,7 +57,6 @@ const {
   registerProvider,
   BaseEewProvider,
   WebSocketEewProvider,
-  HttpEewProvider,
   isPlumEew,
 } = await import("../src/eewProviders.js");
 
@@ -174,20 +173,17 @@ assert.strictEqual(normalized.Flag.is_cancel, false);
 assert.strictEqual(normalized.Forecast.length, 1);
 console.log("✓ Test 3 passed");
 
-// 4. Custom Provider Registration & HTTP base provider
-console.log("Test 4: Extensibility with Custom Providers (HTTP & Tauri-only)");
-class CustomHttpProvider extends HttpEewProvider {
+// 4. Custom Provider Registration
+console.log("Test 4: Extensibility with Custom Providers");
+class CustomTestProvider extends BaseEewProvider {
   constructor() {
-    super({ id: "custom_http", name: "Custom HTTP", pollInterval: 500 });
-  }
-  async fetchEewData() {
-    return rawAxisMsg;
+    super({ id: "custom_ext", name: "Custom Ext" });
   }
 }
-const customHttp = new CustomHttpProvider();
-registerProvider(customHttp);
-assert.strictEqual(getProvider("custom_http"), customHttp);
-assert.ok(getAvailableProviders().some(p => p.id === "custom_http"));
+const customExt = new CustomTestProvider();
+registerProvider(customExt);
+assert.strictEqual(getProvider("custom_ext"), customExt);
+assert.ok(getAvailableProviders().some(p => p.id === "custom_ext"));
 console.log("✓ Test 4 passed");
 
 // 5. Live WebSocket Integration with Test Server
@@ -622,8 +618,7 @@ assert.strictEqual(localStorage.getItem("eew-show-test"), "false");
 // Verify filter decision
 function shouldDisplayEew(msg, showTest) {
   const isTest = Boolean(msg.isTest || msg.Flag?.is_training || msg.Title?.includes("訓練") || msg.Title?.includes("テスト"));
-  if (isTest && !showTest) return false;
-  return true;
+  return !(isTest && !showTest);
 }
 
 const realEew = { Title: "緊急地震速報（予報）", isTest: false, Flag: { is_training: false } };
