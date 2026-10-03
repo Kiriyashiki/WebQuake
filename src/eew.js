@@ -39,9 +39,11 @@ import {
   getActiveProvider,
   setActiveProvider,
   isPlumEew,
+  getShowTestEew,
+  setShowTestEew,
 } from "./eewProviders.js";
 
-export { isPlumEew };
+export { isPlumEew, getShowTestEew, setShowTestEew };
 
 let activeEews = new Map(); // EventID -> EEW Object
 
@@ -208,6 +210,7 @@ export function initEewSettings(map, bounds, cities, areas) {
   const portInputEl = document.getElementById("eew-port-input");
   const homeSyncGroupEl = document.getElementById("eew-home-sync-group");
   const homeSyncToggleEl = document.getElementById("eew-home-sync-toggle");
+  const testToggleEl = document.getElementById("eew-test-toggle");
   const axisInfoEl = document.getElementById("eew-axis-info");
 
   if (!toggleEl) return;
@@ -410,6 +413,29 @@ export function initEewSettings(map, bounds, cities, areas) {
     });
   }
 
+  if (testToggleEl) {
+    testToggleEl.checked = getShowTestEew();
+    testToggleEl.addEventListener("change", (e) => {
+      const enabled = e.target.checked;
+      setShowTestEew(enabled);
+      if (!enabled) {
+        let changed = false;
+        for (const [id, eew] of activeEews.entries()) {
+          if (eew.isTest) {
+            activeEews.delete(id);
+            changed = true;
+          }
+        }
+        if (changed) {
+          updateEewUI(false);
+          if (isEewMapActive && activeEews.size > 0) {
+            updateHomeIntensityForActiveEews();
+          }
+        }
+      }
+    });
+  }
+
   // Track map interactions to pause fitBounds
   map.on("mousedown", onMapInteract);
   map.on("wheel", onMapInteract);
@@ -557,7 +583,18 @@ export function handleEewMessage(msg, providerInfo = null) {
     disableGmpe = Boolean(activeProv.disableGmpe);
   }
 
-  const isTest = Boolean(msg.isTest || msg.Flag?.is_training);
+  const isTest = Boolean(
+    msg.isTest ||
+    msg.Flag?.is_training ||
+    msg.Title?.includes("訓練") ||
+    msg.Title?.includes("テスト") ||
+    (eventId && activeEews.get(eventId)?.isTest)
+  );
+
+  if (isTest && !getShowTestEew()) {
+    console.debug(`[EEW] Ignored test EEW (test EEWs disabled): ${eventId}`);
+    return;
+  }
 
   // Check if cancel
   if (msg.Flag?.is_cancel) {

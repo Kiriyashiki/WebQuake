@@ -415,8 +415,18 @@ assert.deepStrictEqual(dmdssProvider.userPoint, [135.5, 34.7]);
 
 console.log("✓ Test 7 passed");
 
-// 8. Live connection to running local EEW Client on 127.0.0.1:11311
-console.log("Test 8: Live WebSocket connection to local EEW Client daemon (127.0.0.1:11311)");
+// 8. Live connection to EEW Client daemon
+console.log("Test 8: Live WebSocket connection to EEW Client daemon");
+const dmdssWss = new WebSocketServer({ port: 0 });
+const dmdssPort = String(dmdssWss.address().port);
+const origDmdssPort = dmdssProvider.getPort();
+dmdssProvider.setPort(dmdssPort);
+
+dmdssWss.on("connection", (ws) => {
+  ws.send(JSON.stringify({ type: "start", version: "1.4.0" }));
+  ws.send(JSON.stringify({ type: "server-status", status: "open" }));
+});
+
 const dmdssStatuses = [];
 await new Promise((resolve, reject) => {
   const timeout = setTimeout(() => {
@@ -446,6 +456,8 @@ assert.ok(
 );
 dmdssProvider.disconnect();
 assert.strictEqual(dmdssStatuses.at(-1), "error");
+dmdssWss.close();
+dmdssProvider.setPort(origDmdssPort);
 console.log("✓ Test 8 passed");
 
 // 9. Home Sync Provider Settings & Defaults
@@ -591,5 +603,46 @@ assert.strictEqual(formatEewSerial({ Serial: 5, Flag: { is_final: false } }), "#
 assert.strictEqual(formatEewSerial({ Serial: 3, Flag: { is_final: true } }), "#3 Final");
 assert.strictEqual(formatEewSerial({ Serial: 12, Flag: { is_final: true } }), "#12 Final");
 console.log("✓ Test 13 passed");
+
+// 14. Test EEW Display Setting & Filtering Logic
+console.log("Test 14: Test EEWs display setting & filtering logic");
+const { getShowTestEew, setShowTestEew } = await import("../src/eewProviders.js");
+
+localStorage.removeItem("eew-show-test");
+assert.strictEqual(getShowTestEew(), false, "Test EEWs should be disabled by default");
+
+setShowTestEew(true);
+assert.strictEqual(getShowTestEew(), true, "Should return true after setShowTestEew(true)");
+assert.strictEqual(localStorage.getItem("eew-show-test"), "true");
+
+setShowTestEew(false);
+assert.strictEqual(getShowTestEew(), false, "Should return false after setShowTestEew(false)");
+assert.strictEqual(localStorage.getItem("eew-show-test"), "false");
+
+// Verify filter decision
+function shouldDisplayEew(msg, showTest) {
+  const isTest = Boolean(msg.isTest || msg.Flag?.is_training || msg.Title?.includes("訓練") || msg.Title?.includes("テスト"));
+  if (isTest && !showTest) return false;
+  return true;
+}
+
+const realEew = { Title: "緊急地震速報（予報）", isTest: false, Flag: { is_training: false } };
+const testEew1 = { Title: "緊急地震速報（訓練）", isTest: true, Flag: { is_training: true } };
+const testEew2 = { Title: "緊急地震速報（予報）", isTest: true, Flag: { is_training: false } };
+const testEew3 = { Title: "緊急地震速報（予報）", isTest: false, Flag: { is_training: true } };
+const testEew4 = { Title: "緊急地震速報（テスト）", isTest: false, Flag: { is_training: false } };
+
+assert.strictEqual(shouldDisplayEew(realEew, false), true, "Real EEW displayed when test disabled");
+assert.strictEqual(shouldDisplayEew(realEew, true), true, "Real EEW displayed when test enabled");
+assert.strictEqual(shouldDisplayEew(testEew1, false), false, "Test EEW 1 ignored when test disabled");
+assert.strictEqual(shouldDisplayEew(testEew1, true), true, "Test EEW 1 displayed when test enabled");
+assert.strictEqual(shouldDisplayEew(testEew2, false), false, "Test EEW 2 ignored when test disabled");
+assert.strictEqual(shouldDisplayEew(testEew2, true), true, "Test EEW 2 displayed when test enabled");
+assert.strictEqual(shouldDisplayEew(testEew3, false), false, "Test EEW 3 ignored when test disabled");
+assert.strictEqual(shouldDisplayEew(testEew3, true), true, "Test EEW 3 displayed when test enabled");
+assert.strictEqual(shouldDisplayEew(testEew4, false), false, "Test EEW 4 ignored when test disabled");
+assert.strictEqual(shouldDisplayEew(testEew4, true), true, "Test EEW 4 displayed when test enabled");
+
+console.log("✓ Test 14 passed");
 
 console.log("\n=== ALL TESTS PASSED SUCCESSFULLY! ===");

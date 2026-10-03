@@ -996,3 +996,14 @@ export function setActiveProvider(providerOrId) {
   }
   return activeProvider;
 }
+
+export function getShowTestEew() {
+  if (typeof localStorage === "undefined") return false;
+  return localStorage.getItem("eew-show-test") === "true";
+}
+
+export function setShowTestEew(enabled) {
+  if (typeof localStorage === "undefined") return;
+  localStorage.setItem("eew-show-test", enabled ? "true" : "false");
+}
+

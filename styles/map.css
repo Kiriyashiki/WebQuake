@@ -28,6 +28,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 #settings-popup.hidden {
@@ -41,6 +43,11 @@
   box-shadow: 0 4px 24px rgba(0,0,0,0.7);
   width: auto;
   max-width: 90%;
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .settings-popup-header {
@@ -53,6 +60,7 @@
   color: var(--text-dim);
   letter-spacing: 0.1em;
   text-transform: uppercase;
+  flex-shrink: 0;
 }
 
 #settings-close-btn {
@@ -76,6 +84,22 @@
   font-size: 13px;
   color: var(--text);
   line-height: 1.5;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-hi) transparent;
+}
+
+.settings-popup-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-popup-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settings-popup-body::-webkit-scrollbar-thumb {
+  background: var(--border-hi);
+  border-radius: 3px;
 }
 
 .settings-columns {

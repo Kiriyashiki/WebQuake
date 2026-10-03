@@ -319,7 +319,7 @@
                 <div class="settings-columns">
                   <div class="settings-left">
                     <div class="settings-section">
-                  <label class="live-mode-toggle popup-setting" data-tooltip="Enable live polling for new/updated reports • 新規•更新された報告のリアルタイム取得を有効にする">
+                  <label id="live-mode-setting" class="live-mode-toggle popup-setting" data-tooltip="Enable live polling for new/updated reports • 新規•更新された報告のリアルタイム取得を有効にする">
                     <input type="checkbox" id="live-mode-toggle" />
                     <span class="toggle-label" style="flex-grow: 1; text-align: left;">Live Mode<br>ライブモード</span>
                     <span class="toggle-switch"></span>
@@ -349,6 +349,13 @@
                     <label class="live-mode-toggle popup-setting" data-tooltip="Sync home location with EEW Client • ホーム場所をEEW Clientと同期する">
                       <input type="checkbox" id="eew-home-sync-toggle" checked />
                       <span class="toggle-label" style="flex-grow: 1; text-align: left;">Sync Home Location<br>ホーム場所を同期</span>
+                      <span class="toggle-switch"></span>
+                    </label>
+                  </div>
+                  <div id="eew-test-group" class="dropdown-group" style="margin-top: 10px;">
+                    <label class="live-mode-toggle popup-setting" data-tooltip="Display test/drill EEWs • 訓練・テストの緊急地震速報を表示する">
+                      <input type="checkbox" id="eew-test-toggle" />
+                      <span class="toggle-label" style="flex-grow: 1; text-align: left;">Show Test EEWs<br>訓練表示</span>
                       <span class="toggle-switch"></span>
                     </label>
                   </div>

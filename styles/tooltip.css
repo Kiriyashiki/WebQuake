@@ -225,3 +225,20 @@
   transform: translateX(0) translateY(4px);
 }
 
+/* Settings Popup Top Setting Tooltip Positioning Tweaks to Prevent Spilling */
+.settings-popup-body .settings-section:first-child [data-tooltip]::after,
+.popup-setting:has(#live-mode-toggle)[data-tooltip]::after,
+#live-mode-setting[data-tooltip]::after {
+  bottom: auto;
+  top: 100%;
+  margin-bottom: 0;
+  margin-top: 6px;
+  transform: translateX(-50%) translateY(8px);
+}
+
+.settings-popup-body .settings-section:first-child [data-tooltip]:hover::after,
+.popup-setting:has(#live-mode-toggle)[data-tooltip]:hover::after,
+#live-mode-setting[data-tooltip]:hover::after {
+  transform: translateX(-50%) translateY(4px);
+}
+
