@@ -42,11 +42,11 @@ def point_in_polygon(point, polygon):
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     R = 6371
-    dLat = (lat2 - lat1) * math.pi / 180
-    dLon = (lon2 - lon1) * math.pi / 180
-    a = math.sin(dLat / 2) * math.sin(dLat / 2) + \
+    d_lat = (lat2 - lat1) * math.pi / 180
+    d_lon = (lon2 - lon1) * math.pi / 180
+    a = math.sin(d_lat / 2) * math.sin(d_lat / 2) + \
         math.cos(lat1 * math.pi / 180) * math.cos(lat2 * math.pi / 180) * \
-        math.sin(dLon / 2) * math.sin(dLon / 2)
+        math.sin(d_lon / 2) * math.sin(d_lon / 2)
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return R * c
 
@@ -80,7 +80,7 @@ mesh_codes_needed = set()
 
 with open('extra/stations.csv', 'r', encoding='utf-8') as f:
     reader = csv.reader(f, delimiter=';')
-    header = next(reader) # code;nameja;kana;nameen
+    header = next(reader)  # Header columns: code, nameja, kana, nameen
     for row in reader:
         if len(row) < 4:
             continue

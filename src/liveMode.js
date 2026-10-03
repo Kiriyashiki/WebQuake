@@ -7,7 +7,7 @@
  * XML feed (eqvol.xml) and fetches individual XML reports (VXSE51/52/53/61).
  */
 
-import { FEED_DATA_BASE_URL, POLL_INTERVAL, XML_FEED_URL } from "./constants.js";
+import { FEED_DATA_BASE_URL, POLL_INTERVAL } from "./constants.js";
 import {
   parseSpecialReportOverrides,
   applySpecialReportOverrides,
@@ -89,11 +89,9 @@ export function startLivePolling(areaCodes, callbacks = {}, initialReports = [])
       if (report.isFlashReport) {
         _trackedFlashEntries.set(report.eventId, {
           intensityRdt:
-            report.flashType === "intensity"
+            report.flashType === "intensity" || report.maxIntensity
               ? report.feedRdt
-              : report.maxIntensity
-                ? report.feedRdt
-                : null,
+              : null,
           epicenterRdt: report.flashType === "epicenter" ? report.feedRdt : null,
           intensityEntry: null,
           epicenterEntry: null,

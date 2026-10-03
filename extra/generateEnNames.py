@@ -119,7 +119,7 @@ def format_stem(stem_ja: str, stem_kana: str) -> str:
     if len(stem_ja) >= 3:
         dir_match = re.match(r"^(.+?)(北|南|東|西|中央)$", stem_ja)
         if dir_match:
-            base_ja, dir_ja = dir_match.groups()
+            _, dir_ja = dir_match.groups()
             dir_en = {"北": "Kita", "南": "Minami", "東": "Higashi", "西": "Nishi", "中央": "Chuo"}[dir_ja]
             dir_kana_len = len("".join([x['hira'] for x in kks.convert(dir_ja)]))
             base_kana = stem_kana[:-dir_kana_len] if len(stem_kana) > dir_kana_len else stem_kana
@@ -130,17 +130,22 @@ def format_stem(stem_ja: str, stem_kana: str) -> str:
 def parse_street_or_number(ja_part: str, kana_part: str) -> str:
     ja_clean = ja_part.translate(FULL_TO_HALF)
 
-    m_sen = re.search(r"第?(\d+)線", ja_clean)
+    m_sen = re.search(r"第(\d+)線", ja_clean) or re.search(r"(\d+)線", ja_clean)
     if m_sen:
         num = m_sen.group(1)
         suffix = "th" if 11 <= int(num) % 100 <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(int(num) % 10, "th")
         return f"{num}{suffix} Line"
 
-    m_jo = re.search(r"([北南東西])?(\d+)条", ja_clean)
+    m_jo = re.search(r"([北南東西])(\d+)条", ja_clean)
     if m_jo:
         dir_char, num = m_jo.group(1), m_jo.group(2)
         dir_en = {"北": "Kita", "南": "Minami", "東": "Higashi", "西": "Nishi"}.get(dir_char, "")
         return f"{dir_en} {num}-jo".strip()
+
+    m_jo_nodir = re.search(r"(\d+)条", ja_clean)
+    if m_jo_nodir:
+        num = m_jo_nodir.group(1)
+        return f"{num}-jo".strip()
 
     return kana_to_hepburn(kana_part)
 
@@ -158,7 +163,7 @@ def translate_row(row) -> str:
 
     # 1. Match and extract Prefecture / Base City Prefix
     for p_ja, p_ka, p_en in PREFECTURES_AND_CITIES:
-        if nameja.startswith(p_ja) and not (nameja.startswith(f"{p_ja}市") or nameja.startswith(f"{p_ja}区")):
+        if nameja.startswith(p_ja) and not nameja.startswith((f"{p_ja}市", f"{p_ja}区")):
             if kana.startswith(p_ka):
                 tokens.append(p_en)
                 nameja = nameja[len(p_ja):]
@@ -218,18 +223,16 @@ def translate_row(row) -> str:
                 matched_ka = ""
                 for s_ka in s_ka_list:
                     k_idx = kana.find(s_ka, search_start_ka)
-                    if k_idx != -1:
-                        if k_cut == -1 or k_idx < k_cut:
-                            k_cut = k_idx
-                            matched_ka = s_ka
+                    if k_idx != -1 and (k_cut == -1 or k_idx < k_cut):
+                        k_cut = k_idx
+                        matched_ka = s_ka
 
                 if k_cut == -1:
                     for s_ka in s_ka_list:
                         k_idx = kana.find(s_ka)
-                        if k_idx != -1:
-                            if k_cut == -1 or k_idx < k_cut:
-                                k_cut = k_idx
-                                matched_ka = s_ka
+                        if k_idx != -1 and (k_cut == -1 or k_idx < k_cut):
+                            k_cut = k_idx
+                            matched_ka = s_ka
 
                 if k_cut != -1:
                     stem_kana = kana[:k_cut]

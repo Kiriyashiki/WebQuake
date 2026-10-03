@@ -11,7 +11,6 @@ import {
   getAvailableProviders,
   getActiveProvider,
   setActiveProvider,
-  isPlumEew,
   getShowTestEew,
   setShowTestEew,
 } from "./eewProviders.js";
@@ -19,17 +18,15 @@ import {
 import { eewState } from "./eew/state.js";
 import { loadEewDependencies, getIntVal } from "./eew/physics.js";
 import { startWaveAnimation } from "./eew/waveAnimation.js";
-import {
-  clearEewMapDisplay,
-  getIsEewMapActive,
-  onMapInteract,
-} from "./eew/eewMap.js";
+import { onMapInteract } from "./eew/eewMap.js";
 import {
   updateEewUI,
   updateHomeIntensityForActiveEews,
 } from "./eew/eewUI.js";
 
-export { isPlumEew, getShowTestEew, setShowTestEew, clearEewMapDisplay, getIsEewMapActive, updateHomeIntensityForActiveEews };
+export { isPlumEew } from "./eewProviders.js";
+export { clearEewMapDisplay, getIsEewMapActive } from "./eew/eewMap.js";
+export { getShowTestEew, setShowTestEew, updateHomeIntensityForActiveEews };
 
 /**
  * Initializes the EEW settings and connects if enabled.

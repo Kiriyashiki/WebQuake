@@ -17,7 +17,7 @@ function _getContext() {
 // Automatically unlock Web Audio API on first user interaction in browser
 if (typeof window !== "undefined") {
   const unlock = () => {
-    if (_ctx && _ctx.state === "suspended") {
+    if (_ctx?.state === "suspended") {
       _ctx.resume().catch(() => {});
     }
   };

@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('node:fs');
 const turf = require('@turf/turf');
 
 // ---------- Load data ----------
@@ -10,8 +10,8 @@ let exclusions = { features: [] };
 try {
   exclusions = JSON.parse(fs.readFileSync('extra/exclusions.geojson', 'utf-8'));
   console.log(`Loaded ${exclusions.features.length} exclusion features`);
-} catch (e) {
-  console.log('No exclusions.geojson found or error reading it. Proceeding without exclusions.');
+} catch (err) {
+  console.log('No exclusions.geojson found or error reading it. Proceeding without exclusions:', err.message);
 }
 
 console.log(`Loaded ${stations.length} stations and ${prefectures.features.length} prefecture features`);
@@ -81,8 +81,9 @@ if (exclusionPolygons.length > 0) {
             }
           }
           // If diff is null, part is completely covered by exclusion, so it is removed.
-        } catch (e) {
+        } catch (err) {
           // If difference fails (e.g., self-intersection issues), fallback to keeping the part
+          console.warn('turf.difference fallback due to geometry error:', err.message);
           nextParts.push(part);
         }
       }

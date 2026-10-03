@@ -21,8 +21,12 @@ const C = MAP_COLORS;
 // ─── Tooltip helpers ─────────────────────────────────────────────────────────
 function showTooltip(tooltip, x, y, code, info, intensity = null, mode = "area") {
   const codeEl = tooltip.querySelector(".tooltip-code");
-  const codeLabel =
-    mode === "station" ? "STATION" : mode === "city" ? `CITY ${code}` : `AREA ${code}`;
+  let codeLabel = `AREA ${code}`;
+  if (mode === "station") {
+    codeLabel = "STATION";
+  } else if (mode === "city") {
+    codeLabel = `CITY ${code}`;
+  }
   codeEl.textContent = codeLabel;
   tooltip.querySelector(".tooltip-ja").textContent = info?.ja ?? "—";
   tooltip.querySelector(".tooltip-en").textContent = info?.en ?? "";

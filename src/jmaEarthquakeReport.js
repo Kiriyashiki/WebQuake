@@ -211,7 +211,7 @@ class JMAEarthquakeReport {
    */
   _parseIsDistantEarthquake() {
     const headTitle = this.headTitle ?? this._parseHeadTitle();
-    if (headTitle && headTitle.includes("遠地地震に関する情報")) {
+    if (headTitle?.includes("遠地地震に関する情報")) {
       return true;
     }
     const titles = this._doc.getElementsByTagName("Title");
@@ -235,8 +235,8 @@ class JMAEarthquakeReport {
    */
   _parseIsVolcano() {
     const comment = this.freeFormComment ?? this._parseFreeFormComment();
-    return !!(
-      comment && comment.includes("実際には、規模の大きな地震は発生していない点に留意してください")
+    return !!comment?.includes(
+      "実際には、規模の大きな地震は発生していない点に留意してください",
     );
   }
 

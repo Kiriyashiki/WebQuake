@@ -190,7 +190,7 @@ export function buildFlashEpicenterReport(feedEntry, areaCodes, priorObservation
   let coordinates = null;
   let depth = null;
   if (feedEntry.cod) {
-    const match = /^([+-]\d+\.?\d*)([+-]\d+\.?\d*)(?:([+-]\d+\.?\d*))?\/$/u.exec(feedEntry.cod);
+    const match = /^([+-]\d+(?:\.\d+)?)([+-]\d+(?:\.\d+)?)(?:([+-]\d+(?:\.\d+)?))?\/$/u.exec(feedEntry.cod);
     if (match) {
       coordinates = {
         latitude: Number.parseFloat(match[1]),

@@ -15,7 +15,7 @@
  */
 export function parseDepth(cod) {
   if (!cod) return null;
-  const match = /^[+-][\d.]+[+-][\d.]+([+-]\d+\.?\d*)\/$/u.exec(cod);
+  const match = /^[+-]\d+(?:\.\d+)?[+-]\d+(?:\.\d+)?([+-]\d+(?:\.\d+)?)\/$/u.exec(cod);
   if (!match) return null;
   const depthMetres = Number.parseFloat(match[1]);
   if (Number.isNaN(depthMetres)) return null;
@@ -34,7 +34,7 @@ export function parseDepth(cod) {
  */
 export function parseCoordinates(cod) {
   if (!cod) return null;
-  const match = /^([+-])(\d+)(\.\d+)?([+-])(\d+)(\.\d+)?(?:[+-]\d+\.?\d*)?\/$/u.exec(cod);
+  const match = /^([+-])(\d+)(\.\d+)?([+-])(\d+)(\.\d+)?(?:[+-]\d+(?:\.\d+)?)?\/$/u.exec(cod);
   if (!match) return null;
 
   const [, s1, int1, frac1 = "", s2, int2, frac2 = ""] = match;

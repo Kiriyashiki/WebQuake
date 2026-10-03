@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const require = createRequire(import.meta.url);
-const WebSocket = require("./node_modules/ws");
+const WebSocket = require("ws");
 
 // Setup global mock environment for Node
 globalThis.WebSocket = WebSocket;
@@ -505,19 +505,19 @@ const invalidResult = await findCityForCoordinates(null, null);
 assert.strictEqual(invalidResult, null);
 console.log("✓ Test 11 passed");
 
+function getIntVal(v) {
+  if (v === "7") return 70;
+  if (v === "6+") return 65;
+  if (v === "6-") return 60;
+  if (v === "5+") return 55;
+  if (v === "5-") return 50;
+  const parsed = Number.parseInt(v);
+  return Number.isNaN(parsed) ? 0 : parsed * 10;
+}
+
 // 12. Multiple Simultaneous EEWs Intensity Logic
 console.log("Test 12: Simultaneous EEWs home intensity selection");
 function testSelectHighestIntensity(eewList, isHomeSync) {
-  function getIntVal(v) {
-    if (v === "7") return 70;
-    if (v === "6+") return 65;
-    if (v === "6-") return 60;
-    if (v === "5+") return 55;
-    if (v === "5-") return 50;
-    const parsed = Number.parseInt(v);
-    return Number.isNaN(parsed) ? 0 : parsed * 10;
-  }
-
   const activeEewList = eewList.filter((e) => !e.isCancelled);
   if (isHomeSync) {
     let maxIntVal = -1;
@@ -591,7 +591,10 @@ console.log("Test 13: EEW Report Number Formatting");
 function formatEewSerial(msg) {
   const isFinal = Boolean(msg.Flag?.is_final);
   const serialNum = msg.Serial ?? "";
-  return serialNum ? `#${serialNum}${isFinal ? " Final" : ""}` : (isFinal ? "Final" : "");
+  if (serialNum) {
+    return `#${serialNum}${isFinal ? " Final" : ""}`;
+  }
+  return isFinal ? "Final" : "";
 }
 
 assert.strictEqual(formatEewSerial({ Serial: 1, Flag: { is_final: false } }), "#1");

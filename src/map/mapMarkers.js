@@ -86,13 +86,13 @@ export function displayAllEpicenters(map, reports) {
     markerEl.style.height = "24px";
     markerEl.style.backgroundColor = intensityConfig.color;
     markerEl.style.maskImage = "url(/img/epicenter-bw.png)";
-    markerEl.style.webkitMaskImage = "url(/img/epicenter-bw.png)";
     markerEl.style.maskSize = "contain";
-    markerEl.style.webkitMaskSize = "contain";
     markerEl.style.maskRepeat = "no-repeat";
-    markerEl.style.webkitMaskRepeat = "no-repeat";
     markerEl.style.maskPosition = "center";
-    markerEl.style.webkitMaskPosition = "center";
+    markerEl.style.setProperty("-webkit-mask-image", "url(/img/epicenter-bw.png)");
+    markerEl.style.setProperty("-webkit-mask-size", "contain");
+    markerEl.style.setProperty("-webkit-mask-repeat", "no-repeat");
+    markerEl.style.setProperty("-webkit-mask-position", "center");
     markerEl.style.cursor = "pointer";
 
     // When clicking an epicenter, emulate clicking the sidebar entry

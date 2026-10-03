@@ -207,6 +207,8 @@ async function createWindow() {
 }
 
 // ─── App Lifecycle & IPC Handlers ───────────────────────────────────────────
+// Note: app.whenReady().then() is required here because top-level await at entry point
+// deadlocks Electron's event loop initialization.
 app.whenReady().then(() => {
   // IPC: Logging
   ipcMain.handle("desktop:log", (event, level, message) => {

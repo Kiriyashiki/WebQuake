@@ -191,9 +191,9 @@ async function boot() {
             console.debug("[eq-viewer] Map update: fitting bounds");
             const isDistant = !!(
               report.isDistantEarthquake ||
-              (report.headTitle && report.headTitle.includes("遠地地震に関する情報")) ||
-              (report.title && report.title.includes("遠地地震に関する情報")) ||
-              (report.ttl && report.ttl.includes("遠地地震に関する情報"))
+              report.headTitle?.includes("遠地地震に関する情報") ||
+              report.title?.includes("遠地地震に関する情報") ||
+              report.ttl?.includes("遠地地震に関する情報")
             );
             const zoom = isDistant ? 4.5 : 7.5;
             const boundsFitted = fitBoundsToObservations(
@@ -387,15 +387,9 @@ async function boot() {
                 }
 
                 const eewCheck = handlePossibleEewReport(report);
-                let shouldAutoOpen = false;
-
-                if (getAutoOpenState()) {
-                  if (eewCheck === false) {
-                    shouldAutoOpen = false;
-                  } else if (mostRecentNewReport) {
-                    shouldAutoOpen = true;
-                  }
-                }
+                const shouldAutoOpen = Boolean(
+                  getAutoOpenState() && eewCheck !== false && mostRecentNewReport,
+                );
 
                 if (shouldAutoOpen) {
                   const targetReport = mostRecentNewReport || report;
@@ -445,4 +439,8 @@ async function boot() {
   }
 }
 
-boot().catch(console.error);
+try {
+  await boot();
+} catch (err) {
+  console.error(err);
+}

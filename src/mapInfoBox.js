@@ -252,8 +252,7 @@ export function displayMapInfoBox(report, map) {
       lpgmWrapper.classList.add("hidden");
     } else {
       lpgmAvailable = true;
-      lpgmWrapper.classList.remove("hidden");
-      lpgmWrapper.classList.remove("active");
+      lpgmWrapper.classList.remove("hidden", "active");
 
       const newLpgmHeader = lpgmHeader.cloneNode(true);
       lpgmHeader.parentNode.replaceChild(newLpgmHeader, lpgmHeader);
@@ -320,8 +319,7 @@ export function displayMapInfoBox(report, map) {
       shakemapWrapper.classList.add("hidden");
     } else {
       shakemapAvailable = true;
-      shakemapWrapper.classList.remove("hidden");
-      shakemapWrapper.classList.remove("active");
+      shakemapWrapper.classList.remove("hidden", "active");
 
       const newShakemapHeader = shakemapHeader.cloneNode(true);
       shakemapHeader.parentNode.replaceChild(newShakemapHeader, shakemapHeader);

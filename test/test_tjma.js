@@ -1,6 +1,7 @@
-const fs = require('fs');
+const fs = require('node:fs');
+const path = require('node:path');
 
-const csvText = fs.readFileSync('../public/tjma2001.csv', 'utf8');
+const csvText = fs.readFileSync(path.join(__dirname, '../public/tjma2001.csv'), 'utf8');
 
 let travelTimeData = {};
 const lines = csvText.trim().split('\n');

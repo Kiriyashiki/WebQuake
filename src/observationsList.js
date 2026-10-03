@@ -87,8 +87,8 @@ export function groupObservationsByIntensity(observations, areaCodes = new Map()
         const cityData = cityNames.get(codeKey);
 
         // Check if this city already exists in the area
-        const existingCity = areaEntry.cities.find(c => c.code === cityCode);
-        if (!existingCity) {
+        const hasCity = areaEntry.cities.some(c => c.code === cityCode);
+        if (!hasCity) {
           areaEntry.cities.push({
             code: cityCode,
             name: cityData?.ja || city.name,
@@ -103,6 +103,19 @@ export function groupObservationsByIntensity(observations, areaCodes = new Map()
   }
 
   return grouped;
+}
+
+function getIntensityRank(val, isLpgm) {
+  if (isLpgm) {
+    return Number.parseInt(val, 10) || 0;
+  }
+  if (['7', '6+', '6-', '5+', '5-'].includes(val)) {
+    return 5;
+  }
+  if (val === '4') {
+    return 4;
+  }
+  return Number.parseInt(val, 10) || 0;
 }
 
 /**
@@ -138,8 +151,8 @@ export async function renderObservationsList(container, observations, areaCodes 
     // '未入電' (no data received) is placed after all standard intensities
     const intensities = Object.keys(grouped).sort((a, b) => {
       const order = isLpgm ? ['4', '3', '2', '1'] : ['7', '6+', '6-', '5+', '5-', '4', '3', '2', '1', '未入電'];
-      const idxA = order.indexOf(a) === -1 ? order.length : order.indexOf(a);
-      const idxB = order.indexOf(b) === -1 ? order.length : order.indexOf(b);
+      const idxA = order.includes(a) ? order.indexOf(a) : order.length;
+      const idxB = order.includes(b) ? order.indexOf(b) : order.length;
       return idxA - idxB;
     });
 
@@ -156,10 +169,7 @@ export async function renderObservationsList(container, observations, areaCodes 
 
     // Check if max intensity is 5- or higher
     const maxIntensity = intensities[0];
-    const maxIntensityRank = isLpgm ? Number.parseInt(maxIntensity, 10) :
-                             (['7', '6+', '6-', '5+', '5-'].includes(maxIntensity) ? 5 : 
-                             maxIntensity === '4' ? 4 : 
-                             Number.parseInt(maxIntensity, 10));
+    const maxIntensityRank = getIntensityRank(maxIntensity, isLpgm);
 
     // Create sections for each intensity
     for (const intensity of intensities) {
@@ -175,12 +185,8 @@ export async function renderObservationsList(container, observations, areaCodes 
       header.style.backgroundColor = config.color;
 
       // Determine if section should be open by default
-      const intensityRank = isLpgm ? Number.parseInt(intensity, 10) || 0 :
-                           (['7', '6+', '6-', '5+', '5-'].includes(intensity) ? 5 :
-                           intensity === '4' ? 4 :
-                           Number.parseInt(intensity, 10) || 0);
-      
-      const shouldOpen = isLpgm ? true : (maxIntensityRank >= 5 ? intensityRank >= 4 : true);
+      const intensityRank = getIntensityRank(intensity, isLpgm);
+      const shouldOpen = isLpgm || maxIntensityRank < 5 || intensityRank >= 4;
 
       const toggle = document.createElement('span');
       toggle.className = 'observations-toggle';
@@ -191,11 +197,12 @@ export async function renderObservationsList(container, observations, areaCodes 
       label.className = 'observations-intensity-label';
       label.style.color = config.fontColor;
       // Special label for non-standard intensity keys
-      const labelText = isLpgm
-        ? `長周期地震動階級 ${intensity}`
-        : (intensity === '未入電'
-            ? '震度５弱以上未入電'
-            : `震度 ${intensity.replace('-', '弱').replace('+', '強')}`);
+      let labelText = `震度 ${intensity.replace('-', '弱').replace('+', '強')}`;
+      if (isLpgm) {
+        labelText = `長周期地震動階級 ${intensity}`;
+      } else if (intensity === '未入電') {
+        labelText = '震度５弱以上未入電';
+      }
       label.textContent = labelText;
 
       header.appendChild(toggle);

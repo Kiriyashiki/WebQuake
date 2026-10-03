@@ -100,16 +100,16 @@
                 <!-- Custom search fields (hidden by default) -->
                 <div id="history-custom-fields" class="history-custom-fields hidden">
                   <div class="search-field-group">
-                    <label class="search-field-label">Date Range · 日付範囲</label>
+                    <label for="history-date-from" class="search-field-label">Date Range · 日付範囲</label>
                     <div class="search-field-row">
-                      <input type="date" id="history-date-from" class="search-input" min="2000-01-01" />
+                      <input type="date" id="history-date-from" class="search-input" min="2000-01-01" aria-label="Start Date · 開始日" />
                       <span class="search-field-sep">→</span>
-                      <input type="date" id="history-date-to" class="search-input" min="2000-01-01" />
+                      <input type="date" id="history-date-to" class="search-input" min="2000-01-01" aria-label="End Date · 終了日" />
                     </div>
                   </div>
                   <div class="search-field-group">
-                    <label class="search-field-label">Minimum Intensity · 最低震度</label>
-                    <select id="history-min-intensity" class="search-input">
+                    <label for="history-min-intensity" class="search-field-label">Minimum Intensity · 最低震度</label>
+                    <select id="history-min-intensity" class="search-input" aria-label="Minimum Intensity · 最低震度">
                       <option value="1">1</option>
                       <option value="2">2</option>
                       <option value="3">3</option>
@@ -122,27 +122,27 @@
                     </select>
                   </div>
                   <div class="search-field-group">
-                    <label class="search-field-label">Magnitude Range · マグニチュード範囲</label>
+                    <label for="history-mag-min" class="search-field-label">Magnitude Range · マグニチュード範囲</label>
                     <div class="search-field-row">
-                      <input type="number" id="history-mag-min" class="search-input" min="0" max="9.9" step="0.1" value="0.0" />
+                      <input type="number" id="history-mag-min" class="search-input" min="0" max="9.9" step="0.1" value="0.0" aria-label="Minimum Magnitude · 最小マグニチュード" />
                       <span class="search-field-sep">→</span>
-                      <input type="number" id="history-mag-max" class="search-input" min="0" max="9.9" step="0.1" value="9.9" />
+                      <input type="number" id="history-mag-max" class="search-input" min="0" max="9.9" step="0.1" value="9.9" aria-label="Maximum Magnitude · 最大マグニチュード" />
                     </div>
                   </div>
                   <div class="search-field-group">
-                    <label class="search-field-label">Depth Range (km) · 深さ範囲</label>
+                    <label for="history-depth-min" class="search-field-label">Depth Range (km) · 深さ範囲</label>
                     <div class="search-field-row">
-                      <input type="number" id="history-depth-min" class="search-input" min="0" max="999" step="1" value="0" />
+                      <input type="number" id="history-depth-min" class="search-input" min="0" max="999" step="1" value="0" aria-label="Minimum Depth · 最小深さ" />
                       <span class="search-field-sep">→</span>
-                      <input type="number" id="history-depth-max" class="search-input" min="0" max="999" step="1" value="999" />
+                      <input type="number" id="history-depth-max" class="search-input" min="0" max="999" step="1" value="999" aria-label="Maximum Depth · 最大深さ" />
                     </div>
                   </div>
                 </div>
 
                 <!-- Sort -->
                 <div class="search-field-group">
-                  <label class="search-field-label">Sort · 並び順</label>
-                  <select id="history-sort" class="search-input">
+                  <label for="history-sort" class="search-field-label">Sort · 並び順</label>
+                  <select id="history-sort" class="search-input" aria-label="Sort · 並び順">
                     <option value="S0">Newest · 新しい順</option>
                     <option value="S1">Oldest · 古い順</option>
                     <option value="S2">Highest Intensity · 震度順</option>

@@ -257,18 +257,21 @@ export function renderCurrentEew() {
     ? eewState.areaCodes.get(hypoCodeNum) || { ja: msg.Hypocenter.Name, en: "Unknown", kana: "" }
     : { ja: msg.Hypocenter.Name, en: "Unknown", kana: "" };
 
-  let labelColor = isCancelled
-    ? "#7f8c8d"
-    : isWarning
-      ? "#e84c3d"
-      : isLowAccuracy
-        ? "#1e6ee6"
-        : "#f39c12";
-  let labelText = isCancelled
-    ? "Cancelled • キャンセル"
-    : isWarning
-      ? "EEW (Warning) • 緊急地震速報（警報）"
-      : "EEW (Forecast) • 緊急地震速報（予報）";
+  let labelColor = "#f39c12";
+  if (isCancelled) {
+    labelColor = "#7f8c8d";
+  } else if (isWarning) {
+    labelColor = "#e84c3d";
+  } else if (isLowAccuracy) {
+    labelColor = "#1e6ee6";
+  }
+
+  let labelText = "EEW (Forecast) • 緊急地震速報（予報）";
+  if (isCancelled) {
+    labelText = "Cancelled • キャンセル";
+  } else if (isWarning) {
+    labelText = "EEW (Warning) • 緊急地震速報（警報）";
+  }
 
   // Render the list entry
   const container = document.getElementById("eew-list-container");
@@ -402,14 +405,21 @@ export function renderEewInfoBox(
   if (depthRow) depthRow.classList.remove("hidden");
 
   const isLowAccuracy = Boolean(msg.isLowAccuracy);
-  let labelColor = isCancelled
-    ? "#7f8c8d"
-    : isWarning
-      ? "#e84c3d"
-      : isLowAccuracy
-        ? "#1e6ee6"
-        : "#f39c12";
-  let labelText = isCancelled ? "Cancelled" : isWarning ? "EEW (Warning)" : "EEW (Forecast)";
+  let labelColor = "#f39c12";
+  if (isCancelled) {
+    labelColor = "#7f8c8d";
+  } else if (isWarning) {
+    labelColor = "#e84c3d";
+  } else if (isLowAccuracy) {
+    labelColor = "#1e6ee6";
+  }
+
+  let labelText = "EEW (Forecast)";
+  if (isCancelled) {
+    labelText = "Cancelled";
+  } else if (isWarning) {
+    labelText = "EEW (Warning)";
+  }
   if (totalCount > 1) labelText = `[${currentIndex}/${totalCount}] ` + labelText;
 
   let hypoCodeNum = Number.parseInt(msg.Hypocenter?.Code);
@@ -441,6 +451,7 @@ export function renderEewInfoBox(
     const intensityConfig = INTENSITY_CONFIG[msg.Intensity] || INTENSITY_CONFIG["1"];
     intensityImg.src = `/img/shindo/${intensityConfig.img}`;
     intensityImg.title = `Intensity: ${msg.Intensity}`;
+    intensityImg.alt = `Intensity: ${msg.Intensity}`;
     intensityImg.style.display = "block";
     const existingPlaceholder = intensityContainer.querySelector(".eew-intensity-placeholder");
     if (existingPlaceholder) existingPlaceholder.remove();
@@ -512,7 +523,13 @@ export function renderEewInfoBox(
   if (serialEl) {
     const isFinal = Boolean(msg.Flag?.is_final);
     const serialNum = msg.Serial ?? "";
-    serialEl.textContent = serialNum ? `#${serialNum}${isFinal ? " Final" : ""}` : (isFinal ? "Final" : "");
+    let serialText = "";
+    if (serialNum) {
+      serialText = `#${serialNum}${isFinal ? " Final" : ""}`;
+    } else if (isFinal) {
+      serialText = "Final";
+    }
+    serialEl.textContent = serialText;
     serialEl.classList.remove("hidden");
   }
 

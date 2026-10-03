@@ -4,7 +4,7 @@ import {
   loadAreaNameToCodeMap,
 } from "../areaCodes.js";
 
-export let travelTimeData = null;
+export const travelTimeData = {};
 export const cityForecastMap = new Map();
 export const stationsData = [];
 let _eewDependenciesPromise = null;
@@ -24,7 +24,9 @@ export async function loadEewDependencies() {
         loadAreaNameToCodeMap().catch(() => {}),
       ]);
 
-      travelTimeData = {};
+      for (const key of Object.keys(travelTimeData)) {
+        delete travelTimeData[key];
+      }
       const tjmaLines = tjmaRes.trim().split("\n");
       for (let i = 1; i < tjmaLines.length; i++) {
         if (!tjmaLines[i]) continue;

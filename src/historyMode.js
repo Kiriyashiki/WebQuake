@@ -175,20 +175,6 @@ export async function fetchEqdbMaxDate() {
  */
 export function getSearchPreset(preset, maxDate) {
   switch (preset) {
-    case 'year':
-    default: {
-      const oneYearAgo = clampMinDate(getDateOneYearAgo());
-      return {
-        dateFrom: oneYearAgo,
-        dateTo: oneYearAgo,
-        magMin: '0.0',
-        magMax: '9.9',
-        depMin: '000',
-        depMax: '999',
-        maxInt: '1',
-        sort: 'S0',
-      };
-    }
     case 'large':
       return {
         dateFrom: EQDB_MIN_DATE,
@@ -211,6 +197,20 @@ export function getSearchPreset(preset, maxDate) {
         maxInt: '1',
         sort: 'S0',
       };
+    case 'year':
+    default: {
+      const oneYearAgo = clampMinDate(getDateOneYearAgo());
+      return {
+        dateFrom: oneYearAgo,
+        dateTo: oneYearAgo,
+        magMin: '0.0',
+        magMax: '9.9',
+        depMin: '000',
+        depMax: '999',
+        maxInt: '1',
+        sort: 'S0',
+      };
+    }
   }
 }
 
@@ -687,7 +687,7 @@ export function buildHistoryBaseReport(event, areaCodes = new Map()) {
     ? { latitude: lat, longitude: lon }
     : null;
 
-  const depthMatch = event?.dep ? String(event.dep).match(/(\d+)/) : null;
+  const depthMatch = event?.dep ? /(\d+)/.exec(String(event.dep)) : null;
   const depth = depthMatch ? Number.parseInt(depthMatch[1], 10) : null;
 
   return {
