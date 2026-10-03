@@ -15,6 +15,8 @@
   --accent:     #e84c3d;   /* seismic red */
   --accent2:    #f0a500;   /* amber – hover glow */
   --accent-dim: rgba(232, 76, 61, 0.12);
+  --accent2-dim: rgba(240, 165, 0, 0.15);
+  --accent2-glow: rgba(240, 165, 0, 0.08);
 
   --ocean:      #060a0e;
   --land:       #0e1620;
@@ -23,8 +25,8 @@
   --japan-line: #1e2e44;
 
   /* Typography */
-  --font-display: 'M PLUS 1p', 'M PLUS 1P', 'Syne', sans-serif;
-  --font-mono:    'IBM Plex Mono', 'M PLUS 1p', 'M PLUS 1P', monospace;
+  --font-display: 'M PLUS 1p', 'Syne', sans-serif;
+  --font-mono:    'IBM Plex Mono', 'M PLUS 1p', monospace;
 
   /* Layout */
   --topbar-h:    52px;

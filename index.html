@@ -27,8 +27,8 @@
           <span class="topbar-title">KyoQuake</span>
           <span class="topbar-sub">地震情報 • Earthquake Information</span>
         </div>
-        <div id="topbar-right" style="display: flex; align-items: center;">
-          <span id="eew-status-container" class="hidden" style="display: flex; align-items: center; margin-right: 12px; cursor: pointer;">
+        <div id="topbar-right">
+          <span id="eew-status-container" class="hidden">
             <span id="eew-status-dot" class="dot-error"></span>
             <span id="eew-status-text" class="mono">EEW: Disconnected</span>
           </span>
@@ -78,7 +78,7 @@
               <!-- Search controls -->
               <div id="history-search-controls" class="history-search-controls">
                 <div class="history-search-header">
-                  <span class="mono" style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim);">Search EQDB · 地震データベース検索</span>
+                  <span class="mono">Search EQDB · 地震データベース検索</span>
                 </div>
 
                 <!-- Presets -->
@@ -160,7 +160,7 @@
               </ul>
 
               <!-- Load more button -->
-              <button id="history-load-more-btn" class="load-older-btn" style="display: none;">Load More · もっと読み込む</button>
+              <button id="history-load-more-btn" class="load-older-btn">Load More · もっと読み込む</button>
             </div>
             <!-- History loading progress popup -->
             <div id="history-loading-container" class="sidebar-loading-container hidden">
@@ -321,7 +321,7 @@
                     <div class="settings-section">
                   <label id="live-mode-setting" class="live-mode-toggle popup-setting" data-tooltip="Enable live polling for new/updated reports • 新規•更新された報告のリアルタイム取得を有効にする">
                     <input type="checkbox" id="live-mode-toggle" />
-                    <span class="toggle-label" style="flex-grow: 1; text-align: left;">Live Mode<br>ライブモード</span>
+                    <span class="toggle-label">Live Mode<br>ライブモード</span>
                     <span class="toggle-switch"></span>
                   </label>
                 </div>
@@ -330,36 +330,36 @@
                   <div class="home-location-header">EEW (Earthquake Early Warning) • 緊急地震速報</div>
                   <label class="live-mode-toggle popup-setting" data-tooltip="Enable receiving EEWs • 緊急地震速報を受信する">
                     <input type="checkbox" id="eew-toggle" />
-                    <span class="toggle-label" style="flex-grow: 1; text-align: left;">Enable EEW<br>有効にする</span>
+                    <span class="toggle-label">Enable EEW<br>有効にする</span>
                     <span class="toggle-switch"></span>
                   </label>
-                  <div class="dropdown-group" style="margin-top: 10px;">
+                  <div class="dropdown-group">
                     <label for="eew-provider-select">Provider • 配信元:</label>
-                    <select id="eew-provider-select" style="width: 100%; box-sizing: border-box;"></select>
+                    <select id="eew-provider-select"></select>
                   </div>
-                  <div id="eew-token-group" class="dropdown-group" style="margin-top: 10px;">
+                  <div id="eew-token-group" class="dropdown-group">
                     <label id="eew-token-label" for="eew-token-input">AXIS Token • トークン:</label>
-                    <input type="password" id="eew-token-input" class="search-input" placeholder="Bearer Token" style="width: 100%; box-sizing: border-box;" />
+                    <input type="password" id="eew-token-input" class="search-input" placeholder="Bearer Token" />
                   </div>
-                  <div id="eew-port-group" class="dropdown-group hidden" style="margin-top: 10px;">
+                  <div id="eew-port-group" class="dropdown-group hidden">
                     <label id="eew-port-label" for="eew-port-input">Port Number • ポート番号:</label>
-                    <input type="number" id="eew-port-input" class="search-input" placeholder="11311" style="width: 100%; box-sizing: border-box;" />
+                    <input type="number" id="eew-port-input" class="search-input" placeholder="11311" />
                   </div>
-                  <div id="eew-home-sync-group" class="dropdown-group hidden" style="margin-top: 10px;">
+                  <div id="eew-home-sync-group" class="dropdown-group hidden">
                     <label class="live-mode-toggle popup-setting" data-tooltip="Sync home location with EEW Client • ホーム場所をEEW Clientと同期する">
                       <input type="checkbox" id="eew-home-sync-toggle" checked />
-                      <span class="toggle-label" style="flex-grow: 1; text-align: left;">Sync Home Location<br>ホーム場所を同期</span>
+                      <span class="toggle-label">Sync Home Location<br>ホーム場所を同期</span>
                       <span class="toggle-switch"></span>
                     </label>
                   </div>
-                  <div id="eew-test-group" class="dropdown-group" style="margin-top: 10px;">
+                  <div id="eew-test-group" class="dropdown-group">
                     <label class="live-mode-toggle popup-setting" data-tooltip="Display test/drill EEWs • 訓練・テストの緊急地震速報を表示する">
                       <input type="checkbox" id="eew-test-toggle" />
-                      <span class="toggle-label" style="flex-grow: 1; text-align: left;">Show Test EEWs<br>訓練表示</span>
+                      <span class="toggle-label">Show Test EEWs<br>訓練表示</span>
                       <span class="toggle-switch"></span>
                     </label>
                   </div>
-                  <div id="eew-provider-info" style="margin-top: 10px;">
+                  <div id="eew-provider-info">
                     <p id="eew-axis-info">
                       Important information about AXIS EEW and how to use it<br>
                       AXIS緊急地震速報に関する重要な情報と使用方法<br>
@@ -383,12 +383,12 @@
                     </div>
                     <label class="live-mode-toggle popup-setting" data-tooltip="Display a marker at your home location • ホーム場所にマーカーを表示">
                       <input type="checkbox" id="home-marker-toggle" />
-                      <span class="toggle-label" style="flex-grow: 1; text-align: left;">Show Marker<br>マーカー表示</span>
+                      <span class="toggle-label">Show Marker<br>マーカー表示</span>
                       <span class="toggle-switch"></span>
                     </label>
                     <label class="live-mode-toggle popup-setting" data-tooltip="Show intensity at your home location when a report is open • レポートが開いてるときホーム場所の震度を表示">
                       <input type="checkbox" id="home-intensity-toggle" />
-                      <span class="toggle-label" style="flex-grow: 1; text-align: left;">Show Intensity<br>震度表示</span>
+                      <span class="toggle-label">Show Intensity<br>震度表示</span>
                       <span class="toggle-switch"></span>
                     </label>
                   </div>

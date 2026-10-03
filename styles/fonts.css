@@ -58,7 +58,7 @@
   src: url('./fonts/ibm-plex-mono-500.woff2') format('woff2');
 }
 
-/* M PLUS 1p (defined for both 'M PLUS 1p' and 'M PLUS 1P') */
+/* M PLUS 1p */
 @font-face {
   font-family: 'M PLUS 1p';
   font-style: normal;
@@ -83,26 +83,3 @@
   src: url('./fonts/m-plus-1p-700.woff2') format('woff2');
 }
 
-@font-face {
-  font-family: 'M PLUS 1P';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('./fonts/m-plus-1p-400.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'M PLUS 1P';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url('./fonts/m-plus-1p-500.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'M PLUS 1P';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('./fonts/m-plus-1p-700.woff2') format('woff2');
-}

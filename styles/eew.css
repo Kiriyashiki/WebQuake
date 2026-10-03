@@ -3,15 +3,7 @@
 #eew-list-container {
   margin-bottom: 4px;
 }
-#eew-list-container.hidden,
-#eew-token-group.hidden,
-#eew-port-group.hidden,
-#eew-provider-info.hidden,
-#eew-axis-info.hidden,
-#eew-status-container.hidden,
-#eew-test-banner.hidden {
-  display: none !important;
-}
+
 
 #eew-test-banner {
   position: absolute;

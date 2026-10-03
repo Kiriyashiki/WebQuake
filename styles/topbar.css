@@ -47,6 +47,13 @@
   color: var(--text-dim);
 }
 
+#eew-status-container {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+  cursor: pointer;
+}
+
 .dot-idle  { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); }
 .dot-live  { width: 6px; height: 6px; border-radius: 50%; background: #30d158; }
 .dot-error { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }

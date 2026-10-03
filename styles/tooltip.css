@@ -1,50 +1,32 @@
 /* ── Area Hover Tooltip & Markers ────────────────────────────────── */
 
-#area-tooltip {
-  position: absolute;
-  pointer-events: none;
-  z-index: 50;
+#area-tooltip,
+#home-intensity-display {
   padding: 10px 14px 11px;
-  background: rgba(11, 16, 24, 0.98);
+  background: var(--bg-panel);
   border: 1px solid var(--border-hi);
   border-top: 2px solid var(--accent2);
   border-radius: 4px;
   min-width: 160px;
   width: max-content;
-  box-shadow: 0 4px 24px rgba(0,0,0,.6);
-  transform: translate(14px, -50%);
-  transition: opacity 0.1s;
   display: flex;
   align-items: center;
   gap: 16px;
+  pointer-events: none;
+  transition: opacity 0.1s;
+}
+
+#area-tooltip {
+  position: absolute;
+  z-index: 50;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+  transform: translate(14px, -50%);
 }
 
 #area-tooltip.hidden {
+  display: flex !important;
   opacity: 0;
   pointer-events: none;
-}
-
-/* ── Home Location Intensity Display (Fixed above legend) ──────── */
-
-#home-intensity-display {
-  padding: 10px 14px 11px;
-  background: rgb(12, 17, 25);
-  border: 1px solid var(--border-hi);
-  border-top: 2px solid var(--accent2);
-  border-radius: 4px;
-  min-width: 160px;
-  width: max-content;
-  transition: opacity 0.1s;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  pointer-events: none;
-}
-
-#home-intensity-display.hidden {
-  opacity: 0;
-  pointer-events: none;
-  display: none;
 }
 
 .tooltip-content {
@@ -83,9 +65,7 @@
   flex-shrink: 0;
 }
 
-.tooltip-intensity-container.hidden {
-  display: none;
-}
+
 
 .tooltip-intensity-img {
   width: 40px;
