@@ -524,8 +524,6 @@ export function highlightShakemapObservations(map, observations) {
       { highlighted: true, intensity: stationData.int },
     );
 
-    highlightShakemapObservations._active.push({ source: "shakemap", id: cleanName });
-
     // Store info for tooltip lookups
     _shakemapStationInfo.set(cleanName, { ja: stationData.ja, en: stationData.en });
   }
@@ -536,9 +534,13 @@ export function highlightShakemapObservations(map, observations) {
  * @param {maplibregl.Map} map
  */
 export function clearShakemapHighlights(map) {
-  highlightShakemapObservations._active?.forEach(({ source, id }) => {
-    map.setFeatureState({ source, id }, { intensity: null, highlighted: false });
-  });
+  if (map?.isStyleLoaded?.()) {
+    try {
+      if (map.getSource("shakemap")) {
+        map.removeFeatureState({ source: "shakemap" });
+      }
+    } catch (_) {}
+  }
   highlightShakemapObservations._active = [];
   _shakemapStationInfo.clear();
 }
@@ -562,18 +564,17 @@ export function highlightObservations(map, observations, isLpgm = false) {
     return;
   }
 
-  // Reset every currently highlighted feature first
-  // MapLibre does not provide a bulk-reset, so we track them.
-  highlightObservations._active?.forEach(({ source, id }) => {
-    try {
-      map.setFeatureState(
-        { source, id },
-        { intensity: null, lpgmIntensity: null, highlighted: false },
-      );
-    } catch (_) {
-      // Feature may no longer exist in the source
+  // Bulk-reset every currently highlighted feature across forecast_areas and cities
+  try {
+    if (map.getSource("forecast_areas")) {
+      map.removeFeatureState({ source: "forecast_areas" });
     }
-  });
+    if (map.getSource("cities")) {
+      map.removeFeatureState({ source: "cities" });
+    }
+  } catch (_) {
+    // Sources may not yet be initialized in custom styles
+  }
   highlightObservations._active = [];
 
   if (!observations) return;
@@ -596,7 +597,6 @@ export function highlightObservations(map, observations, isLpgm = false) {
       } catch (_) {
         // Feature may not exist in the source
       }
-      highlightObservations._active.push({ source: "forecast_areas", id: areaId });
 
       // Highlight city areas
       if (area.cities) {
@@ -610,7 +610,6 @@ export function highlightObservations(map, observations, isLpgm = false) {
           } catch (_) {
             // Feature may not exist in the source
           }
-          highlightObservations._active.push({ source: "cities", id: cityId });
         }
       }
     }

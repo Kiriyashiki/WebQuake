@@ -77,8 +77,16 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
   const reports = [];
 
   try {
-    // Fetch JSON feed
-    const feedEntries = await fetchFeedEntries(FEED_URL_LATEST);
+    // Fetch JSON feed and LPGM feed concurrently
+    const [feedEntries, lpgmList] = await Promise.all([
+      fetchFeedEntries(FEED_URL_LATEST),
+      fetch(`${FEED_LPGM_BASE_URL}list.json`)
+        .then((res) => (res.ok ? res.json() : []))
+        .catch((err) => {
+          console.warn("Failed to fetch LPGM list:", err);
+          return [];
+        }),
+    ]);
 
     // Filter for target reports (震源・震度情報 or 遠地地震に関する情報)
     const rawTargetEntries = feedEntries.filter(
@@ -142,24 +150,18 @@ export async function fetchEarthquakeReports(areaCodes = new Map(), onReportFetc
       }
     }
 
-    // Fetch LPGM JSON feed (parallel)
+    // Map LPGM entries by event ID
     const lpgmEntriesByEid = new Map();
-    try {
-      const lpgmRes = await fetch(`${FEED_LPGM_BASE_URL}list.json`);
-      if (lpgmRes.ok) {
-        const lpgmList = await lpgmRes.json();
-        for (const entry of lpgmList) {
-          if (entry.ttl === LPGM_TITLE && entry.eid && entry.json) {
-            const existing = lpgmEntriesByEid.get(entry.eid);
-            // Keep newest by rdt if multiple exist
-            if (!existing || (entry.rdt && (!existing.rdt || entry.rdt > existing.rdt))) {
-              lpgmEntriesByEid.set(entry.eid, entry);
-            }
+    if (Array.isArray(lpgmList)) {
+      for (const entry of lpgmList) {
+        if (entry.ttl === LPGM_TITLE && entry.eid && entry.json) {
+          const existing = lpgmEntriesByEid.get(entry.eid);
+          // Keep newest by rdt if multiple exist
+          if (!existing || (entry.rdt && (!existing.rdt || entry.rdt > existing.rdt))) {
+            lpgmEntriesByEid.set(entry.eid, entry);
           }
         }
       }
-    } catch (err) {
-      console.warn("Failed to fetch LPGM list:", err);
     }
 
     let processedCount = 0;

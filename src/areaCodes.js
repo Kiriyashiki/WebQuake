@@ -31,10 +31,15 @@ let _cityPolygonsMap = null;
  */
 export function loadAreaCodesRawCsv() {
   if (!_rawCsvPromise) {
-    _rawCsvPromise = fetch('/jma-area-codes.csv').then(res => {
-      if (!res.ok) throw new Error(`Failed to load area codes CSV: ${res.status}`);
-      return res.text();
-    });
+    _rawCsvPromise = fetch('/jma-area-codes.csv')
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to load area codes CSV: ${res.status}`);
+        return res.text();
+      })
+      .catch(err => {
+        _rawCsvPromise = null;
+        throw err;
+      });
   }
   return _rawCsvPromise;
 }
@@ -49,29 +54,34 @@ export function loadAreaCodesRawCsv() {
  */
 export function loadAreaCodes() {
   if (!_areaCodesPromise) {
-    _areaCodesPromise = loadAreaCodesRawCsv().then(text => {
-      const map = new Map();
-      for (const raw of text.split('\n')) {
-        const line = raw.trim();
-        if (!line || line.startsWith('#')) continue;
+    _areaCodesPromise = loadAreaCodesRawCsv()
+      .then(text => {
+        const map = new Map();
+        for (const raw of text.split('\n')) {
+          const line = raw.trim();
+          if (!line || line.startsWith('#')) continue;
 
-        const parts = line.split(';');
-        if (parts.length < 3) continue;
+          const parts = line.split(';');
+          if (parts.length < 3) continue;
 
-        const code = Number.parseInt(parts[0], 10);
-        const ja   = parts[1]?.trim() ?? '';
-        const kana = parts[2]?.trim() ?? '';
-        const en   = parts[3]?.trim() ?? '';
+          const code = Number.parseInt(parts[0], 10);
+          const ja   = parts[1]?.trim() ?? '';
+          const kana = parts[2]?.trim() ?? '';
+          const en   = parts[3]?.trim() ?? '';
 
-        if (!Number.isNaN(code)) {
-          map.set(code, { ja, kana, en });
-          if (ja) {
-            _areaNameToCodeMap.set(ja, code);
+          if (!Number.isNaN(code)) {
+            map.set(code, { ja, kana, en });
+            if (ja) {
+              _areaNameToCodeMap.set(ja, code);
+            }
           }
         }
-      }
-      return map;
-    });
+        return map;
+      })
+      .catch(err => {
+        _areaCodesPromise = null;
+        throw err;
+      });
   }
   return _areaCodesPromise;
 }
@@ -82,25 +92,30 @@ export function loadAreaCodes() {
  */
 export function loadAreaNameToCodeMap() {
   if (!_areaNameToCodePromise) {
-    _areaNameToCodePromise = loadAreaCodesRawCsv().then(text => {
-      const map = new Map();
-      for (const raw of text.split('\n')) {
-        const line = raw.trim();
-        if (!line || line.startsWith('#')) continue;
+    _areaNameToCodePromise = loadAreaCodesRawCsv()
+      .then(text => {
+        const map = new Map();
+        for (const raw of text.split('\n')) {
+          const line = raw.trim();
+          if (!line || line.startsWith('#')) continue;
 
-        const parts = line.split(';');
-        if (parts.length < 2) continue;
+          const parts = line.split(';');
+          if (parts.length < 2) continue;
 
-        const code = Number.parseInt(parts[0], 10);
-        const ja   = parts[1]?.trim() ?? '';
+          const code = Number.parseInt(parts[0], 10);
+          const ja   = parts[1]?.trim() ?? '';
 
-        if (!Number.isNaN(code) && ja) {
-          map.set(ja, code);
-          _areaNameToCodeMap.set(ja, code);
+          if (!Number.isNaN(code) && ja) {
+            map.set(ja, code);
+            _areaNameToCodeMap.set(ja, code);
+          }
         }
-      }
-      return map;
-    });
+        return map;
+      })
+      .catch(err => {
+        _areaNameToCodePromise = null;
+        throw err;
+      });
   }
   return _areaNameToCodePromise;
 }
@@ -152,7 +167,10 @@ export function loadPrefectureCodes() {
       }
 
       return map;
-    })();
+    })().catch(err => {
+      _prefectureCodesPromise = null;
+      throw err;
+    });
   }
   return _prefectureCodesPromise;
 }
@@ -186,7 +204,10 @@ export function loadCityNames() {
       }
 
       return map;
-    })();
+    })().catch(err => {
+      _cityNamesPromise = null;
+      throw err;
+    });
   }
   return _cityNamesPromise;
 }
@@ -202,10 +223,15 @@ let _stationNamesPromise = null;
  */
 export function loadStationsCsvText() {
   if (!_stationsCsvPromise) {
-    _stationsCsvPromise = fetch('/stations.csv').then(res => {
-      if (!res.ok) throw new Error(`Failed to load stations CSV: ${res.status}`);
-      return res.text();
-    });
+    _stationsCsvPromise = fetch('/stations.csv')
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to load stations CSV: ${res.status}`);
+        return res.text();
+      })
+      .catch(err => {
+        _stationsCsvPromise = null;
+        throw err;
+      });
   }
   return _stationsCsvPromise;
 }
@@ -249,7 +275,10 @@ export function loadStationNames() {
       }
 
       return { byCode, byName };
-    })();
+    })().catch(err => {
+      _stationNamesPromise = null;
+      throw err;
+    });
   }
   return _stationNamesPromise;
 }
@@ -267,7 +296,10 @@ export function loadBoundsData() {
       const res = await fetch('/bounds.json');
       if (!res.ok) throw new Error(`Failed to load bounds.json: ${res.status}`);
       return res.json();
-    })();
+    })().catch(err => {
+      _boundsPromise = null;
+      throw err;
+    });
   }
   return _boundsPromise;
 }
@@ -281,10 +313,15 @@ export function loadBoundsData() {
  */
 export function loadCityForecastMapCsv() {
   if (!_cityForecastCsvPromise) {
-    _cityForecastCsvPromise = fetch('/city_forecast_map.csv').then(res => {
-      if (!res.ok) throw new Error(`Failed to load city_forecast_map.csv: ${res.status}`);
-      return res.text();
-    });
+    _cityForecastCsvPromise = fetch('/city_forecast_map.csv')
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to load city_forecast_map.csv: ${res.status}`);
+        return res.text();
+      })
+      .catch(err => {
+        _cityForecastCsvPromise = null;
+        throw err;
+      });
   }
   return _cityForecastCsvPromise;
 }
@@ -310,10 +347,15 @@ export function createRubyHtml(text, kana) {
  */
 export function loadMunicipalitiesGeojson() {
   if (!_municipalitiesPromise) {
-    _municipalitiesPromise = fetch('/municipalities.geojson').then(res => {
-      if (!res.ok) throw new Error(`Failed to load municipalities.geojson: ${res.status}`);
-      return res.json();
-    });
+    _municipalitiesPromise = fetch('/municipalities.geojson')
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to load municipalities.geojson: ${res.status}`);
+        return res.json();
+      })
+      .catch(err => {
+        _municipalitiesPromise = null;
+        throw err;
+      });
   }
   return _municipalitiesPromise;
 }

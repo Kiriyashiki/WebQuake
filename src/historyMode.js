@@ -1,5 +1,10 @@
 import { EQDB_API_URL, haversineDistance } from './constants.js';
-import { loadAreaCodesRawCsv, loadBoundsData, loadCityForecastMapCsv } from './areaCodes.js';
+import {
+  loadAreaCodesRawCsv,
+  loadBoundsData,
+  loadCityForecastMapCsv,
+  loadMunicipalitiesGeojson,
+} from './areaCodes.js';
 import { parseReport, buildDisplayReport } from './reportUtils.js';
 import { pointInPolygon } from './geoUtils.js';
 
@@ -285,12 +290,10 @@ async function fetchHistoryList(params) {
  * JMAEarthquakeReport.fromJSON().
  * @param {string} eventId - The EQDB event ID
  * @param {Object} boundsData - Pre-loaded bounds.json
- * @param {Object} forecastAreas - Pre-loaded forecast_areas.geojson
- * @param {Object} municipalities - Pre-loaded municipalities.geojson
- * @param {string} areaCodesCsv - Pre-loaded jma-area-codes.csv content
+ * @param {Object} geoData - Pre-computed geoData maps
  * @returns {Promise<Object|null>} Report JSON or null on failure
  */
-async function fetchEqdbEvent(eventId, boundsData, forecastAreas, municipalities, areaCodesCsv, cityForecastCsv) {
+async function fetchEqdbEvent(eventId, boundsData, geoData) {
   try {
     const boundary = '----bound';
     const body = `--${boundary}\r\nContent-Disposition: form-data; name="mode"\r\n\r\nevent\r\n--${boundary}\r\nContent-Disposition: form-data; name="id"\r\n\r\n${eventId}\r\n--${boundary}--\r\n`;
@@ -313,43 +316,8 @@ async function fetchEqdbEvent(eventId, boundsData, forecastAreas, municipalities
     const hyp = eqdbData.res.hyp[0];
     const observations = eqdbData.res.int || [];
 
-    // Parse the hypocenter CSV into a Map
-    const hypocenterCodeMap = new Map();
-    areaCodesCsv.split('\n').forEach(line => {
-      const parts = line.split(';');
-      if (parts.length >= 2) {
-        hypocenterCodeMap.set(parts[1].trim(), parts[0].trim());
-      }
-    });
+    const { hypocenterCodeMap, cityToAreaMap, forecastAreaNames, cityPolygons } = geoData;
     const resolvedHypocenterCode = hypocenterCodeMap.get(hyp.name) || null;
-
-    // Parse the city to forecast area mapping
-    const cityToAreaMap = new Map();
-    if (cityForecastCsv) {
-      cityForecastCsv.split('\n').forEach(line => {
-        const parts = line.split(',');
-        if (parts.length >= 2) {
-          cityToAreaMap.set(parts[0].trim(), parts[1].trim());
-        }
-      });
-    }
-
-    // Map forecast area names for quick lookup
-    const forecastAreaNames = new Map();
-    for (const feature of forecastAreas.features) {
-      if (feature.properties?.code) {
-        forecastAreaNames.set(feature.properties.code, feature.properties.name);
-      }
-    }
-
-    // Map municipalities for quick O(1) lookup by regioncode
-    const cityPolygons = new Map();
-    for (const feature of municipalities.features) {
-      if (feature.properties?.regioncode) {
-        cityPolygons.set(feature.properties.regioncode.toString(), feature);
-      }
-    }
-
 
     // Create observation point features
     const stationPoints = observations.map(obs => ({
@@ -362,57 +330,76 @@ async function fetchEqdbEvent(eventId, boundsData, forecastAreas, municipalities
     // Process Cities, Areas, and Prefectures
     const prefMap = new Map();
 
-    for (const [cityCode, bbox] of Object.entries(boundsData.cities)) {
-      const [minLon, minLat, maxLon, maxLat] = bbox;
+    if (stationPoints.length > 0) {
+      // Fast broad-phase envelope covering all stations in this event
+      let stMinLon = Infinity, stMinLat = Infinity, stMaxLon = -Infinity, stMaxLat = -Infinity;
+      for (const s of stationPoints) {
+        if (s.lon < stMinLon) stMinLon = s.lon;
+        if (s.lat < stMinLat) stMinLat = s.lat;
+        if (s.lon > stMaxLon) stMaxLon = s.lon;
+        if (s.lat > stMaxLat) stMaxLat = s.lat;
+      }
 
-      // STEP A: Fast Bounding Box Filter
-      const candidatesInBounds = stationPoints.filter(s =>
-        s.lon >= minLon && s.lon <= maxLon && s.lat >= minLat && s.lat <= maxLat
-      );
+      for (const [cityCode, bbox] of Object.entries(boundsData.cities)) {
+        const [minLon, minLat, maxLon, maxLat] = bbox;
 
-      // STEP B: Precise Point-in-Polygon Filter
-      let cityInt = null;
-      let validStations = null;
-      const cityFeature = cityPolygons.get(cityCode);
+        // Broad-phase reject: skip cities completely outside the event's station envelope
+        if (maxLon < stMinLon || minLon > stMaxLon || maxLat < stMinLat || minLat > stMaxLat) {
+          continue;
+        }
 
-      if (cityFeature && candidatesInBounds.length > 0) {
-        validStations = candidatesInBounds.filter(station => {
-          if (station.matched) return false;
-          if (pointInPolygon([station.lon, station.lat], cityFeature)) {
-            station.matched = true;
-            return true;
+        // STEP A: Fast Bounding Box Filter
+        const candidatesInBounds = stationPoints.filter(s =>
+          s.lon >= minLon && s.lon <= maxLon && s.lat >= minLat && s.lat <= maxLat
+        );
+        if (candidatesInBounds.length === 0) continue;
+
+        // STEP B: Precise Point-in-Polygon Filter
+        let cityInt = null;
+        let validStations = null;
+        const cityFeature = cityPolygons.get(cityCode);
+
+        if (cityFeature) {
+          validStations = candidatesInBounds.filter(station => {
+            if (station.matched) return false;
+            if (pointInPolygon([station.lon, station.lat], cityFeature)) {
+              station.matched = true;
+              return true;
+            }
+            return false;
+          });
+
+          if (validStations.length > 0) {
+            const ints = validStations.map(s => s.int);
+            cityInt = getMaxInt(ints);
           }
-          return false;
+        }
+
+        if (!cityInt) continue;
+
+        // STEP C: Assign to Forecast Area
+        const areaCode = cityToAreaMap.get(cityCode) || 'UNKNOWN_AREA';
+        const areaName = forecastAreaNames.get(areaCode) || null;
+
+        // Pref code is first 2 digits of city code
+        const prefCode = cityCode.substring(0, 2);
+
+        if (!prefMap.has(prefCode)) {
+          prefMap.set(prefCode, { code: prefCode, name: null, areas: new Map() });
+        }
+        const prefData = prefMap.get(prefCode);
+
+        if (!prefData.areas.has(areaCode)) {
+          prefData.areas.set(areaCode, { code: areaCode, name: areaName, cities: [] });
+        }
+        const areaData = prefData.areas.get(areaCode);
+
+        areaData.cities.push({
+          Code: cityCode,
+          Name: null,
+          MaxInt: cityInt
         });
-
-        const ints = validStations.map(s => s.int);
-        cityInt = getMaxInt(ints);
       }
-
-      if (!cityInt) continue;
-
-      // STEP C: Assign to Forecast Area
-      const areaCode = cityToAreaMap.get(cityCode) || 'UNKNOWN_AREA';
-      const areaName = forecastAreaNames.get(areaCode) || null;
-
-      // Pref code is first 2 digits of city code
-      const prefCode = cityCode.substring(0, 2);
-
-      if (!prefMap.has(prefCode)) {
-        prefMap.set(prefCode, { code: prefCode, name: null, areas: new Map() });
-      }
-      const prefData = prefMap.get(prefCode);
-
-      if (!prefData.areas.has(areaCode)) {
-        prefData.areas.set(areaCode, { code: areaCode, name: areaName, cities: [] });
-      }
-      const areaData = prefData.areas.get(areaCode);
-
-      areaData.cities.push({
-        Code: cityCode,
-        Name: null,
-        MaxInt: cityInt
-      });
     }
 
     // STEP D: Fallback for unmatched stations (e.g. just off the coast)
@@ -574,20 +561,65 @@ async function loadGeoData() {
   
   if (_geoDataCache) return _geoDataCache;
 
-  const [bounds, forecastRes, muniRes, areaCodesCsv, cityForecastCsv] = await Promise.all([
+  const [bounds, forecastRes, municipalities, areaCodesCsv, cityForecastCsv] = await Promise.all([
     loadBoundsData(),
-    fetch('/forecast_areas.geojson'),
-    fetch('/municipalities.geojson'),
+    fetch('/forecast_areas.geojson').then((res) => {
+      if (!res.ok) throw new Error(`Failed to load forecast_areas.geojson: ${res.status}`);
+      return res.json();
+    }),
+    loadMunicipalitiesGeojson(),
     loadAreaCodesRawCsv(),
-    loadCityForecastMapCsv()
+    loadCityForecastMapCsv(),
   ]);
+
+  // Pre-parse hypocenter CSV into Map
+  const hypocenterCodeMap = new Map();
+  if (areaCodesCsv) {
+    areaCodesCsv.split('\n').forEach(line => {
+      const parts = line.split(';');
+      if (parts.length >= 2) {
+        hypocenterCodeMap.set(parts[1].trim(), parts[0].trim());
+      }
+    });
+  }
+
+  // Pre-parse city to forecast area mapping
+  const cityToAreaMap = new Map();
+  if (cityForecastCsv) {
+    cityForecastCsv.split('\n').forEach(line => {
+      const parts = line.split(',');
+      if (parts.length >= 2) {
+        cityToAreaMap.set(parts[0].trim(), parts[1].trim());
+      }
+    });
+  }
+
+  // Pre-map forecast area names for quick lookup
+  const forecastAreaNames = new Map();
+  if (forecastRes?.features) {
+    for (const feature of forecastRes.features) {
+      if (feature.properties?.code) {
+        forecastAreaNames.set(feature.properties.code, feature.properties.name);
+      }
+    }
+  }
+
+  // Pre-map municipalities for quick O(1) lookup by regioncode
+  const cityPolygons = new Map();
+  if (municipalities?.features) {
+    for (const feature of municipalities.features) {
+      if (feature.properties?.regioncode) {
+        cityPolygons.set(feature.properties.regioncode.toString(), feature);
+      }
+    }
+  }
 
   _geoDataCache = {
     bounds,
-    forecastAreas: await forecastRes.json(),
-    municipalities: await muniRes.json(),
-    areaCodesCsv,
-    cityForecastCsv,
+    hypocenterCodeMap,
+    cityToAreaMap,
+    forecastAreaNames,
+    cityPolygons,
   };
 
   return _geoDataCache;
@@ -677,10 +709,21 @@ export function buildHistoryBaseReport(event, areaCodes = new Map()) {
   };
 }
 
-// ─── Cache of full reports ───────────────────────────────────────────────────
+// ─── Cache of full reports (LRU) ─────────────────────────────────────────────
 
+const MAX_HISTORY_REPORT_CACHE = 50;
 const _fullReportCache = new Map();
 const _inFlightPromises = new Map();
+
+function _cacheFullReport(eventId, fullReport) {
+  if (_fullReportCache.has(eventId)) {
+    _fullReportCache.delete(eventId);
+  } else if (_fullReportCache.size >= MAX_HISTORY_REPORT_CACHE) {
+    const oldestKey = _fullReportCache.keys().next().value;
+    _fullReportCache.delete(oldestKey);
+  }
+  _fullReportCache.set(eventId, fullReport);
+}
 
 /**
  * Clears the in-memory cache of full history reports.
@@ -710,7 +753,10 @@ export async function fetchHistoryReport(eventOrId, areaCodes = new Map()) {
   }
 
   if (_fullReportCache.has(eventId)) {
-    return _fullReportCache.get(eventId);
+    const cached = _fullReportCache.get(eventId);
+    _fullReportCache.delete(eventId);
+    _fullReportCache.set(eventId, cached);
+    return cached;
   }
 
   if (_inFlightPromises.has(eventId)) {
@@ -727,10 +773,7 @@ export async function fetchHistoryReport(eventOrId, areaCodes = new Map()) {
       const reportJson = await fetchEqdbEvent(
         eventId,
         geoData.bounds,
-        geoData.forecastAreas,
-        geoData.municipalities,
-        geoData.areaCodesCsv,
-        geoData.cityForecastCsv
+        geoData,
       );
 
       if (!reportJson) return null;
@@ -743,7 +786,7 @@ export async function fetchHistoryReport(eventOrId, areaCodes = new Map()) {
 
       fullReport.isFullReport = true;
       fullReport.isBaseReport = false;
-      _fullReportCache.set(eventId, fullReport);
+      _cacheFullReport(eventId, fullReport);
       return fullReport;
     } catch (err) {
       console.error(`[history] Failed to fetch and build report for ${eventId}:`, err);

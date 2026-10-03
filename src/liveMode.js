@@ -209,7 +209,7 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
     const targetEntries = entries.filter(
       (entry) =>
         (entry.ttl === NORMAL_TITLE || entry.ttl === DISTANT_EARTHQUAKE_TITLE) &&
-        (entry.json || entry._xmlDoc) &&
+        (entry.json || entry._xmlDoc || entry._xmlUrl) &&
         entry.rdt,
     );
 
@@ -560,6 +560,7 @@ async function _buildFlashReportForLive(eid, intensityEntry, epicenterEntry, are
     } catch (err) {
       console.warn("[live-mode] Failed to parse 震度速報 XML for", eid, err.message);
     }
+    intensityEntry._xmlDoc = null;
   } else if (intensityEntry?.json) {
     // JSON fallback path
     try {
@@ -617,6 +618,7 @@ async function _fetchAndParseEntry(entry, areaCodes, lpgmEntry) {
         ttl: entry.ttl,
         fallbackName: entry.anm,
       });
+      entry._xmlDoc = null;
     }
 
     // JSON fallback path
@@ -653,6 +655,7 @@ async function _fetchAndParseEntry(entry, areaCodes, lpgmEntry) {
     if (lpgmEntry) {
       if (lpgmEntry._xmlDoc) {
         displayReport.lpgmInfo = parseLpgmXml(lpgmEntry._xmlDoc);
+        lpgmEntry._xmlDoc = null;
       }
     }
 

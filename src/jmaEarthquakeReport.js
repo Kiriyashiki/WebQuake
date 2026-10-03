@@ -32,6 +32,9 @@ class JMAEarthquakeReport {
     this.freeFormComment = this._parseFreeFormComment();
     this.isDistantEarthquake = this._parseIsDistantEarthquake();
     this.isVolcano = this._parseIsVolcano();
+
+    // Release the XML DOM document to free memory
+    this._doc = null;
   }
 
   /**
@@ -91,6 +94,9 @@ class JMAEarthquakeReport {
     report.freeFormComment = report._parseFreeFormComment();
     report.isDistantEarthquake = report._parseIsDistantEarthquake();
     report.isVolcano = report._parseIsVolcano();
+
+    // Release the XML DOM document to free memory
+    report._doc = null;
 
     return report;
   }

@@ -831,14 +831,22 @@ export class DmdssEewProvider extends WebSocketEewProvider {
 
     let intensityStr = "不明";
     if (data.maxInt?.to) {
-      intensityStr = String(data.maxInt.to);
+      if (data.maxInt.to === "over" && data.maxInt.from) {
+        intensityStr = data.maxInt.from;
+      } else {
+        intensityStr = data.maxInt.to;
+      }
     } else if (data.maxInt && typeof data.maxInt === "string") {
       intensityStr = data.maxInt;
     }
 
     let lpgmStr = "";
     if (data.maxLgInt?.to) {
-      lpgmStr = String(data.maxLgInt.to);
+      if (data.maxLgInt.to === "over" && data.maxLgInt.from) {
+        lpgmStr = data.maxLgInt.from;
+      } else {
+        lpgmStr = data.maxLgInt.to;
+      }
     } else if (data.maxLgInt && typeof data.maxLgInt === "string") {
       lpgmStr = data.maxLgInt;
     }
@@ -941,4 +949,3 @@ export function setShowTestEew(enabled) {
   if (typeof localStorage === "undefined") return;
   localStorage.setItem("eew-show-test", enabled ? "true" : "false");
 }
-
