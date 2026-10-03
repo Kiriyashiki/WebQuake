@@ -62,7 +62,7 @@ export function updateSidebarLoading(processed, total) {
  * Creates a DOM element for a single earthquake report.
  * Displays: intensity (image + colored border), magnitude, hypocenter name, time
  */
-export function createReportItem(report, onReportSelect) {
+export function createReportItem(report, onReportSelect, customClickHandler) {
   const item = document.createElement("li");
   item.className = "eq-item";
   item.dataset.eventId = report.eventId;
@@ -109,14 +109,18 @@ export function createReportItem(report, onReportSelect) {
   item.style.borderWidth = "2px";
 
   // Add click handler
-  item.addEventListener("click", () => {
-    // Update active state
-    document.querySelectorAll(".eq-item").forEach((el) => el.classList.remove("active"));
-    item.classList.add("active");
+  if (customClickHandler) {
+    item.addEventListener("click", (e) => customClickHandler(item, e));
+  } else if (onReportSelect) {
+    item.addEventListener("click", () => {
+      // Update active state
+      document.querySelectorAll(".eq-item").forEach((el) => el.classList.remove("active"));
+      item.classList.add("active");
 
-    // Call callback
-    if (onReportSelect) onReportSelect(report);
-  });
+      // Call callback
+      onReportSelect(report);
+    });
+  }
 
   return item;
 }

@@ -1,6 +1,6 @@
 import "../styles/index.css";
 import { initLogger } from "./logger.js";
-import { formatTimeJST, INTENSITY_CONFIG, LPGM_CONFIG } from "./constants.js";
+import { formatTimeJST, formatTimeJSTWithSeconds, INTENSITY_CONFIG, LPGM_CONFIG } from "./constants.js";
 import { playAudio, preloadAudio } from "./audio.js";
 import {
   createRubyHtml,
@@ -31,6 +31,7 @@ import {
 } from "./map.js";
 import { fetchEarthquakeReports } from "./parseReports.js";
 import {
+  createReportItem,
   updateSidebarLoading,
   updateSidebarLoadingPopup,
   hideSidebarLoadingPopup,
@@ -447,57 +448,13 @@ async function boot() {
    * Adds a report item to the history list.
    */
   function _addHistoryReportItem(historyList, report, onReportSelect, areaCodes) {
-    const item = document.createElement("li");
-    item.className = "eq-item";
-    item.dataset.eventId = report.eventId;
-
-    const hasIntensity = !!(report.maxIntensity && INTENSITY_CONFIG[report.maxIntensity]);
-    const intensityConfig = hasIntensity ? INTENSITY_CONFIG[report.maxIntensity] : null;
-    const borderColor = intensityConfig ? intensityConfig.color : "#1e2e44";
-    const intensityImg = intensityConfig ? intensityConfig.img : null;
-
-    const timeStr = report.originTime
-      ? formatTimeJST(report.originTime * 1000)
-      : "----/--/-- --:--";
-
-    const intensityHtml = hasIntensity
-      ? `<img
-          src="/img/shindo/${intensityImg}"
-          alt="Intensity ${report.maxIntensity}"
-          class="eq-intensity-img"
-          title="Intensity: ${report.maxIntensity}"
-        />`
-      : `<div class="eq-intensity-placeholder">-</div>`;
-
-    item.innerHTML = `
-      <div class="eq-content">
-        <div class="eq-left">
-          <div class="eq-location-ja">${report.hypocenterJa}</div>
-          <div class="eq-location-en" title="${report.hypocenterEn}">${report.hypocenterEn}</div>
-          <div class="eq-footer">
-            <div class="eq-mag">
-              <span class="eq-mag-label">M</span>
-              ${typeof report.magnitude === "number" ? report.magnitude.toFixed(1) : "--"}
-            </div>
-            <div class="eq-time">${timeStr}</div>
-          </div>
-        </div>
-        <div class="eq-intensity-container">
-          ${intensityHtml}
-        </div>
-      </div>
-    `;
-
-    item.style.borderColor = borderColor;
-    item.style.borderWidth = "2px";
-
     let currentReport = report;
     let fetchPromise = null;
 
-    item.addEventListener("click", async () => {
+    const item = createReportItem(report, null, async (itemEl) => {
       // Clear active from both live and history lists
       document.querySelectorAll(".eq-item").forEach((el) => el.classList.remove("active"));
-      item.classList.add("active");
+      itemEl.classList.add("active");
 
       if (!onReportSelect) return;
 
@@ -514,7 +471,7 @@ async function boot() {
         loadingContainer.classList.remove("hidden");
         if (progressEl) progressEl.textContent = "Loading... · 読み込み中...";
       }
-      item.classList.add("loading");
+      itemEl.classList.add("loading");
 
       try {
         if (!fetchPromise) {
@@ -528,7 +485,7 @@ async function boot() {
             historyReports[idx] = fullReport;
           }
           // Only trigger onReportSelect if this item is still the active one
-          if (item.classList.contains("active")) {
+          if (itemEl.classList.contains("active")) {
             onReportSelect(fullReport);
           }
         }
@@ -536,7 +493,7 @@ async function boot() {
         console.error("[eq-viewer] Failed to load full history report:", err);
         fetchPromise = null;
       } finally {
-        item.classList.remove("loading");
+        itemEl.classList.remove("loading");
         if (loadingContainer) {
           loadingContainer.classList.add("hidden");
         }
@@ -1116,9 +1073,15 @@ function _displayMapInfoBox(report, map) {
   }
 
   if (timeEl) {
-    timeEl.textContent = report.originTime
-      ? formatTimeJST(report.originTime * 1000) + " ごろ"
-      : "--";
+    if (report.isHistory) {
+      timeEl.textContent = report.originTime
+        ? formatTimeJSTWithSeconds(report.originTime * 1000)
+        : "--";
+    } else {
+      timeEl.textContent = report.originTime
+        ? formatTimeJST(report.originTime * 1000) + " ごろ"
+        : "--";
+    }
   }
 
   // Render observations list

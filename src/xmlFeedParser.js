@@ -22,6 +22,7 @@
 
 import { FLASH_INTENSITY_TITLE, FLASH_EPICENTER_TITLE, SPECIAL_TITLE, NORMAL_TITLE, LPGM_TITLE, DISTANT_EARTHQUAKE_TITLE } from './reportUtils.js';
 import { XML_FEED_URL } from './constants.js';
+import { getDirectChildText as _directChildText, getXmlText as _xmlText } from './xmlUtils.js';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -447,25 +448,7 @@ function _atomLinkHref(atomEntry) {
   return null;
 }
 
-/**
- * Returns text content of the first element matching tagName in a parsed XML doc.
- */
-function _xmlText(doc, tagName) {
-  if (!doc || typeof doc.getElementsByTagName !== 'function') return null;
-  const el = doc.getElementsByTagName(tagName)[0];
-  return el ? el.textContent.trim() : null;
-}
 
-/**
- * Returns text content of the first direct child element with the given local name.
- */
-function _directChildText(parent, tagName) {
-  if (!parent?.children) return null;
-  for (const child of parent.children) {
-    if (child.localName === tagName) return child.textContent.trim();
-  }
-  return null;
-}
 
 /**
  * Extracts coordinate string from an XML document.

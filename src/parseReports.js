@@ -23,64 +23,9 @@ import {
 
 import { parseLpgmJson } from './lpgmUtils.js';
 
-/**
- * Parses depth (in km) from a coordinate string like "+4012.6+14218.2-44000/".
- * The third component is depth in metres (negative = underground).
- * @param {string} cod - Coordinate string from feed entry
- * @returns {number|null} Depth in km, or null if unparseable
- */
-export function parseDepthFromCod(cod) {
-  if (!cod) return null;
-  const match = /^[+-][\d.]+[+-][\d.]+([+-]\d+\.?\d*)\/$/u.exec(cod);
-  if (!match) return null;
-  return Math.abs(Number.parseFloat(match[1])) / 1000;
-}
+import { parseDepthFromCod, parseCoordinatesFromCod } from './geoUtils.js';
 
-/**
- * Parses latitude and longitude from a coordinate string.
- * Supports both degree-minute format (±DDMM.M±DDDMM.M...) and decimal degrees (±DD.D±DDD.D...).
- * @param {string} cod - Coordinate string like "+3559.9+14005.7-68000/" or "+36.0+140.1-70000/"
- * @returns {{ latitude: number, longitude: number }|null}
- */
-export function parseCoordinatesFromCod(cod) {
-  if (!cod) return null;
-  const match = /^([+-])(\d+)(\.\d+)?([+-])(\d+)(\.\d+)?(?:[+-]\d+\.?\d*)?\/$/u.exec(cod);
-  if (!match) return null;
-
-  const [, s1, int1, frac1 = '', s2, int2, frac2 = ''] = match;
-
-  let latitude;
-  if (int1.length === 4) {
-    const deg = Number.parseInt(int1.slice(0, 2), 10);
-    const min = Number.parseFloat(int1.slice(2) + frac1);
-    latitude = (s1 === '-' ? -1 : 1) * (deg + min / 60);
-  } else if (int1.length === 6) {
-    const deg = Number.parseInt(int1.slice(0, 2), 10);
-    const min = Number.parseInt(int1.slice(2, 4), 10);
-    const sec = Number.parseFloat(int1.slice(4) + frac1);
-    latitude = (s1 === '-' ? -1 : 1) * (deg + min / 60 + sec / 3600);
-  } else {
-    latitude = Number.parseFloat(s1 + int1 + frac1);
-  }
-
-  let longitude;
-  if (int2.length === 5) {
-    const deg = Number.parseInt(int2.slice(0, 3), 10);
-    const min = Number.parseFloat(int2.slice(3) + frac2);
-    longitude = (s2 === '-' ? -1 : 1) * (deg + min / 60);
-  } else if (int2.length === 7) {
-    const deg = Number.parseInt(int2.slice(0, 3), 10);
-    const min = Number.parseInt(int2.slice(3, 5), 10);
-    const sec = Number.parseFloat(int2.slice(5) + frac2);
-    longitude = (s2 === '-' ? -1 : 1) * (deg + min / 60 + sec / 3600);
-  } else {
-    longitude = Number.parseFloat(s2 + int2 + frac2);
-  }
-
-  if (Number.isNaN(latitude) || Number.isNaN(longitude)) return null;
-
-  return { latitude, longitude };
-}
+export { parseDepthFromCod, parseCoordinatesFromCod };
 
 /**
  * Parses updated magnitude, depth, and coordinates from a VXSE61 special report feed entry.

@@ -1,4 +1,7 @@
 import { haversineDistance } from "./constants.js";
+import { pointInPolygon } from "./geoUtils.js";
+
+export { pointInPolygon };
 
 /**
  * Loads and caches data files used across modules.
@@ -315,40 +318,6 @@ export function loadMunicipalitiesGeojson() {
   return _municipalitiesPromise;
 }
 
-function pointInPolygon(point, polygon) {
-  const [px, py] = point;
-
-  function checkRing(ring) {
-    let inside = false;
-    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-      const xi = ring[i][0], yi = ring[i][1];
-      const xj = ring[j][0], yj = ring[j][1];
-      const intersect = ((yi > py) !== (yj > py)) &&
-        (px < (xj - xi) * (py - yi) / (yj - yi) + xi);
-      if (intersect) inside = !inside;
-    }
-    return inside;
-  }
-
-  const coords = polygon.geometry.coordinates;
-  if (polygon.geometry.type === 'Polygon') {
-    let inside = checkRing(coords[0]);
-    for (let i = 1; i < coords.length; i++) {
-      if (checkRing(coords[i])) inside = !inside;
-    }
-    return inside;
-  } else if (polygon.geometry.type === 'MultiPolygon') {
-    for (const poly of coords) {
-      let inside = checkRing(poly[0]);
-      for (let i = 1; i < poly.length; i++) {
-        if (checkRing(poly[i])) inside = !inside;
-      }
-      if (inside) return true;
-    }
-    return false;
-  }
-  return false;
-}
 
 /**
  * Finds the matching city code and prefecture code for given [lon, lat] coordinates.

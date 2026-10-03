@@ -1,3 +1,5 @@
+import { getDirectChildText as _directChildText } from './xmlUtils.js';
+
 export function parseLpgmJson(jsonData) {
   const maxLgInt = jsonData?.Body?.Intensity?.Observation?.MaxLgInt || null;
   const prefArray = jsonData?.Body?.Intensity?.Observation?.Pref || [];
@@ -42,15 +44,7 @@ export function parseLpgmJson(jsonData) {
   };
 }
 
-function _directChildText(parent, tagName) {
-  if (!parent) return null;
-  for (const child of parent.childNodes) {
-    if (child.nodeType === 1 && child.tagName === tagName) {
-      return child.textContent.trim();
-    }
-  }
-  return null;
-}
+
 
 export function parseLpgmXml(xmlDoc) {
   const observation = xmlDoc.querySelector("Body > Intensity > Observation");

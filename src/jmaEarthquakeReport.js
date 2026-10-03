@@ -1,3 +1,5 @@
+import { parseCoordinates, parseDepth } from './geoUtils.js';
+
 /**
  * JMAEarthquakeReport
  * Parses a JMA "震源・震度に関する情報" XML report string into structured data.
@@ -261,61 +263,15 @@ class JMAEarthquakeReport {
    * Returns { latitude: number, longitude: number } (depth handled separately).
    */
   _parseCoordinates() {
-    const raw = this._getCoordinateRaw();
-    if (!raw) return null;
-    const match = /^([+-])(\d+)(\.\d+)?([+-])(\d+)(\.\d+)?(?:[+-]\d+\.?\d*)?\/$/u.exec(raw);
-    if (!match) return null;
-
-    const [, s1, int1, frac1 = "", s2, int2, frac2 = ""] = match;
-
-    let latitude;
-    if (int1.length === 4) {
-      const deg = Number.parseInt(int1.slice(0, 2), 10);
-      const min = Number.parseFloat(int1.slice(2) + frac1);
-      latitude = (s1 === "-" ? -1 : 1) * (deg + min / 60);
-    } else if (int1.length === 6) {
-      const deg = Number.parseInt(int1.slice(0, 2), 10);
-      const min = Number.parseInt(int1.slice(2, 4), 10);
-      const sec = Number.parseFloat(int1.slice(4) + frac1);
-      latitude = (s1 === "-" ? -1 : 1) * (deg + min / 60 + sec / 3600);
-    } else {
-      latitude = Number.parseFloat(s1 + int1 + frac1);
-    }
-
-    let longitude;
-    if (int2.length === 5) {
-      const deg = Number.parseInt(int2.slice(0, 3), 10);
-      const min = Number.parseFloat(int2.slice(3) + frac2);
-      longitude = (s2 === "-" ? -1 : 1) * (deg + min / 60);
-    } else if (int2.length === 7) {
-      const deg = Number.parseInt(int2.slice(0, 3), 10);
-      const min = Number.parseInt(int2.slice(3, 5), 10);
-      const sec = Number.parseFloat(int2.slice(5) + frac2);
-      longitude = (s2 === "-" ? -1 : 1) * (deg + min / 60 + sec / 3600);
-    } else {
-      longitude = Number.parseFloat(s2 + int2 + frac2);
-    }
-
-    if (Number.isNaN(latitude) || Number.isNaN(longitude)) return null;
-
-    return { latitude, longitude };
+    return parseCoordinates(this._getCoordinateRaw());
   }
 
   /**
    * Depth in kilometres (positive value = below surface).
-   * The coordinate string encodes depth in metres with the sign inverted
-   * (negative = underground), e.g. -10000 → 10 km.
    * Returns null if depth is omitted or unknown.
    */
   _parseDepth() {
-    const raw = this._getCoordinateRaw();
-    if (!raw) return null;
-    const match = /^([+-][\d.]+)([+-][\d.]+)([+-]\d+\.?\d*)\/$/u.exec(raw);
-    if (!match) return null;
-    const depthMetres = Number.parseFloat(match[3]);
-    if (Number.isNaN(depthMetres)) return null;
-    // Negative metres = underground; return positive km value.
-    return Math.abs(depthMetres) / 1000;
+    return parseDepth(this._getCoordinateRaw());
   }
 
   /** Raw coordinate string shared by coordinates + depth parsers. */
@@ -484,55 +440,12 @@ class JMAEarthquakeReport {
 
   /** Parse coordinates from JSON Body.Earthquake.Hypocenter.Area.Coordinate */
   _parseCoordinatesFromJson(jsonData) {
-    const raw = jsonData?.Body?.Earthquake?.Hypocenter?.Area?.Coordinate;
-    if (!raw) return null;
-    const match = /^([+-])(\d+)(\.\d+)?([+-])(\d+)(\.\d+)?(?:[+-]\d+\.?\d*)?\/$/u.exec(raw);
-    if (!match) return null;
-
-    const [, s1, int1, frac1 = "", s2, int2, frac2 = ""] = match;
-
-    let latitude;
-    if (int1.length === 4) {
-      const deg = Number.parseInt(int1.slice(0, 2), 10);
-      const min = Number.parseFloat(int1.slice(2) + frac1);
-      latitude = (s1 === "-" ? -1 : 1) * (deg + min / 60);
-    } else if (int1.length === 6) {
-      const deg = Number.parseInt(int1.slice(0, 2), 10);
-      const min = Number.parseInt(int1.slice(2, 4), 10);
-      const sec = Number.parseFloat(int1.slice(4) + frac1);
-      latitude = (s1 === "-" ? -1 : 1) * (deg + min / 60 + sec / 3600);
-    } else {
-      latitude = Number.parseFloat(s1 + int1 + frac1);
-    }
-
-    let longitude;
-    if (int2.length === 5) {
-      const deg = Number.parseInt(int2.slice(0, 3), 10);
-      const min = Number.parseFloat(int2.slice(3) + frac2);
-      longitude = (s2 === "-" ? -1 : 1) * (deg + min / 60);
-    } else if (int2.length === 7) {
-      const deg = Number.parseInt(int2.slice(0, 3), 10);
-      const min = Number.parseInt(int2.slice(3, 5), 10);
-      const sec = Number.parseFloat(int2.slice(5) + frac2);
-      longitude = (s2 === "-" ? -1 : 1) * (deg + min / 60 + sec / 3600);
-    } else {
-      longitude = Number.parseFloat(s2 + int2 + frac2);
-    }
-
-    if (Number.isNaN(latitude) || Number.isNaN(longitude)) return null;
-
-    return { latitude, longitude };
+    return parseCoordinates(jsonData?.Body?.Earthquake?.Hypocenter?.Area?.Coordinate);
   }
 
   /** Parse depth from JSON Body.Earthquake.Hypocenter.Area.Coordinate */
   _parseDepthFromJson(jsonData) {
-    const raw = jsonData?.Body?.Earthquake?.Hypocenter?.Area?.Coordinate;
-    if (!raw) return null;
-    const match = /^([+-][\d.]+)([+-][\d.]+)([+-]\d+\.?\d*)\/$/u.exec(raw);
-    if (!match) return null;
-    const depthMetres = Number.parseFloat(match[3]);
-    if (Number.isNaN(depthMetres)) return null;
-    return Math.abs(depthMetres) / 1000;
+    return parseDepth(jsonData?.Body?.Earthquake?.Hypocenter?.Area?.Coordinate);
   }
 
   /** Parse observations from JSON Body.Intensity.Observation.Pref */

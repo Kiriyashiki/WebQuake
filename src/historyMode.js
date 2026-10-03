@@ -1,6 +1,7 @@
 import { EQDB_API_URL, haversineDistance } from './constants.js';
 import { loadAreaCodesRawCsv, loadBoundsData, loadCityForecastMapCsv } from './areaCodes.js';
 import { parseReport, buildDisplayReport } from './reportUtils.js';
+import { pointInPolygon } from './geoUtils.js';
 
 // ─── Utility functions (from generateEqdbReport.js) ─────────────────────────
 
@@ -349,42 +350,6 @@ async function fetchEqdbEvent(eventId, boundsData, forecastAreas, municipalities
       }
     }
 
-    // Simple point-in-polygon using ray casting 
-    function pointInPolygon(point, polygon) {
-      const [px, py] = point;
-
-      function checkRing(ring) {
-        let inside = false;
-        for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-          const xi = ring[i][0], yi = ring[i][1];
-          const xj = ring[j][0], yj = ring[j][1];
-          const intersect = ((yi > py) !== (yj > py)) &&
-            (px < (xj - xi) * (py - yi) / (yj - yi) + xi);
-          if (intersect) inside = !inside;
-        }
-        return inside;
-      }
-
-      const coords = polygon.geometry.coordinates;
-      if (polygon.geometry.type === 'Polygon') {
-        // First ring is outer, rest are holes
-        let inside = checkRing(coords[0]);
-        for (let i = 1; i < coords.length; i++) {
-          if (checkRing(coords[i])) inside = !inside;
-        }
-        return inside;
-      } else if (polygon.geometry.type === 'MultiPolygon') {
-        for (const poly of coords) {
-          let inside = checkRing(poly[0]);
-          for (let i = 1; i < poly.length; i++) {
-            if (checkRing(poly[i])) inside = !inside;
-          }
-          if (inside) return true;
-        }
-        return false;
-      }
-      return false;
-    }
 
     // Create observation point features
     const stationPoints = observations.map(obs => ({

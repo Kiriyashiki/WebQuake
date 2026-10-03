@@ -19,47 +19,45 @@ import { INTENSITY_CONFIG, LPGM_CONFIG } from "./constants";
  * @param {Map} cityNames - City name mappings
  * @returns {Object} Grouped observations by intensity
  */
+// Shared helpers for grouping observations
+function ensureIntensityGroup(grouped, intensity) {
+  if (!grouped[intensity]) {
+    grouped[intensity] = [];
+  }
+}
+
+function findOrCreatePref(grouped, prefectureCodes, intensity, prefCode, prefName) {
+  let pref = grouped[intensity].find(p => p.code === prefCode);
+  if (!pref) {
+    const prefData = prefectureCodes?.get(prefCode) || {};
+    pref = {
+      code: prefCode,
+      name: prefData.name || prefName,
+      nameEn: prefData.enName || '',
+      kana: prefData.kana || '',
+      areas: [],
+    };
+    grouped[intensity].push(pref);
+  }
+  return pref;
+}
+
+function findOrCreateArea(pref, areaCode, areaName, areaNameEn) {
+  let area = pref.areas.find(a => a.code === areaCode);
+  if (!area) {
+    area = {
+      code: areaCode,
+      name: areaName,
+      nameEn: areaNameEn,
+      cities: [],
+    };
+    pref.areas.push(area);
+  }
+  return area;
+}
+
 export function groupObservationsByIntensity(observations, areaCodes = new Map(), prefectureCodes = new Map(), cityNames = new Map()) {
   const grouped = {};
-
-  // Helper to ensure intensity group exists
-  const ensureIntensity = (intensity) => {
-    if (!grouped[intensity]) {
-      grouped[intensity] = [];
-    }
-  };
-
-  // Helper to find or create pref in intensity group
-  const findOrCreatePref = (intensity, prefCode, prefName) => {
-    let pref = grouped[intensity].find(p => p.code === prefCode);
-    if (!pref) {
-      const prefData = prefectureCodes.get(prefCode) || {};
-      pref = {
-        code: prefCode,
-        name: prefData.name || prefName,
-        nameEn: prefData.enName || '',
-        kana: prefData.kana || '',
-        areas: [],
-      };
-      grouped[intensity].push(pref);
-    }
-    return pref;
-  };
-
-  // Helper to find or create area in pref
-  const findOrCreateArea = (pref, areaCode, areaName, areaNameEn) => {
-    let area = pref.areas.find(a => a.code === areaCode);
-    if (!area) {
-      area = {
-        code: areaCode,
-        name: areaName,
-        nameEn: areaNameEn,
-        cities: [],
-      };
-      pref.areas.push(area);
-    }
-    return area;
-  };
 
   // Iterate through all prefs, areas, and cities
   for (const pref of observations) {
@@ -77,9 +75,9 @@ export function groupObservationsByIntensity(observations, areaCodes = new Map()
         // are grouped under the special '未入電' key.
         const cityIntensity = city.maxInt || (city.condition ? '未入電' : null);
         if (!cityIntensity) continue; // skip cities with no intensity info at all
-        ensureIntensity(cityIntensity);
+        ensureIntensityGroup(grouped, cityIntensity);
 
-        const prefEntry = findOrCreatePref(cityIntensity, prefCode, prefName);
+        const prefEntry = findOrCreatePref(grouped, prefectureCodes, cityIntensity, prefCode, prefName);
         const areaEntry = findOrCreateArea(prefEntry, areaCode, areaName, areaNameEn);
 
         const cityCode = city.code;
@@ -286,28 +284,6 @@ export async function renderObservationsList(container, observations, areaCodes 
 function groupObservationsByIntensityAreaOnly(observations, areaCodes = new Map(), prefectureCodes = new Map(), isLpgm = false) {
   const grouped = {};
 
-  const ensureIntensity = (intensity) => {
-    if (!grouped[intensity]) {
-      grouped[intensity] = [];
-    }
-  };
-
-  const findOrCreatePref = (intensity, prefCode, prefName) => {
-    let pref = grouped[intensity].find(p => p.code === prefCode);
-    if (!pref) {
-      const prefData = prefectureCodes.get(prefCode) || {};
-      pref = {
-        code: prefCode,
-        name: prefData.name || prefName,
-        nameEn: prefData.enName || '',
-        kana: prefData.kana || '',
-        areas: [],
-      };
-      grouped[intensity].push(pref);
-    }
-    return pref;
-  };
-
   for (const pref of observations) {
     const prefCode = pref.code;
     const prefName = pref.name;
@@ -315,23 +291,14 @@ function groupObservationsByIntensityAreaOnly(observations, areaCodes = new Map(
     for (const area of pref.areas) {
       const intensity = isLpgm ? area.maxLgInt : area.maxInt;
       if (!intensity) continue;
-      ensureIntensity(intensity);
+      ensureIntensityGroup(grouped, intensity);
 
       const areaCode = area.code;
       const areaName = areaCodes.get(areaCode)?.ja || area.name;
       const areaNameEn = areaCodes.get(areaCode)?.en || '';
 
-      const prefEntry = findOrCreatePref(intensity, prefCode, prefName);
-
-      const existingArea = prefEntry.areas.find(a => a.code === areaCode);
-      if (!existingArea) {
-        prefEntry.areas.push({
-          code: areaCode,
-          name: areaName,
-          nameEn: areaNameEn,
-          cities: [], // empty for area-only view
-        });
-      }
+      const prefEntry = findOrCreatePref(grouped, prefectureCodes, intensity, prefCode, prefName);
+      findOrCreateArea(prefEntry, areaCode, areaName, areaNameEn);
     }
   }
 
