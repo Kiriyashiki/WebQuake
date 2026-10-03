@@ -6,7 +6,7 @@ Web-based app that displays information from earthquake reports published by the
 
 Live at [kyoquake.hainaut.xyz](https://kyoquake.hainaut.xyz?utm_source=github)
 
-Desktop apps available in [Releases](https://github.com/Kiriyashiki/WebQuake/releases) (beta)
+Desktop apps available in [Releases](https://github.com/Kiriyashiki/WebQuake/releases)Z
 
 ## Features
 
@@ -23,7 +23,7 @@ Desktop apps available in [Releases](https://github.com/Kiriyashiki/WebQuake/rel
 
 ### Desktop app
 
-A desktop app version for various platforms is also available for download [here](https://github.com/Kiriyashiki/WebQuake/releases) (in beta).<br>
+A desktop app version for various platforms is also available for download [here](https://github.com/Kiriyashiki/WebQuake/releases)<br>
 It has the same features as the web app, with some added features that cannot work on the web version:
 - Smarter live feed polling logic to reduce bandwidth use
 - Better handling of the AXIS connection, with automatic token renewal
@@ -71,4 +71,4 @@ The name 'KyoQuake' is simply a combinaison of the character 京 (kyou), which i
 'Kyo' can as well be a reference to 強 (kyou) for 強震 (kyoushin, Strong-motion) or JMA intensities ５強 and ６強.
 The reference to Kyoto is simply a personal preference. This app still covers all of Japan :)<br>
 
-The app was formerly known as 'WebQuake', which was in my opinion too generic. For convenience, it remains as an internal ID and repository name.
+The app was formerly known as 'WebQuake', which was in my opinion too generic. For convenience, it remains as repository name.

@@ -293,248 +293,308 @@ async function fetchHistoryList(params) {
  * @param {Object} geoData - Pre-computed geoData maps
  * @returns {Promise<Object|null>} Report JSON or null on failure
  */
-async function fetchEqdbEvent(eventId, boundsData, geoData) {
-  try {
-    const boundary = '----bound';
-    const body = `--${boundary}\r\nContent-Disposition: form-data; name="mode"\r\n\r\nevent\r\n--${boundary}\r\nContent-Disposition: form-data; name="id"\r\n\r\n${eventId}\r\n--${boundary}--\r\n`;
+/**
+ * Fetches raw earthquake event data from the EQDB API.
+ * @param {string} eventId
+ * @returns {Promise<{ hyp: Object, observations: Array }|null>}
+ */
+async function _fetchRawEqdbEvent(eventId) {
+  const boundary = '----bound';
+  const body = `--${boundary}\r\nContent-Disposition: form-data; name="mode"\r\n\r\nevent\r\n--${boundary}\r\nContent-Disposition: form-data; name="id"\r\n\r\n${eventId}\r\n--${boundary}--\r\n`;
 
-    const response = await fetch(EQDB_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': `multipart/form-data; boundary=${boundary}`
-      },
-      body: body
+  const response = await fetch(EQDB_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': `multipart/form-data; boundary=${boundary}`,
+    },
+    body,
+  });
+
+  const eqdbData = await response.json();
+
+  if (!eqdbData.res?.hyp?.[0]) {
+    console.warn(`[history] No hyp data for event ${eventId}`);
+    return null;
+  }
+
+  return {
+    hyp: eqdbData.res.hyp[0],
+    observations: eqdbData.res.int || [],
+  };
+}
+
+/**
+ * Computes bounding envelope [minLon, minLat, maxLon, maxLat] covering all stations in an event.
+ */
+function _getStationEnvelope(stationPoints) {
+  let minLon = Infinity;
+  let minLat = Infinity;
+  let maxLon = -Infinity;
+  let maxLat = -Infinity;
+
+  for (const s of stationPoints) {
+    if (s.lon < minLon) minLon = s.lon;
+    if (s.lat < minLat) minLat = s.lat;
+    if (s.lon > maxLon) maxLon = s.lon;
+    if (s.lat > maxLat) maxLat = s.lat;
+  }
+
+  return { minLon, minLat, maxLon, maxLat };
+}
+
+/**
+ * Adds or updates a city intensity entry in the prefMap hierarchy.
+ */
+function _addOrUpdateCityInPrefMap(
+  prefMap,
+  cityCode,
+  intensity,
+  cityToAreaMap,
+  forecastAreaNames,
+) {
+  const prefCode = cityCode.substring(0, 2);
+  if (!prefMap.has(prefCode)) {
+    prefMap.set(prefCode, { code: prefCode, name: null, areas: new Map() });
+  }
+  const prefData = prefMap.get(prefCode);
+
+  const areaCode = cityToAreaMap.get(cityCode) || 'UNKNOWN_AREA';
+  const areaName = forecastAreaNames.get(areaCode) || null;
+
+  if (!prefData.areas.has(areaCode)) {
+    prefData.areas.set(areaCode, { code: areaCode, name: areaName, cities: [] });
+  }
+  const areaData = prefData.areas.get(areaCode);
+
+  const existingCity = areaData.cities.find((c) => c.Code === cityCode);
+  if (existingCity) {
+    existingCity.MaxInt = getMaxInt([existingCity.MaxInt, intensity]);
+  } else {
+    areaData.cities.push({
+      Code: cityCode,
+      Name: null,
+      MaxInt: intensity,
     });
+  }
+}
 
-    const eqdbData = await response.json();
+/**
+ * Performs point-in-polygon matching on station candidates for a given city feature.
+ */
+function _matchCityPolygon(candidatesInBounds, cityFeature) {
+  if (!cityFeature) return null;
 
-    if (!eqdbData.res?.hyp?.[0]) {
-      console.warn(`[history] No hyp data for event ${eventId}`);
-      return null;
+  const validStations = candidatesInBounds.filter((station) => {
+    if (station.matched) return false;
+    if (pointInPolygon([station.lon, station.lat], cityFeature)) {
+      station.matched = true;
+      return true;
+    }
+    return false;
+  });
+
+  return validStations.length > 0 ? getMaxInt(validStations.map((s) => s.int)) : null;
+}
+
+/**
+ * Matches observation stations to municipality polygons using bounding boxes and point-in-polygon.
+ */
+function _matchStationsToCities(stationPoints, boundsData, geoData, prefMap) {
+  const envelope = _getStationEnvelope(stationPoints);
+  const { cityPolygons, cityToAreaMap, forecastAreaNames } = geoData;
+
+  for (const [cityCode, bbox] of Object.entries(boundsData.cities)) {
+    const [minLon, minLat, maxLon, maxLat] = bbox;
+
+    // Broad-phase reject: skip cities completely outside the event's station envelope
+    if (
+      maxLon < envelope.minLon ||
+      minLon > envelope.maxLon ||
+      maxLat < envelope.minLat ||
+      minLat > envelope.maxLat
+    ) {
+      continue;
     }
 
-    const hyp = eqdbData.res.hyp[0];
-    const observations = eqdbData.res.int || [];
+    const candidatesInBounds = stationPoints.filter(
+      (s) => s.lon >= minLon && s.lon <= maxLon && s.lat >= minLat && s.lat <= maxLat,
+    );
+    if (candidatesInBounds.length === 0) continue;
 
-    const { hypocenterCodeMap, cityToAreaMap, forecastAreaNames, cityPolygons } = geoData;
-    const resolvedHypocenterCode = hypocenterCodeMap.get(hyp.name) || null;
+    const cityInt = _matchCityPolygon(candidatesInBounds, cityPolygons.get(cityCode));
+    if (cityInt) {
+      _addOrUpdateCityInPrefMap(prefMap, cityCode, cityInt, cityToAreaMap, forecastAreaNames);
+    }
+  }
+}
 
-    // Create observation point features
-    const stationPoints = observations.map(obs => ({
-      lon: Number.parseFloat(obs.lon),
-      lat: Number.parseFloat(obs.lat),
-      int: formatIntensity(obs.int),
-      matched: false
-    }));
+/**
+ * Calculates minimum distance from a station to any coordinate vertex of a city polygon feature.
+ */
+function _minDistanceToCityFeature(station, cityFeature) {
+  let cityMinDist = Infinity;
+  const coords = cityFeature.geometry.coordinates;
 
-    // Process Cities, Areas, and Prefectures
-    const prefMap = new Map();
+  const processRing = (ring) => {
+    for (const [lon, lat] of ring) {
+      const dist = haversineDistance(station.lat, station.lon, lat, lon);
+      if (dist < cityMinDist) cityMinDist = dist;
+    }
+  };
 
-    if (stationPoints.length > 0) {
-      // Fast broad-phase envelope covering all stations in this event
-      let stMinLon = Infinity, stMinLat = Infinity, stMaxLon = -Infinity, stMaxLat = -Infinity;
-      for (const s of stationPoints) {
-        if (s.lon < stMinLon) stMinLon = s.lon;
-        if (s.lat < stMinLat) stMinLat = s.lat;
-        if (s.lon > stMaxLon) stMaxLon = s.lon;
-        if (s.lat > stMaxLat) stMaxLat = s.lat;
-      }
+  if (cityFeature.geometry.type === 'Polygon') {
+    for (const ring of coords) processRing(ring);
+  } else if (cityFeature.geometry.type === 'MultiPolygon') {
+    for (const poly of coords) {
+      for (const ring of poly) processRing(ring);
+    }
+  }
 
-      for (const [cityCode, bbox] of Object.entries(boundsData.cities)) {
-        const [minLon, minLat, maxLon, maxLat] = bbox;
+  return cityMinDist;
+}
 
-        // Broad-phase reject: skip cities completely outside the event's station envelope
-        if (maxLon < stMinLon || minLon > stMaxLon || maxLat < stMinLat || minLat > stMaxLat) {
-          continue;
-        }
+/**
+ * Searches nearby cities within search radius for an unmatched coastal station.
+ */
+function _findNearestCityForStation(station, boundsData, cityPolygons, maxRadiusKm = 10) {
+  let bestCityCode = null;
+  let minDistance = maxRadiusKm;
+  const searchRadiusDeg = 0.1; // ~11km roughly
 
-        // STEP A: Fast Bounding Box Filter
-        const candidatesInBounds = stationPoints.filter(s =>
-          s.lon >= minLon && s.lon <= maxLon && s.lat >= minLat && s.lat <= maxLat
-        );
-        if (candidatesInBounds.length === 0) continue;
+  for (const [cityCode, bbox] of Object.entries(boundsData.cities)) {
+    const [minLon, minLat, maxLon, maxLat] = bbox;
+    if (
+      station.lon >= minLon - searchRadiusDeg &&
+      station.lon <= maxLon + searchRadiusDeg &&
+      station.lat >= minLat - searchRadiusDeg &&
+      station.lat <= maxLat + searchRadiusDeg
+    ) {
+      const cityFeature = cityPolygons.get(cityCode);
+      if (!cityFeature) continue;
 
-        // STEP B: Precise Point-in-Polygon Filter
-        let cityInt = null;
-        let validStations = null;
-        const cityFeature = cityPolygons.get(cityCode);
-
-        if (cityFeature) {
-          validStations = candidatesInBounds.filter(station => {
-            if (station.matched) return false;
-            if (pointInPolygon([station.lon, station.lat], cityFeature)) {
-              station.matched = true;
-              return true;
-            }
-            return false;
-          });
-
-          if (validStations.length > 0) {
-            const ints = validStations.map(s => s.int);
-            cityInt = getMaxInt(ints);
-          }
-        }
-
-        if (!cityInt) continue;
-
-        // STEP C: Assign to Forecast Area
-        const areaCode = cityToAreaMap.get(cityCode) || 'UNKNOWN_AREA';
-        const areaName = forecastAreaNames.get(areaCode) || null;
-
-        // Pref code is first 2 digits of city code
-        const prefCode = cityCode.substring(0, 2);
-
-        if (!prefMap.has(prefCode)) {
-          prefMap.set(prefCode, { code: prefCode, name: null, areas: new Map() });
-        }
-        const prefData = prefMap.get(prefCode);
-
-        if (!prefData.areas.has(areaCode)) {
-          prefData.areas.set(areaCode, { code: areaCode, name: areaName, cities: [] });
-        }
-        const areaData = prefData.areas.get(areaCode);
-
-        areaData.cities.push({
-          Code: cityCode,
-          Name: null,
-          MaxInt: cityInt
-        });
+      const dist = _minDistanceToCityFeature(station, cityFeature);
+      if (dist < minDistance) {
+        minDistance = dist;
+        bestCityCode = cityCode;
       }
     }
+  }
 
-    // STEP D: Fallback for unmatched stations (e.g. just off the coast)
-    const unmatchedStations = stationPoints.filter(s => !s.matched);
-    if (unmatchedStations.length > 0) {
-      for (const station of unmatchedStations) {
-        if (!station.int) continue;
-        
-        let bestCityCode = null;
-        let minDistance = 10; // Max 10km search radius
+  return bestCityCode;
+}
 
-        const searchRadiusDeg = 0.1; // ~11km roughly
-        for (const [cityCode, bbox] of Object.entries(boundsData.cities)) {
-          const [minLon, minLat, maxLon, maxLat] = bbox;
-          if (station.lon >= minLon - searchRadiusDeg && station.lon <= maxLon + searchRadiusDeg &&
-              station.lat >= minLat - searchRadiusDeg && station.lat <= maxLat + searchRadiusDeg) {
-            
-            const cityFeature = cityPolygons.get(cityCode);
-            if (!cityFeature) continue;
+/**
+ * Fallback pass for stations that did not fall inside any polygon (e.g. coastal/offshore).
+ */
+function _matchUnmatchedStationsFallback(stationPoints, boundsData, geoData, prefMap) {
+  const unmatchedStations = stationPoints.filter((s) => !s.matched);
+  if (unmatchedStations.length === 0) return;
 
-            let cityMinDist = Infinity;
-            const coords = cityFeature.geometry.coordinates;
+  const { cityPolygons, cityToAreaMap, forecastAreaNames } = geoData;
 
-            const processRing = (ring) => {
-              for (const [lon, lat] of ring) {
-                const dist = haversineDistance(station.lat, station.lon, lat, lon);
-                if (dist < cityMinDist) cityMinDist = dist;
-              }
-            };
+  for (const station of unmatchedStations) {
+    if (!station.int) continue;
 
-            if (cityFeature.geometry.type === 'Polygon') {
-              for (const ring of coords) processRing(ring);
-            } else if (cityFeature.geometry.type === 'MultiPolygon') {
-              for (const poly of coords) {
-                for (const ring of poly) processRing(ring);
-              }
-            }
-
-            if (cityMinDist < minDistance) {
-              minDistance = cityMinDist;
-              bestCityCode = cityCode;
-            }
-          }
-        }
-
-        if (bestCityCode) {
-          station.matched = true;
-          const prefCode = bestCityCode.substring(0, 2);
-          
-          let existingCityEntry = null;
-          let existingPrefData = prefMap.get(prefCode);
-          if (existingPrefData) {
-            for (const aData of existingPrefData.areas.values()) {
-              const cEntry = aData.cities.find(c => c.Code === bestCityCode);
-              if (cEntry) {
-                existingCityEntry = cEntry;
-                break;
-              }
-            }
-          }
-
-          if (existingCityEntry) {
-            existingCityEntry.MaxInt = getMaxInt([existingCityEntry.MaxInt, station.int]);
-          } else {
-            const areaCode = cityToAreaMap.get(bestCityCode) || 'UNKNOWN_AREA';
-            const areaName = forecastAreaNames.get(areaCode) || null;
-
-            if (!prefMap.has(prefCode)) {
-              prefMap.set(prefCode, { code: prefCode, name: null, areas: new Map() });
-            }
-            const prefData = prefMap.get(prefCode);
-
-            if (!prefData.areas.has(areaCode)) {
-              prefData.areas.set(areaCode, { code: areaCode, name: areaName, cities: [] });
-            }
-            const areaData = prefData.areas.get(areaCode);
-
-            areaData.cities.push({
-              Code: bestCityCode,
-              Name: null,
-              MaxInt: station.int
-            });
-          }
-        }
-      }
+    const bestCityCode = _findNearestCityForStation(station, boundsData, cityPolygons);
+    if (bestCityCode) {
+      station.matched = true;
+      _addOrUpdateCityInPrefMap(
+        prefMap,
+        bestCityCode,
+        station.int,
+        cityToAreaMap,
+        forecastAreaNames,
+      );
     }
+  }
+}
 
-    // Structure the Nested Observation Array and calculate MaxInts
-    const prefArray = Array.from(prefMap.values()).map(prefData => {
-      const formattedAreas = Array.from(prefData.areas.values()).map(area => {
-        const areaMaxInt = getMaxInt(area.cities.map(c => c.MaxInt));
-        return {
-          Code: area.code,
-          Name: area.name,
-          MaxInt: areaMaxInt,
-          City: area.cities
-        };
-      });
-
-      const prefMaxInt = getMaxInt(formattedAreas.map(a => a.MaxInt));
+/**
+ * Structures the nested Observation array with rolled-up MaxInt for areas and prefectures.
+ */
+function _buildPrefObservationArray(prefMap) {
+  return Array.from(prefMap.values()).map((prefData) => {
+    const formattedAreas = Array.from(prefData.areas.values()).map((area) => {
+      const areaMaxInt = getMaxInt(area.cities.map((c) => c.MaxInt));
       return {
-        Code: prefData.code,
-        Name: prefData.name,
-        MaxInt: prefMaxInt,
-        Area: formattedAreas
+        Code: area.code,
+        Name: area.name,
+        MaxInt: areaMaxInt,
+        City: area.cities,
       };
     });
 
-    // Assemble Final JSON (same format as generateEqdbReport.js)
-    const finalReport = {
-      Head: {
-        EventID: hyp.id
-      },
-      Body: {
-        Earthquake: {
-          OriginTime: formatOriginTime(hyp.ot),
-          Magnitude: hyp.mag,
-          Hypocenter: {
-            Area: {
-              Code: resolvedHypocenterCode,
-              Coordinate: formatCoordinates(hyp.lat, hyp.lon, hyp.dep)
-            }
-          }
-        },
-        Intensity: {
-          Observation: {
-            MaxInt: formatIntensity(hyp.maxI),
-            Pref: prefArray
-          }
-        }
-      }
+    const prefMaxInt = getMaxInt(formattedAreas.map((a) => a.MaxInt));
+    return {
+      Code: prefData.code,
+      Name: prefData.name,
+      MaxInt: prefMaxInt,
+      Area: formattedAreas,
     };
+  });
+}
 
-    return finalReport;
+/**
+ * Assembles the final report object compatible with JMAEarthquakeReport.
+ */
+function _synthesizeEqdbReport(hyp, prefArray, resolvedHypocenterCode) {
+  return {
+    Head: {
+      EventID: hyp.id,
+    },
+    Body: {
+      Earthquake: {
+        OriginTime: formatOriginTime(hyp.ot),
+        Magnitude: hyp.mag,
+        Hypocenter: {
+          Area: {
+            Code: resolvedHypocenterCode,
+            Coordinate: formatCoordinates(hyp.lat, hyp.lon, hyp.dep),
+          },
+        },
+      },
+      Intensity: {
+        Observation: {
+          MaxInt: formatIntensity(hyp.maxI),
+          Pref: prefArray,
+        },
+      },
+    },
+  };
+}
 
+/**
+ * Fetches a single EQDB event and builds a report JSON compatible with
+ * JMAEarthquakeReport.fromJSON().
+ * @param {string} eventId - The EQDB event ID
+ * @param {Object} boundsData - Pre-loaded bounds.json
+ * @param {Object} geoData - Pre-computed geoData maps
+ * @returns {Promise<Object|null>} Report JSON or null on failure
+ */
+async function fetchEqdbEvent(eventId, boundsData, geoData) {
+  try {
+    const rawData = await _fetchRawEqdbEvent(eventId);
+    if (!rawData) return null;
+
+    const { hyp, observations } = rawData;
+    const resolvedHypocenterCode = geoData.hypocenterCodeMap.get(hyp.name) || null;
+
+    // Create observation point features
+    const stationPoints = observations.map((obs) => ({
+      lon: Number.parseFloat(obs.lon),
+      lat: Number.parseFloat(obs.lat),
+      int: formatIntensity(obs.int),
+      matched: false,
+    }));
+
+    const prefMap = new Map();
+    if (stationPoints.length > 0) {
+      _matchStationsToCities(stationPoints, boundsData, geoData, prefMap);
+      _matchUnmatchedStationsFallback(stationPoints, boundsData, geoData, prefMap);
+    }
+
+    const prefArray = _buildPrefObservationArray(prefMap);
+    return _synthesizeEqdbReport(hyp, prefArray, resolvedHypocenterCode);
   } catch (error) {
     console.error(`[history] Failed to generate report for ${eventId}:`, error);
     return null;

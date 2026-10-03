@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "kyoquake",
-  "version": "0.4.3",
+  "version": "1.0.0",
   "identifier": "xyz.hainaut.kyoquake",
   "build": {
     "frontendDist": "../dist",

@@ -185,6 +185,350 @@ function _runPollCycle(areaCodes, callbacks) {
 }
 
 /**
+ * Groups entries by event ID, keeping only the newest entry based on rdt timestamp.
+ * @param {Array<Object>} entries
+ * @returns {Map<string, Object>}
+ */
+function _groupLatestByEid(entries) {
+  const map = new Map();
+  for (const entry of entries) {
+    const eventId = entry.eid;
+    if (!eventId) continue;
+
+    const current = map.get(eventId);
+    if (!current || new Date(entry.rdt) > new Date(current.rdt)) {
+      map.set(eventId, entry);
+    }
+  }
+  return map;
+}
+
+/**
+ * Categorizes feed entries into specific target, special, LPGM, and flash collections.
+ * @param {Array<Object>} entries
+ * @returns {Object}
+ */
+function _categorizeFeedEntries(entries) {
+  const targetEntries = entries.filter(
+    (entry) =>
+      (entry.ttl === NORMAL_TITLE || entry.ttl === DISTANT_EARTHQUAKE_TITLE) &&
+      (entry.json || entry._xmlDoc || entry._xmlUrl) &&
+      entry.rdt,
+  );
+  const specialEntries = entries.filter(
+    (entry) => entry.ttl === SPECIAL_TITLE && entry.eid && entry.rdt,
+  );
+  const lpgmEntries = entries.filter(
+    (entry) => entry.ttl === LPGM_TITLE && entry.eid && entry.rdt,
+  );
+  const flashIntensityEntries = entries.filter(
+    (entry) => entry.ttl === FLASH_INTENSITY_TITLE && entry.eid && entry.rdt,
+  );
+  const flashEpicenterEntries = entries.filter(
+    (entry) => entry.ttl === FLASH_EPICENTER_TITLE && entry.eid && entry.rdt,
+  );
+
+  return {
+    latestTargetByEid: _groupLatestByEid(targetEntries),
+    specialEntries,
+    latestLpgmByEid: _groupLatestByEid(lpgmEntries),
+    latestFlashIntensityByEid: _groupLatestByEid(flashIntensityEntries),
+    latestFlashEpicenterByEid: _groupLatestByEid(flashEpicenterEntries),
+  };
+}
+
+/**
+ * Applies special report and LPGM overrides to a parsed report and updates tracking maps.
+ */
+function _applySpecialAndLpgmOverrides(report, eventId, specialEntries, latestLpgm) {
+  const matchingSpecial = specialEntries.find((s) => s.eid === eventId);
+  if (matchingSpecial) {
+    const overrides = parseSpecialReportOverrides(matchingSpecial);
+    applySpecialReportOverrides(report, overrides);
+    console.debug(
+      `[live-mode] Applied VXSE61 overrides to report ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`,
+    );
+    _trackedSpecialEntries.set(eventId, { rdt: matchingSpecial.rdt });
+  }
+
+  if (latestLpgm) {
+    _trackedLpgmEntries.set(eventId, { rdt: latestLpgm.rdt });
+  }
+}
+
+/**
+ * Handles a single new or updated normal report entry.
+ */
+async function _handleNormalEntry({
+  eventId,
+  entry,
+  isNew,
+  hadFlashReport,
+  specialEntries,
+  latestLpgm,
+  areaCodes,
+  callbacks,
+}) {
+  const logPrefix = isNew ? "New entry detected:" : "Updated entry detected:";
+  console.info(`[live-mode] ${logPrefix}`, eventId);
+
+  _trackedEntries.set(eventId, {
+    rdt: entry.rdt,
+    jsonFile: entry.json || null,
+  });
+
+  const report = await _fetchAndParseEntry(entry, areaCodes, latestLpgm);
+  if (!report) return;
+
+  _applySpecialAndLpgmOverrides(report, eventId, specialEntries, latestLpgm);
+
+  if (hadFlashReport) {
+    console.debug("[live-mode] Normal report overwrites flash for:", eventId);
+    _trackedFlashEntries.delete(eventId);
+    if (callbacks.onUpdatedEntry) {
+      callbacks.onUpdatedEntry(entry, report);
+    }
+  } else if (isNew) {
+    if (callbacks.onNewEntry) {
+      callbacks.onNewEntry(entry, report);
+    }
+  } else if (callbacks.onUpdatedEntry) {
+    callbacks.onUpdatedEntry(entry, report);
+  }
+}
+
+/**
+ * Processes normal report entries from the feed.
+ * @returns {Promise<Set<string>>} Set of event IDs that received a normal report this cycle.
+ */
+async function _processNormalEntries(
+  latestTargetByEid,
+  specialEntries,
+  latestLpgmEntriesByEid,
+  areaCodes,
+  callbacks,
+) {
+  const normalReportEventIds = new Set();
+
+  for (const [eventId, entry] of latestTargetByEid) {
+    const trackedEntry = _trackedEntries.get(eventId);
+    const hadFlashReport = _trackedFlashEntries.has(eventId);
+    const isNew = !trackedEntry;
+    const isUpdated = !isNew && entry.rdt !== trackedEntry.rdt;
+
+    if (!isNew && !isUpdated) continue;
+
+    normalReportEventIds.add(eventId);
+    await _handleNormalEntry({
+      eventId,
+      entry,
+      isNew,
+      hadFlashReport,
+      specialEntries,
+      latestLpgm: latestLpgmEntriesByEid.get(eventId),
+      areaCodes,
+      callbacks,
+    });
+  }
+
+  return normalReportEventIds;
+}
+
+/**
+ * Processes standalone VXSE61 special reports for already-tracked events.
+ */
+async function _processSpecialOverrides(
+  specialEntries,
+  latestEntriesByEventId,
+  latestLpgmEntriesByEid,
+  areaCodes,
+  callbacks,
+) {
+  for (const specialEntry of specialEntries) {
+    const eventId = specialEntry.eid;
+    const trackedSpecial = _trackedSpecialEntries.get(eventId);
+
+    if (trackedSpecial && trackedSpecial.rdt === specialEntry.rdt) continue;
+
+    const trackedNormal = _trackedEntries.get(eventId);
+    if (!trackedNormal) continue;
+
+    console.info("[live-mode] VXSE61 special report detected for:", eventId);
+    _trackedSpecialEntries.set(eventId, { rdt: specialEntry.rdt });
+
+    const originalEntry = latestEntriesByEventId.get(eventId) || {
+      eid: eventId,
+      json: trackedNormal.jsonFile,
+      rdt: trackedNormal.rdt,
+    };
+
+    const report = await _fetchAndParseEntry(
+      originalEntry,
+      areaCodes,
+      latestLpgmEntriesByEid.get(eventId),
+    );
+    if (report) {
+      const overrides = parseSpecialReportOverrides(specialEntry);
+      applySpecialReportOverrides(report, overrides);
+      console.debug(
+        `[live-mode] Applied VXSE61 overrides for ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`,
+      );
+
+      if (callbacks.onUpdatedEntry) {
+        callbacks.onUpdatedEntry(specialEntry, report);
+      }
+    }
+  }
+}
+
+/**
+ * Processes standalone LPGM reports for already-tracked events.
+ */
+async function _processStandaloneLpgm(
+  latestLpgmEntriesByEid,
+  specialEntries,
+  latestEntriesByEventId,
+  areaCodes,
+  callbacks,
+) {
+  for (const [eventId, lpgmEntry] of latestLpgmEntriesByEid) {
+    const trackedLpgm = _trackedLpgmEntries.get(eventId);
+    if (trackedLpgm && trackedLpgm.rdt === lpgmEntry.rdt) continue;
+
+    const trackedNormal = _trackedEntries.get(eventId);
+    if (!trackedNormal) continue;
+
+    console.info("[live-mode] LPGM report detected for:", eventId);
+    _trackedLpgmEntries.set(eventId, { rdt: lpgmEntry.rdt });
+
+    const originalEntry = latestEntriesByEventId.get(eventId) || {
+      eid: eventId,
+      json: trackedNormal.jsonFile,
+      rdt: trackedNormal.rdt,
+    };
+
+    const report = await _fetchAndParseEntry(originalEntry, areaCodes, lpgmEntry);
+    if (report) {
+      const trackedSpecial = _trackedSpecialEntries.get(eventId);
+      if (trackedSpecial) {
+        const matchingSpecial = specialEntries.find(
+          (s) => s.eid === eventId && s.rdt === trackedSpecial.rdt,
+        );
+        if (matchingSpecial) {
+          const overrides = parseSpecialReportOverrides(matchingSpecial);
+          applySpecialReportOverrides(report, overrides);
+        }
+      }
+
+      if (callbacks.onUpdatedEntry) {
+        callbacks.onUpdatedEntry(lpgmEntry, report);
+      }
+    }
+  }
+}
+
+/**
+ * Handles a single flash event (new or updated).
+ */
+async function _handleSingleFlashEvent(
+  eid,
+  currentIntensityEntry,
+  currentEpicenterEntry,
+  areaCodes,
+  callbacks,
+) {
+  const trackedFlash = _trackedFlashEntries.get(eid);
+  const intensityEntry = currentIntensityEntry || trackedFlash?.intensityEntry || null;
+  const epicenterEntry = currentEpicenterEntry || trackedFlash?.epicenterEntry || null;
+  const bestEntry = epicenterEntry || intensityEntry;
+  const bestType = epicenterEntry ? "epicenter" : "intensity";
+
+  if (!trackedFlash) {
+    console.info(`[live-mode] New flash report detected (${bestType}):`, eid);
+    const flashReport = await _buildFlashReportForLive(
+      eid,
+      intensityEntry,
+      epicenterEntry,
+      areaCodes,
+    );
+    if (flashReport) {
+      _trackedFlashEntries.set(eid, {
+        intensityRdt: intensityEntry?.rdt || null,
+        epicenterRdt: epicenterEntry?.rdt || null,
+        intensityEntry,
+        epicenterEntry,
+      });
+      if (callbacks.onNewEntry) {
+        callbacks.onNewEntry(bestEntry, flashReport);
+      }
+    }
+    return;
+  }
+
+  const isNewIntensity =
+    currentIntensityEntry && currentIntensityEntry.rdt !== trackedFlash.intensityRdt;
+  const isNewEpicenter =
+    currentEpicenterEntry && currentEpicenterEntry.rdt !== trackedFlash.epicenterRdt;
+
+  if (isNewIntensity || isNewEpicenter) {
+    console.debug(`[live-mode] Updated flash report detected for ${eid}:`, {
+      isNewIntensity,
+      isNewEpicenter,
+    });
+    const flashReport = await _buildFlashReportForLive(
+      eid,
+      intensityEntry,
+      epicenterEntry,
+      areaCodes,
+    );
+    if (flashReport) {
+      _trackedFlashEntries.set(eid, {
+        intensityRdt: intensityEntry?.rdt || trackedFlash.intensityRdt || null,
+        epicenterRdt: epicenterEntry?.rdt || trackedFlash.epicenterRdt || null,
+        intensityEntry,
+        epicenterEntry,
+      });
+      if (callbacks.onUpdatedEntry) {
+        callbacks.onUpdatedEntry(bestEntry, flashReport);
+      }
+    }
+  }
+}
+
+/**
+ * Processes flash reports for events without a normal report.
+ */
+async function _processFlashReports(
+  latestFlashIntensityByEid,
+  latestFlashEpicenterByEid,
+  normalReportEventIds,
+  areaCodes,
+  callbacks,
+) {
+  const flashEventIds = new Set();
+  for (const eid of latestFlashIntensityByEid.keys()) {
+    if (!_trackedEntries.has(eid) && !normalReportEventIds.has(eid)) {
+      flashEventIds.add(eid);
+    }
+  }
+  for (const eid of latestFlashEpicenterByEid.keys()) {
+    if (!_trackedEntries.has(eid) && !normalReportEventIds.has(eid)) {
+      flashEventIds.add(eid);
+    }
+  }
+
+  for (const eid of flashEventIds) {
+    await _handleSingleFlashEvent(
+      eid,
+      latestFlashIntensityByEid.get(eid),
+      latestFlashEpicenterByEid.get(eid),
+      areaCodes,
+      callbacks,
+    );
+  }
+}
+
+/**
  * Fetches the latest XML feed and detects new/updated entries.
  * Uses the JMA Atom XML feed (eqvol.xml) instead of the JSON feed.
  */
@@ -202,339 +546,39 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
       return nextIntervalMs;
     }
 
-    // Filter for target entries only (震源・震度情報 or 遠地地震に関する情報)
-    // In XML mode, entries have _xmlDoc instead of json
-    const targetEntries = entries.filter(
-      (entry) =>
-        (entry.ttl === NORMAL_TITLE || entry.ttl === DISTANT_EARTHQUAKE_TITLE) &&
-        (entry.json || entry._xmlDoc || entry._xmlUrl) &&
-        entry.rdt,
+    const categorized = _categorizeFeedEntries(entries);
+
+    const normalReportEventIds = await _processNormalEntries(
+      categorized.latestTargetByEid,
+      categorized.specialEntries,
+      categorized.latestLpgmByEid,
+      areaCodes,
+      callbacks,
     );
 
-    // Collect VXSE61 special report entries from the feed
-    const specialEntries = entries.filter(
-      (entry) => entry.ttl === SPECIAL_TITLE && entry.eid && entry.rdt,
+    await _processSpecialOverrides(
+      categorized.specialEntries,
+      categorized.latestTargetByEid,
+      categorized.latestLpgmByEid,
+      areaCodes,
+      callbacks,
     );
 
-    // Collect LPGM entries from the feed
-    const lpgmEntries = entries.filter(
-      (entry) => entry.ttl === LPGM_TITLE && entry.eid && entry.rdt,
+    await _processStandaloneLpgm(
+      categorized.latestLpgmByEid,
+      categorized.specialEntries,
+      categorized.latestTargetByEid,
+      areaCodes,
+      callbacks,
     );
 
-    // Collect flash report entries from the feed
-    const flashIntensityEntries = entries.filter(
-      (entry) => entry.ttl === FLASH_INTENSITY_TITLE && entry.eid && entry.rdt,
+    await _processFlashReports(
+      categorized.latestFlashIntensityByEid,
+      categorized.latestFlashEpicenterByEid,
+      normalReportEventIds,
+      areaCodes,
+      callbacks,
     );
-    const flashEpicenterEntries = entries.filter(
-      (entry) => entry.ttl === FLASH_EPICENTER_TITLE && entry.eid && entry.rdt,
-    );
-
-    // Group entries by event ID and keep only the newest for each
-    const latestEntriesByEventId = new Map();
-    for (const entry of targetEntries) {
-      const eventId = entry.eid;
-      if (!eventId) continue;
-
-      const current = latestEntriesByEventId.get(eventId);
-      if (!current || new Date(entry.rdt) > new Date(current.rdt)) {
-        latestEntriesByEventId.set(eventId, entry);
-      }
-    }
-
-    // Group LPGM entries by event ID
-    const latestLpgmEntriesByEid = new Map();
-    for (const entry of lpgmEntries) {
-      const eventId = entry.eid;
-      if (!eventId) continue;
-
-      const current = latestLpgmEntriesByEid.get(eventId);
-      if (!current || new Date(entry.rdt) > new Date(current.rdt)) {
-        latestLpgmEntriesByEid.set(eventId, entry);
-      }
-    }
-
-    // Group flash entries by event ID, keep newest of each type
-    const latestFlashIntensityByEid = new Map();
-    for (const entry of flashIntensityEntries) {
-      if (!entry.eid) continue;
-      const current = latestFlashIntensityByEid.get(entry.eid);
-      if (!current || new Date(entry.rdt) > new Date(current.rdt)) {
-        latestFlashIntensityByEid.set(entry.eid, entry);
-      }
-    }
-    const latestFlashEpicenterByEid = new Map();
-    for (const entry of flashEpicenterEntries) {
-      if (!entry.eid) continue;
-      const current = latestFlashEpicenterByEid.get(entry.eid);
-      if (!current || new Date(entry.rdt) > new Date(current.rdt)) {
-        latestFlashEpicenterByEid.set(entry.eid, entry);
-      }
-    }
-
-    // Track which event IDs got a normal report in this cycle
-    const normalReportEventIds = new Set();
-
-    // Process only the latest entry for each event ID
-    for (const [eventId, entry] of latestEntriesByEventId) {
-      const trackedEntry = _trackedEntries.get(eventId);
-      const hadFlashReport = _trackedFlashEntries.has(eventId);
-
-      if (!trackedEntry) {
-        // NEW ENTRY (normal report)
-        console.info("[live-mode] New entry detected:", eventId);
-        _trackedEntries.set(eventId, {
-          rdt: entry.rdt,
-          jsonFile: entry.json || null,
-        });
-        normalReportEventIds.add(eventId);
-
-        // Parse the report (XML doc is already fetched)
-        const report = await _fetchAndParseEntry(
-          entry,
-          areaCodes,
-          latestLpgmEntriesByEid.get(eventId),
-        );
-        if (report) {
-          // Check if a VXSE61 special report already exists for this event
-          const matchingSpecial = specialEntries.find((s) => s.eid === eventId);
-          if (matchingSpecial) {
-            const overrides = parseSpecialReportOverrides(matchingSpecial);
-            applySpecialReportOverrides(report, overrides);
-            console.debug(
-              `[live-mode] Applied VXSE61 overrides to new report ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`,
-            );
-            _trackedSpecialEntries.set(eventId, { rdt: matchingSpecial.rdt });
-          }
-
-          if (latestLpgmEntriesByEid.has(eventId)) {
-            _trackedLpgmEntries.set(eventId, { rdt: latestLpgmEntriesByEid.get(eventId).rdt });
-          }
-
-          if (hadFlashReport) {
-            // Normal report overwrites a prior flash report
-            console.debug("[live-mode] Normal report overwrites flash for:", eventId);
-            _trackedFlashEntries.delete(eventId);
-            if (callbacks.onUpdatedEntry) {
-              callbacks.onUpdatedEntry(entry, report);
-            }
-          } else if (callbacks.onNewEntry) {
-            callbacks.onNewEntry(entry, report);
-          }
-        }
-      } else if (entry.rdt !== trackedEntry.rdt) {
-        // UPDATED ENTRY
-        console.info("[live-mode] Updated entry detected:", eventId);
-        _trackedEntries.set(eventId, {
-          rdt: entry.rdt,
-          jsonFile: entry.json || null,
-        });
-        normalReportEventIds.add(eventId);
-
-        // Fetch and parse the updated report
-        const report = await _fetchAndParseEntry(
-          entry,
-          areaCodes,
-          latestLpgmEntriesByEid.get(eventId),
-        );
-        if (report) {
-          // Check if a VXSE61 special report exists for this event
-          const matchingSpecial = specialEntries.find((s) => s.eid === eventId);
-          if (matchingSpecial) {
-            const overrides = parseSpecialReportOverrides(matchingSpecial);
-            applySpecialReportOverrides(report, overrides);
-            console.debug(
-              `[live-mode] Applied VXSE61 overrides to updated report ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`,
-            );
-            _trackedSpecialEntries.set(eventId, { rdt: matchingSpecial.rdt });
-          }
-
-          if (latestLpgmEntriesByEid.has(eventId)) {
-            _trackedLpgmEntries.set(eventId, { rdt: latestLpgmEntriesByEid.get(eventId).rdt });
-          }
-
-          // Clear flash tracking since normal report takes over
-          if (_trackedFlashEntries.has(eventId)) {
-            _trackedFlashEntries.delete(eventId);
-          }
-
-          if (callbacks.onUpdatedEntry) {
-            callbacks.onUpdatedEntry(entry, report);
-          }
-        }
-      }
-    }
-
-    // ─── Process standalone VXSE61 (special) and LPGM reports ──────────────
-    // These update magnitude/depth or LPGM info for an already-tracked event.
-
-    // 1. VXSE61 special reports
-    for (const specialEntry of specialEntries) {
-      const eventId = specialEntry.eid;
-      const trackedSpecial = _trackedSpecialEntries.get(eventId);
-
-      // Skip if we've already processed this exact special report
-      if (trackedSpecial && trackedSpecial.rdt === specialEntry.rdt) continue;
-
-      // Skip if we already processed it above as part of a new/updated normal entry
-      const justTracked = _trackedSpecialEntries.get(eventId);
-      if (justTracked && justTracked.rdt === specialEntry.rdt) continue;
-
-      // Only process if there's a tracked normal report for this event
-      const trackedNormal = _trackedEntries.get(eventId);
-      if (!trackedNormal) continue;
-
-      console.info("[live-mode] VXSE61 special report detected for:", eventId);
-      _trackedSpecialEntries.set(eventId, { rdt: specialEntry.rdt });
-
-      // Re-fetch the original report and apply overrides
-      const originalEntry = latestEntriesByEventId.get(eventId) || {
-        eid: eventId,
-        json: trackedNormal.jsonFile,
-        rdt: trackedNormal.rdt,
-      };
-
-      const report = await _fetchAndParseEntry(
-        originalEntry,
-        areaCodes,
-        latestLpgmEntriesByEid.get(eventId),
-      );
-      if (report) {
-        const overrides = parseSpecialReportOverrides(specialEntry);
-        applySpecialReportOverrides(report, overrides);
-        console.debug(
-          `[live-mode] Applied VXSE61 overrides for ${eventId}: M${overrides.magnitude}, ${overrides.depth}km`,
-        );
-
-        if (callbacks.onUpdatedEntry) {
-          callbacks.onUpdatedEntry(specialEntry, report);
-        }
-      }
-    }
-
-    // 2. LPGM reports
-    for (const [eventId, lpgmEntry] of latestLpgmEntriesByEid) {
-      const trackedLpgm = _trackedLpgmEntries.get(eventId);
-
-      if (trackedLpgm && trackedLpgm.rdt === lpgmEntry.rdt) continue;
-
-      const justTracked = _trackedLpgmEntries.get(eventId);
-      if (justTracked && justTracked.rdt === lpgmEntry.rdt) continue;
-
-      const trackedNormal = _trackedEntries.get(eventId);
-      if (!trackedNormal) continue;
-
-      console.info("[live-mode] LPGM report detected for:", eventId);
-      _trackedLpgmEntries.set(eventId, { rdt: lpgmEntry.rdt });
-
-      const originalEntry = latestEntriesByEventId.get(eventId) || {
-        eid: eventId,
-        json: trackedNormal.jsonFile,
-        rdt: trackedNormal.rdt,
-      };
-
-      const report = await _fetchAndParseEntry(originalEntry, areaCodes, lpgmEntry);
-      if (report) {
-        // Re-apply special overrides if they exist
-        const trackedSpecial = _trackedSpecialEntries.get(eventId);
-        if (trackedSpecial) {
-          const matchingSpecial = specialEntries.find(
-            (s) => s.eid === eventId && s.rdt === trackedSpecial.rdt,
-          );
-          if (matchingSpecial) {
-            const overrides = parseSpecialReportOverrides(matchingSpecial);
-            applySpecialReportOverrides(report, overrides);
-          }
-        }
-
-        if (callbacks.onUpdatedEntry) {
-          callbacks.onUpdatedEntry(lpgmEntry, report);
-        }
-      }
-    }
-
-    // ─── Process flash reports for events without a normal report ──────────
-    // Collect all event IDs that have flash entries but no normal report
-    const flashEventIds = new Set();
-    for (const eid of latestFlashIntensityByEid.keys()) {
-      if (!_trackedEntries.has(eid) && !normalReportEventIds.has(eid)) {
-        flashEventIds.add(eid);
-      }
-    }
-    for (const eid of latestFlashEpicenterByEid.keys()) {
-      if (!_trackedEntries.has(eid) && !normalReportEventIds.has(eid)) {
-        flashEventIds.add(eid);
-      }
-    }
-
-    for (const eid of flashEventIds) {
-      const currentIntensityEntry = latestFlashIntensityByEid.get(eid);
-      const currentEpicenterEntry = latestFlashEpicenterByEid.get(eid);
-
-      // Check if we already tracked this flash report
-      const trackedFlash = _trackedFlashEntries.get(eid);
-
-      // Merge current entries with cached tracked entries in case one dropped out of the immediate feed window
-      const intensityEntry = currentIntensityEntry || trackedFlash?.intensityEntry || null;
-      const epicenterEntry = currentEpicenterEntry || trackedFlash?.epicenterEntry || null;
-
-      // Determine the "best" flash entry and type
-      const bestEntry = epicenterEntry || intensityEntry;
-      const bestType = epicenterEntry ? "epicenter" : "intensity";
-
-      if (!trackedFlash) {
-        // New flash report
-        console.info(`[live-mode] New flash report detected (${bestType}):`, eid);
-        const flashReport = await _buildFlashReportForLive(
-          eid,
-          intensityEntry,
-          epicenterEntry,
-          areaCodes,
-        );
-        if (flashReport) {
-          _trackedFlashEntries.set(eid, {
-            intensityRdt: intensityEntry?.rdt || null,
-            epicenterRdt: epicenterEntry?.rdt || null,
-            intensityEntry,
-            epicenterEntry,
-          });
-          if (callbacks.onNewEntry) {
-            callbacks.onNewEntry(bestEntry, flashReport);
-          }
-        }
-      } else {
-        // Check if there is new/updated information:
-        // 1. A new or updated intensity report has arrived (e.g., arrived after epicenter)
-        const isNewIntensity =
-          currentIntensityEntry && currentIntensityEntry.rdt !== trackedFlash.intensityRdt;
-        // 2. A new or updated epicenter report has arrived (e.g., arrived after intensity)
-        const isNewEpicenter =
-          currentEpicenterEntry && currentEpicenterEntry.rdt !== trackedFlash.epicenterRdt;
-
-        if (isNewIntensity || isNewEpicenter) {
-          console.debug(`[live-mode] Updated flash report detected for ${eid}:`, {
-            isNewIntensity,
-            isNewEpicenter,
-          });
-          const flashReport = await _buildFlashReportForLive(
-            eid,
-            intensityEntry,
-            epicenterEntry,
-            areaCodes,
-          );
-          if (flashReport) {
-            _trackedFlashEntries.set(eid, {
-              intensityRdt: intensityEntry?.rdt || trackedFlash.intensityRdt || null,
-              epicenterRdt: epicenterEntry?.rdt || trackedFlash.epicenterRdt || null,
-              intensityEntry,
-              epicenterEntry,
-            });
-            if (callbacks.onUpdatedEntry) {
-              callbacks.onUpdatedEntry(bestEntry, flashReport);
-            }
-          }
-        }
-      }
-    }
 
     return nextIntervalMs;
   } catch (err) {
