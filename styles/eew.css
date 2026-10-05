@@ -41,10 +41,6 @@
   font-family: var(--font-display);
 }
 
-.eew-intensity-placeholder {
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-}
-
 .obs-intensity-group .auto-open {
   pointer-events: none;
 }

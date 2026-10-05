@@ -4,6 +4,7 @@ import {
   INTENSITY_CONFIG,
   LPGM_CONFIG,
 } from "../constants.js";
+import { renderIntensityBadge, getIntensityBadgeHtml } from "../intensityBadge.js";
 import { createRubyHtml } from "../areaCodes.js";
 import { getActiveProvider, isPlumEew } from "../eewProviders.js";
 import { mergeForecasts, getIntVal, cityForecastMap } from "./physics.js";
@@ -96,43 +97,25 @@ export function updateEewHomeLocationDisplay(cityCode, intensityStr) {
 
   const intensityContainer = display.querySelector(".tooltip-intensity-container");
 
-  if (intensityStr && intensityStr !== "0" && intensityStr !== "over" && intensityStr !== "不明") {
-    const config = INTENSITY_CONFIG[intensityStr];
-    if (config) {
-      const img = intensityContainer.querySelector("img");
-      if (img) {
-        img.style.display = "";
-        img.src = `/img/shindo/${config.img}`;
-        img.alt = `Intensity ${intensityStr}`;
-        img.title = `Forecasted Intensity: ${intensityStr}`;
-      }
+  const hasIntensity = Boolean(
+    intensityStr &&
+    intensityStr !== "0" &&
+    intensityStr !== "over" &&
+    intensityStr !== "不明" &&
+    INTENSITY_CONFIG[intensityStr]
+  );
+  const displayIntensity = hasIntensity ? intensityStr : "0";
+  const config = INTENSITY_CONFIG[displayIntensity] || INTENSITY_CONFIG[0];
 
-      const placeholder = intensityContainer.querySelector(".tooltip-intensity-placeholder");
-      if (placeholder) placeholder.style.display = "none";
-
-      intensityContainer.classList.remove("hidden");
-      display.style.borderTopColor = config.color;
-      display.querySelector(".tooltip-code").style.color = config.color;
-    }
-  } else {
-    const img = intensityContainer.querySelector("img");
-    if (img) img.style.display = "none";
-
-    let placeholder = intensityContainer.querySelector(".tooltip-intensity-placeholder");
-    if (placeholder) {
-      placeholder.style.display = "";
-    } else {
-      placeholder = document.createElement("div");
-      placeholder.className = "tooltip-intensity-placeholder";
-      placeholder.textContent = "-";
-      intensityContainer.appendChild(placeholder);
-    }
-
+  if (intensityContainer) {
+    renderIntensityBadge(intensityContainer, displayIntensity, {
+      title: hasIntensity ? `Forecasted Intensity: ${intensityStr}` : undefined,
+    });
     intensityContainer.classList.remove("hidden");
-    const defaultColor = "#1e2e44";
-    display.style.borderTopColor = defaultColor;
-    display.querySelector(".tooltip-code").style.color = defaultColor;
   }
+
+  display.style.borderTopColor = config.color;
+  display.querySelector(".tooltip-code").style.color = config.color;
 
   display.classList.remove("hidden");
 }
@@ -293,16 +276,11 @@ export function renderCurrentEew() {
           </div>
         </div>
         <div class="eq-intensity-container">
+          ${getIntensityBadgeHtml(msg.Intensity)}
+        </div>
+      </div>
+    </div>
   `;
-
-  if (msg.Intensity && msg.Intensity !== "不明") {
-    const intensityConfig = INTENSITY_CONFIG[msg.Intensity] || INTENSITY_CONFIG["1"];
-    listHtml += `<img src="/img/shindo/${intensityConfig.img}" class="eq-intensity-img" />`;
-  } else {
-    listHtml += `<div class="eew-intensity-placeholder" style="width:60px; height:60px; border-radius:3px; background:#1e2e44; display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px; font-weight:bold;">-</div>`;
-  }
-
-  listHtml += `</div></div></div>`;
   container.innerHTML = listHtml;
 
   const listItem = container.querySelector(".eew-list-item");
@@ -394,7 +372,6 @@ export function renderEewInfoBox(
   const locationJa = infoBox.querySelector(".info-box-location-ja");
   const locationEn = infoBox.querySelector(".info-box-location-en");
   const flashBadge = infoBox.querySelector(".info-box-flash-badge");
-  const intensityImg = infoBox.querySelector(".info-box-intensity-img");
   const intensityContainer = infoBox.querySelector(".info-box-intensity-container");
   const magnitude = infoBox.querySelector(".info-magnitude");
   const depth = infoBox.querySelector(".info-depth");
@@ -452,29 +429,16 @@ export function renderEewInfoBox(
     flashBadge.querySelector(".flash-badge-text").style.color = labelColor;
   }
 
-  if (msg.Intensity && msg.Intensity !== "不明") {
-    const intensityConfig = INTENSITY_CONFIG[msg.Intensity] || INTENSITY_CONFIG["1"];
-    intensityImg.src = `/img/shindo/${intensityConfig.img}`;
-    intensityImg.title = `Intensity: ${msg.Intensity}`;
-    intensityImg.alt = `Intensity: ${msg.Intensity}`;
-    intensityImg.style.display = "block";
-    const existingPlaceholder = intensityContainer.querySelector(".eew-intensity-placeholder");
-    if (existingPlaceholder) existingPlaceholder.remove();
-    const infoPlaceholder = intensityContainer.querySelector(".info-box-intensity-placeholder");
-    if (infoPlaceholder) infoPlaceholder.remove();
-  } else {
-    intensityImg.style.display = "none";
-    const infoPlaceholder = intensityContainer.querySelector(".info-box-intensity-placeholder");
-    if (infoPlaceholder) infoPlaceholder.remove();
-    let placeholder = intensityContainer.querySelector(".eew-intensity-placeholder");
-    if (!placeholder) {
-      placeholder = document.createElement("div");
-      placeholder.className = "eew-intensity-placeholder";
-      placeholder.style.cssText =
-        "width:54px; height:54px; border-radius:3px; background:#1e2e44; display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px; font-weight:bold;";
-      placeholder.textContent = "-";
-      intensityContainer.appendChild(placeholder);
-    }
+  if (intensityContainer) {
+    const hasIntensity = Boolean(
+      msg.Intensity &&
+      msg.Intensity !== "不明" &&
+      msg.Intensity !== "0" &&
+      INTENSITY_CONFIG[msg.Intensity]
+    );
+    renderIntensityBadge(intensityContainer, hasIntensity ? msg.Intensity : "0", {
+      title: hasIntensity ? `Intensity: ${msg.Intensity}` : undefined,
+    });
   }
 
   const isPlumMethod = isPlum !== undefined ? Boolean(isPlum) : isPlumEew(msg);

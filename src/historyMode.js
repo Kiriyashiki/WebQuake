@@ -717,6 +717,33 @@ function resolveHypocenterNames(name, areaCodes) {
   };
 }
 
+function _parseHistoryOriginTime(ot) {
+  if (!ot) return null;
+  const isoFormatted = ot.replaceAll('/', '-').replace(' ', 'T') + '+09:00';
+  const ms = Date.parse(isoFormatted);
+  return Number.isNaN(ms) ? null : Math.floor(ms / 1000);
+}
+
+function _parseHistoryCoordinates(rawLat, rawLon) {
+  const latStr = rawLat != null && rawLat !== '' ? String(rawLat) : null;
+  const lonStr = rawLon != null && rawLon !== '' ? String(rawLon) : null;
+  const lat = latStr !== null ? Number.parseFloat(latStr) : null;
+  const lon = lonStr !== null ? Number.parseFloat(lonStr) : null;
+  if (lat === null || lon === null || Number.isNaN(lat) || Number.isNaN(lon)) {
+    return null;
+  }
+  const latDec = latStr?.includes('.') ? latStr.split('.')[1].length : 0;
+  const lonDec = lonStr?.includes('.') ? lonStr.split('.')[1].length : 0;
+  const accuracy = (latDec || lonDec) ? Math.max(latDec, lonDec) : 3;
+  return { latitude: lat, longitude: lon, accuracy };
+}
+
+function _parseHistoryDepth(dep) {
+  if (!dep) return null;
+  const match = /(\d+)/.exec(String(dep));
+  return match ? Number.parseInt(match[1], 10) : null;
+}
+
 /**
  * Builds a base report object from an EQDB search result event.
  * Contains lightweight fields needed for the sidebar entry display without
@@ -728,32 +755,11 @@ function resolveHypocenterNames(name, areaCodes) {
  */
 export function buildHistoryBaseReport(event, areaCodes = new Map()) {
   const names = resolveHypocenterNames(event?.name, areaCodes);
-
-  let originTime = null;
-  if (event?.ot) {
-    const isoFormatted = event.ot.replaceAll('/', '-').replace(' ', 'T') + '+09:00';
-    const ms = Date.parse(isoFormatted);
-    if (!Number.isNaN(ms)) {
-      originTime = Math.floor(ms / 1000);
-    }
-  }
-
+  const originTime = _parseHistoryOriginTime(event?.ot);
   const magNum = event?.mag != null && event?.mag !== '' ? Number.parseFloat(event.mag) : null;
   const magnitude = (magNum !== null && !Number.isNaN(magNum)) ? magNum : null;
-
-  const latStr = event?.lat != null && event?.lat !== '' ? String(event.lat) : null;
-  const lonStr = event?.lon != null && event?.lon !== '' ? String(event.lon) : null;
-  const lat = latStr !== null ? Number.parseFloat(latStr) : null;
-  const lon = lonStr !== null ? Number.parseFloat(lonStr) : null;
-  const latDec = latStr && latStr.includes('.') ? latStr.split('.')[1].length : 0;
-  const lonDec = lonStr && lonStr.includes('.') ? lonStr.split('.')[1].length : 0;
-  const accuracy = (latDec || lonDec) ? Math.max(latDec, lonDec) : 3;
-  const coordinates = (lat !== null && lon !== null && !Number.isNaN(lat) && !Number.isNaN(lon))
-    ? { latitude: lat, longitude: lon, accuracy }
-    : null;
-
-  const depthMatch = event?.dep ? /(\d+)/.exec(String(event.dep)) : null;
-  const depth = depthMatch ? Number.parseInt(depthMatch[1], 10) : null;
+  const coordinates = _parseHistoryCoordinates(event?.lat, event?.lon);
+  const depth = _parseHistoryDepth(event?.dep);
 
   return {
     eventId: event?.id,

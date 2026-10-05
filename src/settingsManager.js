@@ -1,3 +1,5 @@
+import { initColorPresetsUI } from "./colorPresetsUI.js";
+
 /**
  * Initializes the Settings & Credits modal popup event handlers.
  */
@@ -23,4 +25,7 @@ export function initSettingsModal() {
       }
     });
   }
+
+  // Initialize color presets settings controls
+  initColorPresetsUI();
 }

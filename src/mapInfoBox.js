@@ -5,6 +5,7 @@ import {
   INTENSITY_CONFIG,
   LPGM_CONFIG,
 } from "./constants.js";
+import { renderIntensityBadge } from "./intensityBadge.js";
 import { renderObservationsList } from "./observationsList.js";
 import {
   updateLpgmVisibility,
@@ -13,6 +14,7 @@ import {
   updateShakemapVisibility,
   clearShakemapHighlights,
   highlightShakemapObservations,
+  isLpgmVisible,
 } from "./map.js";
 import { getCityAreasState } from "./sidebarUI.js";
 
@@ -65,7 +67,6 @@ export function displayMapInfoBox(report, map) {
   const locationJa = infoBox.querySelector(".info-box-location-ja");
   const locationEn = infoBox.querySelector(".info-box-location-en");
   const flashBadge = infoBox.querySelector(".info-box-flash-badge");
-  const intensityImg = infoBox.querySelector(".info-box-intensity-img");
   const magnitude = infoBox.querySelector(".info-magnitude");
   const depth = infoBox.querySelector(".info-depth");
   const coordinates = infoBox.querySelector(".info-coordinates");
@@ -75,7 +76,7 @@ export function displayMapInfoBox(report, map) {
     locationJa.innerHTML = createRubyHtml(report.hypocenterJa, report.hypocenterKana) || "不明";
   if (locationEn) locationEn.textContent = report.hypocenterEn || "Unknown";
 
-  // Clean up EEW specific DOM alterations & placeholders
+  // Clean up EEW specific DOM alterations
   const eewSerialRow = infoBox.querySelector(".eew-serial-row");
   if (eewSerialRow) eewSerialRow.remove();
 
@@ -87,12 +88,6 @@ export function displayMapInfoBox(report, map) {
     eewSerial.textContent = "";
     eewSerial.classList.add("hidden");
   }
-
-  const eewIntensityPlaceholder = infoBox.querySelector(".eew-intensity-placeholder");
-  if (eewIntensityPlaceholder) eewIntensityPlaceholder.remove();
-
-  const existingPlaceholder = infoBox.querySelector(".info-box-intensity-placeholder");
-  if (existingPlaceholder) existingPlaceholder.remove();
 
   const intensityContainer = infoBox.querySelector(".info-box-intensity-container");
 
@@ -113,26 +108,16 @@ export function displayMapInfoBox(report, map) {
     }
   }
 
-  // Set intensity image / placeholder
-  const hasIntensity = !!(report.maxIntensity && INTENSITY_CONFIG[report.maxIntensity]);
-  if (hasIntensity) {
-    if (intensityImg) {
-      intensityImg.style.display = "block";
-      const intensityConfig = INTENSITY_CONFIG[report.maxIntensity];
-      intensityImg.src = `/img/shindo/${intensityConfig.img}`;
-      intensityImg.alt = `Intensity ${report.maxIntensity}`;
-      intensityImg.title = `Intensity: ${report.maxIntensity}`;
-    }
-  } else {
-    if (intensityImg) {
-      intensityImg.style.display = "none";
-    }
-    if (intensityContainer) {
-      const placeholder = document.createElement("div");
-      placeholder.className = "info-box-intensity-placeholder";
-      placeholder.textContent = "-";
-      intensityContainer.appendChild(placeholder);
-    }
+  // Set intensity badge
+  if (intensityContainer) {
+    const hasIntensity = Boolean(
+      report.maxIntensity &&
+      report.maxIntensity !== "0" &&
+      INTENSITY_CONFIG[report.maxIntensity]
+    );
+    renderIntensityBadge(intensityContainer, hasIntensity ? report.maxIntensity : "0", {
+      title: hasIntensity ? `Intensity: ${report.maxIntensity}` : undefined,
+    });
   }
 
   // Handle volcano report: remove/hide magnitude and depth rows, replace with volcano notice
@@ -394,4 +379,61 @@ export function displayMapInfoBox(report, map) {
   }
 
   infoBox.classList.remove("hidden");
+}
+
+function _refreshInfoBoxIntensity(infoBox, report) {
+  const intensityContainer = infoBox.querySelector(".info-box-intensity-container");
+  if (!intensityContainer) return;
+
+  const hasIntensity = Boolean(
+    report.maxIntensity &&
+    report.maxIntensity !== "0" &&
+    INTENSITY_CONFIG[report.maxIntensity]
+  );
+  renderIntensityBadge(intensityContainer, hasIntensity ? report.maxIntensity : "0", {
+    title: hasIntensity ? `Intensity: ${report.maxIntensity}` : undefined,
+  });
+}
+
+function _refreshInfoBoxLpgm(infoBox, report) {
+  const lpgmRow = infoBox.querySelector(".info-box-lpgm-row");
+  const lpgmValue = infoBox.querySelector(".info-lpgm");
+  if (lpgmRow && lpgmValue && report.lpgmInfo?.maxLgInt) {
+    const maxLg = report.lpgmInfo.maxLgInt;
+    const lpgmConfig = LPGM_CONFIG[maxLg];
+    if (lpgmConfig) {
+      lpgmValue.style.backgroundColor = lpgmConfig.color;
+      lpgmValue.style.color = lpgmConfig.fontColor;
+    }
+  }
+}
+
+function _refreshInfoBoxObservations(infoBox, report) {
+  const observationsContainer = infoBox.querySelector("#observations-list-container");
+  if (!observationsContainer || !report.observations) return;
+
+  const isLpgm = isLpgmVisible();
+  renderObservationsList(
+    observationsContainer,
+    isLpgm && report.lpgmInfo?.observations ? report.lpgmInfo.observations : report.observations,
+    globalThis.__areaCodes || new Map(),
+    globalThis.__prefectureCodes || new Map(),
+    { isFlashReport: !!report.isFlashReport, isLpgm },
+  );
+}
+
+/**
+ * Refreshes the color-dependent elements in the map info box
+ * (intensity badge, LPGM indicator, and observations list headers).
+ */
+export function refreshInfoBoxColors() {
+  const report = globalThis.__currentReport;
+  if (!report) return;
+
+  const infoBox = document.getElementById("map-info-box");
+  if (!infoBox || infoBox.classList.contains("hidden")) return;
+
+  _refreshInfoBoxIntensity(infoBox, report);
+  _refreshInfoBoxLpgm(infoBox, report);
+  _refreshInfoBoxObservations(infoBox, report);
 }

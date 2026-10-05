@@ -1,0 +1,79 @@
+/* ── Intensity Badge (HTML/CSS replacement for intensity images) ────── */
+
+.intensity-badge {
+  position: relative;
+  display: inline-block;
+  container-type: size;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  user-select: none;
+  box-sizing: border-box;
+  font-family: 'M PLUS 1p', sans-serif;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.intensity-badge .intensity-value {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 75cqw;
+  line-height: 1;
+  color: inherit;
+  font-family: 'M PLUS 1p', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.intensity-badge-composite .intensity-num {
+  position: absolute;
+  left: 40%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 75cqw;
+  line-height: 1;
+  color: inherit;
+  font-family: 'M PLUS 1p', sans-serif;
+}
+
+.intensity-badge-composite .intensity-sign {
+  position: absolute;
+  left: 74%;
+  top: 33%;
+  transform: translate(-50%, -50%);
+  font-size: 54cqw;
+  line-height: 1;
+  color: inherit;
+  font-family: 'M PLUS 1p', sans-serif;
+}
+
+/* Explicit size presets */
+.intensity-badge.size-sm {
+  width: 20px;
+  height: 20px;
+  border-radius: 2px;
+}
+
+.intensity-badge.size-md {
+  width: 40px;
+  height: 40px;
+  border-radius: 2px;
+}
+
+.intensity-badge.size-lg {
+  width: 54px;
+  height: 54px;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.intensity-badge.size-xl {
+  width: 60px;
+  height: 60px;
+  border-radius: 3px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}

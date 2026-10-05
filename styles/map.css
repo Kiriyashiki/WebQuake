@@ -288,31 +288,16 @@
   grid-row: 1;
   flex-shrink: 0;
   display: flex;
-  justify-content: right;
-  align-items: end;
-  align-self: flex-end;
+  justify-content: flex-end;
+  align-items: flex-start;
+  align-self: flex-start;
 }
 
-.info-box-intensity-img {
+.info-box-intensity-container .intensity-badge {
   width: 54px;
   height: 54px;
-  image-rendering: auto;
   border-radius: 4px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-}
-
-.info-box-intensity-placeholder {
-  width: 54px;
-  height: 54px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--text-dim);
-  font-weight: 700;
-  font-size: 22px;
-  line-height: 1;
 }
 
 .info-box-details {

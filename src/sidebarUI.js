@@ -4,6 +4,7 @@
  */
 
 import { formatTimeJST, INTENSITY_CONFIG, PRUNE_MAX_AGE_MS, PRUNE_MAX_REPORTS } from "./constants.js";
+import { getIntensityBadgeHtml, renderIntensityBadge } from "./intensityBadge.js";
 
 /**
  * Current list of reports in the sidebar (for live mode updates).
@@ -67,22 +68,16 @@ export function createReportItem(report, onReportSelect, customClickHandler) {
   item.className = "eq-item";
   item.dataset.eventId = report.eventId;
 
-  const hasIntensity = !!(report.maxIntensity && INTENSITY_CONFIG[report.maxIntensity]);
-  const intensityConfig = hasIntensity ? INTENSITY_CONFIG[report.maxIntensity] : null;
-  const borderColor = intensityConfig ? intensityConfig.color : "#1e2e44";
-  const intensityImg = intensityConfig ? intensityConfig.img : null;
+  const hasIntensity = !!(report.maxIntensity && INTENSITY_CONFIG[report.maxIntensity] && report.maxIntensity !== "0");
+  const intensityConfig = hasIntensity ? INTENSITY_CONFIG[report.maxIntensity] : INTENSITY_CONFIG[0];
+  const borderColor = intensityConfig.color;
 
   // Format time in JST
   const timeStr = report.originTime ? formatTimeJST(report.originTime * 1000) : "----/--/-- --:--";
 
-  const intensityHtml = hasIntensity
-    ? `<img 
-        src="/img/shindo/${intensityImg}" 
-        alt="Intensity ${report.maxIntensity}" 
-        class="eq-intensity-img"
-        title="Intensity: ${report.maxIntensity}"
-      />`
-    : `<div class="eq-intensity-placeholder">-</div>`;
+  const intensityHtml = getIntensityBadgeHtml(hasIntensity ? report.maxIntensity : "0", {
+    title: hasIntensity ? `Intensity: ${report.maxIntensity}` : undefined,
+  });
 
   // Build HTML
   item.innerHTML = `
@@ -649,5 +644,48 @@ function _pruneReports() {
     document.dispatchEvent(new CustomEvent('reports-pruned', {
       detail: { removedIds: toRemoveIds }
     }));
+  }
+}
+
+function _refreshItemFromReport(item, report) {
+  const hasIntensity = Boolean(report.maxIntensity && INTENSITY_CONFIG[report.maxIntensity] && report.maxIntensity !== "0");
+  const intensityConfig = hasIntensity ? INTENSITY_CONFIG[report.maxIntensity] : INTENSITY_CONFIG[0];
+  item.style.borderColor = intensityConfig.color;
+  const container = item.querySelector(".eq-intensity-container");
+  if (container) {
+    renderIntensityBadge(container, hasIntensity ? report.maxIntensity : "0", {
+      title: hasIntensity ? `Intensity: ${report.maxIntensity}` : undefined,
+    });
+  }
+}
+
+function _refreshItemFromDomBadge(item) {
+  const container = item.querySelector(".eq-intensity-container");
+  const badge = container?.querySelector(".intensity-badge");
+  if (badge?.title) {
+    const match = /Intensity:\s*([\d+-]+)/.exec(badge.title);
+    if (match) {
+      const intVal = match[1];
+      const cfg = INTENSITY_CONFIG[intVal] || INTENSITY_CONFIG[0];
+      item.style.borderColor = cfg.color;
+      renderIntensityBadge(container, intVal, { title: badge.title });
+    }
+  }
+}
+
+/**
+ * Re-renders all report item borders and intensity badges in the DOM
+ * according to current INTENSITY_CONFIG.
+ */
+export function refreshAllReportBadges() {
+  const allItems = document.querySelectorAll(".eq-item:not(.placeholder)");
+  for (const item of allItems) {
+    const eventId = item.dataset.eventId;
+    const report = _currentReports.find((r) => r.eventId === eventId);
+    if (report) {
+      _refreshItemFromReport(item, report);
+    } else {
+      _refreshItemFromDomBadge(item);
+    }
   }
 }

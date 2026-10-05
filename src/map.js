@@ -13,6 +13,7 @@ import {
   buildIntensityColorExpression,
   buildLpgmColorExpression,
 } from "./constants.js";
+import { renderIntensityBadge } from "./intensityBadge.js";
 import { buildStyle } from "./map/mapStyle.js";
 
 const C = MAP_COLORS;
@@ -34,7 +35,7 @@ function showTooltip(tooltip, x, y, code, info, intensity = null, mode = "area")
   const intensityContainer = tooltip.querySelector(".tooltip-intensity-container");
 
   let config = null;
-  if (intensity) {
+  if (intensity && intensity !== "0") {
     if (_lpgmVisible) {
       config = LPGM_CONFIG[intensity];
     } else {
@@ -43,19 +44,22 @@ function showTooltip(tooltip, x, y, code, info, intensity = null, mode = "area")
   }
 
   if (config) {
-    const img = intensityContainer.querySelector("img");
-    img.src = _lpgmVisible ? `/img/lpgm/${config.img}` : `/img/shindo/${config.img}`;
-    img.alt = _lpgmVisible ? `LPGM ${intensity}` : `Intensity ${intensity}`;
-    img.title = _lpgmVisible ? `LPGM: ${intensity}` : `Intensity: ${intensity}`;
-    intensityContainer.classList.remove("hidden");
+    if (intensityContainer) {
+      renderIntensityBadge(intensityContainer, intensity, {
+        isLpgm: _lpgmVisible,
+        title: _lpgmVisible ? `LPGM: ${intensity}` : `Intensity: ${intensity}`,
+      });
+      intensityContainer.classList.remove("hidden");
+    }
 
     tooltip.style.borderTopColor = config.color;
     codeEl.style.color = config.color;
   } else {
     if (intensityContainer) {
       intensityContainer.classList.add("hidden");
+      intensityContainer.innerHTML = "";
     }
-    const defaultColor = "#1e2e44"; // C.japanLine
+    const defaultColor = INTENSITY_CONFIG[0]?.color || "#1e2e44";
     tooltip.style.borderTopColor = defaultColor;
     codeEl.style.color = defaultColor;
   }
@@ -383,6 +387,69 @@ export function updateLpgmVisibility(map, show) {
 
   // Update layout properties to enforce forecast areas only
   _applyCityAreasVisibility(map, _currentCityAreasVisible);
+}
+
+/**
+ * Updates all intensity and LPGM map layer paint properties
+ * according to current INTENSITY_CONFIG and LPGM_CONFIG.
+ * @param {maplibregl.Map} map
+ */
+export function updateMapColorStyles(map) {
+  if (!map) return;
+
+  if (!map.isStyleLoaded()) {
+    map.once("idle", () => {
+      updateMapColorStyles(map);
+    });
+    return;
+  }
+
+  try {
+    // 1. Forecast fill & line (handles LPGM or Shindo based on _lpgmVisible)
+    updateLpgmVisibility(map, _lpgmVisible);
+
+    // 2. Cities fill & line
+    map.setPaintProperty("cities-fill", "fill-color", [
+      "case",
+      ["boolean", ["feature-state", "highlighted"], false],
+      [
+        "case",
+        ["boolean", ["feature-state", "hover"], false],
+        ["coalesce", buildIntensityColorExpression(false), "transparent"],
+        buildIntensityColorExpression(true),
+      ],
+      "transparent",
+    ]);
+
+    map.setPaintProperty("cities-line", "line-color", [
+      "case",
+      ["boolean", ["feature-state", "highlighted"], false],
+      buildIntensityColorExpression(false, C.cityLine),
+      ["case", ["boolean", ["feature-state", "hover"], false], C.japanLine, "#172538"],
+    ]);
+
+    // 3. Shakemap fill & line
+    map.setPaintProperty("shakemap-fill", "fill-color", [
+      "case",
+      ["boolean", ["feature-state", "highlighted"], false],
+      [
+        "case",
+        ["boolean", ["feature-state", "hover"], false],
+        ["coalesce", buildIntensityColorExpression(false), "transparent"],
+        buildIntensityColorExpression(true),
+      ],
+      "transparent",
+    ]);
+
+    map.setPaintProperty("shakemap-line", "line-color", [
+      "case",
+      ["boolean", ["feature-state", "highlighted"], false],
+      buildIntensityColorExpression(false, C.cityLine),
+      ["case", ["boolean", ["feature-state", "hover"], false], C.japanLine, C.forecastLine],
+    ]);
+  } catch (err) {
+    console.warn("[map] Failed to update map color styles:", err);
+  }
 }
 
 // ─── Shakemap mode ─────────────────────────────────────────────────────────

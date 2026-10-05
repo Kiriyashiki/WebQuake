@@ -11,23 +11,25 @@ export const TEST_GMPE_OVERRIDE = false;
 
 // ─── Intensity Configuration (JMA Shindo Scale) ──────────────────────────────
 export const INTENSITY_CONFIG = {
-  1: { color: "#6B7878", fontColor: "#FFFFFF", img: "1.png" },
-  2: { color: "#1E6EE6", fontColor: "#FFFFFF", img: "2.png" },
-  3: { color: "#32B464", fontColor: "#FFFFFF", img: "3.png" },
-  4: { color: "#FFE05D", fontColor: "#000000", img: "4.png" },
-  "5-": { color: "#FFAA13", fontColor: "#000000", img: "5minus.png" },
-  "5+": { color: "#EF6F12", fontColor: "#000000", img: "5plus.png" },
-  "6-": { color: "#E40000", fontColor: "#FFFFFF", img: "6minus.png" },
-  "6+": { color: "#A00000", fontColor: "#FFFFFF", img: "6plus.png" },
-  7: { color: "#5D0092", fontColor: "#FFFFFF", img: "7.png" },
+  0: { color: "#1e2e44", fontColor: "#FFFFFF" },
+  1: { color: "#6B7878", fontColor: "#FFFFFF" },
+  2: { color: "#1E6EE6", fontColor: "#FFFFFF" },
+  3: { color: "#32B464", fontColor: "#FFFFFF" },
+  4: { color: "#FFE05D", fontColor: "#000000" },
+  "5-": { color: "#FFAA13", fontColor: "#000000" },
+  "5+": { color: "#EF6F12", fontColor: "#000000" },
+  "6-": { color: "#E40000", fontColor: "#FFFFFF" },
+  "6+": { color: "#A00000", fontColor: "#FFFFFF" },
+  7: { color: "#5D0092", fontColor: "#FFFFFF" },
 };
 
 // ─── LPGM Configuration (JMA LPGM Scale) ──────────────────────────────
 export const LPGM_CONFIG = {
-  1: { color: "#32B464", fontColor: "#FFFFFF", img: "l1.png" },
-  2: { color: "#FFE05D", fontColor: "#000000", img: "l2.png" },
-  3: { color: "#FFAA13", fontColor: "#000000", img: "l3.png" },
-  4: { color: "#E40000", fontColor: "#FFFFFF", img: "l4.png" },
+  0: { color: "#1e2e44", fontColor: "#FFFFFF" },
+  1: { color: "#32B464", fontColor: "#FFFFFF" },
+  2: { color: "#FFE05D", fontColor: "#000000" },
+  3: { color: "#FFAA13", fontColor: "#000000" },
+  4: { color: "#E40000", fontColor: "#FFFFFF" },
 };
 
 // ─── Map Colour Palette ──────────────────────────────────────────────────────
@@ -78,6 +80,7 @@ export function buildIntensityColorExpression(isDimmed = false, fallback = "tran
   const colors = [];
 
   Object.entries(INTENSITY_CONFIG).forEach(([intensity, config]) => {
+    if (intensity === "0") return;
     const color = isDimmed ? hexToRgba(config.color, opacity) : config.color;
     colors.push(["==", ["feature-state", "intensity"], intensity], color);
   });
@@ -96,6 +99,7 @@ export function buildLpgmColorExpression(isDimmed = false, fallback = "transpare
   const colors = [];
 
   Object.entries(LPGM_CONFIG).forEach(([intensity, config]) => {
+    if (intensity === "0") return;
     const color = isDimmed ? hexToRgba(config.color, opacity) : config.color;
     colors.push(["==", ["feature-state", "lpgmIntensity"], intensity], color);
   });

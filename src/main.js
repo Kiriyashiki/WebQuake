@@ -57,6 +57,7 @@ import { initHistoryController } from "./historyController.js";
 import { initSettingsModal } from "./settingsManager.js";
 import { displayMapInfoBox, updateMapLegend } from "./mapInfoBox.js";
 import { isDesktop, desktopOpenUrl } from "./desktopBridge.js";
+import { applyActiveColorPreset } from "./colorPresetsUI.js";
 
 // In desktop apps (Tauri and Electron), external links launch in the system browser
 if (isDesktop) {
@@ -86,7 +87,7 @@ function _updateStatus(state) {
   const labels = {
     idle: "Idle",
     loading: "Fetching reports...",
-    live: "Live Mode Active",
+    live: "Loaded",
     error: "Error",
   };
   text.textContent = labels[state] || state;
@@ -99,6 +100,24 @@ async function boot() {
   await initLogger();
   syncLiveModeToggleVisuals();
   _updateStatus("loading");
+
+  // Apply saved color preset to INTENSITY_CONFIG / LPGM_CONFIG and update legend
+  applyActiveColorPreset();
+
+  // Setup settings modal and color presets controls
+  initSettingsModal();
+
+  // Setup sidebar toggle button
+  const sidebarToggleBtn = document.getElementById("sidebar-toggle-btn");
+  const sidebar = document.getElementById("sidebar");
+  const toggleArrow = sidebarToggleBtn?.querySelector(".toggle-arrow");
+  if (sidebarToggleBtn) {
+    sidebarToggleBtn.addEventListener("click", () => {
+      sidebar.classList.toggle("hidden");
+      sidebarToggleBtn.classList.toggle("closed");
+      toggleArrow?.classList.toggle("rotated");
+    });
+  }
 
   const mapEl = document.getElementById("map");
   if (!mapEl) {
@@ -131,21 +150,7 @@ async function boot() {
   globalThis.__eqMap = map;
   globalThis.__areaCodes = areaCodes;
   globalThis.__prefectureCodes = prefectureCodes;
-
-  // Setup sidebar toggle button
-  const sidebarToggleBtn = document.getElementById("sidebar-toggle-btn");
-  const sidebar = document.getElementById("sidebar");
-  const toggleArrow = sidebarToggleBtn?.querySelector(".toggle-arrow");
-  if (sidebarToggleBtn) {
-    sidebarToggleBtn.addEventListener("click", () => {
-      sidebar.classList.toggle("hidden");
-      sidebarToggleBtn.classList.toggle("closed");
-      toggleArrow?.classList.toggle("rotated");
-    });
-  }
-
-  // Setup settings modal
-  initSettingsModal();
+  globalThis.__cityNames = cityNames;
 
   // Handler for when an earthquake report is selected from sidebar
   let reportSelectTimer = null;

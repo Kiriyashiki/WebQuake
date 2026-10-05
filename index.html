@@ -205,9 +205,7 @@
                   <div class="info-box-location-ja"></div>
                   <div class="info-box-location-en"></div>
                 </div>
-                <div class="info-box-intensity-container">
-                  <img class="info-box-intensity-img" alt="Intensity" />
-                </div>
+                <div class="info-box-intensity-container"></div>
                 <div class="info-box-flash-badge hidden">
                   <span class="flash-badge-text">速報 · Flash Report</span>
                 </div>
@@ -267,9 +265,7 @@
               <div class="tooltip-ja"></div>
               <div class="tooltip-en"></div>
             </div>
-            <div class="tooltip-intensity-container hidden">
-              <img src="" alt="Intensity" class="tooltip-intensity-img" />
-            </div>
+            <div class="tooltip-intensity-container hidden"></div>
           </div>
 
           <!-- Bottom-right widgets container -->
@@ -281,24 +277,33 @@
                 <div class="tooltip-ja"></div>
                 <div class="tooltip-en"></div>
               </div>
-              <div class="tooltip-intensity-container hidden">
-                <img src="" alt="Intensity" class="tooltip-intensity-img" />
-              </div>
+              <div class="tooltip-intensity-container hidden"></div>
             </div>
 
             <!-- Legend -->
             <div id="map-legend">
-              <div class="legend-title mono">震度 · INTENSITY</div>
-              <div class="legend-items">
-                <div class="legend-item"><img src="/img/shindo/1.png" alt="1" /></div>
-                <div class="legend-item"><img src="/img/shindo/2.png" alt="2" /></div>
-                <div class="legend-item"><img src="/img/shindo/3.png" alt="3" /></div>
-                <div class="legend-item"><img src="/img/shindo/4.png" alt="4" /></div>
-                <div class="legend-item"><img src="/img/shindo/5minus.png" alt="5-" /></div>
-                <div class="legend-item"><img src="/img/shindo/5plus.png" alt="5+" /></div>
-                <div class="legend-item"><img src="/img/shindo/6minus.png" alt="6-" /></div>
-                <div class="legend-item"><img src="/img/shindo/6plus.png" alt="6+" /></div>
-                <div class="legend-item"><img src="/img/shindo/7.png" alt="7" /></div>
+              <div id="intensity-legend">
+                <div class="legend-title mono">震度 · INTENSITY</div>
+                <div class="legend-items">
+                  <div class="legend-item"><div class="intensity-badge" style="background-color: #6B7878; color: #FFFFFF;" title="Intensity: 1"><span class="intensity-value">1</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge" style="background-color: #1E6EE6; color: #FFFFFF;" title="Intensity: 2"><span class="intensity-value">2</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge" style="background-color: #32B464; color: #FFFFFF;" title="Intensity: 3"><span class="intensity-value">3</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge" style="background-color: #FFE05D; color: #000000;" title="Intensity: 4"><span class="intensity-value">4</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge intensity-badge-composite" style="background-color: #FFAA13; color: #000000;" title="Intensity: 5-"><span class="intensity-num">5</span><span class="intensity-sign">-</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge intensity-badge-composite" style="background-color: #EF6F12; color: #000000;" title="Intensity: 5+"><span class="intensity-num">5</span><span class="intensity-sign">+</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge intensity-badge-composite" style="background-color: #E40000; color: #FFFFFF;" title="Intensity: 6-"><span class="intensity-num">6</span><span class="intensity-sign">-</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge intensity-badge-composite" style="background-color: #A00000; color: #FFFFFF;" title="Intensity: 6+"><span class="intensity-num">6</span><span class="intensity-sign">+</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge" style="background-color: #5D0092; color: #FFFFFF;" title="Intensity: 7"><span class="intensity-value">7</span></div></div>
+                </div>
+              </div>
+              <div id="lpgm-legend" class="hidden">
+                <div class="legend-title mono">長周期地震動 · LPGM</div>
+                <div class="legend-items">
+                  <div class="legend-item"><div class="intensity-badge" style="background-color: #32B464; color: #FFFFFF;" title="LPGM: 1"><span class="intensity-value">1</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge" style="background-color: #FFE05D; color: #000000;" title="LPGM: 2"><span class="intensity-value">2</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge" style="background-color: #FFAA13; color: #000000;" title="LPGM: 3"><span class="intensity-value">3</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge" style="background-color: #E40000; color: #FFFFFF;" title="LPGM: 4"><span class="intensity-value">4</span></div></div>
+                </div>
               </div>
               <div class="legend-divider"></div>
               <div class="legend-item epicenter-legend">
@@ -393,6 +398,24 @@
                     </label>
                   </div>
                 </div>
+                    <div class="settings-divider"></div>
+                    <div class="settings-section">
+                      <div class="home-location-header">Intensity Colors • 震度配色設定</div>
+                      <div class="dropdown-group">
+                        <label for="color-preset-select">Preset • プリセット:</label>
+                        <select id="color-preset-select"></select>
+                      </div>
+                      <div class="preset-btn-row">
+                        <button type="button" id="preset-new-btn" class="preset-action-btn" title="Create new preset from default • デフォルトから新規作成">+ New</button>
+                        <button type="button" id="preset-edit-btn" class="preset-action-btn" title="Edit current preset • プリセットを編集">Edit</button>
+                        <button type="button" id="preset-delete-btn" class="preset-action-btn preset-delete-btn" title="Delete current preset • プリセットを削除">Delete</button>
+                      </div>
+                      <div class="preset-btn-row">
+                        <button type="button" id="preset-export-btn" class="preset-action-btn" title="Export preset as CSV • CSVとしてエクスポート">Export</button>
+                        <button type="button" id="preset-import-btn" class="preset-action-btn" title="Import preset from CSV/JSON • CSV/JSONからインポート">Import</button>
+                        <input type="file" id="preset-import-file" accept=".csv,.json" style="display: none;" aria-label="Import preset file" />
+                      </div>
+                    </div>
                   </div>
                   <div class="settings-right">
                     <div class="credits-section">
@@ -424,6 +447,54 @@
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preset editor popup -->
+          <div id="preset-editor-popup" class="hidden">
+            <div class="preset-editor-content">
+              <div class="settings-popup-header">
+                <span class="mono" id="preset-editor-title">Edit Preset · プリセット編集</span>
+                <button id="preset-editor-close-btn" aria-label="Close">✕</button>
+              </div>
+              <div class="preset-editor-body">
+                <div class="preset-editor-sections">
+                  <div class="preset-editor-section">
+                    <div class="preset-section-title mono">震度 · SHINDO</div>
+                    <div class="preset-color-table" id="preset-shindo-table"></div>
+                  </div>
+                  <div class="preset-editor-section">
+                    <div class="preset-section-title mono">長周期地震動 · LPGM</div>
+                    <div class="preset-color-table" id="preset-lpgm-table"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="preset-editor-footer">
+                <button type="button" id="preset-editor-reset-btn" class="preset-editor-btn-secondary">Reset to Default</button>
+                <div class="preset-editor-footer-actions">
+                  <button type="button" id="preset-editor-cancel-btn" class="preset-editor-btn-secondary">Cancel</button>
+                  <button type="button" id="preset-editor-save-btn" class="preset-editor-btn-primary">Save Changes</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preset prompt modal -->
+          <div id="preset-prompt-modal" class="hidden">
+            <div class="preset-prompt-content">
+              <div class="settings-popup-header">
+                <span class="mono" id="preset-prompt-title">Preset Name · プリセット名</span>
+                <button id="preset-prompt-close-btn" aria-label="Close">✕</button>
+              </div>
+              <div class="preset-prompt-body">
+                <label for="preset-name-input" id="preset-prompt-label">Enter a name for the preset:</label>
+                <input type="text" id="preset-name-input" class="search-input" maxlength="40" placeholder="e.g. My Scheme" />
+                <div id="preset-prompt-error" class="preset-prompt-error hidden"></div>
+              </div>
+              <div class="preset-prompt-footer">
+                <button type="button" id="preset-prompt-cancel-btn" class="preset-editor-btn-secondary">Cancel</button>
+                <button type="button" id="preset-prompt-confirm-btn" class="preset-editor-btn-primary">Confirm</button>
               </div>
             </div>
           </div>

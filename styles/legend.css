@@ -33,6 +33,18 @@
   text-transform: uppercase;
 }
 
+#intensity-legend,
+#lpgm-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#intensity-legend.hidden,
+#lpgm-legend.hidden {
+  display: none !important;
+}
+
 .legend-items {
   display: flex;
   gap: 6px;
@@ -45,14 +57,15 @@
   gap: 4px;
 }
 
-.legend-item img {
+.legend-item img,
+.legend-item .intensity-badge {
   width: 20px;
   height: 20px;
   image-rendering: auto;
   border-radius: 2px;
 }
 
-.legend-item span {
+.legend-item > span {
   font-family: var(--font-mono);
   font-size: 10px;
   color: var(--text-dim);

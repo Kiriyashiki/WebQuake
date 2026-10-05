@@ -1,5 +1,6 @@
 import * as maplibregl from "maplibre-gl";
 import { INTENSITY_CONFIG } from "../constants.js";
+import { renderIntensityBadge } from "../intensityBadge.js";
 
 let customHomeCoordinates = null;
 
@@ -166,42 +167,19 @@ export function displayHomeLocationIntensity(cityCode, observations, cityNames) 
   const intensity = findIntensityForCity(observations, cityCode);
   const intensityContainer = display.querySelector(".tooltip-intensity-container");
 
-  if (intensity && INTENSITY_CONFIG[intensity]) {
-    const config = INTENSITY_CONFIG[intensity];
-    const img = intensityContainer.querySelector("img");
-    if (img) {
-      img.style.display = "";
-      img.src = `/img/shindo/${config.img}`;
-      img.alt = `Intensity ${intensity}`;
-      img.title = `Intensity: ${intensity}`;
-    }
+  const hasIntensity = Boolean(intensity && intensity !== "0" && INTENSITY_CONFIG[intensity]);
+  const displayIntensity = hasIntensity ? intensity : "0";
+  const config = INTENSITY_CONFIG[displayIntensity] || INTENSITY_CONFIG[0];
 
-    const placeholder = intensityContainer.querySelector(".tooltip-intensity-placeholder");
-    if (placeholder) placeholder.style.display = "none";
-
+  if (intensityContainer) {
+    renderIntensityBadge(intensityContainer, displayIntensity, {
+      title: hasIntensity ? `Intensity: ${intensity}` : undefined,
+    });
     intensityContainer.classList.remove("hidden");
-
-    display.style.borderTopColor = config.color;
-    display.querySelector(".tooltip-code").style.color = config.color;
-  } else {
-    const img = intensityContainer.querySelector("img");
-    if (img) img.style.display = "none";
-
-    let placeholder = intensityContainer.querySelector(".tooltip-intensity-placeholder");
-    if (placeholder) {
-      placeholder.style.display = "";
-    } else {
-      placeholder = document.createElement("div");
-      placeholder.className = "tooltip-intensity-placeholder";
-      placeholder.textContent = "-";
-      intensityContainer.appendChild(placeholder);
-    }
-
-    intensityContainer.classList.remove("hidden");
-    const defaultColor = "#1e2e44";
-    display.style.borderTopColor = defaultColor;
-    display.querySelector(".tooltip-code").style.color = defaultColor;
   }
+
+  display.style.borderTopColor = config.color;
+  display.querySelector(".tooltip-code").style.color = config.color;
 
   display.classList.remove("hidden");
 }
