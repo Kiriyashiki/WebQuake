@@ -4,7 +4,7 @@
  */
 
 import { loadPrefectureCodes, loadCityNames } from "./areaCodes.js";
-import { INTENSITY_CONFIG, LPGM_CONFIG } from "./constants";
+import { INTENSITY_CONFIG, LPGM_CONFIG } from "./constants.js";
 
 
 

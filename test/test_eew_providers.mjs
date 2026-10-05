@@ -643,4 +643,98 @@ assert.strictEqual(shouldDisplayEew(testEew4, true), true, "Test EEW 4 displayed
 
 console.log("✓ Test 14 passed");
 
+// 15. EEW Map User Interaction & Auto fitBounds
+console.log("Test 15: EEW Map user interaction pause and auto fitBounds resume");
+if (!globalThis.document) {
+  globalThis.document = {
+    querySelector: () => null,
+    getElementById: () => ({
+      offsetWidth: 800,
+      classList: { add: () => {}, remove: () => {} },
+      querySelector: () => null,
+    }),
+  };
+}
+
+if (!globalThis.self) {
+  globalThis.self = globalThis;
+}
+const { eewState } = await import("../src/eew/state.js");
+const { onMapInteract, fitBoundsForActiveEew, clearEewMapDisplay } = await import("../src/eew/eewMap.js");
+
+let fittedBoundsCount = 0;
+const mockMap = {
+  fitBounds: () => {
+    fittedBoundsCount++;
+  },
+  getSource: () => null,
+};
+
+eewState.mapInstance = mockMap;
+eewState.featureBounds = {
+  forecast: {
+    "350": [139.0, 35.0, 140.0, 36.0],
+  },
+  cities: {},
+};
+eewState.lastMockObservations = [
+  {
+    areas: [
+      { code: "350", maxInt: "3", cities: [] },
+    ],
+  },
+];
+eewState.lastEpicenterCoords = { longitude: 139.5, latitude: 35.5 };
+eewState.activeEews.set("test-event-1", { msg: {} });
+eewState.isEewMapActive = true;
+
+// Direct fitBounds when not interacting
+fittedBoundsCount = 0;
+fitBoundsForActiveEew();
+assert.strictEqual(fittedBoundsCount, 1, "fitBoundsForActiveEew should trigger map.fitBounds");
+
+// User interacts with map
+onMapInteract();
+assert.strictEqual(eewState.isUserInteractingWithMap, true, "isUserInteractingWithMap should be true after interaction");
+assert.ok(eewState.mapInteractionTimeout != null, "mapInteractionTimeout should be scheduled");
+
+// While interacting, fitBoundsForActiveEew must be paused
+fittedBoundsCount = 0;
+fitBoundsForActiveEew();
+assert.strictEqual(fittedBoundsCount, 0, "fitBounds should be paused while user is interacting");
+
+// Second interaction refreshes the timeout
+const firstTimeout = eewState.mapInteractionTimeout;
+onMapInteract();
+assert.notStrictEqual(eewState.mapInteractionTimeout, firstTimeout, "Subsequent interaction should refresh the timeout");
+
+// Clear map display cancels the timeout and interaction state
+clearEewMapDisplay();
+assert.strictEqual(eewState.isUserInteractingWithMap, false);
+assert.strictEqual(eewState.mapInteractionTimeout, null);
+assert.strictEqual(eewState.isEewMapActive, false);
+assert.strictEqual(eewState.lastMockObservations, null);
+
+// Test auto-resume when timeout fires
+eewState.isEewMapActive = true;
+eewState.lastMockObservations = [
+  { areas: [{ code: "350", maxInt: "3", cities: [] }] },
+];
+onMapInteract();
+assert.strictEqual(eewState.isUserInteractingWithMap, true);
+fittedBoundsCount = 0;
+
+// Fast-forward timeout: clear and invoke manually to verify auto-resume behavior
+clearTimeout(eewState.mapInteractionTimeout);
+eewState.isUserInteractingWithMap = false;
+eewState.mapInteractionTimeout = null;
+fitBoundsForActiveEew();
+assert.strictEqual(fittedBoundsCount, 1, "Map should automatically fit bounds back once interaction ends");
+
+// Clean up
+clearEewMapDisplay();
+eewState.activeEews.clear();
+console.log("✓ Test 15 passed");
+
 console.log("\n=== ALL TESTS PASSED SUCCESSFULLY! ===");
+

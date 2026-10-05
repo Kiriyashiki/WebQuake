@@ -316,6 +316,11 @@ export function renderCurrentEew() {
       }
       globalThis.__currentReport = null;
       eewState.isEewMapActive = true;
+      if (eewState.mapInteractionTimeout) {
+        clearTimeout(eewState.mapInteractionTimeout);
+        eewState.mapInteractionTimeout = null;
+      }
+      eewState.isUserInteractingWithMap = false;
       renderEewInfoBox(
         msg,
         isCancelled,

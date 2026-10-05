@@ -1,4 +1,5 @@
 import "../styles/index.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { initLogger } from "./logger.js";
 import { fetchEarthquakeReports } from "./parseReports.js";
 import {

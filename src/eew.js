@@ -25,7 +25,7 @@ import {
 } from "./eew/eewUI.js";
 
 export { isPlumEew } from "./eewProviders.js";
-export { clearEewMapDisplay, getIsEewMapActive } from "./eew/eewMap.js";
+export { clearEewMapDisplay, getIsEewMapActive, fitBoundsForActiveEew } from "./eew/eewMap.js";
 export { getShowTestEew, setShowTestEew, updateHomeIntensityForActiveEews };
 
 /**
@@ -276,6 +276,14 @@ export function initEewSettings(map, bounds, cities, areas) {
   map.on("mousedown", onMapInteract);
   map.on("wheel", onMapInteract);
   map.on("touchstart", onMapInteract);
+  map.on("drag", onMapInteract);
+  map.on("dragend", onMapInteract);
+  map.on("movestart", (e) => {
+    if (e.originalEvent) onMapInteract();
+  });
+  map.on("moveend", (e) => {
+    if (e.originalEvent) onMapInteract();
+  });
 
   const eewStatusContainer = document.getElementById("eew-status-container");
   if (eewStatusContainer) {

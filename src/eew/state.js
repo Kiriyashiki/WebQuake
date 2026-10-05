@@ -11,6 +11,8 @@ export const eewState = {
   isEewMapActive: false,
   isUserInteractingWithMap: false,
   mapInteractionTimeout: null,
+  lastMockObservations: null,
+  lastEpicenterCoords: null,
   previousReport: null,
   carouselIndex: 0,
   carouselTimer: null,

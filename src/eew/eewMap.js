@@ -13,7 +13,7 @@ import {
   fitBoundsToObservations,
   hideHomeLocationIntensity,
 } from "../map.js";
-import { updateMapLegend } from "../main.js";
+import { updateMapLegend } from "../mapInfoBox.js";
 import {
   mergeForecasts,
   calculateGmpe,
@@ -28,14 +28,52 @@ import { getActiveProvider, isPlumEew } from "../eewProviders.js";
  * Tracks user map interaction to avoid snapping camera view.
  */
 export function onMapInteract() {
-  if (!eewState.isEewMapActive) return;
+  if (
+    !eewState.isEewMapActive ||
+    eewState.activeEews.size === 0 ||
+    document.querySelector(".eq-item.active")
+  ) {
+    return;
+  }
   eewState.isUserInteractingWithMap = true;
   if (eewState.mapInteractionTimeout) {
     clearTimeout(eewState.mapInteractionTimeout);
   }
   eewState.mapInteractionTimeout = setTimeout(() => {
     eewState.isUserInteractingWithMap = false;
+    eewState.mapInteractionTimeout = null;
+    fitBoundsForActiveEew();
   }, 10000);
+}
+
+/**
+ * Fits the map view to the current active EEW's forecast observations and epicenter.
+ */
+export function fitBoundsForActiveEew() {
+  if (
+    !eewState.mapInstance ||
+    !eewState.isEewMapActive ||
+    eewState.activeEews.size === 0 ||
+    document.querySelector(".eq-item.active") ||
+    eewState.isUserInteractingWithMap ||
+    !eewState.featureBounds
+  ) {
+    return;
+  }
+
+  if (eewState.lastMockObservations) {
+    fitBoundsToObservations(
+      eewState.mapInstance,
+      eewState.lastMockObservations,
+      eewState.featureBounds,
+      false,
+      "1",
+      eewState.lastEpicenterCoords,
+      6.5,
+    );
+  } else {
+    updateMapForEew();
+  }
 }
 
 /**
@@ -52,6 +90,8 @@ export function getIsEewMapActive() {
 export function clearEewMapDisplay() {
   eewState.isEewMapActive = false;
   eewState.isUserInteractingWithMap = false;
+  eewState.lastMockObservations = null;
+  eewState.lastEpicenterCoords = null;
 
   const testBanner = document.getElementById("eew-test-banner");
   if (testBanner) {
@@ -262,6 +302,7 @@ export function updateMapForEew() {
       }
       mockObservations.push(prefMock);
     }
+    eewState.lastMockObservations = mockObservations;
 
     console.debug("[eq-viewer-eew] updateMapForEew Phase 2: highlighting observations");
     highlightObservations(eewState.mapInstance, mockObservations);
@@ -331,6 +372,10 @@ export function updateMapForEew() {
         }
       }
 
+      eewState.lastEpicenterCoords = hasValidEpicenter
+        ? { longitude: minLng, latitude: minLat }
+        : null;
+
       console.debug("[eq-viewer-eew] updateMapForEew Phase 3: fitting bounds");
       if (!eewState.isUserInteractingWithMap && eewState.featureBounds) {
         fitBoundsToObservations(
@@ -339,7 +384,7 @@ export function updateMapForEew() {
           eewState.featureBounds,
           false,
           "1",
-          hasValidEpicenter ? { longitude: minLng, latitude: minLat } : null,
+          eewState.lastEpicenterCoords,
           6.5,
         );
       }
