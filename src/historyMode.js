@@ -741,10 +741,15 @@ export function buildHistoryBaseReport(event, areaCodes = new Map()) {
   const magNum = event?.mag != null && event?.mag !== '' ? Number.parseFloat(event.mag) : null;
   const magnitude = (magNum !== null && !Number.isNaN(magNum)) ? magNum : null;
 
-  const lat = event?.lat != null && event?.lat !== '' ? Number.parseFloat(event.lat) : null;
-  const lon = event?.lon != null && event?.lon !== '' ? Number.parseFloat(event.lon) : null;
+  const latStr = event?.lat != null && event?.lat !== '' ? String(event.lat) : null;
+  const lonStr = event?.lon != null && event?.lon !== '' ? String(event.lon) : null;
+  const lat = latStr !== null ? Number.parseFloat(latStr) : null;
+  const lon = lonStr !== null ? Number.parseFloat(lonStr) : null;
+  const latDec = latStr && latStr.includes('.') ? latStr.split('.')[1].length : 0;
+  const lonDec = lonStr && lonStr.includes('.') ? lonStr.split('.')[1].length : 0;
+  const accuracy = (latDec || lonDec) ? Math.max(latDec, lonDec) : 3;
   const coordinates = (lat !== null && lon !== null && !Number.isNaN(lat) && !Number.isNaN(lon))
-    ? { latitude: lat, longitude: lon }
+    ? { latitude: lat, longitude: lon, accuracy }
     : null;
 
   const depthMatch = event?.dep ? /(\d+)/.exec(String(event.dep)) : null;

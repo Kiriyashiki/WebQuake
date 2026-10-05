@@ -1,6 +1,7 @@
 node_modules/
 dist/
 release/
+.vscode/
 *.tar.gz
 *.zip
 test/package-lock.json

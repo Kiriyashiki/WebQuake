@@ -51,6 +51,10 @@ export function buildStyle(useCityAreas = true) {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
       },
+      "epicenter-box": {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      },
     },
     layers: [
       // Ocean / void background
@@ -268,6 +272,17 @@ export function buildStyle(useCityAreas = true) {
           "line-color": "#e74c3c", // Red for S wave
           "line-width": 2,
           "line-opacity": ["get", "opacity"],
+        },
+      },
+      {
+        id: "epicenter-box-line",
+        type: "line",
+        source: "epicenter-box",
+        minzoom: 10,
+        paint: {
+          "line-color": "#74849a",
+          "line-width": 1.5,
+          "line-dasharray": [3, 4],
         },
       },
     ],

@@ -725,8 +725,12 @@ export {
   removeEpicenterMarker,
   displayEpicenter,
   clearEpicenter,
-  displayAllEpicenters,
   clearAllEpicenters,
+  getCoordinateAccuracy,
+  calculateEpicenterAccuracyBox,
+  ensureEpicenterBoxLayers,
+  updateEpicenterBox,
+  clearEpicenterBox,
 } from "./map/mapMarkers.js";
 
 export {

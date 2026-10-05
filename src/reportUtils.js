@@ -4,6 +4,7 @@
  */
 
 import JMAEarthquakeReport from './jmaEarthquakeReport.js';
+import { parseCoordinates, parseDepth } from './geoUtils.js';
 
 /**
  * Fetches and parses a JSON feed, returning an array of entry objects.
@@ -190,16 +191,8 @@ export function buildFlashEpicenterReport(feedEntry, areaCodes, priorObservation
   let coordinates = null;
   let depth = null;
   if (feedEntry.cod) {
-    const match = /^([+-]\d+(?:\.\d+)?)([+-]\d+(?:\.\d+)?)(?:([+-]\d+(?:\.\d+)?))?\/$/u.exec(feedEntry.cod);
-    if (match) {
-      coordinates = {
-        latitude: Number.parseFloat(match[1]),
-        longitude: Number.parseFloat(match[2]),
-      };
-      if (match[3]) {
-        depth = Math.abs(Number.parseFloat(match[3])) / 1000;
-      }
-    }
+    coordinates = parseCoordinates(feedEntry.cod);
+    depth = parseDepth(feedEntry.cod);
   }
 
   // Resolve hypocenter name from area code

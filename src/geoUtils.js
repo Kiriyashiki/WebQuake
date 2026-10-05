@@ -40,36 +40,46 @@ export function parseCoordinates(cod) {
   const [, s1, int1, frac1 = "", s2, int2, frac2 = ""] = match;
 
   let latitude;
+  let latAccuracy = 0;
   if (int1.length === 4) {
     const deg = Number.parseInt(int1.slice(0, 2), 10);
     const min = Number.parseFloat(int1.slice(2) + frac1);
     latitude = (s1 === "-" ? -1 : 1) * (deg + min / 60);
+    latAccuracy = frac1 ? 3 : 2;
   } else if (int1.length === 6) {
     const deg = Number.parseInt(int1.slice(0, 2), 10);
     const min = Number.parseInt(int1.slice(2, 4), 10);
     const sec = Number.parseFloat(int1.slice(4) + frac1);
     latitude = (s1 === "-" ? -1 : 1) * (deg + min / 60 + sec / 3600);
+    latAccuracy = 4;
   } else {
     latitude = Number.parseFloat(s1 + int1 + frac1);
+    latAccuracy = frac1 ? frac1.length - 1 : 0;
   }
 
   let longitude;
+  let lonAccuracy = 0;
   if (int2.length === 5) {
     const deg = Number.parseInt(int2.slice(0, 3), 10);
     const min = Number.parseFloat(int2.slice(3) + frac2);
     longitude = (s2 === "-" ? -1 : 1) * (deg + min / 60);
+    lonAccuracy = frac2 ? 3 : 2;
   } else if (int2.length === 7) {
     const deg = Number.parseInt(int2.slice(0, 3), 10);
     const min = Number.parseInt(int2.slice(3, 5), 10);
     const sec = Number.parseFloat(int2.slice(5) + frac2);
     longitude = (s2 === "-" ? -1 : 1) * (deg + min / 60 + sec / 3600);
+    lonAccuracy = 4;
   } else {
     longitude = Number.parseFloat(s2 + int2 + frac2);
+    lonAccuracy = frac2 ? frac2.length - 1 : 0;
   }
 
   if (Number.isNaN(latitude) || Number.isNaN(longitude)) return null;
 
-  return { latitude, longitude };
+  const accuracy = Math.max(latAccuracy, lonAccuracy);
+
+  return { latitude, longitude, accuracy };
 }
 
 // Aliases for backward compatibility
