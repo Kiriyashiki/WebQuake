@@ -267,6 +267,13 @@ let _shakemapVisible = false;
 let _shakemapStationInfo = new Map();
 
 /**
+ * Set of currently highlighted shakemap station IDs (clean names).
+ * Used to explicitly clear feature states when resetting.
+ * @type {Set<string>}
+ */
+let _activeShakemapStations = new Set();
+
+/**
  * Updates the visibility of city areas vs forecast areas layers.
  * Also tracks internal state for mouse interactions.
  * @param {maplibregl.Map} map
@@ -533,21 +540,14 @@ export function isShakemapVisible() {
 }
 
 /**
- * Highlights shakemap features by matching station names from observations.
- * Stations are matched by Japanese name (with ＊/* stripped).
- *
- * @param {maplibregl.Map} map
- * @param {Array|null} observations - Parsed observations (Pref → Area → City → stations)
+ * Collects all stations from observations into a name→{int, ja, en} map.
+ * @param {Array|null} observations
+ * @returns {Map<string, {int: string, ja: string, en: string}>}
  */
-export function highlightShakemapObservations(map, observations) {
-  // Clear previous shakemap highlights
-  clearShakemapHighlights(map);
-  _shakemapStationInfo.clear();
-
-  if (!observations) return;
-
-  // 1. Collect all stations from the observations into a name→{int, enName} map
+function _collectStationsFromObservations(observations) {
   const stationsByName = new Map();
+  if (!observations) return stationsByName;
+
   for (const pref of observations) {
     for (const area of pref.areas) {
       for (const city of area.cities) {
@@ -581,22 +581,45 @@ export function highlightShakemapObservations(map, observations) {
     }
   }
 
-  if (stationsByName.size === 0) return;
+  return stationsByName;
+}
 
-  if (!highlightShakemapObservations._active) {
-    highlightShakemapObservations._active = [];
+/**
+ * Highlights shakemap features by matching station names from observations.
+ * Stations are matched by Japanese name (with ＊/* stripped).
+ *
+ * @param {maplibregl.Map} map
+ * @param {Array|null} observations - Parsed observations (Pref → Area → City → stations)
+ */
+export function highlightShakemapObservations(map, observations) {
+  // Clear previous shakemap highlights first
+  clearShakemapHighlights(map);
+
+  if (!map?.isStyleLoaded?.()) {
+    map.once("idle", () => {
+      highlightShakemapObservations(map, observations);
+    });
+    return;
   }
 
-  // 2. Set feature state directly using the station name as the ID
+  if (!observations) return;
+
+  const stationsByName = _collectStationsFromObservations(observations);
+  if (stationsByName.size === 0) return;
+
+  // Set feature state directly using the station name as the ID
   for (const [cleanName, stationData] of stationsByName.entries()) {
     map.setFeatureState(
       { source: "shakemap", id: cleanName },
       { highlighted: true, intensity: stationData.int },
     );
 
+    _activeShakemapStations.add(cleanName);
     // Store info for tooltip lookups
     _shakemapStationInfo.set(cleanName, { ja: stationData.ja, en: stationData.en });
   }
+
+  highlightShakemapObservations._active = Array.from(_activeShakemapStations);
 }
 
 /**
@@ -604,13 +627,22 @@ export function highlightShakemapObservations(map, observations) {
  * @param {maplibregl.Map} map
  */
 export function clearShakemapHighlights(map) {
-  if (map?.isStyleLoaded?.()) {
+  if (map?.getSource?.("shakemap")) {
     try {
-      if (map.getSource("shakemap")) {
-        map.removeFeatureState({ source: "shakemap" });
+      for (const stationId of _activeShakemapStations) {
+        map.setFeatureState(
+          { source: "shakemap", id: stationId },
+          { highlighted: false, intensity: null, hover: false },
+        );
+        map.removeFeatureState({ source: "shakemap", id: stationId });
       }
     } catch (_) {}
+
+    try {
+      map.removeFeatureState({ source: "shakemap" });
+    } catch (_) {}
   }
+  _activeShakemapStations.clear();
   highlightShakemapObservations._active = [];
   _shakemapStationInfo.clear();
 }

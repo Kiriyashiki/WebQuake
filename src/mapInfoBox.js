@@ -314,8 +314,8 @@ export function displayMapInfoBox(report, map) {
 
         if (isCurrentlyActive) {
           shakemapWrapper.classList.remove("active");
-          updateShakemapVisibility(map, false);
           clearShakemapHighlights(map);
+          updateShakemapVisibility(map, false);
 
           if (report.isFlashReport) {
             updateCityAreasVisibility(map, false);

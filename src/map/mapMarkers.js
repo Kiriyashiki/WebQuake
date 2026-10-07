@@ -51,7 +51,6 @@ export function getCoordinateAccuracy(coordinates) {
  * } | null}
  */
 export function calculateEpicenterAccuracyBox(latitude, longitude, accuracy) {
-  console.debug(accuracy);
   if (
     typeof latitude !== "number" ||
     typeof longitude !== "number" ||

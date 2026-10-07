@@ -167,9 +167,9 @@ async function boot() {
     globalThis.__currentReport = report;
     clearAllEpicenters(map);
 
+    clearShakemapHighlights(map);
     if (isShakemapVisible()) {
       updateShakemapVisibility(map, false);
-      clearShakemapHighlights(map);
     }
 
     if (isLpgmVisible()) {
