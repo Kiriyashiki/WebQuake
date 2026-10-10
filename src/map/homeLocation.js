@@ -185,6 +185,45 @@ export function displayHomeLocationIntensity(cityCode, observations, cityNames) 
 }
 
 /**
+ * Display the home location intensity directly with a given intensity value.
+ * @param {string} cityCode - The city code (7-digit string)
+ * @param {string} intensity - Intensity string (e.g., "5+", "4", "0")
+ * @param {Map} cityNames - City name mappings
+ */
+export function displayHomeLocationDirectIntensity(cityCode, intensity, cityNames) {
+  const display = document.getElementById("home-intensity-display");
+  if (!display || !cityCode) return;
+
+  const cityCodeStr = String(cityCode).padStart(7, "0");
+  const cityInfo = cityNames?.get(cityCodeStr);
+  if (!cityInfo) {
+    display.classList.add("hidden");
+    return;
+  }
+
+  display.querySelector(".tooltip-ja").textContent = cityInfo.ja;
+  display.querySelector(".tooltip-en").textContent = cityInfo.en;
+
+  const intensityContainer = display.querySelector(".tooltip-intensity-container");
+  const hasIntensity = Boolean(intensity && intensity !== "0" && INTENSITY_CONFIG[intensity]);
+  const displayIntensity = hasIntensity ? intensity : "0";
+  const config = INTENSITY_CONFIG[displayIntensity] || INTENSITY_CONFIG[0];
+
+  if (intensityContainer) {
+    renderIntensityBadge(intensityContainer, displayIntensity, {
+      title: hasIntensity ? `Intensity: ${intensity}` : undefined,
+    });
+    intensityContainer.classList.remove("hidden");
+  }
+
+  display.style.borderTopColor = config.color;
+  const codeEl = display.querySelector(".tooltip-code");
+  if (codeEl) codeEl.style.color = config.color;
+
+  display.classList.remove("hidden");
+}
+
+/**
  * Hide the home location intensity display.
  */
 export function hideHomeLocationIntensity() {

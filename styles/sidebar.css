@@ -220,7 +220,7 @@
 
 .history-search-btn {
   width: 100%;
-  padding: 10px;
+  padding: 4px;
   border-radius: 4px;
   border: 1px solid rgba(240, 165, 0, 0.4);
   background: rgba(240, 165, 0, 0.1);
@@ -254,7 +254,7 @@
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-muted);
-  padding: 6px 0 2px;
+  padding: 0 0 2px 2px;
   letter-spacing: 0.03em;
 }
 
@@ -345,6 +345,18 @@
   transition: background-color 0.15s, border-color 0.15s;
   display: flex;
   border-width: 2px;
+}
+
+.city-events-list .eq-item {
+  padding: 4px 8px;
+}
+
+.city-events-list .eq-content {
+  gap: 2px;
+}
+
+.city-events-list .eq-left {
+  gap: 0;
 }
 
 .eq-item:hover {

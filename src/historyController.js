@@ -6,20 +6,54 @@ import {
   fetchEqdbMaxDate,
   EQDB_MIN_DATE,
 } from "./historyMode.js";
-import { createReportItem } from "./sidebarUI.js";
+import { createReportItem, getCityAreasState } from "./sidebarUI.js";
+import { loadCityForecastMapCsv } from "./areaCodes.js";
+import {
+  clearMapHighlights,
+  paintCitiesMaxIntensity,
+  clearEpicenter,
+  clearAllEpicenters,
+  clearEpicenterBox,
+  fitBoundsToJapan,
+  clearShakemapHighlights,
+  isShakemapVisible,
+  updateShakemapVisibility,
+  isLpgmVisible,
+  updateLpgmVisibility,
+} from "./map.js";
+import { updateMapLegend } from "./mapInfoBox.js";
+import {
+  fetchMunicipalitiesMaximum,
+  parseCityForecastMap,
+  renderPerCityObservationList,
+  updatePerCityHomeLocationDisplay,
+  createCityEventsManager,
+} from "./perCityView.js";
 
 /**
  * Initializes History Mode tab switching, preset buttons, search controls, and report loading.
  * @param {Object} options
+ * @param {maplibregl.Map} [options.map]
  * @param {Map} options.areaCodes
+ * @param {Map} [options.cityNames]
+ * @param {Map} [options.prefectureCodes]
+ * @param {Object} [options.featureBounds]
  * @param {Function} options.onReportSelect
  */
-export function initHistoryController({ areaCodes, onReportSelect }) {
+export function initHistoryController({
+  map,
+  areaCodes,
+  cityNames,
+  prefectureCodes,
+  featureBounds,
+  onReportSelect,
+}) {
   let historyReports = [];
   let _historyCachedEventList = null;
   let _historyLoadedCount = 0;
   let _currentHistoryPreset = "year";
   let _eqdbMaxDate = null;
+  let _cityEventsManager = null;
 
   // ─── Sidebar Tab Switching ─────────────────────────────────────────────────
   const tabButtons = document.querySelectorAll(".sidebar-tab");
@@ -36,6 +70,13 @@ export function initHistoryController({ areaCodes, onReportSelect }) {
 
       // Show/hide content (no clearing — preserves DOM)
       if (tabName === "live") {
+        globalThis.__isPerCityTabActive = false;
+        globalThis.__isPerCityModeActive = false;
+        if (_cityEventsManager) {
+          _cityEventsManager.hide();
+        }
+        const historyList = document.getElementById("history-list");
+        if (historyList) historyList.style.display = "";
         liveTabContent.classList.add("active");
         historyTabContent.classList.remove("active");
       } else {
@@ -67,7 +108,21 @@ export function initHistoryController({ areaCodes, onReportSelect }) {
       } else {
         customFields.classList.add("hidden");
         // Populate fields from preset so they're visible if user switches to custom later
-        _applyPresetToFields(preset);
+        if (preset !== "per-city" && preset !== "city") {
+          _applyPresetToFields(preset);
+        }
+      }
+
+      if (preset === "per-city" || preset === "city") {
+        _executePerCityMaximum();
+      } else {
+        globalThis.__isPerCityTabActive = false;
+        globalThis.__isPerCityModeActive = false;
+        if (_cityEventsManager) {
+          _cityEventsManager.hide();
+        }
+        const historyList = document.getElementById("history-list");
+        if (historyList) historyList.style.display = "";
       }
     });
   });
@@ -156,11 +211,227 @@ export function initHistoryController({ areaCodes, onReportSelect }) {
     };
   }
 
+  let _cityToAreaMap = null;
+
+  async function _getCityToAreaMap() {
+    if (!_cityToAreaMap) {
+      const csv = await loadCityForecastMapCsv();
+      _cityToAreaMap = parseCityForecastMap(csv);
+    }
+    return _cityToAreaMap;
+  }
+
+  function _restorePerCityOverview() {
+    globalThis.__isPerCityModeActive = true;
+    globalThis.__currentReport = null;
+
+    if (map) {
+      clearMapHighlights(map);
+      clearEpicenter(map);
+      clearAllEpicenters(map);
+      clearEpicenterBox(map);
+      clearShakemapHighlights(map);
+      if (isShakemapVisible()) {
+        updateShakemapVisibility(map, false);
+      }
+      if (isLpgmVisible()) {
+        updateLpgmVisibility(map, false);
+        updateMapLegend(false);
+      }
+      if (getCityAreasState() && globalThis.__perCityMunicipalities) {
+        paintCitiesMaxIntensity(map, globalThis.__perCityMunicipalities);
+      }
+      updatePerCityHomeLocationDisplay(globalThis.__perCityMunicipalities, cityNames);
+      fitBoundsToJapan(map);
+    }
+
+    const infoBox = document.getElementById("map-info-box");
+    if (infoBox) {
+      infoBox.classList.add("hidden");
+    }
+
+    document.querySelectorAll(".eq-item").forEach((item) => item.classList.remove("active"));
+  }
+
+  function _getCityEventsManager() {
+    if (!_cityEventsManager) {
+      const historyList = document.getElementById("history-list");
+      _cityEventsManager = createCityEventsManager({
+        historyList,
+        areaCodes,
+        cityNames,
+        onReportSelect,
+        onBack: () => {
+          _restorePerCityOverview();
+        },
+      });
+    }
+    return _cityEventsManager;
+  }
+
+  globalThis.__onCitySelect = (cityCode, { zoom = false } = {}) => {
+    if (!globalThis.__isPerCityTabActive) return;
+
+    // If an earthquake report was currently active on map, clear it and restore max intensity paints
+    if (globalThis.__currentReport) {
+      globalThis.__currentReport = null;
+      if (map) {
+        clearEpicenter(map);
+        clearAllEpicenters(map);
+        clearEpicenterBox(map);
+        clearMapHighlights(map);
+        clearShakemapHighlights(map);
+        if (getCityAreasState() && globalThis.__perCityMunicipalities) {
+          paintCitiesMaxIntensity(map, globalThis.__perCityMunicipalities);
+        }
+      }
+      const infoBox = document.getElementById("map-info-box");
+      if (infoBox) {
+        infoBox.classList.add("hidden");
+      }
+    }
+
+    if (zoom && map && featureBounds?.cities?.[cityCode]) {
+      const bbox = featureBounds.cities[cityCode];
+      if (bbox) {
+        map.fitBounds(
+          [
+            [bbox[0], bbox[1]],
+            [bbox[2], bbox[3]],
+          ],
+          {
+            padding: { top: 60, bottom: 60, left: 70, right: 60 },
+            maxZoom: 8,
+            essential: true,
+          }
+        );
+      }
+    }
+
+    const manager = _getCityEventsManager();
+    manager.showCityEvents(cityCode);
+  };
+
+  /**
+   * Fetches per-city maximum intensity records from local EQDB API server,
+   * updates the map and home location, and renders the observation list.
+   */
+  async function _executePerCityMaximum() {
+    const historyList = document.getElementById("history-list");
+    const loadingContainer = document.getElementById("history-loading-container");
+    const progressEl = document.getElementById("history-loading-progress");
+
+    if (!historyList) return;
+
+    globalThis.__isPerCityTabActive = true;
+    globalThis.__isPerCityModeActive = true;
+    globalThis.__currentReport = null;
+
+    if (_cityEventsManager) {
+      _cityEventsManager.hide();
+    }
+    historyList.style.display = "";
+
+    // Deselect any active report in list
+    document.querySelectorAll(".eq-item").forEach((item) => item.classList.remove("active"));
+
+    // Hide map info box display
+    const infoBox = document.getElementById("map-info-box");
+    if (infoBox) {
+      infoBox.classList.add("hidden");
+    }
+
+    // Clear map display of intensity color paints and epicenter markers
+    if (map) {
+      clearMapHighlights(map);
+      clearEpicenter(map);
+      clearAllEpicenters(map);
+      clearEpicenterBox(map);
+      clearShakemapHighlights(map);
+      if (isShakemapVisible()) {
+        updateShakemapVisibility(map, false);
+      }
+      if (isLpgmVisible()) {
+        updateLpgmVisibility(map, false);
+        updateMapLegend(false);
+      }
+      fitBoundsToJapan(map);
+    }
+
+    if (searchBtn) {
+      searchBtn.classList.add("loading");
+      searchBtn.textContent = "Loading... · 読み込み中...";
+    }
+    if (loadingContainer) loadingContainer.classList.remove("hidden");
+    if (progressEl) progressEl.textContent = "Loading... · 読み込み中...";
+
+    historyList.innerHTML = "";
+    historyReports = [];
+    _historyLoadedCount = 0;
+    _historyCachedEventList = null;
+    if (loadMoreBtn) loadMoreBtn.style.display = "none";
+
+    const existingSummary = historyList.parentNode.querySelector(".history-results-summary");
+    if (existingSummary) existingSummary.remove();
+
+    try {
+      const [municipalities, cityToAreaMap] = await Promise.all([
+        fetchMunicipalitiesMaximum(),
+        _getCityToAreaMap(),
+      ]);
+
+      globalThis.__perCityMunicipalities = municipalities;
+
+      // If cities mode is on, paint each city area on map with its max_intensity
+      if (getCityAreasState() && map) {
+        paintCitiesMaxIntensity(map, municipalities);
+      }
+
+      // Home location display should also show max_intensity for it
+      updatePerCityHomeLocationDisplay(municipalities, cityNames);
+
+      // Render hierarchical observation list grouped by intensity
+      renderPerCityObservationList(historyList, municipalities, {
+        cityToAreaMap,
+        prefectureCodes,
+        areaCodes,
+        cityNames,
+        map,
+        featureBounds,
+        onCitySelect: (cityCode, options) => {
+          globalThis.__onCitySelect?.(cityCode, options);
+        },
+      });
+
+      const summaryEl = document.createElement("div");
+      summaryEl.className = "history-results-summary";
+      summaryEl.textContent = `${municipalities.length} municipalities · 市区町村別最大観測震度`;
+      historyList.before(summaryEl);
+    } catch (err) {
+      console.error("[eq-viewer] Failed to load per-city maximum:", err);
+      historyList.innerHTML = `
+        <li class="eq-item placeholder">
+          <span class="mono muted">Failed to load per-city data · 市区町村データの読み込みに失敗しました</span>
+        </li>
+      `;
+    } finally {
+      if (loadingContainer) loadingContainer.classList.add("hidden");
+      if (searchBtn) {
+        searchBtn.classList.remove("loading");
+        searchBtn.textContent = "Search · 検索";
+      }
+    }
+  }
+
   // Search button handler
   if (searchBtn) {
     searchBtn.addEventListener("click", () => {
       if (searchBtn.classList.contains("loading")) return;
-      _executeHistorySearch();
+      if (_currentHistoryPreset === "per-city" || _currentHistoryPreset === "city") {
+        _executePerCityMaximum();
+      } else {
+        _executeHistorySearch();
+      }
     });
   }
 
@@ -172,11 +443,27 @@ export function initHistoryController({ areaCodes, onReportSelect }) {
     });
   }
 
+  // Sort change handler for active city events
+  const sortEl = document.getElementById("history-sort");
+  if (sortEl) {
+    sortEl.addEventListener("change", () => {
+      if (globalThis.__isPerCityTabActive && _cityEventsManager?.isShowing()) {
+        _cityEventsManager.reloadCurrentCity();
+      }
+    });
+  }
+
   /**
    * Executes a new history search: clears old results, fetches event list, loads first 50.
    */
   async function _executeHistorySearch() {
+    globalThis.__isPerCityTabActive = false;
+    globalThis.__isPerCityModeActive = false;
+    if (_cityEventsManager) {
+      _cityEventsManager.hide();
+    }
     const historyList = document.getElementById("history-list");
+    if (historyList) historyList.style.display = "";
     const loadingContainer = document.getElementById("history-loading-container");
     const progressEl = document.getElementById("history-loading-progress");
 
@@ -312,6 +599,7 @@ export function initHistoryController({ areaCodes, onReportSelect }) {
     let fetchPromise = null;
 
     const item = createReportItem(report, null, async (itemEl) => {
+      globalThis.__isPerCityModeActive = false;
       const allItems = document.querySelectorAll(".eq-item");
       allItems.forEach((i) => i.classList.remove("active"));
 

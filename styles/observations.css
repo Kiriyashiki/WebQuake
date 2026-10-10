@@ -159,6 +159,7 @@
 .observation-dot {
   color: var(--border-hi);
   font-weight: bold;
+  font-size: 12px;
 }
 
 .observation-en {
@@ -231,3 +232,124 @@
 .lpgm-toggle-label {
   text-align: center;
 }
+
+/* ── Per-City Events View ────────────────────────────────────────── */
+
+.city-events-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.city-events-container.hidden {
+  display: none !important;
+}
+
+.city-events-header {
+  padding: 4px;
+  background: var(--bg-panel2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.city-events-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.city-events-ja {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.city-events-dot {
+  color: var(--border-hi);
+  font-weight: bold;
+}
+
+.city-events-en {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.city-events-sub-row {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.city-events-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0;
+  margin: 0;
+}
+
+.city-event-intensity-row {
+  display: flex;
+  align-items: center;
+  margin: 2px 0;
+}
+
+.city-event-intensity-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.city-events-load-more-btn {
+  margin-top: 6px;
+  margin-bottom: 4px;
+}
+
+.city-events-back-bar {
+  position: sticky;
+  bottom: -12px;
+  padding: 2px 0 2px 0;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border);
+  z-index: 20;
+  margin-top: 6px;
+}
+
+.city-events-back-btn {
+  width: 100%;
+  padding: 4px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.city-events-back-btn:hover {
+  background: var(--bg-panel);
+  border-color: var(--border-hi);
+  color: var(--accent2);
+}
+
+.city-events-back-arrow {
+  font-size: 10px;
+}
+

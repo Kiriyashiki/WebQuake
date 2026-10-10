@@ -30,7 +30,7 @@
 131;留萌地方南部;るもいちほうなんぶ;Southern Part of Rumoi
 135;宗谷地方北部;そうやちほうほくぶ;Northern Part of Soya
 136;宗谷地方南部;そうやちほうなんぶ;Southern Part of Soya
-139;北海道利尻礼文;ほっかいどうりしりれぶん;Hokkaido Rishiri Ribun Island 
+139;北海道利尻礼文;ほっかいどうりしりれぶん;Hokkaido Rishiri and Ribun Islands
 140;網走地方;あばしりちほう;Abashiri Region
 141;北見地方;きたみちほう;Kitami Region
 142;紋別地方;もんべつちほう;Mombetsu Region
@@ -161,7 +161,7 @@
 480;伊豆大島近海;いずおおしまきんかい;Sea near Izu Oshima Island 
 481;伊豆半島東方沖;いずはんとうとうほうおき;Off Eastern Coast of Izu Peninsula
 482;三宅島近海;みやけじまきんかい;Sea near Miyakejima Island
-483;新島・神津島近海;にいじま・こうづしまきんかい;Sea near Niijima and Kozu Island
+483;新島・神津島近海;にいじま・こうづしまきんかい;Sea near Niijima and Kozushima Islands
 485;駿河湾;するがわん;Suruga Bay
 486;駿河湾南方沖;するがわんなんぽうおき;South of Suruga Bay
 487;遠州灘;えんしゅうなだ;Enshu Sea
@@ -369,6 +369,6 @@
 978;北極付近;ほっきょくふきん;Near the North Pole
 979;南極付近;なんきょくふきん;Near the South Pole
 999;遠地;えんち;Distant
--1;オホーツク海;おほーつくかい;Okhotsk Sea
--2;千島列島東方;ちしまれっとうとうほう;Eastern Kuril Islands
--99;詳細不明;しょうさいふめい;Details Unknown
+10001;オホーツク海;おほーつくかい;Okhotsk Sea
+10002;千島列島東方;ちしまれっとうとうほう;Eastern Kuril Islands
+10999;詳細不明;しょうさいふめい;Details Unknown

@@ -20,7 +20,11 @@ import { renderIntensityBadge } from "./intensityBadge.js";
 import { updateMapColorStyles } from "./map.js";
 import { refreshAllReportBadges, getHomeLocation, getHomeIntensityState } from "./sidebarUI.js";
 import { refreshInfoBoxColors } from "./mapInfoBox.js";
-import { displayHomeLocationIntensity } from "./map/homeLocation.js";
+import {
+  displayHomeLocationIntensity,
+  displayHomeLocationDirectIntensity,
+} from "./map/homeLocation.js";
+import { eqdbIntensityToShindo } from "./constants.js";
 
 let _editingPresetName = null;
 let _promptResolve = null;
@@ -38,6 +42,16 @@ function refreshHomeLocationIntensity() {
           globalThis.__currentReport.observations,
           globalThis.__cityNames,
         );
+      }
+    } else if (globalThis.__isPerCityModeActive && globalThis.__perCityMunicipalities) {
+      const homeLocation = getHomeLocation();
+      if (homeLocation?.cityCode && globalThis.__cityNames) {
+        const homeCodeStr = String(homeLocation.cityCode).padStart(7, "0");
+        const homeRecord = globalThis.__perCityMunicipalities.find(
+          (c) => String(c.city_code).padStart(7, "0") === homeCodeStr
+        );
+        const homeMaxInt = homeRecord ? (eqdbIntensityToShindo(homeRecord.max_intensity) || "0") : "0";
+        displayHomeLocationDirectIntensity(homeLocation.cityCode, homeMaxInt, globalThis.__cityNames);
       }
     }
   } catch (err) {

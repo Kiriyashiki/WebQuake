@@ -30,13 +30,13 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 3020833;紀の川市貴志川町神戸;きのかわしきしがわちょうこうど;Kinokawa City Kishigawa Town Kodo;34.22;135.31;3020800;0.9317
 3020835;紀の川市西大井;きのかわしにしおおい;Kinokawa City Nishiooi;34.27;135.36;3020800;1.1910
 3020836;紀の川市桃山町元;きのかわしももやまちょうもと;Kinokawa City Momoyama Town Moto;34.24;135.35;3020800;1.6589
-3036231;和歌山広川町広;わかやまひろがわちょうひろ;Wakayama Hirogawa Town Hiro;34.03;135.17;3036100;1.4761
+3036231;和歌山広川町広;わかやまひろがわちょうひろ;Wakayama Hirogawa Town Hiro;34.03;135.17;3036200;1.4761
 3030432;紀美野町神野市場;きみのちょうこうのいちば;Kimino Town Konoichiba City;34.15;135.36;3030400;0.5689
 2921234;宇陀市大宇陀迫間;うだしおおうだはさま;Uda City Odahasama;34.48;135.93;2921200;0.7976
 2921232;宇陀市榛原下井足;うだしはいばらしもいだに;Uda City Haibarashimoidani;34.53;135.95;2921200;0.9054
 2934200;平群町鳴川;へぐりちょうなるかわ;Heguri Town Narukawa;34.66;135.68;2934200;0.5689
 2934230;平群町吉新;へぐりちょうよししん;Heguri Town Yoshishin;34.63;135.70;2934200;0.8794
-2934330;三郷町勢野西;さんごうちょうせやにし;Sango Town Seyanishi;34.60;135.70;2942500;2.0016
+2934330;三郷町勢野西;さんごうちょうせやにし;Sango Town Seyanishi;34.60;135.70;2934300;2.0016
 2934430;斑鳩町法隆寺西;いかるがちょうほうりゅうじにし;Ikaruga Town Horyujinishi;34.61;135.73;2934400;0.8995
 2934530;安堵町東安堵;あんどちょうひがしあんど;Ando Town Higashiando;34.61;135.76;2934500;1.0506
 2936131;奈良川西町結崎;ならかわにしちょうゆうざき;Nara Kawanishi Town Yuzaki;34.58;135.77;2936100;1.1404
@@ -112,7 +112,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 3020636;田辺市東山;たなべしひがしやま;Tanabe City Higashiyama;33.73;135.39;3020600;1.0741
 3020702;新宮市新宮;しんぐうししんぐう;Shingu City Shingu;33.73;135.99;3020700;1.7490
 3020720;新宮市磐盾;しんぐうしいわたて;Shingu City Iwatate;33.72;135.98;3020700;0.9546
-3020730;新宮市熊野川町日足;しんぐうしくまのがわちょうひたり;Shingu City Kumanogawa Town Hitari;33.81;135.87;2421200;1.2344
+3020730;新宮市熊野川町日足;しんぐうしくまのがわちょうひたり;Shingu City Kumanogawa Town Hitari;33.81;135.87;3020700;1.2344
 3040102;白浜町消防本部;しらはまちょうしょうぼうほんぶ;Shirahama Town Fire Department;33.67;135.36;3040100;0.9078
 3040130;白浜町日置;しらはまちょうひき;Shirahama Town Hiki;33.57;135.44;3040100;0.6689
 3040430;上富田町朝来;かみとんだちょうあっそ;Kamitonda Town Asso;33.70;135.43;3040400;1.2826
@@ -123,7 +123,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 3042220;太地町太地暖海公園;たいじちょうたいじあたみこうえん;Taiji Town Taijiatami Park;33.59;135.95;3042200;1.4761
 3042230;太地町役場;たいじちょうやくば;Taiji Town Town Office;33.59;135.94;3042200;0.6689
 3042401;古座川町高池;こざがわちょうたかいけ;Kozagawa Town Takaike;33.53;135.82;3042400;0.6689
-3042730;北山村大沼;きたやまむらおおぬま;Kitayama Village Onuma;33.93;135.97;2421200;1.0131
+3042730;北山村大沼;きたやまむらおおぬま;Kitayama Village Onuma;33.93;135.97;3042700;1.0131
 3120100;鳥取市吉方;とっとりしよしかた;Tottori City Yoshikata;35.49;134.24;3120100;1.7490
 3120120;鳥取市吉成;とっとりしよしなり;Tottori City Yoshinari;35.49;134.22;3120100;2.1584
 3120121;鳥取市鹿野町鹿野小学校;とっとりししかのちょうしかのしょうがっこう;Tottori City Shikano Town Shikano Elementary School;35.46;134.05;3120100;1.1914
@@ -327,9 +327,9 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 3321330;赤磐市町苅田;あかいわしまちかんだ;Akaiwa City Machikanda;34.80;134.01;3321300;1.2059
 3321332;赤磐市周匝;あかいわしすさい;Akaiwa City Susai;34.92;134.09;3321300;0.5689
 3321333;赤磐市松木;あかいわしまつき;Akaiwa City Matsuki;34.79;134.10;3321300;1.3252
-3321600;浅口市天草公園;あさくちしあまくさこうえん;Asakuchi City Amakusa Park;34.53;133.58;3344500;1.3511
+3321600;浅口市天草公園;あさくちしあまくさこうえん;Asakuchi City Amakusa Park;34.53;133.58;3321600;1.3511
 3321632;浅口市寄島町;あさくちしよりしまちょう;Asakuchi City Yorishima Town;34.48;133.59;3321600;1.5657
-3321633;浅口市鴨方町;あさくちしかもがたちょう;Asakuchi City Kamogata Town;34.53;133.585;3344500;1.0272
+3321633;浅口市鴨方町;あさくちしかもがたちょう;Asakuchi City Kamogata Town;34.53;133.585;3321600;1.0272
 3321634;浅口市金光町;あさくちしこんこうちょう;Asakuchi City Konko Town;34.54;133.62;3321600;1.7490
 3310100;岡山北区桑田町;おかやまきたくくわだちょう;Okayama Kita Ward Kuwada Town;34.66;133.92;3310100;1.8123
 3310101;岡山北区足守;おかやまきたくあしもり;Okayama Kita Ward Ashimori;34.73;133.80;3310100;1.2230
@@ -340,7 +340,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 3320936;高梁市松原通;たかはししまつばらどおり;Takahashi City Matsubaradori;34.79;133.62;3320900;1.0662
 3436921;北広島町川小田;きたひろしまちょうかわこだ;Kitahiroshima Town Kawakoda;34.73;132.28;3436900;0.5689
 3420400;三原市円一町;みはらしえんいちちょう;Mihara City En'ichi Town;34.39;133.08;3420400;1.4761
-3410630;広島安佐北区可部南;ひろしまあさきたくかべみなみ;Hiroshima Asa Kita Ward Kabeminami;34.50;132.51;3410500;1.3175
+3410630;広島安佐北区可部南;ひろしまあさきたくかべみなみ;Hiroshima Asa Kita Ward Kabeminami;34.50;132.51;3410600;1.3175
 3410730;広島安芸区中野;ひろしまあきくなかの;Hiroshima Aki Ward Nakano;34.40;132.58;3410700;1.2754
 3410830;広島佐伯区利松;ひろしまさえきくとしまつ;Hiroshima Saeki Ward Toshimatsu;34.40;132.36;3410800;1.3095
 3410832;広島佐伯区湯来町和田;ひろしまさえきくゆきちょうわだ;Hiroshima Saeki Ward Yuki Town Wada;34.49;132.27;3410800;0.5689
@@ -369,7 +369,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 3421335;廿日市市宮島町;はつかいちしみやじまちょう;Hatsukaichi City Miyajima Town;34.30;132.32;3421300;1.4425
 3421336;廿日市市津田;はつかいちしつた;Hatsukaichi City Tsuta;34.37;132.18;3421300;0.9175
 3421337;廿日市市吉和;はつかいちしよしわ;Hatsukaichi City Yoshiwa;34.48;132.14;3421300;0.9017
-3430231;府中町大通り;ふちゅうちょうおおどおり;Fuchu Town Odori;34.39;132.50;3410200;1.7490
+3430231;府中町大通り;ふちゅうちょうおおどおり;Fuchu Town Odori;34.39;132.50;3430200;1.7490
 3420246;呉市安浦町;くれしやすうらちょう;Kure City Yasura Town;34.28;132.74;3420200;1.5657
 3436931;北広島町大朝;きたひろしまちょうおおあさ;Kitahiroshima Town Ooasa;34.77;132.46;3436900;0.8732
 3410430;広島西区己斐;ひろしまにしくこい;Hiroshima Nishi Ward Koi;34.41;132.42;3410400;0.5689
@@ -545,7 +545,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 2714631;大阪堺市北区新金岡町;おおさかさかいしきたくしんかなおかちょう;Osaka Sakai City Kita Ward Shinkanaoka Town;34.57;135.52;2714600;1.3448
 2714531;大阪堺市南区桃山台;おおさかさかいしみなみくももやまだい;Osaka Sakai City Minami Ward Momoyamadai;34.49;135.49;2714500;1.1838
 2321100;豊田市小坂本町;とよたしこざかほんまち;Toyota City Kozakahon Town;35.09;137.15;2321100;1.2966
-2321101;豊田市大洞町;とよたしおおぼらちょう;Toyota City Obora Town;35.27;137.25;2121200;0.5689
+2321101;豊田市大洞町;とよたしおおぼらちょう;Toyota City Obora Town;35.27;137.25;2321100;0.5689
 2321120;豊田市小坂町;とよたしこざかちょう;Toyota City Kozaka Town;35.08;137.15;2321100;1.0114
 2321121;豊田市藤岡飯野町;とよたしふじおかいいのちょう;Toyota City Fujiokaiino Town;35.20;137.21;2321100;0.8973
 2321137;豊田市大沼町;とよたしおおぬまちょう;Toyota City Onuma Town;35.04;137.32;2321100;0.5689
@@ -565,7 +565,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 2321334;西尾市西幡豆町;にしおしにしはずちょう;Nishio City Nishihazu Town;34.79;137.13;2321300;1.0323
 2321335;西尾市吉良町;にしおしきらちょう;Nishio City Kira Town;34.80;137.07;2321300;1.9393
 2321336;西尾市矢曽根町;にしおしやぞねちょう;Nishio City Yazone Town;34.86;137.05;2321300;2.2090
-2321531;犬山市五郎丸;いぬやましごろうまる;Inuyama City Goromaru;35.36;136.94;2336100;1.0183
+2321531;犬山市五郎丸;いぬやましごろうまる;Inuyama City Goromaru;35.36;136.94;2321500;1.0183
 2321601;中部国際空港;ちゅうぶこくさいくうこう;Chubu International Airport;34.86;136.81;2321600;1.6965
 2321602;常滑市飛香台;とこなめしあすかだい;Tokoname City Asukadai;34.89;136.85;2321600;0.9697
 2321731;愛知江南市赤童子町;あいちこうなんしあかどうじちょう;Aichi Konan City Akadoji Town;35.33;136.87;2321700;1.3055
@@ -588,7 +588,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 2310340;名古屋北区萩野通;なごやきたくはぎのどおり;Nagoya Kita Ward Haginodori;35.21;136.91;2310300;2.2330
 2310440;名古屋西区八筋町;なごやにしくやすじちょう;Nagoya Nishi Ward Yasuji Town;35.22;136.88;2310400;2.2962
 2310540;名古屋中村区大宮町;なごやなかむらくおおみやちょう;Nagoya Naka Village Kuomiya Town;35.17;136.87;2310500;2.0464
-2310630;名古屋中区市役所;なごやなかくしやくしょ;Nagoya Naka Ward City Hall;35.18;136.91;2310200;1.2650
+2310630;名古屋中区市役所;なごやなかくしやくしょ;Nagoya Naka Ward City Hall;35.18;136.91;2310600;1.2650
 2310632;名古屋中区県庁;なごやなかくけんちょう;Nagoya Naka Ward Kencho;35.18;136.90;2310600;1.3494
 2310740;名古屋昭和区阿由知通;なごやしょうわくあゆちどおり;Nagoya Showa Ward Ayuchidori;35.15;136.93;2310700;1.2162
 2310840;名古屋瑞穂区塩入町;なごやみずほくしおいりちょう;Nagoya Mizuho Ward Shioiri Town;35.12;136.92;2310800;1.8586
@@ -747,7 +747,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 2230402;南伊豆町石廊崎;みなみいずちょういろうざき;Minamiizu Town Irozaki;34.60;138.84;2230400;0.9419
 2356231;東栄町本郷;とうえいちょうほんごう;Touei Town Hongo;35.08;137.70;2356200;0.6689
 2221432;藤枝市岡部町岡部;ふじえだしおかべちょうおかべ;Fujieda City Okabe Town Okabe;34.91;138.28;2221400;1.7152
-2210201;静岡駿河区曲金;しずおかするがくまがりかね;Shizuoka Suruga Ward Magarikane;34.98;138.40;2210100;1.2748
+2210201;静岡駿河区曲金;しずおかするがくまがりかね;Shizuoka Suruga Ward Magarikane;34.98;138.40;2210200;1.2748
 2213832;浜松中央区流通元町;はままつちゅうおうくりゅうつうもとまち;Hamamatsu Chuuo Ward Ryutsumoto Town;34.74;137.79;2213800;1.3804
 2213833;浜松中央区舞阪町;はままつちゅうおうくまいさかちょう;Hamamatsu Chuuo Ward Maisaka Town;34.69;137.61;2213800;1.9423
 2213834;浜松中央区雄踏;はままつちゅうおうくゆうとう;Hamamatsu Chuuo Ward Yuto;34.69;137.64;2213800;1.8868
@@ -832,7 +832,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 2710330;大阪福島区福島;おおさかふくしまくふくしま;Osaka Fukushima Ward Fukushima;34.69;135.48;2710300;2.1305
 2636631;精華町南稲八妻;せいかちょうみなみいなやづま;Seika Town Minamiinayazuma;34.76;135.79;2636600;1.2189
 2710431;大阪此花区春日出北;おおさかこのはなくかすができた;Osaka Konohana Ward Kasugadekita;34.68;135.45;2710400;1.9899
-2710730;大阪港区築港;おおさかみなとくちっこう;Osaka Minato Ward Chikko;34.66;135.43;2710400;1.9372
+2710730;大阪港区築港;おおさかみなとくちっこう;Osaka Minato Ward Chikko;34.66;135.43;2710700;1.9372
 2710831;大阪大正区泉尾;おおさかたいしょうくいずお;Osaka Taisho Ward Izuo;34.66;135.48;2710800;1.9397
 2710930;大阪天王寺区上本町;おおさかてんのうじくうえほんまち;Osaka Tennoji Ward Uehon Town;34.66;135.52;2710900;1.3495
 2711131;大阪浪速区元町;おおさかなにわくもとまち;Osaka Naniwa Ward Motomachi;34.66;135.50;2711100;1.4425
@@ -846,7 +846,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 2711930;大阪阿倍野区松崎町;おおさかあべのくまつざきちょう;Osaka Abeno Ward Matsuzaki Town;34.64;135.52;2711900;1.7710
 2712030;大阪住吉区遠里小野;おおさかすみよしくおりおの;Osaka Sumiyoshi Ward Oriono;34.60;135.50;2712000;1.4173
 2712130;大阪東住吉区杭全;おおさかひがしすみよしくくまた;Osaka Higashisumiyoshi Ward Kumata;34.63;135.54;2712100;2.2954
-2710630;大阪西区九条南;おおさかにしくくじょうみなみ;Osaka Nishi Ward Kujominami;34.67;135.47;2710700;2.0200
+2710630;大阪西区九条南;おおさかにしくくじょうみなみ;Osaka Nishi Ward Kujominami;34.67;135.47;2710600;2.0200
 2712230;大阪西成区岸里;おおさかにしなりくきしのさと;Osaka Nishinari Ward Kishinosato;34.64;135.49;2712200;2.1582
 2636530;和束町釜塚;わづかちょうかまつか;Wazuka Town Kamatsuka;34.80;135.90;2636500;0.9998
 2634431;宇治田原町立川;うじたわらちょうたちかわ;Ujitawara Town Tachikawa;34.84;135.87;2634400;0.5689
@@ -877,7 +877,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 2620931;長岡京市開田;ながおかきょうしかいでん;Nagaokakyo City Kaiden;34.93;135.69;2620900;1.2355
 2621030;八幡市八幡;やわたしやわた;Yawata City Yawata;34.87;135.71;2621000;2.0480
 2630331;大山崎町円明寺;おおやまざきちょうえんみょうじ;Oyamazaki Town Enmyoji;34.90;135.69;2630300;2.0604
-2632230;久御山町田井;くみやまちょうたい;Kumiyama Town Tai;34.88;135.73;2610900;1.9397
+2632230;久御山町田井;くみやまちょうたい;Kumiyama Town Tai;34.88;135.73;2632200;1.9397
 2621130;京田辺市田辺;きょうたなべしたなべ;Kyotanabe City Tanabe;34.81;135.77;2621100;1.1760
 2634331;井手町井手;いでちょういで;Ide Town Ide;34.80;135.81;2634300;0.8944
 2611040;京都山科区西野;きょうとやましなくにしの;Kyoto Yamashina Ward Nishino;34.99;135.81;2611000;1.1802
@@ -930,12 +930,12 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 2720700;高槻市桃園町;たかつきしとうえんちょう;Takatsuki City Touen Town;34.85;135.62;2720700;2.0947
 2720720;高槻市立第２中学校;たかつきしりつだいにちゅうがっこう;Takatsuki City Municipal No. 2 Middle School;34.86;135.60;2720700;1.2588
 2720732;高槻市消防本部;たかつきししょうぼうほんぶ;Takatsuki City Fire Department;34.84;135.61;2720700;2.1609
-2720931;守口市京阪本通;もりぐちしけいはんほんどおり;Moriguchi City Keihanhondori;34.74;135.56;2711700;1.9397
+2720931;守口市京阪本通;もりぐちしけいはんほんどおり;Moriguchi City Keihanhondori;34.74;135.56;2720900;1.9397
 2721031;枚方市大垣内;ひらかたしおおがいと;Hirakata City Ogaito;34.81;135.65;2721000;1.3025
 2720230;岸和田市役所;きしわだしやくしょ;Kishiwada City Hall;34.46;135.375;2720200;1.2313
 2721130;茨木市東中条町;いばらきしひがしちゅうじょうちょう;Ibaraki City Higashichujo Town;34.81;135.57;2721100;2.1444
 2721530;寝屋川市本町;ねやがわしほんまち;Neyagawa City Hon Town;34.77;135.63;2721500;1.3556
-2721831;大東市新町;だいとうししんまち;Daito City Shinmachi;34.70;135.62;2722700;2.2438
+2721831;大東市新町;だいとうししんまち;Daito City Shinmachi;34.70;135.62;2721800;2.2438
 2722000;箕面市箕面;みのおしみのお;Mino City Mino;34.83;135.47;2722000;0.8966
 2722131;柏原市安堂町;かしわらしあんどうちょう;Kashiwara City Ando Town;34.58;135.63;2722100;1.2510
 2722330;門真市中町;かどましなかまち;Kadoma City Nakamachi;34.74;135.59;2722300;2.2815
@@ -982,7 +982,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 2520337;長浜市余呉町中之郷;ながはましよごちょうなかのごう;Nagahama City Yogo Town Nakanogo;35.54;136.20;2520300;1.9077
 2520339;長浜市西浅井町大浦;ながはましにしあざいちょうおおうら;Nagahama City Nishiazai Town Ora;35.50;136.12;2520300;0.6689
 2520340;長浜市八幡東町;ながはましやわたひがしちょう;Nagahama City Yawata Higashi Town;35.38;136.28;2520300;1.1570
-2444333;大台町佐原;おおだいちょうさわら;Odai Town Sawara;34.39;136.41;2447100;0.8382
+2444333;大台町佐原;おおだいちょうさわら;Odai Town Sawara;34.39;136.41;2444300;0.8382
 2520341;長浜市宮部町;ながはましみやべちょう;Nagahama City Miyabe Town;35.42;136.27;2520300;1.1627
 2447231;南伊勢町神前浦;みなみいせちょうかみさきうら;Minamiise Town Kamisakiura;34.28;136.50;2447200;0.5689
 2447133;三重大紀町大内山;みえたいきちょうおおうちやま;Mie Taiki Town Ochiyama;34.28;136.36;2447100;0.8181
@@ -1043,7 +1043,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 2620331;綾部市若竹町;あやべしわかたけちょう;Ayabe City Wakatake Town;35.30;135.26;2620300;1.1988
 2620530;宮津市柳縄手;みやづしやなぎなわて;Miyazu City Yanaginawate;35.54;135.20;2620500;0.0000
 2646320;伊根町亀島;いねちょうかめしま;Ine Town Kameshima;35.68;135.29;2646300;0.6689
-2646331;伊根町日出;いねちょうひで;Ine Town Hide;35.68;135.27;2620500;0.6689
+2646331;伊根町日出;いねちょうひで;Ine Town Hide;35.68;135.27;2646300;0.6689
 2621200;京丹後市弥栄町吉沢;きょうたんごしやさかちょうよしさわ;Kyotango City Yasaka Town Yoshisawa;35.63;135.10;2621200;0.6689
 2621221;京丹後市久美浜町広瀬;きょうたんごしくみはまちょうひろせ;Kyotango City Kumihama Town Hirose;35.60;134.89;2621200;1.4331
 2621230;京丹後市峰山町;きょうたんごしみねやまちょう;Kyotango City Mineyama Town;35.62;135.06;2621200;0.9475
@@ -1139,7 +1139,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 4350500;多良木町多良木;たらぎまちたらぎ;Taragi Town Taragi;32.26;130.94;4350500;0.9496
 4321500;天草市本町;あまくさしほんまち;Amakusa City Hon Town;32.47;130.13;4321500;0.6689
 4350520;多良木町上球磨消防署;たらぎまちかみくましょうぼうしょ;Taragi Town Kamikuma Fire Station;32.26;130.92;4350500;1.1060
-4350730;水上村岩野;みずかみむらいわの;Mizukami Village Iwano;32.31;131.01;4350600;0.5689
+4350730;水上村岩野;みずかみむらいわの;Mizukami Village Iwano;32.31;131.01;4350700;0.5689
 4351030;相良村深水;さがらむらふかみ;Sagara Village Fukami;32.24;130.80;4351000;0.9882
 4351120;五木村甲;いつきむらこう;Itsuki Village Ko;32.40;130.83;4351100;0.5689
 4351230;山江村山田;やまえむらやまだ;Yamae Village Yamada;32.25;130.77;4351200;1.1933
@@ -1225,7 +1225,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 4540132;高鍋町上江;たかなべちょうかみえ;Takanabe Town Kamie;32.13;131.50;4540100;1.8005
 4336933;和水町板楠;なごみまちいたくす;Nagomi Town Itakusu;33.07;130.62;4336900;0.9882
 4321631;合志市御代志;こうししみよし;Ko City Shimiyoshi;32.89;130.74;4321600;1.4525
-4221341;雲仙市愛野町;うんぜんしあいのまち;Unzen City Aino Town;32.82;130.15;4220400;1.9143
+4221341;雲仙市愛野町;うんぜんしあいのまち;Unzen City Aino Town;32.82;130.15;4221300;1.9143
 4221420;南島原市口之津町;みなみしまばらしくちのつちょう;Minamishimabara City Kuchinotsu Town;32.61;130.19;4221400;1.7052
 4221431;南島原市南有馬町;みなみしまばらしみなみありまちょう;Minamishimabara City Minamiarima Town;32.63;130.25;4221400;1.4425
 4221432;南島原市北有馬町;みなみしまばらしきたありまちょう;Minamishimabara City Kitaarima Town;32.66;130.25;4221400;0.9080
@@ -1899,10 +1899,10 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 3720233;丸亀市綾歌町;まるがめしあやうたちょう;Marugame City Ayauta Town;34.23;133.88;3720200;1.1647
 3720234;丸亀市飯山町;まるがめしはんざんちょう;Marugame City Hanzan Town;34.26;133.86;3720200;1.0217
 3720235;丸亀市大手町;まるがめしおおてちょう;Marugame City Ote Town;34.29;133.80;3720200;1.4064
-3720300;坂出市王越町;さかいでしおうごしちょう;Sakaide City Ogoshi Town;34.38;133.93;3720100;0.6689
+3720300;坂出市王越町;さかいでしおうごしちょう;Sakaide City Ogoshi Town;34.38;133.93;3720300;0.6689
 3720332;坂出市久米町;さかいでしくめちょう;Sakaide City Kume Town;34.32;133.86;3720300;1.5657
 3720432;善通寺市文京町;ぜんつうじしぶんきょうちょう;Zentsuji City Bunkyo Town;34.23;133.79;3720400;1.2575
-3720632;さぬき市志度;さぬきししど;Sanuki City Shido;34.33;134.17;3720100;0.0000
+3720632;さぬき市志度;さぬきししど;Sanuki City Shido;34.33;134.17;3720600;0.0000
 3520440;萩市須佐;はぎしすさ;Hagi City Susa;34.62;131.60;3520400;0.5689
 3520441;萩市明木;はぎしあきらぎ;Hagi City Akiragi;34.34;131.41;3520400;1.1201
 3520442;萩市福井;はぎしふくい;Hagi City Fukui;34.43;131.48;3520400;0.9073
@@ -1929,7 +1929,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 4044830;東峰村小石原;とうほうむらこいしわら;Toho Village Koishiwara;33.46;130.83;4044800;0.6689
 4044831;東峰村宝珠山;とうほうむらほうしゅやま;Toho Village Hoshuyama;33.40;130.87;4044800;0.6689
 4022820;朝倉市堤;あさくらしつつみ;Asakura City Tsutsumi;33.42;130.67;4022800;1.2065
-4022831;朝倉市杷木池田;あさくらしはきいけだ;Asakura City Hakiikeda;33.36;130.81;4022500;1.2315
+4022831;朝倉市杷木池田;あさくらしはきいけだ;Asakura City Hakiikeda;33.36;130.81;4022800;1.2315
 4022832;朝倉市宮野;あさくらしみやの;Asakura City Miyano;33.39;130.72;4022800;0.9600
 4022930;みやま市瀬高町;みやましせたかまち;Miyama City Setaka Town;33.15;130.48;4022900;1.3880
 4022933;みやま市山川町;みやましやまかわまち;Miyama City Yamakawa Town;33.12;130.52;4022900;0.9473
@@ -1988,7 +1988,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 4121036;神埼市脊振;かんざきしせふり;Kanzaki City Sefuri;33.38;130.33;4121000;0.8796
 4121037;神埼市神埼;かんざきしかんざき;Kanzaki City Kanzaki;33.31;130.37;4121000;1.8779
 4220201;佐世保市干尽町;させぼしひづくしちょう;Sasebo City Hizukushi Town;33.16;129.73;4220201;1.4761
-4134635;みやき町三根;みやきちょうみね;Miyaki Town Mine;33.30;130.43;4134500;1.9314
+4134635;みやき町三根;みやきちょうみね;Miyaki Town Mine;33.30;130.43;4134600;1.9314
 4220220;佐世保市八幡町;させぼしはちまんちょう;Sasebo City Hachiman Town;33.18;129.72;4220201;1.0590
 4220236;佐世保市世知原町;させぼしせちばるちょう;Sasebo City Sechibaru Town;33.26;129.75;4220201;0.9994
 4220237;佐世保市江迎町;させぼしえむかえちょう;Sasebo City Emukae Town;33.31;129.63;4220201;1.4425
@@ -2108,7 +2108,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 3520840;岩国市由宇町;いわくにしゆうまち;Iwakuni City Yu Town;34.05;132.21;3520800;1.7490
 3520140;下関市豊北町滝部;しものせきしほうほくちょうたきべ;Shimonoseki City Hohoku Town Takibe;34.29;130.95;3520100;1.0944
 3520621;防府市西浦;ほうふしにしのうら;Hofu City Nishinora;34.03;131.53;3520600;1.7490
-3520701;下松市瀬戸;くだまつしせと;Kudamatsu City Seto;34.06;131.87;3521500;0.5689
+3520701;下松市瀬戸;くだまつしせと;Kudamatsu City Seto;34.06;131.87;3520700;0.5689
 3520732;下松市大手町;くだまつしおおてまち;Kudamatsu City Ote Town;34.02;131.87;3520700;0.9242
 4010132;北九州門司区大里東;きたきゅうしゅうもじくだいりひがし;Kitakyushu Moji Ward Dairihigashi;33.91;130.94;4010100;1.0199
 4010330;北九州若松区桜町;きたきゅうしゅうわかまつくさくらまち;Kitakyushu Wakamatsu Ward Sakura Town;33.91;130.81;4010300;1.4761
@@ -2130,7 +2130,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 4038430;遠賀町今古賀;おんがちょういまこが;Onga Town Imakoga;33.85;130.67;4038400;2.1281
 4062100;苅田町若久;かんだまちわかひさ;Kanda Town Wakahisa;33.80;130.98;4062100;1.7490
 4062130;苅田町京町;かんだまちきょうまち;Kanda Town Kyo Town;33.78;130.98;4062100;1.3776
-4064230;吉富町広津;よしとみまちひろつ;Yoshitomi Town Hirotsu;33.60;131.18;4420300;1.8847
+4064230;吉富町広津;よしとみまちひろつ;Yoshitomi Town Hirotsu;33.60;131.18;4064200;1.8847
 4064631;上毛町東下;こうげまちひがししも;Koge Town Higashishimo;33.55;131.15;4064600;0.6689
 4064632;上毛町垂水;こうげまちたるみ;Koge Town Tarumi;33.58;131.16;4064600;1.0205
 4064733;築上町椎田;ちくじょうまちしいだ;Chikujo Town Shiida;33.66;131.06;4064700;1.8369
@@ -2150,7 +2150,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 4013231;福岡博多区博多駅前;ふくおかはかたくはかたえきまえ;Fukuoka Hakata Ward Hakataekimae;33.58;130.42;4013200;1.7835
 4013300;福岡中央区大濠;ふくおかちゅうおうくおおほり;Fukuoka Chuuo Ward Ohori;33.58;130.38;4013300;1.7490
 4013330;福岡中央区舞鶴;ふくおかちゅうおうくまいづる;Fukuoka Chuuo Ward Maizuru;33.59;130.39;4013300;1.4425
-4013430;福岡南区塩原;ふくおかみなみくしおばる;Fukuoka Minami Ward Shiobaru;33.57;130.43;4013200;2.0972
+4013430;福岡南区塩原;ふくおかみなみくしおばる;Fukuoka Minami Ward Shiobaru;33.57;130.43;4013400;2.0972
 4013530;福岡西区今宿;ふくおかにしくいまじゅく;Fukuoka Nishi Ward Imajuku;33.57;130.28;4013500;1.3164
 4013630;福岡城南区神松寺;ふくおかじょうなんくしんしょうじ;Fukuoka Jonan Ward Shinshoji;33.55;130.38;4013600;1.3546
 4013700;福岡早良区板屋;ふくおかさわらくいたや;Fukuoka Sawara Ward Itaya;33.43;130.39;4013700;0.5689
@@ -2185,7 +2185,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 621120;東根市中央;ひがしねしちゅうおう;Higashine City Chuuo;38.43;140.39;0621100;0.9008
 630132;山辺町緑ケ丘;やまのべまちみどりがおか;Yamanobe Town Midorigaoka;38.29;140.26;0630100;0.8584
 630231;中山町長崎;なかやままちながさき;Nakayama Town Nagasaki;38.33;140.28;0630200;1.9754
-632101;河北町西里;かほくちょうにしざと;Kahoku Town Nishizato;38.41;140.28;0620600;1.1499
+632101;河北町西里;かほくちょうにしざと;Kahoku Town Nishizato;38.41;140.28;0632100;1.1499
 632132;河北町役場;かほくちょうやくば;Kahoku Town Town Office;38.43;140.31;0632100;1.1529
 632220;西川町大井沢;にしかわまちおおいさわ;Nishikawa Town Ooisawa;38.39;139.99;0632200;0.6689
 632230;西川町海味;にしかわまちかいしゅう;Nishikawa Town Kaishu;38.43;140.15;0632200;0.7919
@@ -2301,7 +2301,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 732201;大玉村南小屋;おおたまむらみなみごや;Otama Village Minamigoya;37.56;140.33;0732200;1.2192
 732232;大玉村玉井;おおたまむらたまのい;Otama Village Tamanoi;37.53;140.37;0732200;1.1947
 734230;鏡石町不時沼;かがみいしまちふじぬま;Kagamiishi Town Fujinuma;37.25;140.34;0734200;1.2619
-734431;天栄村下松本;てんえいむらしもまつもと;Ten'ei Village Shimomatsumoto;37.26;140.25;0720700;0.9882
+734431;天栄村下松本;てんえいむらしもまつもと;Ten'ei Village Shimomatsumoto;37.26;140.25;0734400;0.9882
 734432;天栄村湯本支所;てんえいむらゆもとししょ;Ten'ei Village Yumotoshisho;37.27;140.02;0734400;0.9994
 746130;西郷村熊倉;にしごうむらくまくら;Nishigo Village Kumakura;37.14;140.16;0746100;0.9562
 746431;泉崎村泉崎;いずみざきむらいずみざき;Izumizaki Village Izumizaki;37.15;140.30;0746400;0.9133
@@ -2322,7 +2322,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 440101;松島町高城;まつしままちたかぎ;Matsushima Town Takagi;38.39;141.07;0440100;1.7490
 440431;七ヶ浜町東宮浜;しちがはままちとうぐうはま;Shichigahama Town Toguhama;38.30;141.06;0440400;0.9962
 440632;利府町利府;りふちょうりふ;Rifu Town Rifu;38.33;140.98;0440600;1.4317
-442121;大和町吉岡;たいわちょうよしおか;Taiwa Town Yoshioka;38.45;140.89;0442400;2.0501
+442121;大和町吉岡;たいわちょうよしおか;Taiwa Town Yoshioka;38.45;140.89;0442100;2.0501
 442231;大郷町粕川;おおさとちょうかすかわ;Osato Town Kasukawa;38.42;141.00;0442200;0.9129
 442431;大衡村大衡;おおひらむらおおひら;Ohira Village Ohira;38.47;140.88;0442400;0.9188
 458134;女川町女川;おながわちょうおながわ;Onagawa Town Onagawa;38.45;141.44;0458100;0.9203
@@ -2570,11 +2570,11 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 1044930;みなかみ町後閑;みなかみまちごかん;Minakami Town Gokan;36.68;139.00;1044900;0.7965
 921634;下野市笹原;しもつけしささはら;Shimotsuke City Sasahara;36.39;139.85;0921600;1.4015
 1020601;沼田市西倉内町;ぬまたしにしくらうちまち;Numata City Nishikurauchi Town;36.65;139.04;1020600;1.2030
-1020602;沼田市尾瀬高等学校;ぬまたしおぜこうとうがっこう;Numata City Oze High School;36.73;139.22;1044300;0.8801
+1020602;沼田市尾瀬高等学校;ぬまたしおぜこうとうがっこう;Numata City Oze High School;36.73;139.22;1020600;0.8801
 1020620;沼田市下久屋町;ぬまたししもくやまち;Numata City Shimokuya Town;36.66;139.08;1020600;1.3792
 1020631;沼田市白沢町;ぬまたししらさわまち;Numata City Shirasawa Town;36.66;139.14;1020600;1.1126
 1020634;沼田市利根町;ぬまたしとねまち;Numata City Tone Town;36.70;139.21;1020600;0.7490
-1042100;中之条町日影;なかのじょうまちひかげ;Nakanojo Town Hikage;36.56;138.64;1042400;0.9099
+1042100;中之条町日影;なかのじょうまちひかげ;Nakanojo Town Hikage;36.56;138.64;1042100;0.9099
 1042130;中之条町中之条町;なかのじょうまちなかのじょうまち;Nakanojo Town Nakanojo Town;36.59;138.84;1042100;0.8931
 1042132;中之条町入山;なかのじょうまちいりやま;Nakanojo Town Iriyama;36.65;138.65;1042100;0.7830
 1042431;長野原町長野原;ながのはらまちながのはら;Nagano Hara Town Naganohara;36.54;138.65;1042400;0.7830
@@ -3535,9 +3535,9 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 1632330;立山町米沢;たてやままちよねざわ;Tateyama Town Yonezawa;36.66;137.32;1632300;1.1530
 1634231;入善町入膳;にゅうぜんまちにゅうぜん;Nyuzen Town Nyuzen;36.92;137.50;1634200;1.2271
 1634300;富山朝日町道下;とやまあさひまちどうげ;Toyama Asahi Town Doge;36.95;137.56;1634300;1.2707
-1634320;富山朝日町境;とやまあさひまちさかい;Toyama Asahi Town Sakai;36.98;137.63;1521600;1.4425
+1634320;富山朝日町境;とやまあさひまちさかい;Toyama Asahi Town Sakai;36.98;137.63;1634300;1.4425
 1620138;富山市山田湯;とやましやまだゆ;Toyama City Yamadayu;36.58;137.08;1620100;0.8375
-1020821;渋川市有馬;しぶかわしありま;Shibukawa City Arima;36.46;139.01;1034500;1.1218
+1020821;渋川市有馬;しぶかわしありま;Shibukawa City Arima;36.46;139.01;1020800;1.1218
 1920232;富士吉田市下吉田;ふじよしだししもよしだ;Fujiyoshida City Shimoyoshida;35.49;138.81;1920200;1.3529
 1920601;大月市大月;おおつきしおおつき;Otsuki City Otsuki;35.61;138.94;1920600;1.0492
 2120345;高山市久々野町;たかやましくぐのちょう;Takayama City Kuguno Town;36.05;137.28;2120300;0.8252
@@ -3643,11 +3643,11 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 2130331;笠松町司町;かさまつちょうつかさまち;Kasamatsu Town Tsukasa Town;35.37;136.76;2130300;1.7942
 2121333;各務原市那加桜町;かかみがはらしなかさくらまち;Kakamigahara City Nakasakura Town;35.40;136.85;2121300;1.0013
 2121100;美濃加茂市太田町;みのかもしおおたちょう;Minokamo City Ota Town;35.44;137.02;2121100;1.1778
-2121120;美濃加茂市西町;みのかもしにしまち;Minokamo City Nishi Town;35.44;137.00;2150100;1.1695
-2121220;土岐市泉町;ときしいずみちょう;Toki City Izumi Town;35.39;137.22;2120800;0.9221
+2121120;美濃加茂市西町;みのかもしにしまち;Minokamo City Nishi Town;35.44;137.00;2121100;1.1695
+2121220;土岐市泉町;ときしいずみちょう;Toki City Izumi Town;35.39;137.22;2121200;0.9221
 2121230;土岐市肥田;ときしひだ;Toki City Hida;35.36;137.20;2121200;0.8279
 2121430;可児市広見;かにしひろみ;Kani City Hiromi;35.43;137.06;2121400;0.8942
-2121432;可児市兼山;かにしかねやま;Kani City Kaneyama;35.46;137.09;2150500;0.8254
+2121432;可児市兼山;かにしかねやま;Kani City Kaneyama;35.46;137.09;2121400;0.8254
 2150130;坂祝町取組;さかほぎちょうとりくみ;Sakahogi Town Torikumi;35.43;136.99;2150100;0.8910
 2150230;富加町滝田;とみかちょうたきだ;Tomika Town Takida;35.48;136.98;2150200;0.9085
 2150331;川辺町中川辺;かわべちょうなかかわべ;Kawabe Town Nakakawabe;35.49;137.07;2150300;0.8778
@@ -3676,7 +3676,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 1920431;都留市上谷;つるしかみや;Tsuru City Kamiya;35.55;138.91;1920400;0.6689
 2040733;阿智村清内路;あちむらせいないじ;Achi Village Seinaiji;35.50;137.70;2040700;0.5689
 2040730;阿智村駒場;あちむらこまば;Achi Village Komaba;35.44;137.75;2040700;0.8062
-2048130;長野池田町池田;ながのいけだまちいけだ;Nagano Ikeda Town Ikeda;36.42;137.87;2048200;0.9975
+2048130;長野池田町池田;ながのいけだまちいけだ;Nagano Ikeda Town Ikeda;36.42;137.87;2048100;0.9975
 2048230;松川村役場;まつかわむらやくば;Matsukawa Village Town Office;36.42;137.85;2048200;0.9970
 2048520;白馬村北城;はくばむらほくじょう;Hakuba Village Hokujo;36.70;137.86;2048500;0.9781
 2048630;小谷村中小谷;おたりむらなかおたり;Otari Village Nakaotari;36.78;137.91;2048600;0.7699
@@ -3823,7 +3823,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 1223930;大網白里市大網;おおあみしらさとしおおあみ;Ooamishirasato City Ooami;35.52;140.32;1223900;1.6246
 1210101;千葉中央区中央港;ちばちゅうおうくちゅうおうこう;Chiba Chuuo Ward Chuuoko;35.60;140.10;1210100;1.6794
 1210240;千葉花見川区花島町;ちばはなみがわくはなしまちょう;Chiba Hanamigawa Ward Hanashima Town;35.68;140.10;1210200;1.3798
-1210340;千葉稲毛区園生町;ちばいなげくそんのうちょう;Chiba Inage Ward Sonno Town;35.65;140.13;1210400;1.4144
+1210340;千葉稲毛区園生町;ちばいなげくそんのうちょう;Chiba Inage Ward Sonno Town;35.65;140.13;1210300;1.4144
 1210420;千葉若葉区野呂町;ちばわかばくのろちょう;Chiba Wakaba Ward Noro Town;35.59;140.24;1210400;1.3686
 1210440;千葉若葉区小倉台;ちばわかばくおぐらだい;Chiba Wakaba Ward Oguradai;35.63;140.17;1210400;1.6107
 1223633;香取市岩部;かとりしいわべ;Katori City Iwabe;35.81;140.50;1223600;1.2094
@@ -3851,7 +3851,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 1136532;小鹿野町小鹿野;おがのまちおがの;Ogano Town Ogano;36.02;139.01;1136500;0.7999
 1220200;銚子市川口町;ちょうししかわぐちちょう;Choshi City Kawaguchi Town;35.74;140.86;1220200;1.2906
 1220202;銚子市小畑新町;ちょうししこばたけしんまち;Choshi City Kobatakeshin Town;35.72;140.86;1220200;1.3073
-1220220;銚子市若宮町;ちょうししわかみやちょう;Choshi City Wakamiya Town;35.74;140.83;0823200;0.0000
+1220220;銚子市若宮町;ちょうししわかみやちょう;Choshi City Wakamiya Town;35.74;140.83;1220200;0.0000
 1221030;茂原市道表;もばらしどうびょう;Mobara City Dobyo;35.43;140.29;1221000;1.2094
 1221300;東金市東新宿;とうがねしひがししんじゅく;Togane City Higashishinjuku;35.56;140.37;1221300;1.6372
 1221320;東金市日吉台;とうがねしひよしだい;Togane City Hiyoshidai;35.57;140.34;1221300;1.7080
@@ -3904,7 +3904,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 1310352;東京港区南青山;とうきょうみなとくみなみあおやま;Tokyo Minato Ward Minamiaoyama;35.67;139.72;1310300;1.5538
 1310353;東京港区白金;とうきょうみなとくしろかね;Tokyo Minato Ward Shirokane;35.64;139.73;1310300;1.5415
 1310400;東京新宿区西新宿;とうきょうしんじゅくくにししんじゅく;Tokyo Shinjuku Ward Nishishinjuku;35.69;139.70;1310400;1.3594
-1310420;東京新宿区上落合;とうきょうしんじゅくくかみおちあい;Tokyo Shinjuku Ward Kamiochiai;35.71;139.69;1311400;1.6018
+1310420;東京新宿区上落合;とうきょうしんじゅくくかみおちあい;Tokyo Shinjuku Ward Kamiochiai;35.71;139.69;1310400;1.6018
 1310432;東京新宿区歌舞伎町;とうきょうしんじゅくくかぶきちょう;Tokyo Shinjuku Ward Kabuki Town;35.69;139.70499999999998;1310400;1.2881
 1310451;東京新宿区百人町;とうきょうしんじゅくくひゃくにんちょう;Tokyo Shinjuku Ward Hyakunin Town;35.71;139.70;1310400;1.4114
 1310531;東京文京区スポーツセンタ;とうきょうぶんきょうくすぽーつせんた;Tokyo Bunkyo Ward Sports Center;35.72;139.74;1310500;1.4879
@@ -3990,7 +3990,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 1020930;藤岡市中栗須;ふじおかしなかくりす;Fujioka City Nakakurisu;36.26;139.08;1020900;1.0533
 1020932;藤岡市鬼石;ふじおかしおにし;Fujioka City Onishi;36.16;139.06;1020900;0.8124
 1021000;富岡市七日市;とみおかしなのかいち;Tomioka City Nanokaichi City;36.26;138.88;1021000;0.8573
-1021030;富岡市妙義町;とみおかしみょうぎまち;Tomioka City Myogi Town;36.29;138.82;1021100;1.0855
+1021030;富岡市妙義町;とみおかしみょうぎまち;Tomioka City Myogi Town;36.29;138.82;1021000;1.0855
 1021121;安中市松井田町;あんなかしまついだまち;Annaka City Matsuida Town;36.35;138.72;1021100;0.7203
 1021130;安中市安中;あんなかしあんなか;Annaka City Annaka;36.33;138.89;1021100;1.2802
 1034431;榛東村新井;しんとうむらあらい;Shinto Village Arai;36.44;138.97;1034400;1.1218
@@ -4027,13 +4027,13 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 1146430;杉戸町清地;すぎとまちせいじ;Sugito Town Seiji;36.03;139.74;1146400;2.3776
 1146530;松伏町松伏;まつぶしまちまつぶし;Matsubushi Town Matsubushi;35.93;139.82;1146500;2.3270
 1110230;さいたま北区宮原;さいたまきたくみやはら;Saitama Kita Ward Miyahara;35.93;139.62;1110200;1.6405
-1110320;さいたま大宮区天沼町;さいたまおおみやくあまぬまちょう;Saitamaomiya Ward Amanuma Town;35.91;139.65;1110400;1.4223
+1110320;さいたま大宮区天沼町;さいたまおおみやくあまぬまちょう;Saitamaomiya Ward Amanuma Town;35.91;139.65;1110300;1.4223
 1110331;さいたま大宮区大門;さいたまおおみやくだいもん;Saitamaomiya Ward Daimon;35.91;139.63;1110300;1.6210
 1110430;さいたま見沼区堀崎;さいたまみぬまくほりさき;Saitamaminuma Ward Horisaki;35.94;139.65;1110400;1.6154
 1124130;鶴ヶ島市三ツ木;つるがしましみつぎ;Tsurugashima City Mitsugi;35.93;139.39;1124100;1.4136
 1110530;さいたま中央区下落合;さいたまちゅうおうくしもおちあい;Saitama Chuo Ward Shimochiai;35.88;139.63;1110500;2.0319
 1110700;さいたま浦和区高砂;さいたまうらわくたかさご;Saitamaurawa Ward Takasago;35.86;139.65;1110700;1.8348
-1110730;さいたま浦和区常盤;さいたまうらわくときわ;Saitamaurawa Ward Tokiwa;35.86;139.64;1110500;2.1509
+1110730;さいたま浦和区常盤;さいたまうらわくときわ;Saitamaurawa Ward Tokiwa;35.86;139.64;1110700;2.1509
 1110831;さいたま南区別所;さいたまみなみくべっしょ;Saitama Minami Ward Bessho;35.84;139.64;1110800;1.9901
 1110930;さいたま緑区中尾;さいたまみどりくなかお;Saitamamidori Ward Nakao;35.87;139.68;1110900;1.7668
 1111031;さいたま岩槻区本丸;さいたまいわつきくほんまる;Saitamaiwatsuki Ward Honmaru;35.95;139.70;1111000;1.3956
@@ -4077,7 +4077,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 1122930;和光市広沢;わこうしひろさわ;Wako City Hirosawa;35.78;139.61;1122900;1.6055
 1122730;朝霞市本町;あさかしほんちょう;Asaka City Honcho;35.80;139.59;1122700;1.4886
 1122530;入間市豊岡;いるましとよおか;Iruma City Toyoka;35.84;139.39;1122500;1.0808
-1122431;戸田市上戸田;とだしかみとだ;Toda City Kamitoda;35.82;139.68;1122300;2.1722
+1122431;戸田市上戸田;とだしかみとだ;Toda City Kamitoda;35.82;139.68;1122400;2.1722
 1122331;蕨市中央;わらびしちゅうおう;Warabi City Chuuo;35.83;139.68;1122300;1.8382
 1122231;越谷市越ヶ谷;こしがやしこしがや;Koshigaya City Koshigaya;35.89;139.79;1122200;1.7981
 1122132;草加市中央;そうかしちゅうおう;Soka City Chuuo;35.83;139.81;1122100;2.2526
@@ -4107,7 +4107,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 1421100;秦野市曽屋;はだのしそや;Hadano City Soya;35.38;139.21;1421100;1.3547
 1421120;秦野市平沢;はだのしひらさわ;Hadano City Hirasawa;35.38;139.20;1421100;1.4000
 1421220;厚木市中町;あつぎしなかちょう;Atsugi City Naka Town;35.44;139.36;1421200;1.8344
-1421248;厚木市下津古久;あつぎししもつこく;Atsugi City Shimotsukoku;35.40;139.35;1421400;2.3581
+1421248;厚木市下津古久;あつぎししもつこく;Atsugi City Shimotsukoku;35.40;139.35;1421200;2.3581
 1421432;伊勢原市伊勢原;いせはらしいせはら;Isehara City Isehara;35.40;139.31;1421400;1.6569
 1421731;南足柄市関本;みなみあしがらしせきもと;Minamiashigara City Sekimoto;35.32;139.10;1421700;1.0666
 1436131;中井町比奈窪;なかいまちひなくぼ;Nakai Town Hinakubo;35.33;139.22;1436100;1.2544
@@ -4120,7 +4120,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 1413540;川崎多摩区登戸;かわさきたまくのぼりと;Kawasakitama Ward Noborito;35.62;139.56;1413500;1.2223
 1410940;横浜港北区大倉山;よこはまこうほくくおおくらやま;Yokohama Kohoku Ward Okurayama;35.52;139.62;1410900;2.9944
 1410941;横浜港北区日吉本町;よこはまこうほくくひよしほんちょう;Yokohama Kohoku Ward Hiyoshihon Town;35.55;139.63;1410900;1.6101
-1310700;東京墨田区横川;とうきょうすみだくよこかわ;Tokyo Sumida Ward Yokokawa;35.70;139.82;1310800;2.4084
+1310700;東京墨田区横川;とうきょうすみだくよこかわ;Tokyo Sumida Ward Yokokawa;35.70;139.82;1310700;2.4084
 1411040;横浜戸塚区平戸町;よこはまとつかくひらどちょう;Yokohama Totsuka Ward Hirado Town;35.43;139.56;1411000;1.0189
 1411041;横浜戸塚区戸塚町;よこはまとつかくとつかちょう;Yokohama Totsuka Ward Totsuka Town;35.39;139.53;1411000;1.0193
 1411042;横浜戸塚区鳥が丘;よこはまとつかくとりがおか;Yokohama Totsuka Ward Torigaoka;35.41;139.52;1411000;1.5693
@@ -4145,7 +4145,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 1413141;川崎川崎区千鳥町;かわさきかわさきくちどりちょう;Kawasakikawasaki Ward Chidori Town;35.52;139.75;1413100;2.1456
 1413142;川崎川崎区中島;かわさきかわさきくなかじま;Kawasakikawasaki Ward Nakajima;35.53;139.715;1413100;2.0259
 1413241;川崎幸区戸手本町;かわさきさいわいくとでほんまち;Kawasakisaiwai Ward Todehon Town;35.54;139.69;1413200;2.0371
-1413300;川崎中原区小杉陣屋町;かわさきなかはらくこすぎじんやちょう;Kawasakinakahara Ward Kosugijinya Town;35.59;139.66;1311100;1.6022
+1413300;川崎中原区小杉陣屋町;かわさきなかはらくこすぎじんやちょう;Kawasakinakahara Ward Kosugijinya Town;35.59;139.66;1413300;1.6022
 1413340;川崎中原区小杉町;かわさきなかはらくこすぎまち;Kawasakinakahara Ward Kosugi Town;35.58;139.66;1413300;1.8608
 1413440;川崎高津区下作延;かわさきたかつくしもさくのべ;Kawasakitakatsu Ward Shimosakunobe;35.60;139.61;1413400;1.4737
 1411540;横浜栄区桂台南;よこはまさかえくかつらだいみなみ;Yokohama Sakae Ward Katsuradaiminami;35.35;139.56;1411500;1.0191
@@ -4240,7 +4240,7 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 1320231;立川市泉町;たちかわしいずみちょう;Tachikawa City Izumi Town;35.72;139.41;1320200;1.2063
 1320331;武蔵野市緑町;むさしのしみどりちょう;Musashino City Midori Town;35.72;139.57;1320300;1.5076
 1320352;武蔵野市吉祥寺東町;むさしのしきちじょうじひがしちょう;Musashino City Kichijoji Higashi Town;35.71;139.58;1320300;1.4862
-1320433;三鷹市新川;みたかししんかわ;Mitaka City Shinkawa;35.68;139.56;1320800;1.4547
+1320433;三鷹市新川;みたかししんかわ;Mitaka City Shinkawa;35.68;139.56;1320400;1.4547
 1320631;東京府中市寿町;とうきょうふちゅうしことぶきちょう;Tokyo Fuchu City Kotobuki Town;35.67;139.48;1320600;1.2538
 1320651;東京府中市朝日町;とうきょうふちゅうしあさひちょう;Tokyo Fuchu City Asahi Town;35.67;139.52;1320600;1.1902
 1320730;昭島市田中町;あきしましたなかちょう;Akishima City Tanaka Town;35.71;139.35;1320700;0.9658
@@ -4307,14 +4307,14 @@ code;nameja;kana;nameen;lat;lon;citycode;arv
 1410740;横浜磯子区磯子;よこはまいそごくいそご;Yokohama Isogo Ward Isogo;35.40;139.62;1410700;1.3085
 1410641;横浜保土ケ谷区上菅田町;よこはまほどがやくかみすげだちょう;Yokohama Hodogaya Ward Kamisugeda Town;35.49;139.57;1410600;1.0189
 1410640;横浜保土ケ谷区神戸町;よこはまほどがやくごうどちょう;Yokohama Hodogaya Ward Godo Town;35.45;139.60;1410600;1.5652
-1410542;横浜南区大岡;よこはまみなみくおおおか;Yokohama Minami Ward Ooka;35.41;139.61;1410700;1.6003
+1410542;横浜南区大岡;よこはまみなみくおおおか;Yokohama Minami Ward Ooka;35.41;139.61;1410500;1.6003
 1410541;横浜南区六ツ川;よこはまみなみくむつかわ;Yokohama Minami Ward Mutsukawa;35.42;139.59;1410500;1.0455
 1410442;横浜中区日本大通;よこはまなかくにほんおおどおり;Yokohama Naka Ward Nihon'odori;35.45;139.64;1410400;1.1795
 1410441;横浜中区山吹町;よこはまなかくやまぶきちょう;Yokohama Naka Ward Yamabuki Town;35.44;139.63;1410400;1.7329
 1410440;横浜中区山下町;よこはまなかくやましたちょう;Yokohama Naka Ward Yamashita Town;35.44;139.64;1410400;2.0641
 1410400;横浜中区山手町;よこはまなかくやまてちょう;Yokohama Naka Ward Yamate Town;35.44;139.65;1410400;1.7515
 1410341;横浜西区浜松町;よこはまにしくはままつちょう;Yokohama Nishi Ward Hamamatsu Town;35.45;139.61;1410300;1.5090
-1410340;横浜西区みなとみらい;よこはまにしくみなとみらい;Yokohama Nishi Ward Minatomirai;35.46;139.64;1410400;1.4722
+1410340;横浜西区みなとみらい;よこはまにしくみなとみらい;Yokohama Nishi Ward Minatomirai;35.46;139.64;1410300;1.4722
 1410242;横浜神奈川区広台太田町;よこはまかながわくひろだいおおたまち;Yokohama Kanagawa Ward Hirodaiota Town;35.48;139.63;1410200;1.4899
 1410240;横浜神奈川区神大寺;よこはまかながわくかんだいじ;Yokohama Kanagawa Ward Kandaiji;35.49;139.61;1410200;1.3846
 1410143;横浜鶴見区末広町;よこはまつるみくすえひろちょう;Yokohama Tsurumi Ward Suehiro Town;35.49;139.69;1410100;1.6736

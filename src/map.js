@@ -12,6 +12,7 @@ import {
   MAP_COLORS,
   buildIntensityColorExpression,
   buildLpgmColorExpression,
+  eqdbIntensityToShindo,
 } from "./constants.js";
 import { renderIntensityBadge } from "./intensityBadge.js";
 import { buildStyle } from "./map/mapStyle.js";
@@ -126,7 +127,7 @@ export function initMap(
           : isCityLayer === _currentCityAreasVisible;
         if (!isActiveLayer) return;
 
-        canvas.style.cursor = "crosshair";
+        canvas.style.cursor = (isCityLayer && globalThis.__isPerCityTabActive) ? "pointer" : "crosshair";
 
         const feature = e.features[0];
         if (!feature) return;
@@ -168,6 +169,21 @@ export function initMap(
           isCityLayer ? "city" : "area",
         );
       });
+
+      // ── Click on cities in Per-City mode ─────────────────────────────────
+      if (isCityLayer) {
+        map.on("click", layerName, (e) => {
+          if (!globalThis.__isPerCityTabActive) return;
+          const feature = e.features?.[0];
+          if (!feature) return;
+          const rawId = feature.id ?? feature.properties?.regioncode;
+          if (rawId == null) return;
+          const cityCode = String(rawId).padStart(7, "0");
+          if (typeof globalThis.__onCitySelect === "function") {
+            globalThis.__onCitySelect(cityCode, { zoom: false });
+          }
+        });
+      }
 
       // ── Mouse leave ──────────────────────────────────────────────────────
       map.on("mouseleave", layerName, () => {
@@ -719,6 +735,58 @@ export function highlightObservations(map, observations, isLpgm = false) {
 }
 
 /**
+ * Clears all intensity highlights across forecast_areas and cities sources.
+ * @param {maplibregl.Map} map
+ */
+export function clearMapHighlights(map) {
+  if (!map) return;
+  try {
+    if (map.getSource("forecast_areas")) {
+      map.removeFeatureState({ source: "forecast_areas" });
+    }
+    if (map.getSource("cities")) {
+      map.removeFeatureState({ source: "cities" });
+    }
+  } catch (_) {
+    // Ignore if sources not initialized
+  }
+  highlightObservations._active = [];
+}
+
+/**
+ * Paints city areas on the map with their maximum recorded intensity.
+ * @param {maplibregl.Map} map
+ * @param {Array<{city_code: string, max_intensity: number}>} municipalities
+ */
+export function paintCitiesMaxIntensity(map, municipalities) {
+  if (!map || !municipalities) return;
+  if (!map.isStyleLoaded()) {
+    map.once("idle", () => {
+      paintCitiesMaxIntensity(map, municipalities);
+    });
+    return;
+  }
+
+  clearMapHighlights(map);
+
+  for (const item of municipalities) {
+    if (!item.city_code) continue;
+    const cityId = String(item.city_code).padStart(7, "0");
+    const intensity = eqdbIntensityToShindo(item.max_intensity);
+    if (intensity && intensity !== "0") {
+      try {
+        map.setFeatureState(
+          { source: "cities", id: cityId },
+          { highlighted: true, intensity }
+        );
+      } catch (_) {
+        // Feature may not exist in GeoJSON
+      }
+    }
+  }
+}
+
+/**
  * Fits the map bounds to all observation areas with intensity 1 or higher.
  * @param {maplibregl.Map} map
  * @param {Array|null} observations
@@ -817,6 +885,25 @@ export function fitBoundsToObservations(
   return hasBounds;
 }
 
+/**
+ * Fits the map bounds to encompass all of Japan.
+ * @param {maplibregl.Map} map
+ */
+export function fitBoundsToJapan(map) {
+  if (!map) return;
+  map.fitBounds(
+    [
+      [122.5, 24.0], // Southwest (Okinawa / Yonaguni)
+      [146.5, 45.6], // Northeast (Hokkaido)
+    ],
+    {
+      padding: { top: 20, bottom: 20, left: 30, right: 20 },
+      essential: true,
+      maxZoom: 6,
+    }
+  );
+}
+
 // ─── Re-exports from modular map sub-modules ─────────────────────────────────
 export {
   addEpicenterMarker,
@@ -841,6 +928,7 @@ export {
   findIntensityForCity,
   findCityInfoForCode,
   displayHomeLocationIntensity,
+  displayHomeLocationDirectIntensity,
   hideHomeLocationIntensity,
 } from "./map/homeLocation.js";
 

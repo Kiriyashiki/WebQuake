@@ -18,6 +18,7 @@ import {
   displayHomeMarker,
   clearHomeMarker,
   displayHomeLocationIntensity,
+  displayHomeLocationDirectIntensity,
   hideHomeLocationIntensity,
   updateCityAreasVisibility,
   updateShakemapVisibility,
@@ -26,7 +27,9 @@ import {
   isShakemapVisible,
   isLpgmVisible,
   updateLpgmVisibility,
+  paintCitiesMaxIntensity,
 } from "./map.js";
+import { eqdbIntensityToShindo } from "./constants.js";
 import {
   addReportToSidebar,
   updateReportInSidebar,
@@ -164,6 +167,7 @@ async function boot() {
     }
 
     clearEewMapDisplay();
+    globalThis.__isPerCityModeActive = false;
     globalThis.__currentReport = report;
     clearAllEpicenters(map);
 
@@ -187,6 +191,9 @@ async function boot() {
 
     reportSelectTimer = setTimeout(() => {
       reportSelectTimer = null;
+      if (globalThis.__isPerCityModeActive || globalThis.__currentReport !== report) {
+        return;
+      }
       try {
         console.debug("[eq-viewer] Map update: clearing old highlights");
         highlightObservations(map, report.observations);
@@ -248,7 +255,14 @@ async function boot() {
   };
 
   // Initialize History tab controller
-  initHistoryController({ areaCodes, onReportSelect });
+  initHistoryController({
+    map,
+    areaCodes,
+    cityNames,
+    prefectureCodes,
+    featureBounds,
+    onReportSelect,
+  });
 
   // Initialize auto-open toggle
   initAutoOpenToggle((isEnabled) => {
@@ -267,6 +281,13 @@ async function boot() {
         if (!map.isStyleLoaded()) return;
         highlightObservations(map, globalThis.__currentReport.observations);
       }, 50);
+    } else if (globalThis.__isPerCityModeActive && globalThis.__perCityMunicipalities) {
+      if (isEnabled) {
+        setTimeout(() => {
+          if (!map.isStyleLoaded()) return;
+          paintCitiesMaxIntensity(map, globalThis.__perCityMunicipalities);
+        }, 50);
+      }
     }
   });
 
@@ -285,6 +306,17 @@ async function boot() {
       const activeReport = globalThis.__currentReport;
       if (activeReport && getHomeIntensityState()) {
         displayHomeLocationIntensity(homeLocation.cityCode, activeReport.observations, cityNames);
+      } else {
+        hideHomeLocationIntensity();
+      }
+    } else if (globalThis.__isPerCityModeActive && globalThis.__perCityMunicipalities) {
+      if (homeLocation.cityCode) {
+        const homeCodeStr = String(homeLocation.cityCode).padStart(7, "0");
+        const homeRecord = globalThis.__perCityMunicipalities.find(
+          (c) => String(c.city_code).padStart(7, "0") === homeCodeStr
+        );
+        const homeMaxInt = homeRecord ? (eqdbIntensityToShindo(homeRecord.max_intensity) || "0") : "0";
+        displayHomeLocationDirectIntensity(homeLocation.cityCode, homeMaxInt, cityNames);
       } else {
         hideHomeLocationIntensity();
       }
@@ -310,6 +342,16 @@ async function boot() {
         if (homeLocation.cityCode) {
           displayHomeLocationIntensity(homeLocation.cityCode, activeReport.observations, cityNames);
         }
+      }
+    } else if (globalThis.__isPerCityModeActive && globalThis.__perCityMunicipalities) {
+      const homeLocation = getHomeLocation();
+      if (homeLocation?.cityCode) {
+        const homeCodeStr = String(homeLocation.cityCode).padStart(7, "0");
+        const homeRecord = globalThis.__perCityMunicipalities.find(
+          (c) => String(c.city_code).padStart(7, "0") === homeCodeStr
+        );
+        const homeMaxInt = homeRecord ? (eqdbIntensityToShindo(homeRecord.max_intensity) || "0") : "0";
+        displayHomeLocationDirectIntensity(homeLocation.cityCode, homeMaxInt, cityNames);
       }
     } else if (getIsEewMapActive()) {
       updateHomeIntensityForActiveEews();

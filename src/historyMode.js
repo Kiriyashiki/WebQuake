@@ -397,6 +397,68 @@ function _matchCityPolygon(candidatesInBounds, cityFeature) {
 }
 
 /**
+ * Matches a station name against the municipality name index, validating that
+ * the station coordinates lie within (or near) the candidate municipality's bounding box.
+ */
+function _matchCityByName(stationName, lat, lon, nameIndex, boundsCities) {
+  if (!stationName || !nameIndex?.patternMap || typeof lat !== 'number' || typeof lon !== 'number') {
+    return null;
+  }
+  const cleanName = stationName.replace(/＊|\*|（.*）|\(.*?\)/g, '').trim();
+
+  const maxLen = Math.min(cleanName.length, 14);
+  for (let len = maxLen; len >= 2; len--) {
+    const prefix = cleanName.slice(0, len);
+    const candidateCodes = nameIndex.patternMap.get(prefix);
+    if (candidateCodes) {
+      for (const code of candidateCodes) {
+        const bbox = boundsCities[code];
+        if (bbox) {
+          const [minLon, minLat, maxLon, maxLat] = bbox;
+          const buffer = 0.15; // ~15km buffer around city bounds
+          if (
+            lon >= minLon - buffer &&
+            lon <= maxLon + buffer &&
+            lat >= minLat - buffer &&
+            lat <= maxLat + buffer
+          ) {
+            return code;
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Matches observation stations to municipalities by station name prefix with bounds check.
+ * Overcomes border errors caused by polygon geometry simplification.
+ */
+function _matchStationsByName(stationPoints, boundsData, geoData, prefMap) {
+  const { nameIndex, cityToAreaMap, forecastAreaNames } = geoData;
+  if (!nameIndex?.patternMap) return;
+
+  const boundsCities = boundsData?.cities || {};
+
+  for (const station of stationPoints) {
+    if (station.matched || !station.name || !station.int) continue;
+
+    const cityCode = _matchCityByName(station.name, station.lat, station.lon, nameIndex, boundsCities);
+    if (cityCode) {
+      station.matched = true;
+      _addOrUpdateCityInPrefMap(
+        prefMap,
+        cityCode,
+        station.int,
+        cityToAreaMap,
+        forecastAreaNames,
+      );
+    }
+  }
+}
+
+/**
  * Matches observation stations to municipality polygons using bounding boxes and point-in-polygon.
  */
 function _matchStationsToCities(stationPoints, boundsData, geoData, prefMap) {
@@ -581,6 +643,8 @@ async function fetchEqdbEvent(eventId, boundsData, geoData) {
 
     // Create observation point features
     const stationPoints = observations.map((obs) => ({
+      name: obs.name,
+      code: obs.code,
       lon: Number.parseFloat(obs.lon),
       lat: Number.parseFloat(obs.lat),
       int: formatIntensity(obs.int),
@@ -589,6 +653,7 @@ async function fetchEqdbEvent(eventId, boundsData, geoData) {
 
     const prefMap = new Map();
     if (stationPoints.length > 0) {
+      _matchStationsByName(stationPoints, boundsData, geoData, prefMap);
       _matchStationsToCities(stationPoints, boundsData, geoData, prefMap);
       _matchUnmatchedStationsFallback(stationPoints, boundsData, geoData, prefMap);
     }
@@ -664,12 +729,38 @@ async function loadGeoData() {
     }
   }
 
-  // Pre-map municipalities for quick O(1) lookup by regioncode
+  // Pre-map municipalities for quick O(1) lookup by regioncode and build name patterns
   const cityPolygons = new Map();
+  const patternMap = new Map();
+
+  function addPattern(pattern, code) {
+    if (!pattern || pattern.length < 2) return;
+    if (!patternMap.has(pattern)) patternMap.set(pattern, []);
+    const list = patternMap.get(pattern);
+    if (!list.includes(code)) list.push(code);
+  }
+
   if (municipalities?.features) {
     for (const feature of municipalities.features) {
-      if (feature.properties?.regioncode) {
-        cityPolygons.set(feature.properties.regioncode.toString(), feature);
+      const code = feature.properties?.regioncode?.toString();
+      if (!code) continue;
+      cityPolygons.set(code, feature);
+
+      const name = feature.properties?.name;
+      const rname = feature.properties?.regionname || '';
+
+      if (name) addPattern(name, code);
+
+      const prefMatch = rname.match(/^(.+?)[都道府県]/);
+      if (prefMatch && name) {
+        addPattern(prefMatch[1] + name, code);
+      }
+
+      if (rname) {
+        const withoutPref = rname.replace(/^[^\s都道府県]+[都道府県]/, '');
+        if (withoutPref) {
+          addPattern(withoutPref.replace(/のうち/g, ''), code);
+        }
       }
     }
   }
@@ -680,6 +771,7 @@ async function loadGeoData() {
     cityToAreaMap,
     forecastAreaNames,
     cityPolygons,
+    nameIndex: { patternMap },
   };
 
   return _geoDataCache;

@@ -5,6 +5,32 @@ export const FEED_LPGM_BASE_URL = "https://www.jma.go.jp/bosai/ltpgm/data/";
 export const EQDB_API_URL = "https://www.data.jma.go.jp/eqdb/data/shindo/api/";
 export const XML_FEED_URL = "https://www.data.jma.go.jp/developer/xml/feed/eqvol.xml";
 
+// ─── Local EQDB Database API Server ──────────────────────────────────────────
+export const EQDB_LOCAL_API_ENDPOINT = "https://kyoquake.hainaut.xyz/eqdb/";
+export const EQDB_LOCAL_API_URL = `${EQDB_LOCAL_API_ENDPOINT}/api`;
+
+export const EQDB_INTENSITY_MAP = {
+  1: "1",
+  2: "2",
+  3: "3",
+  4: "4",
+  5: "5-",
+  6: "5+",
+  7: "6-",
+  8: "6+",
+  9: "7",
+};
+
+/**
+ * Maps EQDB integer intensity (1-9) to JMA Shindo string ("1" to "7").
+ * @param {number|string|null} val
+ * @returns {string|null}
+ */
+export function eqdbIntensityToShindo(val) {
+  if (val === null || val === undefined || val === 0 || val === "0") return null;
+  return EQDB_INTENSITY_MAP[val] || String(val);
+}
+
 // ─── Debug ──────────────────────────────────────────────────────────────────
 export const USE_TEST_SERVER = false;
 export const TEST_GMPE_OVERRIDE = false;

@@ -89,11 +89,11 @@
                   <button class="search-preset-btn" data-preset="large" data-tooltip="Intensity 5- or higher · 震度5弱以上">
                     <span class="preset-label">Major<br>大地震</span>
                   </button>
-                  <button class="search-preset-btn" data-preset="deep" data-tooltip="Depth 200km+ · 深さ200km以上">
-                    <span class="preset-label">Deep<br>深発</span>
-                  </button>
                   <button class="search-preset-btn" data-preset="custom" data-tooltip="Custom search parameters · カスタム検索パラメータ">
                     <span class="preset-label">Custom<br>カスタム</span>
+                  </button>
+                  <button class="search-preset-btn" data-preset="per-city" data-tooltip="Maximum recorded intensity per city · 市区町村別の最大観測震度">
+                    <span class="preset-label">Per city<br>市区町村別</span>
                   </button>
                 </div>
 
@@ -180,10 +180,10 @@
               <span class="toggle-switch"></span>
               <span class="toggle-label">Auto<br>自動</span>
             </label>
-            <label class="live-mode-toggle city-areas-toggle" data-tooltip="Use city areas for intensity display (May impact performance) • 震度表示には市町村エリアを使用します（パフォーマンスに影響を与える可能性があります）">
+            <label class="live-mode-toggle city-areas-toggle" data-tooltip="Use city areas for intensity display (May impact performance) • 震度表示には市区町村エリアを使用します（パフォーマンスに影響を与える可能性があります）">
               <input type="checkbox" id="city-areas-toggle" />
               <span class="toggle-switch"></span>
-              <span class="toggle-label">Cities<br>市町村</span>
+              <span class="toggle-label">Cities<br>市区町村</span>
             </label>
           </div>
         </aside>
