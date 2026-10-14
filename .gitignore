@@ -12,4 +12,5 @@ pnpm-workspace.yaml
 extra/shakemap.geojson
 extra/tjma2001
 extra/Z-V4-JAPAN-AMP-VS400_M250.csv
+extra/D-V3.2-STRUCT_DEEP-LYRD.csv
 eqdb/

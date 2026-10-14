@@ -1,9 +1,6 @@
 import * as maplibregl from "maplibre-gl";
 import { eewState } from "./state.js";
-import {
-  haversineDistance,
-  TEST_GMPE_OVERRIDE,
-} from "../constants.js";
+import { haversineDistance, TEST_GMPE_OVERRIDE } from "../constants.js";
 import {
   clearEpicenter,
   updateCityAreasVisibility,
@@ -21,6 +18,11 @@ import {
   getIntVal,
   cityForecastMap,
   stationsData,
+  getEewGmpe,
+  getSlabModel,
+  prepareMf2013Event,
+  calculateMf2013Shindo,
+  EEW_GMPE_MF2013,
 } from "./physics.js";
 import { getActiveProvider, isPlumEew } from "../eewProviders.js";
 
@@ -137,7 +139,11 @@ export function clearEewMapDisplay() {
 export function updateMapForEew() {
   console.debug("[eq-viewer-eew] updateMapForEew: START");
   if (!eewState.mapInstance) return;
-  if (!eewState.isEewMapActive || eewState.activeEews.size === 0 || document.querySelector(".eq-item.active")) {
+  if (
+    !eewState.isEewMapActive ||
+    eewState.activeEews.size === 0 ||
+    document.querySelector(".eq-item.active")
+  ) {
     console.debug("[eq-viewer-eew] updateMapForEew: aborted early (not active)");
     return;
   }
@@ -158,124 +164,142 @@ export function updateMapForEew() {
   setTimeout(() => {
     console.debug("[eq-viewer-eew] updateMapForEew Phase 2: START");
     // Guard: EEW state may have changed during the delay
-    if (!eewState.isEewMapActive || eewState.activeEews.size === 0 || document.querySelector(".eq-item.active")) {
+    if (
+      !eewState.isEewMapActive ||
+      eewState.activeEews.size === 0 ||
+      document.querySelector(".eq-item.active")
+    ) {
       return;
     }
 
     console.debug("[eq-viewer-eew] updateMapForEew Phase 2: preparing map intensities");
     const mergedForecast = mergeForecasts(Array.from(eewState.activeEews.values()));
-    const eews = Array.from(eewState.activeEews.values()).sort((a, b) => a.receivedAt - b.receivedAt);
-
-    const activeProv = getActiveProvider();
-    const isGmpeDisabled = Boolean(
-      activeProv?.disableGmpe ||
-      activeProv?.id === "dmdss" ||
-      (eews.length > 0 &&
-        eews.every((e) => e.disableGmpe || e.providerId === "dmdss" || e.isCancelled)),
+    const eews = Array.from(eewState.activeEews.values()).sort(
+      (a, b) => a.receivedAt - b.receivedAt,
     );
 
     const localPredictions = new Map();
 
-    if (!isGmpeDisabled) {
-      console.debug("[eq-viewer-eew] updateMapForEew Phase 2: calculating GMPE");
-      // Track the highest estimated intensity for each individual station across all EEWs
-      const stationMaxInts = new Int32Array(stationsData.length).fill(0);
+    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: calculating GMPE");
+    // Track the highest estimated intensity for each individual station across all EEWs
+    const stationMaxInts = new Int32Array(stationsData.length).fill(0);
 
-      for (const eew of eews) {
-        if (eew.isCancelled || eew.disableGmpe || eew.providerId === "dmdss") continue;
-        const msg = eew.msg;
-        if (!msg.Hypocenter?.Coordinate) continue;
+    // Select the GMPE: MF 2013 (default) needs the slab model, otherwise fall back to SM 1999.
+    const selectedGmpe = getEewGmpe();
+    let useMf2013 = selectedGmpe === EEW_GMPE_MF2013;
+    if (useMf2013 && !getSlabModel()) {
+      console.warn(
+        "[eq-viewer-eew] MF 2013 GMPE selected but the slab model is unavailable; using SM 1999.",
+      );
+      useMf2013 = false;
+    }
 
-        const isPlum = isPlumEew(msg);
-        if (isPlum) continue;
+    for (const eew of eews) {
+      if (eew.isCancelled || (!TEST_GMPE_OVERRIDE && eew.disableGmpe)) {
+        console.debug(
+          "[eq-viewer-eew] updateMapForEew Phase 2: skipping GMPE calculation (cancelled)",
+        );
+        continue;
+      }
+      const msg = eew.msg;
+      if (!msg.Hypocenter?.Coordinate) continue;
 
-        let depthKm = Number.parseInt(msg.Hypocenter.Depth, 10);
-        if (Number.isNaN(depthKm) || depthKm >= 150) continue;
+      const isPlum = isPlumEew(msg);
+      if (isPlum) continue;
 
-        let mag = Number.parseFloat(msg.Magnitude);
-        if (Number.isNaN(mag)) continue;
+      let depthKm = Number.parseInt(msg.Hypocenter.Depth, 10);
+      let depthLim = useMf2013 ? 400 : 150;
+      if (Number.isNaN(depthKm) || depthKm >= depthLim) continue;
 
-        const [eqLon, eqLat] = msg.Hypocenter.Coordinate;
+      if (!TEST_GMPE_OVERRIDE && eew.disableGmpe && depthKm < 150) {
+        console.debug(
+          "[eq-viewer-eew] updateMapForEew Phase 2: skipping GMPE calculation (disabled for provider)",
+        );
+        continue;
+      }
 
-        for (let i = 0; i < stationsData.length; i++) {
-          const station = stationsData[i];
-          const distance = haversineDistance(station.lat, station.lon, eqLat, eqLon);
+      let mag = Number.parseFloat(msg.Magnitude);
+      if (Number.isNaN(mag)) continue;
+
+      const [eqLon, eqLat] = msg.Hypocenter.Coordinate;
+
+      // MF 2013 classifies the event once and reuses the result for every station.
+      const mf2013Event = useMf2013 ? prepareMf2013Event(mag, depthKm, eqLat, eqLon) : null;
+
+      for (let i = 0; i < stationsData.length; i++) {
+        const station = stationsData[i];
+        const distance = haversineDistance(station.lat, station.lon, eqLat, eqLon);
+        let shindoFloat;
+        if (mf2013Event) {
+          shindoFloat = calculateMf2013Shindo(mf2013Event, station, distance);
+          if (shindoFloat === null) continue; // station has no site terms (avs30)
+        } else {
           let arv = station.arv;
           if (arv === null || arv <= 0.0 || Number.isNaN(arv)) {
             arv = 1.0;
           }
-          const shindoFloat = calculateGmpe(mag, depthKm, distance, arv);
-          const shindoStr = floatToShindo(shindoFloat);
+          shindoFloat = calculateGmpe(mag, depthKm, distance, arv);
+        }
+        const shindoStr = floatToShindo(shindoFloat);
 
-          if (shindoStr === "0") continue;
+        if (shindoStr === "0") continue;
 
-          let finalShindo = shindoStr;
+        let finalShindo = shindoStr;
 
-          if (!TEST_GMPE_OVERRIDE) {
-            if (getIntVal(finalShindo) > getIntVal("3")) {
-              finalShindo = "3";
-            }
-          }
-
-          const val = getIntVal(finalShindo);
-          if (val > stationMaxInts[i]) {
-            stationMaxInts[i] = val;
+        if (!TEST_GMPE_OVERRIDE) {
+          if (getIntVal(finalShindo) > getIntVal("3")) {
+            finalShindo = "3";
           }
         }
-      }
 
-      // Group station intensities by forecast area
-      const areaInts = new Map();
-      for (let i = 0; i < stationsData.length; i++) {
-        const val = stationMaxInts[i];
-        if (val === 0) continue;
-
-        const areaCodeStr = cityForecastMap.get(stationsData[i].cityCode);
-        if (areaCodeStr) {
-          let arr = areaInts.get(areaCodeStr);
-          if (!arr) {
-            arr = [];
-            areaInts.set(areaCodeStr, arr);
-          }
-          arr.push(val);
+        const val = getIntVal(finalShindo);
+        if (val > stationMaxInts[i]) {
+          stationMaxInts[i] = val;
         }
       }
+    }
 
-      const getIntStr = (val) => {
-        if (val === 70) return "7";
-        if (val === 65) return "6+";
-        if (val === 60) return "6-";
-        if (val === 55) return "5+";
-        if (val === 50) return "5-";
-        return String(val / 10);
-      };
+    // Group station intensities by forecast area
+    const areaInts = new Map();
+    for (let i = 0; i < stationsData.length; i++) {
+      const val = stationMaxInts[i];
+      if (val === 0) continue;
 
-      // Determine the area's intensity by requiring at least 2 stations
-      for (const [areaCodeStr, vals] of areaInts.entries()) {
-        if (vals.length >= 2) {
-          vals.sort((a, b) => b - a); // descending
-          const secondHighestVal = vals[1];
-          if (secondHighestVal > 0) {
-            localPredictions.set(areaCodeStr, getIntStr(secondHighestVal));
-          }
+      const areaCodeStr = cityForecastMap.get(stationsData[i].cityCode);
+      if (areaCodeStr) {
+        let arr = areaInts.get(areaCodeStr);
+        if (!arr) {
+          arr = [];
+          areaInts.set(areaCodeStr, arr);
+        }
+        arr.push(val);
+      }
+    }
+
+    const getIntStr = (val) => {
+      if (val === 70) return "7";
+      if (val === 65) return "6+";
+      if (val === 60) return "6-";
+      if (val === 55) return "5+";
+      if (val === 50) return "5-";
+      return String(val / 10);
+    };
+
+    for (const [areaCodeStr, vals] of areaInts.entries()) {
+      if (vals.length >= 1) {
+        vals.sort((a, b) => b - a); // descending
+        if (vals[0] > 0) {
+          localPredictions.set(areaCodeStr, getIntStr(vals[0]));
         }
       }
-    } else {
-      console.debug(
-        "[eq-viewer-eew] updateMapForEew Phase 2: skipping GMPE calculation (disabled for provider)",
-      );
     }
 
     console.debug("[eq-viewer-eew] updateMapForEew Phase 2: merging GMPE and forecast");
     const finalMapIntensities = new Map();
 
     if (TEST_GMPE_OVERRIDE) {
-      for (const f of mergedForecast) {
-        if (f.Intensity.To === "0" || f.Intensity.To === "over" || f.Intensity.To === "不明")
-          continue;
-        finalMapIntensities.set(String(f.Code), f.Intensity.To);
-      }
       for (const [areaCode, localInt] of localPredictions.entries()) {
+        console.info(areaCode, localInt);
         finalMapIntensities.set(areaCode, localInt);
       }
     } else {
@@ -283,8 +307,12 @@ export function updateMapForEew() {
         finalMapIntensities.set(areaCode, localInt);
       }
       for (const f of mergedForecast) {
-        if (f.Intensity.To === "0" || f.Intensity.To === "over" || f.Intensity.To === "不明")
+        if (f.Intensity.To === "0" || f.Intensity.To === "不明") continue;
+        if (f.Intensity.To === "over" && f.Intensity.From) {
+          finalMapIntensities.set(String(f.Code), f.Intensity.From);
+        } else {
           continue;
+        }
         finalMapIntensities.set(String(f.Code), f.Intensity.To);
       }
     }
@@ -314,7 +342,11 @@ export function updateMapForEew() {
     requestAnimationFrame(() => {
       console.debug("[eq-viewer-eew] updateMapForEew Phase 3: START");
       // Guard: EEW state may have changed by the time this frame fires
-      if (!eewState.isEewMapActive || eewState.activeEews.size === 0 || document.querySelector(".eq-item.active")) {
+      if (
+        !eewState.isEewMapActive ||
+        eewState.activeEews.size === 0 ||
+        document.querySelector(".eq-item.active")
+      ) {
         return;
       }
 

@@ -34,6 +34,7 @@ export function eqdbIntensityToShindo(val) {
 // ─── Debug ──────────────────────────────────────────────────────────────────
 export const USE_TEST_SERVER = false;
 export const TEST_GMPE_OVERRIDE = false;
+export const ENABLE_SM1999_GMPE = false;
 
 // ─── Intensity Configuration (JMA Shindo Scale) ──────────────────────────────
 export const INTENSITY_CONFIG = {

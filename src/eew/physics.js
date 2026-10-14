@@ -3,11 +3,102 @@ import {
   loadStationsCsvText,
   loadAreaNameToCodeMap,
 } from "../areaCodes.js";
+import { ENABLE_SM1999_GMPE } from "../constants.js";
+import { createSlabModel } from "./slabs.js";
+import { prepareEvent, shindoAtSite } from "./mf2013.js";
 
 export const travelTimeData = {};
 export const cityForecastMap = new Map();
 export const stationsData = [];
 let _eewDependenciesPromise = null;
+
+// ─── Ground Motion Prediction Equation (GMPE) selection ──────────────────────
+export const EEW_GMPE_SM1999 = "sm1999";
+export const EEW_GMPE_MF2013 = "mf2013";
+const EEW_GMPE_STORAGE_KEY = "eew-gmpe";
+
+let _slabModel = null;
+
+/**
+ * Returns the GMPE selected for EEW intensity estimates.
+ * MF 2013 is the default; SM 1999 is only selectable when enabled.
+ * @returns {string} One of EEW_GMPE_SM1999 / EEW_GMPE_MF2013
+ */
+export function getEewGmpe() {
+  if (!ENABLE_SM1999_GMPE) return EEW_GMPE_MF2013;
+  const saved =
+    typeof localStorage !== "undefined" ? localStorage.getItem(EEW_GMPE_STORAGE_KEY) : null;
+  return saved === EEW_GMPE_SM1999 ? EEW_GMPE_SM1999 : EEW_GMPE_MF2013;
+}
+
+/**
+ * Persists the GMPE selection. Invalid ids (or SM 1999 when disabled) become MF 2013.
+ * @param {string} id
+ * @returns {string} The normalized selection
+ */
+export function setEewGmpe(id) {
+  const value = ENABLE_SM1999_GMPE && id === EEW_GMPE_SM1999 ? EEW_GMPE_SM1999 : EEW_GMPE_MF2013;
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem(EEW_GMPE_STORAGE_KEY, value);
+  }
+  return value;
+}
+
+/**
+ * Returns the loaded slab model used by the MF 2013 GMPE, or null if unavailable.
+ */
+export function getSlabModel() {
+  return _slabModel;
+}
+
+/**
+ * Loads (once) the slab2 model consumed by the MF 2013 GMPE.
+ * @returns {Promise<object|null>}
+ */
+async function loadSlabModel() {
+  if (_slabModel) return _slabModel;
+
+  const [metaRes, binRes] = await Promise.all([
+    fetch("/slab2_japan.json"),
+    fetch("/slab2_japan.bin"),
+  ]);
+  if (!metaRes.ok || !binRes.ok) {
+    throw new Error(`slab2_japan fetch failed (${metaRes.status}/${binRes.status})`);
+  }
+  const [meta, buffer] = await Promise.all([metaRes.json(), binRes.arrayBuffer()]);
+  _slabModel = createSlabModel(meta, buffer);
+  console.info("[EEW] Loaded MF 2013 slab model.");
+  return _slabModel;
+}
+
+/**
+ * Prepares an event for the MF 2013 GMPE (classify once, reuse for every station).
+ * Returns null when the slab model is unavailable.
+ * @returns {object|null}
+ */
+export function prepareMf2013Event(magnitude, depthKm, lat, lon) {
+  if (!_slabModel) return null;
+  return prepareEvent({ magnitude, depthKm, lat, lon }, _slabModel);
+}
+
+/**
+ * JMA shindo estimate for one station via the MF 2013 GMPE.
+ * Returns null when the event/model is unavailable or the station lacks avs30.
+ * @param {object} ev - Event prepared by prepareMf2013Event
+ * @param {object} station - Row from stationsData ({ lat, lon, avs30, d1400 })
+ * @param {number} [epicentralDistanceKm]
+ * @returns {number|null}
+ */
+export function calculateMf2013Shindo(ev, station, epicentralDistanceKm) {
+  if (!ev) return null;
+  return shindoAtSite(ev, {
+    lat: station.lat,
+    lon: station.lon,
+    avs30: station.avs30,
+    d1400: station.d1400 ?? null,
+    epicentralDistanceKm,
+  });
+}
 
 /**
  * Loads EEW travel time tables, city forecast mappings, and seismic stations data.
@@ -22,6 +113,9 @@ export async function loadEewDependencies() {
         loadCityForecastMapCsv(),
         loadStationsCsvText(),
         loadAreaNameToCodeMap().catch(() => {}),
+        loadSlabModel().catch((err) => {
+          console.error("[EEW] MF 2013 slab model unavailable:", err);
+        }),
       ]);
 
       for (const key of Object.keys(travelTimeData)) {
@@ -54,6 +148,8 @@ export async function loadEewDependencies() {
             lon: Number.parseFloat(parts[5]),
             cityCode: parts[6],
             arv: Number.parseFloat(parts[7]),
+            avs30: parts.length > 8 ? Number.parseFloat(parts[8]) : Number.NaN,
+            d1400: parts.length > 9 && parts[9].trim() !== "" ? Number.parseFloat(parts[9]) : null,
           });
         }
       }
@@ -68,6 +164,7 @@ export async function loadEewDependencies() {
 
 /**
  * Calculates peak ground acceleration / JMA seismic intensity estimate via GMPE.
+ * Si & Midorikawa (1999)
  */
 export function calculateGmpe(magnitude, depthKm, epicentralDistance, arv) {
   const mw = magnitude - 0.171;

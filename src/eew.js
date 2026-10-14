@@ -1,4 +1,4 @@
-import { USE_TEST_SERVER } from "./constants.js";
+import { USE_TEST_SERVER, ENABLE_SM1999_GMPE } from "./constants.js";
 import { playAudio } from "./audio.js";
 import {
   displayHomeMarker,
@@ -16,9 +16,16 @@ import {
 } from "./eewProviders.js";
 
 import { eewState } from "./eew/state.js";
-import { loadEewDependencies, getIntVal } from "./eew/physics.js";
+import {
+  loadEewDependencies,
+  getIntVal,
+  getEewGmpe,
+  setEewGmpe,
+  EEW_GMPE_SM1999,
+  EEW_GMPE_MF2013,
+} from "./eew/physics.js";
 import { startWaveAnimation } from "./eew/waveAnimation.js";
-import { onMapInteract } from "./eew/eewMap.js";
+import { onMapInteract, updateMapForEew } from "./eew/eewMap.js";
 import {
   updateEewUI,
   updateHomeIntensityForActiveEews,
@@ -48,6 +55,8 @@ export function initEewSettings(map, bounds, cities, areas) {
   const homeSyncToggleEl = document.getElementById("eew-home-sync-toggle");
   const testToggleEl = document.getElementById("eew-test-toggle");
   const axisInfoEl = document.getElementById("eew-axis-info");
+  const gmpeGroupEl = document.getElementById("eew-gmpe-group");
+  const gmpeSelectEl = document.getElementById("eew-gmpe-select");
 
   if (!toggleEl) return;
 
@@ -268,6 +277,32 @@ export function initEewSettings(map, bounds, cities, areas) {
             updateHomeIntensityForActiveEews();
           }
         }
+      }
+    });
+  }
+
+  // GMPE selection (only when SM 1999 support is compiled in; MF 2013 is the default)
+  if (ENABLE_SM1999_GMPE && gmpeGroupEl && gmpeSelectEl) {
+    const gmpeOptions = [
+      { value: EEW_GMPE_MF2013, label: "MF 2013 (Morikawa & Fujiwara)" },
+      { value: EEW_GMPE_SM1999, label: "SM 1999 (Si & Midorikawa)" },
+    ];
+    gmpeSelectEl.innerHTML = "";
+    for (const opt of gmpeOptions) {
+      const option = document.createElement("option");
+      option.value = opt.value;
+      option.textContent = opt.label;
+      gmpeSelectEl.appendChild(option);
+    }
+    gmpeSelectEl.value = getEewGmpe();
+    gmpeGroupEl.classList.remove("hidden");
+
+    gmpeSelectEl.addEventListener("change", (e) => {
+      const selected = setEewGmpe(e.target.value);
+      e.target.value = selected;
+      // Recompute the displayed intensities with the newly selected GMPE.
+      if (eewState.isEewMapActive && eewState.activeEews.size > 0) {
+        updateMapForEew();
       }
     });
   }
