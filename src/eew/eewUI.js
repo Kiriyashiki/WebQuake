@@ -1,9 +1,5 @@
 import { eewState } from "./state.js";
-import {
-  formatTimeJSTWithSeconds,
-  INTENSITY_CONFIG,
-  LPGM_CONFIG,
-} from "../constants.js";
+import { formatTimeJSTWithSeconds, INTENSITY_CONFIG, LPGM_CONFIG } from "../constants.js";
 import { renderIntensityBadge, getIntensityBadgeHtml } from "../intensityBadge.js";
 import { createRubyHtml } from "../areaCodes.js";
 import { getActiveProvider, isPlumEew } from "../eewProviders.js";
@@ -14,11 +10,7 @@ import {
   highlightObservations,
   hideHomeLocationIntensity,
 } from "../map.js";
-import {
-  getCityAreasState,
-  getHomeIntensityState,
-  getHomeLocation,
-} from "../sidebarUI.js";
+import { getCityAreasState, getHomeIntensityState, getHomeLocation } from "../sidebarUI.js";
 import { stopWaveAnimation, updateWaves } from "./waveAnimation.js";
 
 /**
@@ -102,7 +94,7 @@ export function updateEewHomeLocationDisplay(cityCode, intensityStr) {
     intensityStr !== "0" &&
     intensityStr !== "over" &&
     intensityStr !== "不明" &&
-    INTENSITY_CONFIG[intensityStr]
+    INTENSITY_CONFIG[intensityStr],
   );
   const displayIntensity = hasIntensity ? intensityStr : "0";
   const config = INTENSITY_CONFIG[displayIntensity] || INTENSITY_CONFIG[0];
@@ -434,7 +426,7 @@ export function renderEewInfoBox(
       msg.Intensity &&
       msg.Intensity !== "不明" &&
       msg.Intensity !== "0" &&
-      INTENSITY_CONFIG[msg.Intensity]
+      INTENSITY_CONFIG[msg.Intensity],
     );
     renderIntensityBadge(intensityContainer, hasIntensity ? msg.Intensity : "0", {
       title: hasIntensity ? `Intensity: ${msg.Intensity}` : undefined,
@@ -542,9 +534,13 @@ export function renderEewInfoBox(
 
       const forecastByInt = {};
       for (const f of mergedForecast) {
-        if (f.Intensity.To === "0" || f.Intensity.To === "over" || f.Intensity.To === "不明")
-          continue;
-        const intStr = f.Intensity.To;
+        let intStr;
+        if (f.Intensity.To === "0" || f.Intensity.To === "不明") continue;
+        if (f.Intensity.To === "over" && f.Intensity.From) {
+          intStr = f.Intensity.From;
+        } else {
+          intStr = f.Intensity.To;
+        }
         if (!forecastByInt[intStr]) forecastByInt[intStr] = [];
         forecastByInt[intStr].push(f);
       }

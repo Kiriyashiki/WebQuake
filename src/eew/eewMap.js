@@ -310,7 +310,6 @@ export function updateMapForEew() {
         if (f.Intensity.To === "0" || f.Intensity.To === "不明") continue;
         if (f.Intensity.To === "over" && f.Intensity.From) {
           finalMapIntensities.set(String(f.Code), f.Intensity.From);
-        } else {
           continue;
         }
         finalMapIntensities.set(String(f.Code), f.Intensity.To);
