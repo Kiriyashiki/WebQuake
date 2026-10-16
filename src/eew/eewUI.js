@@ -2,7 +2,7 @@ import { eewState } from "./state.js";
 import { formatTimeJSTWithSeconds, INTENSITY_CONFIG, LPGM_CONFIG } from "../constants.js";
 import { renderIntensityBadge, getIntensityBadgeHtml } from "../intensityBadge.js";
 import { createRubyHtml } from "../areaCodes.js";
-import { getActiveProvider, isPlumEew } from "../eewProviders.js";
+import { getActiveProvider, isPlumEew, isLevelMethodEew } from "../eewProviders.js";
 import { mergeForecasts, getIntVal, cityForecastMap } from "./physics.js";
 import { updateMapForEew, clearEewMapDisplay } from "./eewMap.js";
 import {
@@ -214,6 +214,7 @@ export function renderCurrentEew() {
   const isCancelled = currentEew.isCancelled;
   const isWarning = msg.Title.includes("警報");
   const isPlum = isPlumEew(msg);
+  const isLevelMethod = isLevelMethodEew(msg);
   const isLowAccuracy = Boolean(msg.isLowAccuracy);
   const isTest = Boolean(currentEew.isTest || msg.isTest || msg.Flag?.is_training);
   const providerName = currentEew.providerName || getActiveProvider()?.name;
@@ -262,7 +263,7 @@ export function renderCurrentEew() {
           <div class="eq-footer">
             <div class="eq-mag">
               <span class="eq-mag-label">M</span>
-              ${isPlum ? "--" : msg.Magnitude || "--"}
+              ${isPlum || isLevelMethod ? "--" : msg.Magnitude || "--"}
             </div>
             <div class="eq-time">${formatTimeJSTWithSeconds(new Date(msg.OriginDateTime).getTime())}</div>
           </div>
@@ -434,12 +435,19 @@ export function renderEewInfoBox(
   }
 
   const isPlumMethod = isPlum !== undefined ? Boolean(isPlum) : isPlumEew(msg);
-  magnitude.textContent = isPlumMethod ? "--" : `M ${msg.Magnitude}`;
-  depth.textContent = isPlumMethod ? "--" : (msg.Hypocenter?.Depth ?? "--");
+  const isLevelMethod = isLevelMethodEew(msg);
+  const hasAssumedHypocenter = isPlumMethod || isLevelMethod;
+
+  magnitude.textContent = hasAssumedHypocenter ? "--" : `M ${msg.Magnitude}`;
+  depth.textContent = hasAssumedHypocenter ? "--" : (msg.Hypocenter?.Depth ?? "--");
 
   if (isPlumMethod) {
     const coordsLabel = coordinates.previousElementSibling;
     if (coordsLabel) coordsLabel.textContent = "PLUM method • PLUM法による仮定震源要素";
+    coordinates.textContent = "";
+  } else if (isLevelMethod) {
+    const coordsLabel = coordinates.previousElementSibling;
+    if (coordsLabel) coordsLabel.textContent = "Level method • レベル法による仮定震源要素";
     coordinates.textContent = "";
   } else if (msg.Hypocenter?.Coordinate) {
     const coordsLabel = coordinates.previousElementSibling;

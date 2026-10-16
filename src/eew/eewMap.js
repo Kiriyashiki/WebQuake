@@ -195,7 +195,7 @@ export function updateMapForEew() {
     }
 
     for (const eew of eews) {
-      if (eew.isCancelled || (!TEST_GMPE_OVERRIDE && eew.disableGmpe)) {
+      if (eew.isCancelled) {
         console.debug(
           "[eq-viewer-eew] updateMapForEew Phase 2: skipping GMPE calculation (cancelled)",
         );

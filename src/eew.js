@@ -26,6 +26,7 @@ import {
 } from "./eew/physics.js";
 import { startWaveAnimation } from "./eew/waveAnimation.js";
 import { onMapInteract, updateMapForEew } from "./eew/eewMap.js";
+import { clearEewRemoval, scheduleEewRemoval } from "./eew/removal.js";
 import {
   updateEewUI,
   updateHomeIntensityForActiveEews,
@@ -267,6 +268,7 @@ export function initEewSettings(map, bounds, cities, areas) {
         let changed = false;
         for (const [id, eew] of eewState.activeEews.entries()) {
           if (eew.isTest) {
+            clearEewRemoval(eew);
             eewState.activeEews.delete(id);
             changed = true;
           }
@@ -474,9 +476,7 @@ export function handleEewMessage(msg, providerInfo = null) {
       eew.disableGmpe = disableGmpe;
       eew.isTest = isTest;
 
-      setTimeout(() => {
-        removeEew(eventId);
-      }, 15000);
+      scheduleEewRemoval(eew, msg, () => removeEew(eventId));
       updateEewUI(false);
       if (eewState.isEewMapActive && eewState.activeEews.size > 0) {
         updateHomeIntensityForActiveEews();
@@ -487,20 +487,18 @@ export function handleEewMessage(msg, providerInfo = null) {
     const isNew = !eewState.activeEews.has(eventId);
     const eew = eewState.activeEews.get(eventId) || { receivedAt: Date.now() };
     eew.msg = msg;
-    eew.isFinal = msg.Flag?.is_final;
     eew.providerName = srcName;
     eew.providerId = providerId;
     eew.disableGmpe = disableGmpe;
     eew.isTest = isTest;
     eewState.activeEews.set(eventId, eew);
 
-    if (eew.isFinal) {
-      setTimeout(
-        () => {
-          removeEew(eventId);
-        },
-        3 * 60 * 1000,
-      );
+    // Final reports are removed after 3 minutes; otherwise the EEW is kept for
+    // 8 minutes since the last non-final, non-cancel message as a fallback for
+    // when the final report never arrives. A cancelled EEW keeps its short
+    // removal timer, so a late forecast cannot extend its lifetime.
+    if (!eew.isCancelled) {
+      scheduleEewRemoval(eew, msg, () => removeEew(eventId));
     }
 
     if (isNew) {
@@ -519,7 +517,9 @@ export function handleEewMessage(msg, providerInfo = null) {
 }
 
 function removeEew(eventId) {
-  if (eewState.activeEews.has(eventId)) {
+  const eew = eewState.activeEews.get(eventId);
+  if (eew) {
+    clearEewRemoval(eew);
     eewState.activeEews.delete(eventId);
     updateEewUI(false);
     if (eewState.isEewMapActive && eewState.activeEews.size > 0) {
@@ -529,6 +529,9 @@ function removeEew(eventId) {
 }
 
 function clearAllEews() {
+  for (const eew of eewState.activeEews.values()) {
+    clearEewRemoval(eew);
+  }
   eewState.activeEews.clear();
   updateEewUI(false);
 }

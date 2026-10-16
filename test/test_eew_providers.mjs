@@ -58,6 +58,11 @@ const {
   BaseEewProvider,
   WebSocketEewProvider,
   isPlumEew,
+  isLevelMethodEew,
+  isSingleStationIpfEew,
+  isWarningEew,
+  isUnknownValue,
+  computeIsLowAccuracy,
 } = await import("../src/eewProviders.js");
 
 console.log("=== Running EEW Providers Unit Tests ===");
@@ -380,6 +385,179 @@ const rawS4 = {
 const normS4 = testProvider.normalizeMessage(rawS4);
 assert.strictEqual(normS4.isPlumOnly, true, "Scenario S4 should normalize to isPlumOnly: true");
 assert.strictEqual(isPlumEew(normS4), true, "isPlumEew(normS4) should return true");
+
+// ── Inferred low-accuracy detection (providers without accuracy info) ──
+const baseAxisRaw = {
+  Title: "緊急地震速報（予報）",
+  OriginDateTime: "2026-09-13T23:00:00+09:00",
+  ReportDateTime: "2026-09-13T23:00:10+09:00",
+  EventID: "20260913230000",
+  Serial: 1,
+  Hypocenter: { Code: 510, Name: "京都府北部", Coordinate: [135.3, 35.3], Depth: "10km" },
+  Intensity: "3",
+  Magnitude: "4.5",
+  Flag: { is_final: false, is_cancel: false, is_training: false },
+  Forecast: [],
+  Text: "",
+};
+const forecastArea = {
+  Code: 510,
+  Name: "京都府北部",
+  Intensity: { From: "3", To: "3", Description: "最大震度3" },
+};
+
+// Unknown-field helper
+assert.strictEqual(isUnknownValue(null), true);
+assert.strictEqual(isUnknownValue(undefined), true);
+assert.strictEqual(isUnknownValue(""), true);
+assert.strictEqual(isUnknownValue("--"), true);
+assert.strictEqual(isUnknownValue("不明"), true);
+assert.strictEqual(isUnknownValue("unknown"), true);
+assert.strictEqual(isUnknownValue("NaN"), true);
+assert.strictEqual(isUnknownValue("4.5"), false);
+
+// PLUM method with no area forecasts -> low accuracy
+const axisPlum = axisProvider.normalizeMessage({ ...baseAxisRaw, isPlumOnly: true });
+assert.strictEqual(axisPlum.isLowAccuracy, true, "PLUM method with no forecasts should be low accuracy");
+
+// ...but never when area forecasts exist
+const axisPlumForecast = axisProvider.normalizeMessage({
+  ...baseAxisRaw,
+  isPlumOnly: true,
+  Forecast: [forecastArea],
+});
+assert.strictEqual(
+  axisPlumForecast.isLowAccuracy,
+  false,
+  "EEW with area forecasts is never low accuracy",
+);
+
+// Level method (also known as the 100gal method): an unknown magnitude is sufficient
+const axisLevel = axisProvider.normalizeMessage({ ...baseAxisRaw, Magnitude: null, Intensity: "5-" });
+assert.strictEqual(axisLevel.Magnitude, "--");
+assert.strictEqual(axisLevel.isLowAccuracy, true, "Level method should be low accuracy");
+assert.strictEqual(isLevelMethodEew(axisLevel), true, "isLevelMethodEew should detect the level method");
+
+// The maximum intensity is irrelevant to the level method detection
+const axisLevelOtherInt = axisProvider.normalizeMessage({
+  ...baseAxisRaw,
+  Magnitude: null,
+  Intensity: "5+",
+});
+assert.strictEqual(isLevelMethodEew(axisLevelOtherInt), true);
+assert.strictEqual(axisLevelOtherInt.isLowAccuracy, true);
+
+// Level method requires an unknown magnitude
+const axisLevelKnownMag = axisProvider.normalizeMessage({
+  ...baseAxisRaw,
+  Magnitude: "4.2",
+  Intensity: "5-",
+});
+assert.strictEqual(isLevelMethodEew(axisLevelKnownMag), false);
+assert.strictEqual(axisLevelKnownMag.isLowAccuracy, false);
+
+// Level method detection is provider-independent, but area forecasts still
+// disqualify an inferred low-accuracy EEW.
+const axisLevelForecast = axisProvider.normalizeMessage({
+  ...baseAxisRaw,
+  Magnitude: null,
+  Intensity: "5-",
+  Forecast: [forecastArea],
+});
+assert.strictEqual(isLevelMethodEew(axisLevelForecast), true, "Level method is provider-independent");
+assert.strictEqual(
+  axisLevelForecast.isLowAccuracy,
+  false,
+  "Area forecasts disqualify an inferred low accuracy EEW",
+);
+
+// Single-station IPF method: unknown max intensity + shallow depth
+const axisIpf = axisProvider.normalizeMessage({
+  ...baseAxisRaw,
+  Intensity: "不明",
+  Hypocenter: { ...baseAxisRaw.Hypocenter, Depth: "10km" },
+});
+assert.strictEqual(isSingleStationIpfEew(axisIpf), true, "isSingleStationIpfEew should detect it");
+assert.strictEqual(axisIpf.isLowAccuracy, true, "Single-station IPF method should be low accuracy");
+
+// Single-station IPF method requires a shallow depth
+const axisIpfDeep = axisProvider.normalizeMessage({
+  ...baseAxisRaw,
+  Intensity: "不明",
+  Hypocenter: { ...baseAxisRaw.Hypocenter, Depth: "360km" },
+});
+assert.strictEqual(isSingleStationIpfEew(axisIpfDeep), false);
+assert.strictEqual(axisIpfDeep.isLowAccuracy, false);
+
+// Single-station IPF method requires an unknown max intensity
+const axisIpfKnownInt = axisProvider.normalizeMessage({
+  ...baseAxisRaw,
+  Intensity: "4",
+  Hypocenter: { ...baseAxisRaw.Hypocenter, Depth: "10km" },
+});
+assert.strictEqual(isSingleStationIpfEew(axisIpfKnownInt), false);
+assert.strictEqual(axisIpfKnownInt.isLowAccuracy, false);
+
+// Plain forecast without any low-accuracy signal
+assert.strictEqual(axisProvider.normalizeMessage({ ...baseAxisRaw }).isLowAccuracy, false);
+
+// Warnings are never low accuracy, even when they match a detection method
+const axisWarningLevel = axisProvider.normalizeMessage({
+  ...baseAxisRaw,
+  Title: "緊急地震速報（警報）",
+  Magnitude: null,
+  Intensity: "5-",
+});
+assert.strictEqual(isWarningEew(axisWarningLevel), true);
+assert.strictEqual(axisWarningLevel.isLowAccuracy, false, "Warning should never be low accuracy");
+// The method detectors are pure; the warning gate lives in computeIsLowAccuracy.
+assert.strictEqual(isLevelMethodEew(axisWarningLevel), true);
+
+// computeIsLowAccuracy honours native accuracy metadata when asked
+assert.strictEqual(
+  computeIsLowAccuracy(
+    { ...baseAxisRaw, accuracy: { epicenters: ["1", "4"] } },
+    { hasAccuracyInfo: true },
+  ),
+  true,
+);
+assert.strictEqual(
+  computeIsLowAccuracy(
+    { ...baseAxisRaw, accuracy: { epicenters: ["4", "4"] } },
+    { hasAccuracyInfo: true },
+  ),
+  false,
+);
+
+// Base providers forward native accuracy metadata when it is present
+const axisNativeAccuracy = axisProvider.normalizeMessage({
+  ...baseAxisRaw,
+  accuracy: { epicenters: ["1", "2"] },
+});
+assert.strictEqual(axisNativeAccuracy.isLowAccuracy, true);
+assert.deepStrictEqual(axisNativeAccuracy.accuracy, { epicenters: ["1", "2"] });
+
+// Level method is detected for providers with native accuracy info too
+const rawDmdssLevel = {
+  ...rawDmdssForecast,
+  isPlumOnly: false,
+  magnitude: null,
+  maxInt: { from: "5-", to: "5-" },
+  accuracy: { epicenters: ["4", "4"] },
+};
+const normDmdssLevel = dmdssProvider.normalizeDmdssEew(rawDmdssLevel);
+assert.strictEqual(normDmdssLevel.Magnitude, "--");
+assert.strictEqual(normDmdssLevel.Intensity, "5-");
+assert.strictEqual(isLevelMethodEew(normDmdssLevel), true);
+assert.strictEqual(
+  normDmdssLevel.isLowAccuracy,
+  true,
+  "Level method should apply to native accuracy providers too",
+);
+
+// ...but a warning with the same values is not low accuracy
+const normDmdssLevelWarning = dmdssProvider.normalizeDmdssEew({ ...rawDmdssLevel, isWarning: true });
+assert.strictEqual(normDmdssLevelWarning.isLowAccuracy, false);
 
 console.log("✓ Test 6 passed");
 
