@@ -21,6 +21,90 @@ export function isPlumEew(msg) {
   return isDummyMag && isDummyDepth;
 }
 
+/** Values that mean a normalized EEW field carries no usable information. */
+const UNKNOWN_FIELD_VALUES = new Set(["", "--", "不明", "unknown", "null", "undefined", "nan"]);
+
+/**
+ * Returns true when a normalized EEW field has no usable value.
+ */
+export function isUnknownValue(value) {
+  if (value == null) return true;
+  return UNKNOWN_FIELD_VALUES.has(String(value).trim().toLowerCase());
+}
+
+/**
+ * Returns true when the normalized message is an EEW warning (警報).
+ */
+export function isWarningEew(msg) {
+  if (!msg) return false;
+  if (msg.isWarning === true) return true;
+  return String(msg.Title ?? "").includes("警報");
+}
+
+/**
+ * Level method (レベル法), also known as the 100gal method: the magnitude could
+ * not be determined from a single station's record.
+ * This is a pure method check (like `isPlumEew`) and is evaluated for every
+ * provider; the warning/low-accuracy gates live in `computeIsLowAccuracy`.
+ */
+export function isLevelMethodEew(msg) {
+  if (!msg) return false;
+  return isUnknownValue(msg.Magnitude);
+}
+
+/**
+ * Single-station IPF method (IPF法): the hypocenter was estimated from a single
+ * station, so the maximum intensity is unknown while the depth is shallower or equal
+ * than 150 km. Evaluated for every provider.
+ */
+export function isSingleStationIpfEew(msg) {
+  if (!msg) return false;
+  if (!isUnknownValue(msg.Intensity)) return false;
+  const depth = Number.parseFloat(String(msg.Hypocenter?.Depth ?? ""));
+  return Number.isFinite(depth) && depth <= 150;
+}
+
+/**
+ * A low-accuracy EEW never carries area forecasts.
+ */
+function hasAreaForecast(msg) {
+  return Array.isArray(msg.Forecast) && msg.Forecast.length > 0;
+}
+
+/**
+ * Computes the `isLowAccuracy` flag for a normalized EEW message.
+ *
+ * Providers that expose native accuracy metadata keep the original behaviour:
+ * the value '1' in either `accuracy.epicenters` entry marks a low-accuracy EEW.
+ * Providers without accuracy metadata have low accuracy inferred from the
+ * calculation method. The level (100gal) method is detected for every provider.
+ *
+ * @param {Object} msg Normalized EEW message.
+ * @param {Object} [options]
+ * @param {boolean} [options.hasAccuracyInfo] Source exposes native accuracy metadata.
+ * @param {boolean} [options.nativeIsLowAccuracy] Source's own low-accuracy flag.
+ * @returns {boolean}
+ */
+export function computeIsLowAccuracy(
+  msg,
+  { hasAccuracyInfo = false, nativeIsLowAccuracy = false } = {},
+) {
+  if (!msg || isWarningEew(msg)) return false;
+
+  if (hasAccuracyInfo) {
+    const epicenters = msg.accuracy?.epicenters;
+    const epicenterLowAccuracy =
+      Array.isArray(epicenters) && epicenters.some((value) => String(value) === "1");
+    // The level method is checked for all providers, even those with accuracy info.
+    return Boolean(nativeIsLowAccuracy) || epicenterLowAccuracy || isLevelMethodEew(msg);
+  }
+
+  // Providers without accuracy info: a low-accuracy EEW never has area forecasts.
+  if (hasAreaForecast(msg)) return false;
+
+  return isPlumEew(msg) || isLevelMethodEew(msg) || isSingleStationIpfEew(msg);
+}
+
 /**
  * Base EEW Data Provider
  */
@@ -38,6 +122,7 @@ export class BaseEewProvider {
     infoHtml = null,
     disableGmpe = false,
     supportsHomeSync = false,
+    hasAccuracyInfo = false,
   }) {
     this.id = id;
     this.name = name;
@@ -51,6 +136,7 @@ export class BaseEewProvider {
     this.infoHtml = infoHtml;
     this.disableGmpe = disableGmpe;
     this.supportsHomeSync = supportsHomeSync;
+    this.hasAccuracyInfo = hasAccuracyInfo;
     this.callbacks = null;
   }
 
@@ -124,7 +210,7 @@ export class BaseEewProvider {
     const isDummyDepth = depth === "10km" || depth === "10";
     const isPlum = Boolean(rawMsg.isPlumOnly) || (isDummyMag && isDummyDepth);
 
-    return {
+    const normalized = {
       Title: String(rawMsg.Title || ""),
       EventID: String(rawMsg.EventID || ""),
       Serial: rawMsg.Serial ?? 1,
@@ -151,7 +237,18 @@ export class BaseEewProvider {
       isTest: isTest,
       isLowAccuracy: Boolean(rawMsg.isLowAccuracy),
       isPlumOnly: isPlum,
+      accuracy: rawMsg.accuracy ?? null,
     };
+
+    // Providers without native accuracy metadata have low accuracy inferred
+    // from the calculation method (PLUM / level (100gal) / single-station IPF).
+    normalized.isLowAccuracy = computeIsLowAccuracy(normalized, {
+      hasAccuracyInfo:
+        this.hasAccuracyInfo || rawMsg.isLowAccuracy != null || rawMsg.accuracy != null,
+      nativeIsLowAccuracy: Boolean(rawMsg.isLowAccuracy),
+    });
+
+    return normalized;
   }
 }
 
@@ -674,6 +771,7 @@ export class DmdssEewProvider extends WebSocketEewProvider {
       useHeartbeat: false,
       disableGmpe: true,
       supportsHomeSync: true,
+      hasAccuracyInfo: true,
     });
     this.userPoint = null;
     this.lastServerStatus = null;
@@ -806,10 +904,10 @@ export class DmdssEewProvider extends WebSocketEewProvider {
     const isDummyDepth = depth === "10km" || depth === "10";
     const isPlumOnly = Boolean(data.isPlumOnly) || (isDummyMag && isDummyDepth);
 
-    // Low accuracy: in the 'accuracy' field, value '1' in either 'epicenters' values is a low-accuracy EEW
+    // Native accuracy: value '1' in either 'epicenters' value is a low-accuracy EEW.
     const epicentersAcc = data.accuracy?.epicenters;
-    const isLowAccuracy =
-      !isWarning && Array.isArray(epicentersAcc) && epicentersAcc.some((v) => String(v) === "1");
+    const nativeIsLowAccuracy =
+      Array.isArray(epicentersAcc) && epicentersAcc.some((v) => String(v) === "1");
 
     // Look up hypocenter code by epicenterName from area code data
     const epicenterName = (data.epicenterName || "").trim();
@@ -851,7 +949,7 @@ export class DmdssEewProvider extends WebSocketEewProvider {
       lpgmStr = data.maxLgInt;
     }
 
-    return {
+    const normalized = {
       Title: isWarning ? "緊急地震速報（警報）" : "緊急地震速報（予報）",
       EventID: String(data.eventId || ""),
       Serial: Number(data.serial) || data.serial || 1,
@@ -879,11 +977,18 @@ export class DmdssEewProvider extends WebSocketEewProvider {
       Text: "",
       isTest: isTest,
       isPlumOnly: isPlumOnly,
-      isLowAccuracy: isLowAccuracy,
+      isLowAccuracy: false,
       pointForecast: data.pointForecast || null,
       maxLgInt: lpgmStr,
       accuracy: data.accuracy || null,
     };
+
+    normalized.isLowAccuracy = computeIsLowAccuracy(normalized, {
+      hasAccuracyInfo: true,
+      nativeIsLowAccuracy,
+    });
+
+    return normalized;
   }
 
   disconnect() {

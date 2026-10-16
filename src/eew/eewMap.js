@@ -195,7 +195,7 @@ export function updateMapForEew() {
     }
 
     for (const eew of eews) {
-      if (eew.isCancelled || (!TEST_GMPE_OVERRIDE && eew.disableGmpe)) {
+      if (eew.isCancelled) {
         console.debug(
           "[eq-viewer-eew] updateMapForEew Phase 2: skipping GMPE calculation (cancelled)",
         );
@@ -211,7 +211,7 @@ export function updateMapForEew() {
       let depthLim = useMf2013 ? 400 : 150;
       if (Number.isNaN(depthKm) || depthKm >= depthLim) continue;
 
-      if (!TEST_GMPE_OVERRIDE && eew.disableGmpe && depthKm < 150) {
+      if (!TEST_GMPE_OVERRIDE && eew.disableGmpe && depthKm <= 150) {
         console.debug(
           "[eq-viewer-eew] updateMapForEew Phase 2: skipping GMPE calculation (disabled for provider)",
         );
