@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KyoQuake · GMPE Test</title>
+    <link rel="icon" href="/img/epicenter.png" type="image/png" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- ── Top bar ─────────────────────────── -->
+      <header id="topbar">
+        <div id="topbar-left">
+          <span class="topbar-title">KyoQuake</span>
+          <span class="topbar-sub">GMPE Test · 震度計算テスト</span>
+        </div>
+        <div id="topbar-right">
+          <span id="gmpe-status-dot" class="dot-idle"></span>
+          <span id="gmpe-status-text" class="mono">Initialising…</span>
+        </div>
+      </header>
+
+      <!-- ── Main layout ────────────────────── -->
+      <div id="layout">
+        <!-- Sidebar toggle button -->
+        <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" aria-label="Toggle sidebar">
+          <span class="toggle-arrow">◀</span>
+        </button>
+
+        <!-- Sidebar -->
+        <aside id="sidebar">
+          <div class="sidebar-tabs">
+            <button class="sidebar-tab active">GMPE Test · テスト</button>
+          </div>
+
+          <div class="sidebar-tab-content active">
+            <div class="sidebar-section">
+              <div class="gmpe-form">
+                <div class="search-field-group">
+                  <label for="gmpe-model" class="search-field-label">GMPE Model · 計算手法</label>
+                  <select id="gmpe-model" class="search-input">
+                    <option value="mf2013">MF 2013 · Morikawa &amp; Fujiwara</option>
+                    <option value="sm1999">SM 1999 · Si &amp; Midorikawa</option>
+                  </select>
+                </div>
+
+                <div class="search-field-group">
+                  <label for="gmpe-magnitude" class="search-field-label">Magnitude (Mj) · マグニチュード</label>
+                  <input
+                    id="gmpe-magnitude"
+                    class="search-input"
+                    type="number"
+                    min="0"
+                    max="11"
+                    step="0.1"
+                    placeholder="e.g. 6.5"
+                    inputmode="decimal"
+                  />
+                </div>
+
+                <div class="search-field-group">
+                  <label for="gmpe-depth" class="search-field-label">Depth (km) · 深さ</label>
+                  <input
+                    id="gmpe-depth"
+                    class="search-input"
+                    type="number"
+                    min="0"
+                    max="750"
+                    step="1"
+                    placeholder="e.g. 35"
+                    inputmode="decimal"
+                  />
+                </div>
+
+                <div class="search-field-group">
+                  <span class="search-field-label">Epicenter Coordinates · 震央座標</span>
+                  <div class="gmpe-coordinate-grid">
+                    <div class="search-field-group">
+                      <label for="gmpe-latitude" class="gmpe-sublabel">Latitude · 緯度</label>
+                      <input
+                        id="gmpe-latitude"
+                        class="search-input"
+                        type="number"
+                        min="-90"
+                        max="90"
+                        step="0.001"
+                        placeholder="e.g. 35.681"
+                        inputmode="decimal"
+                      />
+                    </div>
+                    <div class="search-field-group">
+                      <label for="gmpe-longitude" class="gmpe-sublabel">Longitude · 経度</label>
+                      <input
+                        id="gmpe-longitude"
+                        class="search-input"
+                        type="number"
+                        min="-180"
+                        max="180"
+                        step="0.001"
+                        placeholder="e.g. 139.767"
+                        inputmode="decimal"
+                      />
+                    </div>
+                  </div>
+                  <button id="gmpe-pick-epicenter" class="gmpe-btn gmpe-btn-secondary" type="button">
+                    Set epicenter on map · 地図で指定
+                  </button>
+                  <div id="gmpe-pick-hint" class="gmpe-hint hidden">
+                    Click anywhere on the map to place the epicenter.
+                  </div>
+                </div>
+
+                <fieldset id="gmpe-mf2013-options" class="gmpe-fieldset">
+                  <legend>MF 2013 Options</legend>
+
+                  <div class="search-field-group">
+                    <label for="gmpe-mw" class="search-field-label">Magnitude (Mw) · モーメントマグニチュード</label>
+                    <input
+                      id="gmpe-mw"
+                      class="search-input"
+                      type="number"
+                      min="0"
+                      max="11"
+                      step="0.1"
+                      placeholder="Auto: Mj − 0.171"
+                      inputmode="decimal"
+                    />
+                    <span class="gmpe-sublabel">Takes priority over Mj when filled.</span>
+                  </div>
+
+                  <div class="search-field-group">
+                    <label for="gmpe-event-type" class="search-field-label">Event Classification · 地震タイプ</label>
+                    <select id="gmpe-event-type" class="search-input">
+                      <option value="">Auto (from slab model)</option>
+                      <option value="1">1 · Crustal</option>
+                      <option value="2">2 · Interplate</option>
+                      <option value="3">3 · Intraslab</option>
+                    </select>
+                  </div>
+
+                  <div class="search-field-group">
+                    <label for="gmpe-region" class="search-field-label">Region · 地域</label>
+                    <select id="gmpe-region" class="search-input">
+                      <option value="">Auto</option>
+                      <option value="NE">NE (Pacific)</option>
+                      <option value="SW">SW (Philippine Sea)</option>
+                    </select>
+                  </div>
+                </fieldset>
+
+                <button id="gmpe-run" class="gmpe-btn gmpe-btn-primary" type="button">
+                  Run GMPE Test · 実行
+                </button>
+
+                <div id="gmpe-message" class="gmpe-message" role="status" aria-live="polite"></div>
+
+                <div class="gmpe-mode-section">
+                  <div class="search-field-label">Map Mode · 表示モード</div>
+                  <div class="gmpe-mode-buttons">
+                    <button
+                      class="search-preset-btn gmpe-mode-btn"
+                      type="button"
+                      data-mode="forecast"
+                    >
+                      <span class="preset-label">Forecast<br />予報区</span>
+                    </button>
+                    <button
+                      class="search-preset-btn gmpe-mode-btn"
+                      type="button"
+                      data-mode="city"
+                    >
+                      <span class="preset-label">Cities<br />市区町村</span>
+                    </button>
+                    <button
+                      class="search-preset-btn gmpe-mode-btn active"
+                      type="button"
+                      data-mode="shakemap"
+                    >
+                      <span class="preset-label">Shakemap<br />観測点</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Map -->
+        <main id="map-container">
+          <div id="map"></div>
+
+          <!-- Hover tooltip -->
+          <div id="area-tooltip" class="hidden">
+            <div class="tooltip-content">
+              <div class="tooltip-code mono"></div>
+              <div class="tooltip-ja"></div>
+              <div class="tooltip-en"></div>
+              <div id="tooltip-estimated" class="tooltip-estimated mono hidden"></div>
+            </div>
+            <div class="tooltip-intensity-container hidden"></div>
+          </div>
+
+          <!-- Bottom-right widgets container (legend only) -->
+          <div id="map-widgets">
+            <div id="map-legend">
+              <div id="intensity-legend">
+                <div class="legend-title mono">震度 · INTENSITY</div>
+                <div class="legend-items">
+                  <div class="legend-item"><div class="intensity-badge" style="background-color: #6B7878; color: #FFFFFF;" title="Intensity: 1"><span class="intensity-value">1</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge" style="background-color: #1E6EE6; color: #FFFFFF;" title="Intensity: 2"><span class="intensity-value">2</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge" style="background-color: #32B464; color: #FFFFFF;" title="Intensity: 3"><span class="intensity-value">3</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge" style="background-color: #FFE05D; color: #000000;" title="Intensity: 4"><span class="intensity-value">4</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge intensity-badge-composite" style="background-color: #FFAA13; color: #000000;" title="Intensity: 5-"><span class="intensity-num">5</span><span class="intensity-sign">-</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge intensity-badge-composite" style="background-color: #EF6F12; color: #000000;" title="Intensity: 5+"><span class="intensity-num">5</span><span class="intensity-sign">+</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge intensity-badge-composite" style="background-color: #E40000; color: #FFFFFF;" title="Intensity: 6-"><span class="intensity-num">6</span><span class="intensity-sign">-</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge intensity-badge-composite" style="background-color: #A00000; color: #FFFFFF;" title="Intensity: 6+"><span class="intensity-num">6</span><span class="intensity-sign">+</span></div></div>
+                  <div class="legend-item"><div class="intensity-badge" style="background-color: #5D0092; color: #FFFFFF;" title="Intensity: 7"><span class="intensity-value">7</span></div></div>
+                </div>
+              </div>
+              <div class="legend-divider"></div>
+              <div class="legend-item epicenter-legend">
+                <img src="/img/epicenter.png" alt="Epicenter" />
+                <span class="mono">震央 · Epicenter</span>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script type="module" src="/src/gmpeTest.js"></script>
+    <script>
+      if (!window.__TAURI_INTERNALS__ && !window.__ELECTRON__ && !window.__DESKTOP__) {
+        const s = document.createElement("script");
+        s.src = "https://stats.hainaut.xyz/api/script.js";
+        s.dataset.siteId = "ab4fba6ddf2e";
+        s.defer = true;
+        document.head.appendChild(s);
+      }
+    </script>
+  </body>
+</html>
