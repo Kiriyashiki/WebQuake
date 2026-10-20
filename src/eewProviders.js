@@ -4,6 +4,66 @@ import { loadAreaNameToCodeMap, getAreaCodeByName } from "./areaCodes.js";
 import { isDesktop, desktopFetch } from "./desktopBridge.js";
 
 /**
+ * Decodes the payload (claims) of a JWT without verifying its signature.
+ *
+ * AXIS access tokens are JWTs whose payload carries the expiry (`exp`, seconds
+ * since the Unix epoch) and the channels the token grants access to. Decoding
+ * is sufficient for display and refresh scheduling; the server remains
+ * responsible for validating the signature.
+ *
+ * @param {string} token Raw token, optionally prefixed with "Bearer ".
+ * @returns {Object|null} Decoded claims, or null when the token is not a
+ *   well-formed JWT or its payload is not a JSON object.
+ */
+export function parseJwtPayload(token) {
+  if (typeof token !== "string") return null;
+
+  const trimmed = token.trim().replace(/^Bearer\s+/i, "");
+  const parts = trimmed.split(".");
+  if (parts.length !== 3 || !parts[1]) return null;
+
+  // JWT payloads are base64url-encoded but may also be copied as plain base64.
+  let base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+  const padding = base64.length % 4;
+  if (padding > 0) base64 += "=".repeat(4 - padding);
+
+  try {
+    let json;
+    if (typeof atob === "function" && typeof TextDecoder !== "undefined") {
+      const binary = atob(base64);
+      const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+      json = new TextDecoder("utf-8").decode(bytes);
+    } else if (typeof Buffer !== "undefined") {
+      json = Buffer.from(base64, "base64").toString("utf8");
+    } else if (typeof atob === "function") {
+      // Last-resort ASCII fallback for environments without TextDecoder.
+      json = atob(base64);
+    } else {
+      return null;
+    }
+
+    const claims = JSON.parse(json);
+    return claims && typeof claims === "object" && !Array.isArray(claims) ? claims : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Returns the JWT expiry as milliseconds since the Unix epoch, or null when
+ * the token cannot be decoded or has no valid `exp` claim.
+ *
+ * @param {string} token Raw JWT.
+ * @returns {number|null}
+ */
+export function getJwtExpiryMs(token) {
+  const claims = parseJwtPayload(token);
+  const exp = Number(claims?.exp);
+  if (!Number.isFinite(exp) || exp <= 0) return null;
+  return exp * 1000;
+}
+
+/**
  * Determines whether an EEW is PLUM-method only.
  */
 export function isPlumEew(msg) {
@@ -486,6 +546,43 @@ export class AxisEewProvider extends WebSocketEewProvider {
     localStorage.removeItem("eew-token");
   }
 
+  /**
+   * Claims decoded from the currently stored AXIS token, or null when the
+   * token is not a decodable JWT.
+   * @returns {Object|null}
+   */
+  getTokenClaims() {
+    return parseJwtPayload(this.getToken());
+  }
+
+  /**
+   * Token expiry in milliseconds since the Unix epoch, read from the `exp`
+   * claim. Returns null when the token has no readable expiry.
+   * @returns {number|null}
+   */
+  getTokenExpiry() {
+    return getJwtExpiryMs(this.getToken());
+  }
+
+  /**
+   * Channels granted by the currently stored token.
+   * @returns {string[]}
+   */
+  getTokenChannels() {
+    const channels = this.getTokenClaims()?.channels;
+    return Array.isArray(channels) ? channels.map((channel) => String(channel)) : [];
+  }
+
+  /**
+   * Whether the current token includes the `eew` channel. This is advisory
+   * only: a missing channel produces a warning but never invalidates the
+   * token or disables EEW reception.
+   * @returns {boolean}
+   */
+  hasEewChannel() {
+    return this.getTokenChannels().includes("eew");
+  }
+
   getStoredExpiry() {
     if (typeof localStorage === "undefined") return null;
     return (
@@ -586,12 +683,23 @@ export class AxisEewProvider extends WebSocketEewProvider {
   scheduleTokenRefresh() {
     if (!isDesktop) return;
 
-    const storedExpiry = this.getStoredExpiry();
-    if (!storedExpiry || Number(storedExpiry) < Date.now()) {
-      const expiry = this.getEndOfMonthUTC(new Date());
+    const expiry = this.getTokenExpiry();
+    if (!expiry) {
+      console.warn(
+        "[EEW][AXIS] Could not read the token expiry (exp) claim; automatic token refresh is disabled.",
+      );
+      if (this.tokenRefreshTimer) {
+        clearTimeout(this.tokenRefreshTimer);
+        this.tokenRefreshTimer = null;
+      }
+      return;
+    }
+
+    const storedExpiry = Number(this.getStoredExpiry());
+    if (!storedExpiry || storedExpiry !== expiry) {
       this.setStoredExpiry(expiry);
       console.debug(
-        "[EEW][AXIS] Token expiry updated to end of current month:",
+        "[EEW][AXIS] Token expiry read from token:",
         new Date(expiry).toISOString(),
       );
       if (typeof localStorage !== "undefined") {
@@ -614,12 +722,6 @@ export class AxisEewProvider extends WebSocketEewProvider {
     );
   }
 
-  getEndOfMonthUTC(date) {
-    const y = date.getUTCFullYear();
-    const m = date.getUTCMonth();
-    return new Date(Date.UTC(y, m + 1, 0, 23, 59, 59, 999)).getTime();
-  }
-
   toUTCDateString(ms) {
     const d = new Date(ms);
     return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
@@ -638,8 +740,11 @@ export class AxisEewProvider extends WebSocketEewProvider {
       return;
     }
 
-    const expiry = Number(this.getStoredExpiry());
-    if (!expiry) return;
+    const expiry = this.getTokenExpiry();
+    if (!expiry) {
+      console.debug("[EEW][AXIS] Token expiry unavailable, skipping refresh check.");
+      return;
+    }
     const msUntilExpiry = expiry - now.getTime();
     const daysUntilExpiry = msUntilExpiry / (1000 * 60 * 60 * 24);
     if (daysUntilExpiry > 7) {
@@ -681,10 +786,17 @@ export class AxisEewProvider extends WebSocketEewProvider {
         this.setToken(data.token);
         this.setStoredExpiryAlerted(false);
 
-        const nextMonthDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 15));
-        const newExpiry = this.getEndOfMonthUTC(nextMonthDate);
-        this.setStoredExpiry(newExpiry);
-        console.debug("[EEW][AXIS] New token expiry:", new Date(newExpiry).toISOString());
+        const newExpiry = this.getTokenExpiry();
+        if (newExpiry) {
+          this.setStoredExpiry(newExpiry);
+          console.debug("[EEW][AXIS] New token expiry:", new Date(newExpiry).toISOString());
+        } else {
+          console.warn("[EEW][AXIS] Refreshed token has no readable expiry (exp) claim.");
+          if (typeof localStorage !== "undefined") {
+            localStorage.removeItem("eew-token-expiry-axis");
+            localStorage.removeItem("eew-token-expiry");
+          }
+        }
 
         this.callbacks?.onTokenUpdated?.(data.token);
 
@@ -706,10 +818,8 @@ export class AxisEewProvider extends WebSocketEewProvider {
     if (this.getStoredExpiryAlerted()) return;
     this.setStoredExpiryAlerted(true);
     alert(
-      "EEW token could not be refreshed and will expire at the end of this month. " +
-        "Please check your AXIS subscription or update your token in Settings.\n" +
-        "EEWトークンの更新に失敗しました。今月末にトークンが無効になります。" +
-        "AXISのサブスクリプションを確認するか、「設定」でトークンを更新してください。",
+      "EEW token could not be refreshed. Please check your AXIS subscription or update your token in Settings.\n" +
+        "EEWトークンを更新できませんでした。AXISのサブスクリプションを確認するか、「設定」でトークンを更新してください。",
     );
   }
 

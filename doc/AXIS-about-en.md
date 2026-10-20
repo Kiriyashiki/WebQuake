@@ -49,7 +49,7 @@ Now you can just paste it under 'AXIS Token • トークン' in KyoQuake settin
 
 ## Token expiry
 
-The AXIS token expires at the end of each month. Due to security limitations within browser envrionments (CORS), there is currently no safe way to refresh the token automatically on the web version, so only the desktop app is capable of renewing the token on its own.
+The AXIS token expires at the end of each month. KyoQuake reads the expiry date from the token and shows it below the token field in Settings. Due to security limitations within browser envrionments (CORS), there is currently no safe way to refresh the token automatically on the web version, so only the desktop app is capable of renewing the token on its own.
 
 You can either get a new one from the AXIS dashboard, if needed.
 

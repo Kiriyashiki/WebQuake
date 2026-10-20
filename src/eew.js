@@ -13,6 +13,8 @@ import {
   setActiveProvider,
   getShowTestEew,
   setShowTestEew,
+  parseJwtPayload,
+  getJwtExpiryMs,
 } from "./eewProviders.js";
 
 import { eewState } from "./eew/state.js";
@@ -35,6 +37,79 @@ import {
 export { isPlumEew } from "./eewProviders.js";
 export { clearEewMapDisplay, getIsEewMapActive, fitBoundsForActiveEew } from "./eew/eewMap.js";
 export { getShowTestEew, setShowTestEew, updateHomeIntensityForActiveEews };
+
+function formatTokenExpiry(expiryMs) {
+  const date = new Date(expiryMs);
+  const pad = (value) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+/**
+ * Updates the token expiry and channel hint shown under the token input.
+ * The token is only decoded locally for display; nothing here validates or
+ * disables EEW reception.
+ */
+function updateTokenStatusUI(provider = getActiveProvider()) {
+  const statusEl = document.getElementById("eew-token-status");
+  if (!statusEl) return;
+
+  const expiryEl = document.getElementById("eew-token-expiry");
+  const warningEl = document.getElementById("eew-token-channel-warning");
+  const token = provider?.getToken?.() || "";
+
+  if (!token) {
+    statusEl.classList.add("hidden");
+    if (expiryEl) {
+      expiryEl.textContent = "";
+      expiryEl.classList.remove("is-expired");
+    }
+    if (warningEl) {
+      warningEl.textContent = "";
+      warningEl.classList.add("hidden");
+    }
+    return;
+  }
+
+  statusEl.classList.remove("hidden");
+
+  const claims =
+    typeof provider?.getTokenClaims === "function"
+      ? provider.getTokenClaims()
+      : parseJwtPayload(token);
+  const expiry =
+    typeof provider?.getTokenExpiry === "function"
+      ? provider.getTokenExpiry()
+      : getJwtExpiryMs(token);
+
+  if (expiryEl) {
+    expiryEl.classList.remove("is-expired");
+    if (expiry != null && Number.isFinite(expiry)) {
+      const isExpired = expiry < Date.now();
+      expiryEl.textContent =
+        `Expiry • 有効期限: ${formatTokenExpiry(expiry)}` +
+        (isExpired ? " (expired • 期限切れ)" : "");
+      if (isExpired) expiryEl.classList.add("is-expired");
+    } else {
+      expiryEl.textContent =
+        "Expiry • 有効期限: unknown • トークンから有効期限を読み取れませんでした";
+    }
+  }
+
+  if (warningEl) {
+    const channels = Array.isArray(claims?.channels)
+      ? claims.channels.map((channel) => String(channel))
+      : null;
+    if (channels && !channels.includes("eew")) {
+      warningEl.textContent =
+        '⚠ This token does not include the "eew" channel, which is required to receive EEWs.\n' +
+        "⚠ このトークンには「eew」チャンネルが含まれていません。EEWの受信には必要です。";
+      warningEl.classList.remove("hidden");
+    } else {
+      warningEl.textContent = "";
+      warningEl.classList.add("hidden");
+    }
+  }
+}
 
 /**
  * Initializes the EEW settings and connects if enabled.
@@ -103,6 +178,8 @@ export function initEewSettings(map, bounds, cities, areas) {
     } else if (tokenGroupEl) {
       tokenGroupEl.classList.add("hidden");
     }
+
+    updateTokenStatusUI(p);
 
     if (p.requiresPort) {
       if (portGroupEl) portGroupEl.classList.remove("hidden");
@@ -212,6 +289,7 @@ export function initEewSettings(map, bounds, cities, areas) {
       const token = e.target.value.trim();
       p.setToken(token);
       p.resetTokenState?.();
+      updateTokenStatusUI(p);
 
       if (toggleEl.checked) {
         disconnectEew();
@@ -405,6 +483,7 @@ async function connectEew() {
       const tokenInputEl = document.getElementById("eew-token-input");
       if (tokenInputEl && provider.requiresToken) {
         tokenInputEl.value = newToken;
+        updateTokenStatusUI(provider);
       }
     },
   });

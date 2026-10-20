@@ -63,6 +63,8 @@ const {
   isWarningEew,
   isUnknownValue,
   computeIsLowAccuracy,
+  parseJwtPayload,
+  getJwtExpiryMs,
 } = await import("../src/eewProviders.js");
 
 console.log("=== Running EEW Providers Unit Tests ===");
@@ -136,6 +138,64 @@ assert.strictEqual(otherProvider.getToken(), "other_token");
 assert.strictEqual(axisProvider.getToken(), "new_axis_token");
 assert.strictEqual(testProvider.getToken(), "");
 console.log("✓ Test 2 passed");
+
+// 2b. AXIS JWT payload, expiry and channel parsing
+console.log("Test 2b: AXIS JWT payload, expiry and channel parsing");
+localStorage.clear();
+
+const jwtPayload = {
+  user: { id: "Kiriyashiki", type: 0, connection: 2 },
+  channels: ["jmx-seismology", "eew"],
+  exp: 1793491199,
+};
+const encodeBase64Url = (value) =>
+  Buffer.from(JSON.stringify(value), "utf8").toString("base64url");
+const makeToken = (payload, header = { alg: "HS256", typ: "JWT" }) =>
+  `${encodeBase64Url(header)}.${encodeBase64Url(payload)}.signature`;
+
+const sampleToken = makeToken(jwtPayload);
+assert.deepStrictEqual(parseJwtPayload(sampleToken), jwtPayload);
+assert.strictEqual(getJwtExpiryMs(sampleToken), 1793491199 * 1000);
+
+// Plain base64 payloads (with padding) are accepted too
+const paddedPayload = Buffer.from(JSON.stringify(jwtPayload), "utf8").toString("base64");
+assert.deepStrictEqual(parseJwtPayload(`header.${paddedPayload}.signature`), jwtPayload);
+
+// "Bearer " prefixes and surrounding whitespace are tolerated
+assert.deepStrictEqual(parseJwtPayload(`  Bearer ${sampleToken}  `), jwtPayload);
+
+// Malformed tokens must not throw
+assert.strictEqual(parseJwtPayload("not-a-jwt"), null);
+assert.strictEqual(parseJwtPayload("only.two"), null);
+assert.strictEqual(parseJwtPayload("a.!!!.c"), null);
+assert.strictEqual(parseJwtPayload("a.bm90IGpzb24.c"), null, "Non-JSON payload should be rejected");
+assert.strictEqual(parseJwtPayload("a.W10.c"), null, "JSON arrays are not JWT claims objects");
+assert.strictEqual(getJwtExpiryMs("a.b.c"), null);
+
+// Tokens without an exp claim have no expiry
+const noExpToken = makeToken({ channels: ["eew"] });
+assert.strictEqual(parseJwtPayload(noExpToken).channels[0], "eew");
+assert.strictEqual(getJwtExpiryMs(noExpToken), null);
+
+// Provider helpers read expiry and channels from the stored token
+axisProvider.setToken(sampleToken);
+assert.deepStrictEqual(axisProvider.getTokenClaims(), jwtPayload);
+assert.strictEqual(axisProvider.getTokenExpiry(), 1793491199 * 1000);
+assert.deepStrictEqual(axisProvider.getTokenChannels(), ["jmx-seismology", "eew"]);
+assert.strictEqual(axisProvider.hasEewChannel(), true);
+
+axisProvider.setToken(makeToken({ channels: ["jmx-seismology"], exp: 1793491199 }));
+assert.deepStrictEqual(axisProvider.getTokenChannels(), ["jmx-seismology"]);
+assert.strictEqual(axisProvider.hasEewChannel(), false, "Missing eew channel should be reported");
+
+axisProvider.setToken("opaque-token");
+assert.strictEqual(axisProvider.getTokenClaims(), null);
+assert.strictEqual(axisProvider.getTokenExpiry(), null);
+assert.deepStrictEqual(axisProvider.getTokenChannels(), []);
+assert.strictEqual(axisProvider.hasEewChannel(), false);
+
+axisProvider.setToken("new_axis_token");
+console.log("✓ Test 2b passed");
 
 // 3. Message Normalization
 console.log("Test 3: Normalizing raw data to common format");
