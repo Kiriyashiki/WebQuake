@@ -608,11 +608,19 @@ function removeEew(eventId) {
 }
 
 function clearAllEews() {
+  // Only restore the normal report when the EEW UI was actually showing
+  // something. Re-rendering unconditionally on connect/provider switch causes
+  // the open report's observations list to be rendered a second time.
+  const shouldUpdateUi = eewState.activeEews.size > 0 || eewState.isEewMapActive;
+
   for (const eew of eewState.activeEews.values()) {
     clearEewRemoval(eew);
   }
   eewState.activeEews.clear();
-  updateEewUI(false);
+
+  if (shouldUpdateUi) {
+    updateEewUI(false);
+  }
 }
 
 export function handlePossibleEewReport(report) {

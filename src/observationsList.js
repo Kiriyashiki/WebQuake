@@ -6,7 +6,24 @@
 import { loadPrefectureCodes, loadCityNames } from "./areaCodes.js";
 import { INTENSITY_CONFIG, LPGM_CONFIG } from "./constants.js";
 
+/**
+ * Render generation per container. Rendering is asynchronous (it awaits the
+ * city/prefecture data), so a newer render must be able to cancel an older one
+ * that is still in flight. Without this, two overlapping calls both clear the
+ * container and then both append, duplicating the list.
+ */
+let renderGeneration = 0;
+const renderTokens = new WeakMap();
 
+/**
+ * Invalidates any in-flight observations render for `container`.
+ * Call this before clearing the container from outside this module.
+ * @param {HTMLElement} container
+ */
+export function invalidateObservationsList(container) {
+  if (!container) return;
+  renderTokens.set(container, ++renderGeneration);
+}
 
 /**
  * Build hierarchical observations list grouped by intensity
@@ -130,7 +147,9 @@ function getIntensityRank(val, isLpgm) {
 export async function renderObservationsList(container, observations, areaCodes = new Map(), prefCodes = null, options = {}) {
   if (!container) return;
 
-  // Clear container
+  // Claim this container for the latest render, then clear the previous list.
+  const renderToken = ++renderGeneration;
+  renderTokens.set(container, renderToken);
   container.innerHTML = '';
 
   if (!observations || observations.length === 0) return;
@@ -141,6 +160,9 @@ export async function renderObservationsList(container, observations, areaCodes 
     // Load data (cached in areaCodes.js — no redundant fetches)
     const cityNames = await loadCityNames();
     const resolvedPrefCodes = prefCodes || await loadPrefectureCodes();
+
+    // A newer render (or an explicit invalidation) has superseded this one.
+    if (renderTokens.get(container) !== renderToken) return;
 
     // Group observations by intensity
     const grouped = (isFlashReport || isLpgm)

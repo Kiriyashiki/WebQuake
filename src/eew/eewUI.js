@@ -11,6 +11,7 @@ import {
   hideHomeLocationIntensity,
 } from "../map.js";
 import { getCityAreasState, getHomeIntensityState, getHomeLocation } from "../sidebarUI.js";
+import { invalidateObservationsList } from "../observationsList.js";
 import { stopWaveAnimation, updateWaves } from "./waveAnimation.js";
 
 /**
@@ -524,6 +525,7 @@ export function renderEewInfoBox(
 
   const observationsContainer = infoBox.querySelector("#observations-list-container");
   if (observationsContainer) {
+    invalidateObservationsList(observationsContainer);
     observationsContainer.innerHTML = "";
 
     let disclaimer = observationsContainer.querySelector(".eew-forecast-disclaimer");

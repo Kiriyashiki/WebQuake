@@ -42,6 +42,22 @@ globalThis.fetch = async (url) => {
       json: async () => JSON.parse(municipalitiesJsonContent),
     };
   }
+  if (url === "/city.json") {
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        "0123500": { japanese: "石狩市", english: "Ishikari City" },
+      }),
+    };
+  }
+  if (url === "/prefecture-codes.csv") {
+    return {
+      ok: true,
+      status: 200,
+      text: async () => "1;北海道;ほっかいどう;Hokkaido\n",
+    };
+  }
   throw new Error(`Unexpected fetch URL in test: ${url}`);
 };
 
@@ -973,6 +989,96 @@ assert.strictEqual(fittedBoundsCount, 1, "Map should automatically fit bounds ba
 clearEewMapDisplay();
 eewState.activeEews.clear();
 console.log("✓ Test 15 passed");
+
+// 16. Observations list overlapping render cancellation
+console.log("Test 16: Observations list overlapping render cancellation");
+
+function createFakeElement(tagName = "div") {
+  const classes = new Set();
+  const element = {
+    tagName: String(tagName).toUpperCase(),
+    children: [],
+    style: {},
+    className: "",
+    _textContent: "",
+    _innerHTML: "",
+    classList: {
+      add: (...names) => names.forEach((name) => classes.add(name)),
+      remove: (...names) => names.forEach((name) => classes.delete(name)),
+      contains: (name) => classes.has(name),
+      toggle: (name, force) => {
+        const shouldAdd = force === undefined ? !classes.has(name) : Boolean(force);
+        if (shouldAdd) classes.add(name);
+        else classes.delete(name);
+        return shouldAdd;
+      },
+    },
+    appendChild(child) {
+      element.children.push(child);
+      child.parentNode = element;
+      return child;
+    },
+    addEventListener() {},
+    querySelector() {
+      return null;
+    },
+    get textContent() {
+      return element._textContent;
+    },
+    set textContent(value) {
+      element._textContent = String(value);
+    },
+    get innerHTML() {
+      return element._innerHTML;
+    },
+    set innerHTML(value) {
+      element._innerHTML = String(value);
+      if (value === "") element.children = [];
+    },
+  };
+  return element;
+}
+
+globalThis.document = { createElement: createFakeElement };
+
+const { renderObservationsList, invalidateObservationsList } = await import(
+  "../src/observationsList.js"
+);
+
+const observationsContainer = createFakeElement("div");
+const raceObservations = [
+  {
+    code: 1,
+    name: "北海道",
+    areas: [
+      {
+        code: 100,
+        name: "石狩地方",
+        cities: [{ code: "0123500", name: "石狩市", maxInt: "3" }],
+      },
+    ],
+  },
+];
+
+const renderA = renderObservationsList(observationsContainer, raceObservations, new Map());
+const renderB = renderObservationsList(observationsContainer, raceObservations, new Map());
+await Promise.all([renderA, renderB]);
+assert.strictEqual(
+  observationsContainer.children.length,
+  1,
+  "Overlapping renders should leave exactly one observations list",
+);
+
+const pendingRender = renderObservationsList(observationsContainer, raceObservations, new Map());
+invalidateObservationsList(observationsContainer);
+observationsContainer.innerHTML = "";
+await pendingRender;
+assert.strictEqual(
+  observationsContainer.children.length,
+  0,
+  "An invalidated in-flight render should not append to the container",
+);
+console.log("✓ Test 16 passed");
 
 console.log("\n=== ALL TESTS PASSED SUCCESSFULLY! ===");
 
