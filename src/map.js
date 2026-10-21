@@ -7,6 +7,7 @@ import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 
 maplibregl.setWorkerUrl(workerUrl);
 import {
+  CONDITION_INTENSITY,
   INTENSITY_CONFIG,
   LPGM_CONFIG,
   MAP_COLORS,
@@ -720,10 +721,14 @@ export function highlightObservations(map, observations, isLpgm = false) {
       if (area.cities) {
         for (const city of area.cities) {
           const cityId = String(city.code).padStart(7, "0");
+          // Cities reporting only a condition (e.g. "震度５弱以上未入電")
+          // have no MaxInt; display them as 5- with reduced opacity.
+          const isConditionOnly = !city.maxInt && Boolean(city.condition);
+          const cityIntensity = city.maxInt || (isConditionOnly ? CONDITION_INTENSITY : null);
           try {
             map.setFeatureState(
               { source: "cities", id: cityId },
-              { highlighted: true, intensity: city.maxInt },
+              { highlighted: true, intensity: cityIntensity, condition: isConditionOnly },
             );
           } catch (_) {
             // Feature may not exist in the source

@@ -50,6 +50,19 @@ export const INTENSITY_CONFIG = {
   7: { color: "#5D0092", fontColor: "#FFFFFF" },
 };
 
+// ─── Observation Conditions ──────────────────────────────────────────────────
+/**
+ * Cities may report a Condition (e.g. "震度５弱以上未入電") instead of a
+ * MaxInt when intensity 5- or greater was observed but no data arrived.
+ * Such cities are displayed with the 5- colour, but with reduced opacity.
+ */
+export const CONDITION_INTENSITY = "5-";
+export const CONDITION_GROUP_KEY = "未入電";
+
+// Opacity applied to condition cities on the map (regular cities use 0.7 / 1).
+const CONDITION_OPACITY_DIM = 0.55;
+const CONDITION_OPACITY_FULL = 0.85;
+
 // ─── LPGM Configuration (JMA LPGM Scale) ──────────────────────────────
 export const LPGM_CONFIG = {
   0: { color: "#1e2e44", fontColor: "#FFFFFF" },
@@ -98,18 +111,25 @@ function hexToRgba(hex, opacity) {
 /**
  * Builds intensity color expressions for MapLibre style.
  * Returns a case expression that maps intensity levels to full-opacity or reduced-opacity colors.
+ * Features flagged with `condition` (e.g. "震度５弱以上未入電") use a slightly more
+ * transparent version of their intensity colour.
  * @param {boolean} isDimmed - If true, returns 70% opacity colors; else full opacity
  * @param {string} fallback - Default color when no intensity is set (default: "transparent")
  * @returns {Array} MapLibre case expression
  */
 export function buildIntensityColorExpression(isDimmed = false, fallback = "transparent") {
   const opacity = isDimmed ? 0.7 : 1;
+  const conditionOpacity = isDimmed ? CONDITION_OPACITY_DIM : CONDITION_OPACITY_FULL;
   const colors = [];
 
   Object.entries(INTENSITY_CONFIG).forEach(([intensity, config]) => {
     if (intensity === "0") return;
     const color = isDimmed ? hexToRgba(config.color, opacity) : config.color;
-    colors.push(["==", ["feature-state", "intensity"], intensity], color);
+    const conditionColor = hexToRgba(config.color, conditionOpacity);
+    colors.push(
+      ["==", ["feature-state", "intensity"], intensity],
+      ["case", ["boolean", ["feature-state", "condition"], false], conditionColor, color],
+    );
   });
 
   // Default to fallback

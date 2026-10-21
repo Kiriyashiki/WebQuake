@@ -4,7 +4,12 @@
  */
 
 import { loadPrefectureCodes, loadCityNames } from "./areaCodes.js";
-import { INTENSITY_CONFIG, LPGM_CONFIG } from "./constants.js";
+import {
+  CONDITION_GROUP_KEY,
+  CONDITION_INTENSITY,
+  INTENSITY_CONFIG,
+  LPGM_CONFIG,
+} from "./constants.js";
 
 /**
  * Render generation per container. Rendering is asynchronous (it awaits the
@@ -90,7 +95,7 @@ export function groupObservationsByIntensity(observations, areaCodes = new Map()
         // Group each city by its own intensity.
         // Cities with a condition (e.g. "震度５弱以上未入電") but no maxInt
         // are grouped under the special '未入電' key.
-        const cityIntensity = city.maxInt || (city.condition ? '未入電' : null);
+        const cityIntensity = city.maxInt || (city.condition ? CONDITION_GROUP_KEY : null);
         if (!cityIntensity) continue; // skip cities with no intensity info at all
         ensureIntensityGroup(grouped, cityIntensity);
 
@@ -126,6 +131,8 @@ function getIntensityRank(val, isLpgm) {
   if (isLpgm) {
     return Number.parseInt(val, 10) || 0;
   }
+  // The condition group ("震度５弱以上未入電") represents 5- or greater.
+  if (val === CONDITION_GROUP_KEY) return 5;
   if (['7', '6+', '6-', '5+', '5-'].includes(val)) {
     return 5;
   }
@@ -169,10 +176,11 @@ export async function renderObservationsList(container, observations, areaCodes 
       ? groupObservationsByIntensityAreaOnly(observations, areaCodes, resolvedPrefCodes, isLpgm)
       : groupObservationsByIntensity(observations, areaCodes, resolvedPrefCodes, cityNames);
 
-    // Get intensity order (descending: highest first)
-    // '未入電' (no data received) is placed after all standard intensities
+    // Get intensity order (descending: highest first).
+    // The condition group ('未入電') represents "5- or greater, no data
+    // received", so it sits between 5- and 4.
     const intensities = Object.keys(grouped).sort((a, b) => {
-      const order = isLpgm ? ['4', '3', '2', '1'] : ['7', '6+', '6-', '5+', '5-', '4', '3', '2', '1', '未入電'];
+      const order = isLpgm ? ['4', '3', '2', '1'] : ['7', '6+', '6-', '5+', '5-', CONDITION_GROUP_KEY, '4', '3', '2', '1'];
       const idxA = order.includes(a) ? order.indexOf(a) : order.length;
       const idxB = order.includes(b) ? order.indexOf(b) : order.length;
       return idxA - idxB;
@@ -198,8 +206,12 @@ export async function renderObservationsList(container, observations, areaCodes 
       const section = document.createElement('div');
       section.className = 'observations-intensity-section';
 
-      // Resolve style config; fall back for non-standard keys like '未入電'
-      const config = (isLpgm ? LPGM_CONFIG[intensity] : INTENSITY_CONFIG[intensity]) || { color: '#4a4a4a', fontColor: '#FFFFFF' };
+      // Resolve style config; the condition group uses the 5- colour.
+      const config = (
+        isLpgm
+          ? LPGM_CONFIG[intensity]
+          : INTENSITY_CONFIG[intensity === CONDITION_GROUP_KEY ? CONDITION_INTENSITY : intensity]
+      ) || { color: '#4a4a4a', fontColor: '#FFFFFF' };
 
       // Header (collapsible)
       const header = document.createElement('div');
@@ -222,7 +234,7 @@ export async function renderObservationsList(container, observations, areaCodes 
       let labelText = `震度 ${intensity.replace('-', '弱').replace('+', '強')}`;
       if (isLpgm) {
         labelText = `長周期地震動階級 ${intensity}`;
-      } else if (intensity === '未入電') {
+      } else if (intensity === CONDITION_GROUP_KEY) {
         labelText = '震度５弱以上未入電';
       }
       label.textContent = labelText;

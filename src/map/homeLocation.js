@@ -1,5 +1,5 @@
 import * as maplibregl from "maplibre-gl";
-import { INTENSITY_CONFIG } from "../constants.js";
+import { CONDITION_INTENSITY, INTENSITY_CONFIG } from "../constants.js";
 import { renderIntensityBadge } from "../intensityBadge.js";
 
 let customHomeCoordinates = null;
@@ -105,7 +105,9 @@ export function findIntensityForCity(observations, cityCode) {
       for (const city of area.cities) {
         const cityCodeStr = String(city.code).padStart(7, "0");
         if (cityCodeStr === cityCode) {
-          return city.maxInt || null;
+          // Cities with a condition but no MaxInt represent "5- or greater,
+          // no data received", so display them using the 5- intensity.
+          return city.maxInt || (city.condition ? CONDITION_INTENSITY : null);
         }
       }
     }

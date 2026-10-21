@@ -330,6 +330,11 @@ class JMAEarthquakeReport {
             name: this._directChildText(city, "Name"),
             maxInt: this._directChildText(city, "MaxInt"),
           };
+          // Some cities report a Condition (e.g. "震度５弱以上未入電") instead of MaxInt
+          const condition = this._directChildText(city, "Condition") || city.getAttribute("Condition");
+          if (condition) {
+            cityEntry.condition = condition;
+          }
           // Parse IntensityStation elements within this City
           const stationEls = city.getElementsByTagName("IntensityStation");
           if (stationEls.length > 0) {
