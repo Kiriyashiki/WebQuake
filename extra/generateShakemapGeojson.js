@@ -1,9 +1,43 @@
-const fs = require('node:fs');
-const turf = require('@turf/turf');
+import fs from 'node:fs';
+import * as turf from '@turf/turf';
 
 // ---------- Load data ----------
 console.log('Loading datasets...');
-const stations = JSON.parse(fs.readFileSync('extra/stations.json', 'utf-8'));
+
+/**
+ * Reads a semicolon-delimited stations CSV (header:
+ * code;nameja;kana;nameen;lat;lon;citycode;arv;avs30;d1400).
+ * @param {string} path
+ * @returns {Array<object>}
+ */
+function readStationsCsv(path) {
+  const text = fs.readFileSync(path, 'utf-8').replace(/^\uFEFF/, '');
+  const stations = [];
+
+  for (const line of text.split(/\r?\n/)) {
+    if (!line.trim()) continue;
+    const parts = line.split(';');
+    if (parts[0].trim() === 'code') continue; // header
+    if (parts.length < 7) continue;
+
+    const citycode = parts[6].trim();
+    stations.push({
+      code: parts[0].trim(),
+      nameja: parts[1].trim(),
+      kana: parts[2].trim(),
+      nameen: parts[3].trim(),
+      lat: parts[4].trim(),
+      lon: parts[5].trim(),
+      citycode,
+      // stations.json used the prefecture number without a leading zero
+      pref: String(Number(citycode.slice(0, 2))),
+    });
+  }
+
+  return stations;
+}
+
+const stations = readStationsCsv('extra/stations.csv');
 const prefectures = JSON.parse(fs.readFileSync('public/prefectures.geojson', 'utf-8'));
 
 let exclusions = { features: [] };
@@ -112,9 +146,9 @@ const points = stations.map((s) => {
   return turf.point([lon, lat], {
     staLat: lat,
     staLon: lon,
-    name: s.name,
+    name: s.nameja,
     pref: s.pref,
-    affi: s.affi,
+    code: s.code,
   });
 });
 const pointCollection = turf.featureCollection(points);

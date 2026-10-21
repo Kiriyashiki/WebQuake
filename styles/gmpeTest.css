@@ -146,3 +146,25 @@
   color: var(--accent2);
   white-space: nowrap;
 }
+
+/* ── Observations list in the sidebar ───────────────────────────── */
+
+.gmpe-observations-list-wrapper {
+  flex: 0 0 auto;
+}
+
+.gmpe-observations-list-wrapper .observations-list-container {
+  padding: 0 12px 10px;
+}
+
+.gmpe-observations-list-wrapper .observations-list-container:not(.collapsed) {
+  max-height: 40vh;
+}
+
+.gmpe-observations-empty {
+  padding: 2px 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+

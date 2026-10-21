@@ -6,10 +6,12 @@ import {
   loadAreaCodes,
   loadCityForecastMapCsv,
   loadCityNames,
+  loadPrefectureCodes,
   loadStationNames,
   loadStationsCsvText,
 } from "./areaCodes.js";
 import { haversineDistance } from "./constants.js";
+import { invalidateObservationsList, renderObservationsList } from "./observationsList.js";
 import {
   clearEpicenter,
   displayEpicenter,
@@ -27,6 +29,7 @@ const GMPE_SM1999 = "sm1999";
 const state = {
   map: null,
   areaCodes: null,
+  prefectureCodes: null,
   cityNames: null,
   stationNames: null,
   stations: [],
@@ -61,6 +64,9 @@ const dom = {
   statusText: document.getElementById("gmpe-status-text"),
   tooltipEstimated: document.getElementById("tooltip-estimated"),
   modeButtons: Array.from(document.querySelectorAll(".gmpe-mode-btn")),
+  observationsWrapper: document.querySelector("#sidebar .observations-list-wrapper"),
+  observationsToggle: document.querySelector("#sidebar .observations-list-toggle"),
+  observationsList: document.getElementById("gmpe-observations-list-container"),
 };
 
 // ─── UI helpers ──────────────────────────────────────────────────────────────
@@ -98,12 +104,19 @@ function updateModeButtons() {
   }
 }
 
+function formatEstimatedIntensity(value) {
+  // Truncate rather than round. JMA category boundaries fall on 0.5 / integer
+  // values, so a value just below a boundary (e.g. 6.49 → "6.4", category 6+)
+  // must not be displayed as the boundary itself (6.5, category 7).
+  return (Math.trunc(value * 10) / 10).toFixed(1);
+}
+
 function showEstimatedLine(value) {
   if (typeof value !== "number" || !Number.isFinite(value)) {
     hideEstimatedLine();
     return;
   }
-  dom.tooltipEstimated.textContent = `Estimated intensity · 推定震度 ${value.toFixed(1)}`;
+  dom.tooltipEstimated.textContent = `Estimated intensity · 推定震度 ${formatEstimatedIntensity(value)}`;
   dom.tooltipEstimated.classList.remove("hidden");
 }
 
@@ -334,6 +347,98 @@ function calculateResults(params) {
   return { params, perStation, byCity, byArea, byStationName };
 }
 
+// ─── Observations list ───────────────────────────────────────────────────────
+
+/**
+ * Builds the prefecture → forecast area → city hierarchy expected by
+ * renderObservationsList() from the per-city GMPE maxima.
+ */
+function buildObservations(results) {
+  if (!results) return [];
+
+  const prefectures = new Map();
+
+  for (const [cityCode, item] of results.byCity.entries()) {
+    if (!cityCode || item.shindo === "0" || !item.areaCode) continue;
+
+    const prefCode = Number.parseInt(cityCode.substring(0, 2), 10);
+    const areaCode = Number(item.areaCode);
+    if (!Number.isFinite(prefCode) || !Number.isFinite(areaCode)) continue;
+
+    let pref = prefectures.get(prefCode);
+    if (!pref) {
+      pref = {
+        code: prefCode,
+        name: state.prefectureCodes?.get(prefCode)?.name ?? "",
+        areas: new Map(),
+      };
+      prefectures.set(prefCode, pref);
+    }
+
+    let area = pref.areas.get(areaCode);
+    if (!area) {
+      area = {
+        code: areaCode,
+        name: state.areaCodes?.get(areaCode)?.ja ?? "",
+        cities: [],
+      };
+      pref.areas.set(areaCode, area);
+    }
+
+    area.cities.push({
+      code: cityCode,
+      name: state.cityNames?.get(cityCode)?.ja ?? "",
+      maxInt: item.shindo,
+    });
+  }
+
+  return Array.from(prefectures.values())
+    .sort((a, b) => a.code - b.code)
+    .map((pref) => ({
+      code: pref.code,
+      name: pref.name,
+      areas: Array.from(pref.areas.values())
+        .sort((a, b) => a.code - b.code)
+        .map((area) => ({
+          code: area.code,
+          name: area.name,
+          cities: area.cities.sort((a, b) => a.code.localeCompare(b.code)),
+        })),
+    }));
+}
+
+function setObservationsMessage(text) {
+  if (!dom.observationsList) return;
+  invalidateObservationsList(dom.observationsList);
+  dom.observationsList.innerHTML = "";
+  const message = document.createElement("div");
+  message.className = "gmpe-observations-empty";
+  message.textContent = text;
+  dom.observationsList.appendChild(message);
+}
+
+function renderObservations() {
+  if (!dom.observationsList) return;
+
+  const observations = buildObservations(state.results);
+  if (observations.length === 0) {
+    const text = state.results
+      ? "No cities with intensity ≥ 1."
+      : "Run the test to show observations.";
+    setObservationsMessage(text);
+    return;
+  }
+
+  renderObservationsList(
+    dom.observationsList,
+    observations,
+    state.areaCodes ?? new Map(),
+    state.prefectureCodes ?? new Map(),
+  ).catch((err) => {
+    console.error("[GMPE Test] Failed to render observations:", err);
+  });
+}
+
 // ─── Map result display ──────────────────────────────────────────────────────
 
 function clearMapResultStates() {
@@ -459,6 +564,15 @@ function bindUiEvents() {
 
   dom.model.addEventListener("change", syncModelFields);
 
+  if (dom.observationsWrapper && dom.observationsToggle && dom.observationsList) {
+    dom.observationsWrapper
+      .querySelector(".observations-list-header")
+      ?.addEventListener("click", () => {
+        dom.observationsList.classList.toggle("collapsed");
+        dom.observationsToggle.classList.toggle("rotated");
+      });
+  }
+
   dom.latitude.addEventListener("input", updateEpicenterMarker);
   dom.longitude.addEventListener("input", updateEpicenterMarker);
 
@@ -530,6 +644,7 @@ async function runTest() {
     console.debug(results);
 
     applyResults();
+    renderObservations();
 
     const displayedCount = results.perStation.filter((item) => item.shindo !== "0").length;
     const modelLabel = params.model === GMPE_MF2013 ? "MF 2013" : "SM 1999";
@@ -560,14 +675,23 @@ async function boot() {
   setStatus("Loading map…", "loading");
 
   let areaCodes;
+  let prefectureCodes;
   let cityNames;
   let stationNames;
   let stationsText;
   let cityForecastText;
 
   try {
-    [areaCodes, cityNames, stationNames, stationsText, cityForecastText] = await Promise.all([
+    [
+      areaCodes,
+      prefectureCodes,
+      cityNames,
+      stationNames,
+      stationsText,
+      cityForecastText,
+    ] = await Promise.all([
       loadAreaCodes(),
+      loadPrefectureCodes(),
       loadCityNames(),
       loadStationNames(),
       loadStationsCsvText(),
@@ -581,6 +705,7 @@ async function boot() {
   }
 
   state.areaCodes = areaCodes;
+  state.prefectureCodes = prefectureCodes;
   state.cityNames = cityNames;
   state.stationNames = stationNames;
   state.stations = parseStationsCsv(stationsText);
