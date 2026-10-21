@@ -192,6 +192,40 @@
         <main id="map-container">
           <div id="map"></div>
 
+          <!-- Shown when WebGL 2 is unavailable and the map cannot be rendered -->
+          <div id="map-unavailable" class="map-unavailable hidden" role="alert" aria-live="assertive">
+            <div class="map-unavailable-content">
+              <div class="map-unavailable-icon" aria-hidden="true">⚠</div>
+              <h2 class="map-unavailable-title">
+                Map unavailable
+                <span class="map-unavailable-title-ja" lang="ja">地図を表示できません</span>
+              </h2>
+              <p class="map-unavailable-text">
+                KyoQuake needs WebGL 2 to draw the map, but it is not available in this browser.
+                <span lang="ja">このアプリは地図の描画に WebGL 2 を使用しますが、お使いのブラウザでは利用できません。</span>
+              </p>
+              <ul class="map-unavailable-hints">
+                <li>
+                  Enable hardware acceleration in your browser settings.
+                  <span lang="ja">ブラウザの設定でハードウェアアクセラレーションを有効にしてください。</span>
+                </li>
+                <li>
+                  Update your browser and graphics drivers.
+                  <span lang="ja">ブラウザとグラフィックドライバを最新版に更新してください。</span>
+                </li>
+                <li>
+                  Try another browser, such as Firefox, Chrome, or Edge.
+                  <span lang="ja">Firefox・Chrome・Edge など別のブラウザでお試しください。</span>
+                </li>
+                <li>
+                  WebGL may also be unavailable over remote desktop or in a virtual machine.
+                  <span lang="ja">リモートデスクトップや仮想マシンでは WebGL を利用できない場合があります。</span>
+                </li>
+              </ul>
+              <p id="map-unavailable-detail" class="map-unavailable-detail mono hidden"></p>
+            </div>
+          </div>
+
           <!-- Test EEW Banner -->
           <div id="eew-test-banner" class="hidden">
             <span>TEST DATA • 訓練データ</span>

@@ -11,6 +11,8 @@ import {
 } from "./areaCodes.js";
 import {
   initMap,
+  isWebGL2Supported,
+  showMapUnavailable,
   highlightObservations,
   fitBoundsToObservations,
   displayEpicenter,
@@ -45,6 +47,7 @@ import {
   updateSidebarLoading,
   updateSidebarLoadingPopup,
   hideSidebarLoadingPopup,
+  showSidebarMessage,
   syncLiveModeToggleVisuals,
 } from "./sidebarUI.js";
 import { startLivePolling, stopLivePolling } from "./liveMode.js";
@@ -86,14 +89,25 @@ function _updateStatus(state) {
   const text = document.getElementById("status-text");
   if (!dot || !text) return;
 
-  dot.className = `dot-${state}`;
+  dot.className = `dot-${state === "mapError" ? "error" : state}`;
   const labels = {
     idle: "Idle",
     loading: "Fetching reports...",
     live: "Loaded",
     error: "Error",
+    mapError: "Map unavailable",
   };
   text.textContent = labels[state] || state;
+}
+
+/**
+ * Shows the WebGL fallback and updates the surrounding UI state.
+ * @param {string} [detail] - Optional technical detail from the browser.
+ */
+function _handleMapUnavailable(detail = "") {
+  showMapUnavailable(detail);
+  showSidebarMessage("Map unavailable — WebGL 2 is not supported");
+  _updateStatus("mapError");
 }
 
 /**
@@ -129,6 +143,14 @@ async function boot() {
     return;
   }
 
+  // MapLibre GL requires WebGL 2. Check up front so we can explain the problem
+  // instead of leaving the UI stuck on "Fetching reports...".
+  if (!isWebGL2Supported()) {
+    console.error("[eq-viewer] WebGL 2 is not available; the map cannot be initialised");
+    _handleMapUnavailable();
+    return;
+  }
+
   // Load geographic and code data concurrently
   let areaCodes, prefectureCodes, cityNames, stationNames, featureBounds;
   try {
@@ -147,7 +169,14 @@ async function boot() {
   }
 
   // Initialize MapLibre map instance
-  const map = initMap(mapEl, areaCodes, cityNames, stationNames, getCityAreasState);
+  let map;
+  try {
+    map = initMap(mapEl, areaCodes, cityNames, stationNames, getCityAreasState);
+  } catch (err) {
+    console.error("[eq-viewer] Failed to initialise the map:", err);
+    _handleMapUnavailable(err?.statusMessage ?? "");
+    return;
+  }
 
   // Expose for later modules / debugging
   globalThis.__eqMap = map;

@@ -60,6 +60,25 @@ export function updateSidebarLoading(processed, total) {
 }
 
 /**
+ * Replaces the sidebar list with a short status message.
+ * @param {string} message
+ */
+export function showSidebarMessage(message) {
+  const eqList = document.getElementById("eq-list");
+  if (!eqList) return;
+
+  const item = document.createElement("li");
+  item.className = "eq-item placeholder";
+  const label = document.createElement("span");
+  label.className = "mono muted";
+  label.textContent = message;
+  item.appendChild(label);
+
+  eqList.innerHTML = "";
+  eqList.appendChild(item);
+}
+
+/**
  * Creates a DOM element for a single earthquake report.
  * Displays: intensity (image + colored border), magnitude, hypocenter name, time
  */

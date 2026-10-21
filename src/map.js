@@ -20,6 +20,46 @@ import { buildStyle } from "./map/mapStyle.js";
 
 const C = MAP_COLORS;
 
+// ─── WebGL support / fallback ────────────────────────────────────────────────
+
+/**
+ * Checks whether the browser can create a WebGL 2 context, which MapLibre GL
+ * requires to render the map. The probe context is released immediately.
+ * @returns {boolean}
+ */
+export function isWebGL2Supported() {
+  if (typeof WebGL2RenderingContext === "undefined") return false;
+
+  try {
+    const canvas = document.createElement("canvas");
+    const gl = canvas.getContext("webgl2");
+    if (!gl) return false;
+    gl.getExtension("WEBGL_lose_context")?.loseContext();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Shows the "map unavailable" panel that explains why the map cannot be drawn.
+ * @param {string} [detail] - Optional technical detail, e.g. the browser's
+ *   webglcontextcreationerror status message.
+ */
+export function showMapUnavailable(detail = "") {
+  const panel = document.getElementById("map-unavailable");
+  if (!panel) return;
+
+  const detailEl = document.getElementById("map-unavailable-detail");
+  if (detailEl) {
+    const text = detail ? String(detail) : "";
+    detailEl.textContent = text;
+    detailEl.classList.toggle("hidden", !text);
+  }
+
+  panel.classList.remove("hidden");
+}
+
 // ─── Tooltip helpers ─────────────────────────────────────────────────────────
 function showTooltip(tooltip, x, y, code, info, intensity = null, mode = "area") {
   const codeEl = tooltip.querySelector(".tooltip-code");
@@ -109,6 +149,15 @@ export function initMap(
   });
 
   const tooltip = document.getElementById("area-tooltip");
+
+  // A lost WebGL context may fail to be recreated; surface that instead of
+  // leaving the user with a blank map.
+  map.on("error", (event) => {
+    if (event?.error instanceof maplibregl.GPUInitializationError) {
+      console.error("[eq-viewer] Failed to recreate the WebGL context:", event.error);
+      showMapUnavailable(event.error.statusMessage);
+    }
+  });
 
   // ── Wire hover interactions once the style is ready ──────────────────────
   map.on("load", () => {

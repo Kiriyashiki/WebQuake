@@ -11,6 +11,96 @@
   height: 100%;
 }
 
+/* ── Map unavailable (WebGL 2 fallback) ──────────────────────────── */
+
+.map-unavailable {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: radial-gradient(circle at 50% 40%, var(--bg-panel2) 0%, var(--bg) 70%);
+}
+
+.map-unavailable-content {
+  width: min(560px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 22px 26px;
+  background: rgba(11, 16, 24, 0.96);
+  border: 1px solid var(--border-hi);
+  border-top: 3px solid var(--accent);
+  border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.map-unavailable-icon {
+  margin-bottom: 8px;
+  color: var(--accent);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.map-unavailable-title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+.map-unavailable-title-ja {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.map-unavailable-text {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.map-unavailable-text span,
+.map-unavailable-hints span {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-muted);
+}
+
+.map-unavailable-hints {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.map-unavailable-hints li {
+  margin-bottom: 8px;
+}
+
+.map-unavailable-hints li:last-child {
+  margin-bottom: 0;
+}
+
+.map-unavailable-detail {
+  margin: 14px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
 /* Hide MapLibre default attribution (we replace it) */
 .maplibregl-ctrl-bottom-right,
 .maplibregl-ctrl-bottom-left {
