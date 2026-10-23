@@ -42,8 +42,13 @@ let _trackedEntries = new Map();
  *   intensityRdt: ISO string|null,
  *   epicenterRdt: ISO string|null,
  *   intensityEntry: Object|null,
- *   epicenterEntry: Object|null
+ *   epicenterEntry: Object|null,
+ *   intensityData: { maxIntensity: string|null, observations: Array }|null
  * }
+ *
+ * `intensityData` is the parsed 震度速報 payload.  The source entry's XML DOM
+ * is released after parsing (see _buildFlashReportForLive), so this parsed
+ * copy must be kept around for later rebuilds when the 震源速報 arrives.
  */
 let _trackedFlashEntries = new Map();
 
@@ -95,6 +100,15 @@ export function startLivePolling(areaCodes, callbacks = {}, initialReports = [])
           epicenterRdt: report.flashType === "epicenter" ? report.feedRdt : null,
           intensityEntry: null,
           epicenterEntry: null,
+          // Preserve observations from an initial JSON-sourced flash report so
+          // they can be merged into a later XML epicenter flash report.
+          intensityData:
+            report.maxIntensity || report.observations?.length
+              ? {
+                  maxIntensity: report.maxIntensity || null,
+                  observations: report.observations || [],
+                }
+              : null,
         });
       } else {
         _trackedEntries.set(report.eventId, {
@@ -442,6 +456,7 @@ async function _handleSingleFlashEvent(
   const epicenterEntry = currentEpicenterEntry || trackedFlash?.epicenterEntry || null;
   const bestEntry = epicenterEntry || intensityEntry;
   const bestType = epicenterEntry ? "epicenter" : "intensity";
+  const cachedIntensityData = trackedFlash?.intensityData || null;
 
   if (!trackedFlash) {
     console.info(`[live-mode] New flash report detected (${bestType}):`, eid);
@@ -450,6 +465,7 @@ async function _handleSingleFlashEvent(
       intensityEntry,
       epicenterEntry,
       areaCodes,
+      cachedIntensityData,
     );
     if (flashReport) {
       _trackedFlashEntries.set(eid, {
@@ -457,6 +473,7 @@ async function _handleSingleFlashEvent(
         epicenterRdt: epicenterEntry?.rdt || null,
         intensityEntry,
         epicenterEntry,
+        intensityData: intensityEntry?._flashIntensityData || cachedIntensityData,
       });
       if (callbacks.onNewEntry) {
         callbacks.onNewEntry(bestEntry, flashReport);
@@ -480,6 +497,7 @@ async function _handleSingleFlashEvent(
       intensityEntry,
       epicenterEntry,
       areaCodes,
+      cachedIntensityData,
     );
     if (flashReport) {
       _trackedFlashEntries.set(eid, {
@@ -487,6 +505,7 @@ async function _handleSingleFlashEvent(
         epicenterRdt: epicenterEntry?.rdt || trackedFlash.epicenterRdt || null,
         intensityEntry,
         epicenterEntry,
+        intensityData: intensityEntry?._flashIntensityData || cachedIntensityData,
       });
       if (callbacks.onUpdatedEntry) {
         callbacks.onUpdatedEntry(bestEntry, flashReport);
@@ -590,20 +609,31 @@ async function _pollLatestFeed(areaCodes, callbacks = {}) {
 /**
  * Builds the best available flash report for live mode.
  * Supports both XML-sourced entries (with _xmlDoc) and JSON entries.
+ *
+ * Parsed 震度速報 data is cached on the entry (and passed in as
+ * `cachedIntensityData`) because the XML DOM is released after parsing.  A
+ * later 震源速報 must rebuild this report while keeping the observations.
  */
-async function _buildFlashReportForLive(eid, intensityEntry, epicenterEntry, areaCodes) {
-  let intensityData = null;
+async function _buildFlashReportForLive(
+  eid,
+  intensityEntry,
+  epicenterEntry,
+  areaCodes,
+  cachedIntensityData = null,
+) {
+  let intensityData = intensityEntry?._flashIntensityData || null;
 
   // If we have a 震度速報, extract area-level observations
   if (intensityEntry?._xmlDoc) {
     // XML path: parse directly from the already-fetched XML doc
     try {
       intensityData = parseFlashIntensityXml(intensityEntry._xmlDoc);
+      intensityEntry._flashIntensityData = intensityData;
     } catch (err) {
       console.warn("[live-mode] Failed to parse 震度速報 XML for", eid, err.message);
     }
     intensityEntry._xmlDoc = null;
-  } else if (intensityEntry?.json) {
+  } else if (!intensityData && intensityEntry?.json) {
     // JSON fallback path
     try {
       const reportUrl = FEED_DATA_BASE_URL + intensityEntry.json;
@@ -611,10 +641,17 @@ async function _buildFlashReportForLive(eid, intensityEntry, epicenterEntry, are
       if (res.ok) {
         const jsonData = await res.json();
         intensityData = parseFlashIntensityJson(jsonData);
+        intensityEntry._flashIntensityData = intensityData;
       }
     } catch (err) {
       console.warn("[live-mode] Failed to fetch 震度速報 JSON for", eid, err.message);
     }
+  }
+
+  // Keep observations from the previously processed intensity flash if the
+  // current entry no longer carries (or never had) a parseable source.
+  if (!intensityData && cachedIntensityData) {
+    intensityData = cachedIntensityData;
   }
 
   // If we have a 震源速報, build from that + carry observations

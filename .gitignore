@@ -8,6 +8,7 @@ test/package-lock.json
 test/package.json
 test/pnpm-lock.yaml
 test/testfeed.*
+test/samples
 pnpm-workspace.yaml
 extra/shakemap.geojson
 extra/stations.csv
