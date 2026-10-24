@@ -165,6 +165,7 @@ export function buildFlashIntensityReport(feedEntry, parsedJson) {
     isFlashReport: true,
     flashType: 'intensity', // 震度速報
     feedRdt: feedEntry.rdt,
+    feedSerial: feedEntry.serial ?? feedEntry.ser ?? null,
     feedJson: feedEntry.json,
   };
 }
@@ -215,6 +216,7 @@ export function buildFlashEpicenterReport(feedEntry, areaCodes, priorObservation
     isFlashReport: true,
     flashType: 'epicenter', // 震源速報
     feedRdt: feedEntry.rdt,
+    feedSerial: feedEntry.serial ?? feedEntry.ser ?? null,
     feedJson: feedEntry.json,
   };
 }

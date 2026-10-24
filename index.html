@@ -376,6 +376,13 @@
                     <label for="eew-provider-select">Provider • 配信元:</label>
                     <select id="eew-provider-select"></select>
                   </div>
+                  <div id="axis-reports-group" class="dropdown-group hidden">
+                    <label class="live-mode-toggle popup-setting" data-tooltip="Use earthquake reports received over the AXIS jmx-seismology channel (requires Live Mode) • AXISのjmx-seismologyチャンネルで受信した地震情報を使用します（ライブモードが必要）">
+                      <input type="checkbox" id="axis-reports-toggle" />
+                      <span class="toggle-label">Use AXIS Reports<br>AXISレポートを使用</span>
+                      <span class="toggle-switch"></span>
+                    </label>
+                  </div>
                   <div id="eew-token-group" class="dropdown-group">
                     <label id="eew-token-label" for="eew-token-input">AXIS Token • トークン:</label>
                     <input type="password" id="eew-token-input" class="search-input" placeholder="Bearer Token" />

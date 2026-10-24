@@ -1,11 +1,16 @@
-import { USE_TEST_SERVER, ENABLE_SM1999_GMPE } from "./constants.js";
+import {
+  USE_TEST_SERVER,
+  ENABLE_SM1999_GMPE,
+  AXIS_REPORT_CHANNEL,
+  AXIS_REPORTS_SETTING_KEY,
+} from "./constants.js";
 import { playAudio } from "./audio.js";
 import {
   displayHomeMarker,
   setCustomHomeCoordinates,
 } from "./map.js";
 import { findCityForCoordinates } from "./areaCodes.js";
-import { setHomeLocationUI, getHomeLocation } from "./sidebarUI.js";
+import { setHomeLocationUI, getHomeLocation, getLiveModeState } from "./sidebarUI.js";
 import {
   getProvider,
   getAvailableProviders,
@@ -16,6 +21,7 @@ import {
   parseJwtPayload,
   getJwtExpiryMs,
 } from "./eewProviders.js";
+import { ingestAxisMessage } from "./liveMode.js";
 
 import { eewState } from "./eew/state.js";
 import {
@@ -42,6 +48,25 @@ function formatTokenExpiry(expiryMs) {
   const date = new Date(expiryMs);
   const pad = (value) => String(value).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+/**
+ * Whether reports received over the AXIS jmx-seismology channel should be
+ * passed to live mode.  Off by default.
+ * @returns {boolean}
+ */
+export function getAxisReportsEnabled() {
+  if (typeof localStorage === "undefined") return false;
+  return localStorage.getItem(AXIS_REPORTS_SETTING_KEY) === "true";
+}
+
+/**
+ * Enables or disables AXIS report ingestion.
+ * @param {boolean} enabled
+ */
+export function setAxisReportsEnabled(enabled) {
+  if (typeof localStorage === "undefined") return;
+  localStorage.setItem(AXIS_REPORTS_SETTING_KEY, enabled ? "true" : "false");
 }
 
 /**
@@ -99,10 +124,30 @@ function updateTokenStatusUI(provider = getActiveProvider()) {
     const channels = Array.isArray(claims?.channels)
       ? claims.channels.map((channel) => String(channel))
       : null;
+    const warnings = [];
+    const supportsAxisReports = provider?.id === "axis" || provider?.id === "test";
+
     if (channels && !channels.includes("eew")) {
-      warningEl.textContent =
+      warnings.push(
         '⚠ This token does not include the "eew" channel, which is required to receive EEWs.\n' +
-        "⚠ このトークンには「eew」チャンネルが含まれていません。EEWの受信には必要です。";
+          "⚠ このトークンには「eew」チャンネルが含まれていません。EEWの受信には必要です。",
+      );
+    }
+
+    if (
+      channels &&
+      supportsAxisReports &&
+      getAxisReportsEnabled() &&
+      !channels.includes(AXIS_REPORT_CHANNEL)
+    ) {
+      warnings.push(
+        `⚠ This token does not include the "${AXIS_REPORT_CHANNEL}" channel, which is required to receive AXIS reports.\n` +
+          `⚠ このトークンには「${AXIS_REPORT_CHANNEL}」チャンネルが含まれていません。AXISレポートの受信には必要です。`,
+      );
+    }
+
+    if (warnings.length > 0) {
+      warningEl.textContent = warnings.join("\n");
       warningEl.classList.remove("hidden");
     } else {
       warningEl.textContent = "";
@@ -131,6 +176,8 @@ export function initEewSettings(map, bounds, cities, areas) {
   const homeSyncToggleEl = document.getElementById("eew-home-sync-toggle");
   const testToggleEl = document.getElementById("eew-test-toggle");
   const axisInfoEl = document.getElementById("eew-axis-info");
+  const axisReportsGroupEl = document.getElementById("axis-reports-group");
+  const axisReportsToggleEl = document.getElementById("axis-reports-toggle");
   const gmpeGroupEl = document.getElementById("eew-gmpe-group");
   const gmpeSelectEl = document.getElementById("eew-gmpe-select");
 
@@ -205,9 +252,24 @@ export function initEewSettings(map, bounds, cities, areas) {
         axisInfoEl.classList.add("hidden");
       }
     }
+
+    if (axisReportsGroupEl) {
+      const supportsAxisReports = p.id === "axis" || p.id === "test";
+      axisReportsGroupEl.classList.toggle("hidden", !supportsAxisReports);
+    }
+    if (axisReportsToggleEl) {
+      axisReportsToggleEl.checked = getAxisReportsEnabled();
+    }
   }
 
   updateProviderSettingsUI();
+
+  if (axisReportsToggleEl) {
+    axisReportsToggleEl.addEventListener("change", (e) => {
+      setAxisReportsEnabled(e.target.checked);
+      updateTokenStatusUI(getActiveProvider());
+    });
+  }
 
   const savedEnabled = localStorage.getItem("eew-enabled") === "true";
   toggleEl.checked = savedEnabled;
@@ -462,6 +524,12 @@ async function connectEew() {
     },
     onMessage: (normalizedMsg) => {
       handleEewMessage(normalizedMsg, provider);
+    },
+    onSeismologyMessage: (message) => {
+      if (provider.id !== "axis" && provider.id !== "test") return;
+      if (!getAxisReportsEnabled()) return;
+      if (!getLiveModeState()) return;
+      ingestAxisMessage(message);
     },
     onUserPoint: async (location) => {
       const p = getActiveProvider();

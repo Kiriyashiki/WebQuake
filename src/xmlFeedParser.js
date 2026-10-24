@@ -248,10 +248,14 @@ async function _fetchAndNormalizeXmlEntry(atomEntry, options = {}) {
     const isDistant = atomEntry.title?.includes('遠地地震に関する情報') || atomEntry.content?.includes('遠地地震に関する情報');
 
     // Build the normalized entry based on report type
+    const reportDateTime = _xmlText(doc, 'ReportDateTime');
+    const serial = _xmlText(doc, 'Serial');
     const baseEntry = {
       eid: eventId,
       ttl,
       rdt: atomEntry.updated || null,
+      reportDateTime: reportDateTime || atomEntry.updated || null,
+      serial: serial || null,
       isDistantEarthquake: isDistant || undefined,
       _xmlDoc: doc,          // Carry the parsed XML doc for later use
       _xmlUrl: atomEntry.dataUrl,

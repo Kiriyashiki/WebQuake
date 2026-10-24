@@ -308,6 +308,7 @@ async function _processEntry(entry, areaCodes, seenEventIds, lpgmEntry) {
 
     const displayReport = buildDisplayReport(jmaReport, areaCodes, {
       feedRdt: entry.rdt,
+      feedSerial: entry.ser ?? null,
       feedJson: entry.json,
       ttl: entry.ttl,
       fallbackName: entry.anm,

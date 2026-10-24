@@ -34,6 +34,8 @@ Under 'チャンネル選択', select `eew` from the dropdown, and click '変更
 
 <img src="./img-channel.png" width=600>
 
+If you also want to receive earthquake reports from AXIS, add the `jmx-seismology` channel to the same token. These reports are used only when **Use AXIS Reports** is enabled in Settings and **Live Mode** is also on. When AXIS reports are enabled, KyoQuake warns you under the token field if the token does not include `jmx-seismology`.
+
 ### Get token
 
 *If your token ever expires, you can get a new one here.*

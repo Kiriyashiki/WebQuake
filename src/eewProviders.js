@@ -1,4 +1,4 @@
-import { USE_TEST_SERVER } from "./constants.js";
+import { USE_TEST_SERVER, AXIS_REPORT_CHANNEL } from "./constants.js";
 import { loadAreaNameToCodeMap, getAreaCodeByName } from "./areaCodes.js";
 
 import { isDesktop, desktopFetch } from "./desktopBridge.js";
@@ -434,6 +434,8 @@ export class WebSocketEewProvider extends BaseEewProvider {
         if (normalized) {
           this.callbacks?.onMessage?.(normalized);
         }
+      } else if (data?.channel === AXIS_REPORT_CHANNEL && data.message) {
+        this.callbacks?.onSeismologyMessage?.(data.message, data);
       }
     } catch (err) {
       // Non-JSON or unhandled message format
@@ -581,6 +583,15 @@ export class AxisEewProvider extends WebSocketEewProvider {
    */
   hasEewChannel() {
     return this.getTokenChannels().includes("eew");
+  }
+
+  /**
+   * Whether the current token includes the `jmx-seismology` channel used for
+   * AXIS earthquake reports.  Advisory only, like hasEewChannel().
+   * @returns {boolean}
+   */
+  hasJmxSeismologyChannel() {
+    return this.getTokenChannels().includes(AXIS_REPORT_CHANNEL);
   }
 
   getStoredExpiry() {
