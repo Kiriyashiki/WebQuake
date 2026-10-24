@@ -104,11 +104,15 @@ export function isWarningEew(msg) {
 /**
  * Level method (レベル法), also known as the 100gal method: the magnitude could
  * not be determined from a single station's record.
+ *
+ * Providers that report the method explicitly (DMDSS `isLevelOver`) take
+ * precedence; otherwise the method is inferred from an unknown magnitude.
  * This is a pure method check (like `isPlumEew`) and is evaluated for every
  * provider; the warning/low-accuracy gates live in `computeIsLowAccuracy`.
  */
 export function isLevelMethodEew(msg) {
   if (!msg) return false;
+  if (typeof msg.isLevelOver === "boolean") return msg.isLevelOver;
   return isUnknownValue(msg.Magnitude);
 }
 
@@ -1098,6 +1102,9 @@ export class DmdssEewProvider extends WebSocketEewProvider {
       Text: "",
       isTest: isTest,
       isPlumOnly: isPlumOnly,
+      // Native level-method flag (レベル法 / 100gal detection). null when the
+      // source does not report it, so level method is inferred from the magnitude.
+      isLevelOver: data.isLevelOver ?? null,
       isLowAccuracy: false,
       pointForecast: data.pointForecast || null,
       maxLgInt: lpgmStr,

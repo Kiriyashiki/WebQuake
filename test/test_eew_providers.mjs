@@ -635,6 +635,51 @@ assert.strictEqual(
 const normDmdssLevelWarning = dmdssProvider.normalizeDmdssEew({ ...rawDmdssLevel, isWarning: true });
 assert.strictEqual(normDmdssLevelWarning.isLowAccuracy, false);
 
+// DMDSS reports level-method usage natively via isLevelOver
+assert.strictEqual(normDmdssLevel.isLevelOver, null, "Missing isLevelOver falls back to inference");
+const rawDmdssLevelOverTrue = {
+  ...rawDmdssForecast,
+  isPlumOnly: false,
+  magnitude: 4.5,
+  isLevelOver: true,
+  maxInt: { from: "4", to: "4" },
+  accuracy: { epicenters: ["4", "4"] },
+};
+const normDmdssLevelOverTrue = dmdssProvider.normalizeDmdssEew(rawDmdssLevelOverTrue);
+assert.strictEqual(normDmdssLevelOverTrue.isLevelOver, true);
+assert.strictEqual(isLevelMethodEew(normDmdssLevelOverTrue), true);
+assert.strictEqual(
+  normDmdssLevelOverTrue.isLowAccuracy,
+  true,
+  "Native isLevelOver: true should mark the EEW low accuracy",
+);
+
+// A native isLevelOver: false overrides the unknown-magnitude heuristic
+const rawDmdssLevelOverFalse = {
+  ...rawDmdssForecast,
+  isPlumOnly: false,
+  magnitude: null,
+  isLevelOver: false,
+  maxInt: { from: "4", to: "4" },
+  accuracy: { epicenters: ["4", "4"] },
+};
+const normDmdssLevelOverFalse = dmdssProvider.normalizeDmdssEew(rawDmdssLevelOverFalse);
+assert.strictEqual(normDmdssLevelOverFalse.isLevelOver, false);
+assert.strictEqual(
+  isLevelMethodEew(normDmdssLevelOverFalse),
+  false,
+  "Native isLevelOver: false should override the magnitude heuristic",
+);
+assert.strictEqual(normDmdssLevelOverFalse.isLowAccuracy, false);
+
+// A warning using the level method is still never low accuracy
+const normDmdssLevelOverWarning = dmdssProvider.normalizeDmdssEew({
+  ...rawDmdssLevelOverTrue,
+  isWarning: true,
+});
+assert.strictEqual(isLevelMethodEew(normDmdssLevelOverWarning), true);
+assert.strictEqual(normDmdssLevelOverWarning.isLowAccuracy, false);
+
 console.log("✓ Test 6 passed");
 
 // 7. DMDSS server-status callback handling
