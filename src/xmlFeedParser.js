@@ -464,14 +464,22 @@ function _atomLinkHref(atomEntry) {
  */
 function _xmlCoordinate(doc) {
   const coordElements = [
-    ...doc.getElementsByTagName('Coordinate'),
-    ...doc.getElementsByTagName('jmx_eb:Coordinate'),
+    ...new Set([
+      ...doc.getElementsByTagName('Coordinate'),
+      ...doc.getElementsByTagName('jmx_eb:Coordinate'),
+    ]),
   ];
   if (coordElements.length === 0) return null;
 
-  const degMinEl = coordElements.find(
-    (el) => el.getAttribute('type') === '震源位置（度分）' || el.getAttribute('type')?.includes('度分')
-  );
+  const degMinEl = coordElements.find((el) => {
+    const type = el.getAttribute('type');
+    const description = el.getAttribute('description');
+    return (
+      type === '震源位置（度分）' ||
+      type?.includes('度分') ||
+      description?.includes('分')
+    );
+  });
   if (degMinEl) {
     const text = degMinEl.textContent.trim();
     if (text) return text;

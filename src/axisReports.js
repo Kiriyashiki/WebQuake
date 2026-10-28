@@ -97,13 +97,33 @@ function axisTtl(message) {
   return AXIS_TITLE_TO_TTL[title] || null;
 }
 
+/**
+ * Selects the most detailed coordinate from a transposed Coordinate array.
+ * VXSE61 may contain both a rounded degree coordinate and a detailed
+ * degree-minute coordinate (`type="震源位置（度分）"`); the latter carries the
+ * updated depth and should be used for special-report overrides.
+ */
+function selectCoordinate(value) {
+  const coordinates = asArray(value);
+  if (coordinates.length === 0) return null;
+
+  const detailed = coordinates.find((coordinate) => {
+    if (!coordinate || typeof coordinate !== "object") return false;
+    const type = scalar(coordinate.type_ ?? coordinate.type);
+    const description = scalar(coordinate.description);
+    return type?.includes("度分") || description?.includes("分");
+  });
+
+  return scalar(detailed || coordinates[0]);
+}
+
 function normalizeArea(area) {
   if (!area || typeof area !== "object") return null;
   return {
     ...area,
     Name: scalar(area.Name),
     Code: scalar(area.Code),
-    Coordinate: scalar(area.Coordinate),
+    Coordinate: selectCoordinate(area.Coordinate),
     enName: scalar(area.enName),
   };
 }

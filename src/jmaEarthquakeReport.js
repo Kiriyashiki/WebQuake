@@ -283,9 +283,24 @@ class JMAEarthquakeReport {
   /** Raw coordinate string shared by coordinates + depth parsers. */
   _getCoordinateRaw() {
     const candidates = [
-      ...this._doc.getElementsByTagName("Coordinate"),
-      ...this._doc.getElementsByTagName("jmx_eb:Coordinate"),
+      ...new Set([
+        ...this._doc.getElementsByTagName("Coordinate"),
+        ...this._doc.getElementsByTagName("jmx_eb:Coordinate"),
+      ]),
     ];
+    // Prefer the detailed degree-minute coordinate when a report contains
+    // both a rounded and a detailed hypocenter position (e.g. VXSE61).
+    const detailed = candidates.find((el) => {
+      const type = el.getAttribute("type");
+      const description = el.getAttribute("description");
+      return (
+        type === "震源位置（度分）" ||
+        type?.includes("度分") ||
+        description?.includes("分")
+      );
+    });
+    if (detailed?.textContent.trim()) return detailed.textContent.trim();
+
     for (const el of candidates) {
       const text = el.textContent.trim();
       if (text) return text;
