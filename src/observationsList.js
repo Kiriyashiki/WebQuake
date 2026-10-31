@@ -3,7 +3,7 @@
  * of observations grouped by intensity level.
  */
 
-import { loadPrefectureCodes, loadCityNames } from "./areaCodes.js";
+import { loadPrefectureCodes, loadCityNames, loadRegions } from "./areaCodes.js";
 import {
   CONDITION_GROUP_KEY,
   CONDITION_INTENSITY,
@@ -164,16 +164,29 @@ export async function renderObservationsList(container, observations, areaCodes 
   const { isFlashReport = false, isLpgm = false } = options;
 
   try {
-    // Load data (cached in areaCodes.js — no redundant fetches)
-    const cityNames = await loadCityNames();
-    const resolvedPrefCodes = prefCodes || await loadPrefectureCodes();
+    // Load data (cached in areaCodes.js — no redundant fetches).
+    // City names are only needed for full reports.  Flash and LPGM reports
+    // only contain forecast areas and are grouped by region.
+    const needsCityNames = !isFlashReport && !isLpgm;
+    const [cityNames, resolvedPrefCodes, regions] = await Promise.all([
+      needsCityNames ? loadCityNames() : Promise.resolve(new Map()),
+      prefCodes ? Promise.resolve(prefCodes) : loadPrefectureCodes(),
+      isFlashReport || isLpgm
+        ? loadRegions().catch((err) => {
+            console.warn("[observationsList] Failed to load regions, grouping as Other:", err);
+            return new Map();
+          })
+        : Promise.resolve(null),
+    ]);
 
     // A newer render (or an explicit invalidation) has superseded this one.
     if (renderTokens.get(container) !== renderToken) return;
 
-    // Group observations by intensity
-    const grouped = (isFlashReport || isLpgm)
-      ? groupObservationsByIntensityAreaOnly(observations, areaCodes, resolvedPrefCodes, isLpgm)
+    // Flash and LPGM reports have forecast-area observations only.  Their area
+    // codes map to the larger JMA regions; normal reports keep
+    // pref > forecast > city.
+    const grouped = isFlashReport || isLpgm
+      ? groupObservationsByIntensityRegion(observations, areaCodes, regions, isLpgm)
       : groupObservationsByIntensity(observations, areaCodes, resolvedPrefCodes, cityNames);
 
     // Get intensity order (descending: highest first).
@@ -248,21 +261,21 @@ export async function renderObservationsList(container, observations, areaCodes 
       content.style.borderLeft = '2px solid ' + config.color;
       if (!shouldOpen) content.classList.add('collapsed');
 
-      // Add prefectures, areas, cities to content
-      const prefs = grouped[intensity];
-      for (const pref of prefs) {
-        const prefDiv = document.createElement('div');
-        prefDiv.className = 'observation-pref';
+      // Add top-level groups (prefecture or region), forecast areas and cities
+      const groups = grouped[intensity];
+      for (const group of groups) {
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'observation-pref';
 
-        const prefRow = document.createElement('div');
-        prefRow.className = 'observation-row pref-row';
-        const prefJa = pref.name;
-        const prefEn = pref.nameEn || pref.code;
-        prefRow.innerHTML = `<span class="observation-ja">${prefJa}</span><span class="observation-dot">·</span><span class="observation-en">${prefEn}</span>`;
-        prefDiv.appendChild(prefRow);
+        const groupRow = document.createElement('div');
+        groupRow.className = 'observation-row pref-row';
+        const groupJa = group.name;
+        const groupEn = group.nameEn || group.code;
+        groupRow.innerHTML = `<span class="observation-ja">${groupJa}</span><span class="observation-dot">·</span><span class="observation-en">${groupEn}</span>`;
+        groupDiv.appendChild(groupRow);
 
-        // Areas under pref
-        for (const area of pref.areas) {
+        // Areas under the group
+        for (const area of group.areas) {
           const areaDiv = document.createElement('div');
           areaDiv.className = 'observation-area';
 
@@ -273,8 +286,8 @@ export async function renderObservationsList(container, observations, areaCodes 
           areaRow.innerHTML = `<span class="observation-ja">${areaJa}</span><span class="observation-dot">·</span><span class="observation-en">${areaEn}</span>`;
           areaDiv.appendChild(areaRow);
 
-          // Cities under area (only for non-flash reports)
-          if (!isFlashReport) {
+          // Cities under area (only for full reports)
+          if (!isFlashReport && !isLpgm) {
             for (const city of area.cities) {
               const cityDiv = document.createElement('div');
               cityDiv.className = 'observation-city';
@@ -290,10 +303,10 @@ export async function renderObservationsList(container, observations, areaCodes 
             }
           }
 
-          prefDiv.appendChild(areaDiv);
+          groupDiv.appendChild(areaDiv);
         }
 
-        content.appendChild(prefDiv);
+        content.appendChild(groupDiv);
       }
 
       // Toggle functionality
@@ -314,33 +327,60 @@ export async function renderObservationsList(container, observations, areaCodes 
 }
 
 /**
- * Group observations by intensity at the area level (no cities).
- * Used for flash reports (震度速報) which don't have per-city data, and for LPGM which only has area-level intensities.
+ * Group flash/LPGM observations by intensity and JMA region.
+ * These reports only contain forecast areas, so the prefecture level is
+ * replaced by the larger region (Kanto, Tohoku, ...) from regions.csv.
+ * Areas without a region (sea/outside Japan/unmapped) are grouped as Other.
+ *
  * @param {Array} observations - Observations array (areas have empty cities arrays)
- * @param {Map} areaCodes - Area code mappings
- * @param {Map} prefectureCodes - Prefecture code mappings
+ * @param {Map} areaCodes - Area code mappings, including regionCode
+ * @param {Map|null} regions - Region code -> { name, kana, en }
  * @param {boolean} isLpgm - If true, groups by maxLgInt instead of maxInt
  * @returns {Object} Grouped observations by intensity
  */
-function groupObservationsByIntensityAreaOnly(observations, areaCodes = new Map(), prefectureCodes = new Map(), isLpgm = false) {
+function groupObservationsByIntensityRegion(
+  observations,
+  areaCodes = new Map(),
+  regions = new Map(),
+  isLpgm = false,
+) {
   const grouped = {};
 
   for (const pref of observations) {
-    const prefCode = pref.code;
-    const prefName = pref.name;
-
     for (const area of pref.areas) {
       const intensity = isLpgm ? area.maxLgInt : area.maxInt;
       if (!intensity) continue;
       ensureIntensityGroup(grouped, intensity);
 
       const areaCode = area.code;
-      const areaName = areaCodes.get(areaCode)?.ja || area.name;
-      const areaNameEn = areaCodes.get(areaCode)?.en || '';
+      const areaData = areaCodes.get(areaCode);
+      const areaName = areaData?.ja || area.name;
+      const areaNameEn = areaData?.en || '';
+      const regionCode = areaData?.regionCode ?? null;
+      const regionData = regionCode != null ? regions?.get(regionCode) : null;
+      const groupKey = regionData ? regionCode : "unknown";
 
-      const prefEntry = findOrCreatePref(grouped, prefectureCodes, intensity, prefCode, prefName);
-      findOrCreateArea(prefEntry, areaCode, areaName, areaNameEn);
+      let regionEntry = grouped[intensity].find((entry) => entry.code === groupKey);
+      if (!regionEntry) {
+        regionEntry = {
+          code: groupKey,
+          name: regionData?.name || "その他",
+          nameEn: regionData?.en || "Other",
+          kana: regionData?.kana || "",
+          order: regionData ? regionCode : Number.MAX_SAFE_INTEGER,
+          areas: [],
+        };
+        grouped[intensity].push(regionEntry);
+      }
+
+      findOrCreateArea(regionEntry, areaCode, areaName, areaNameEn);
     }
+  }
+
+  // Regions have a natural order (Hokkaido -> Okinawa); keep it stable inside
+  // each intensity section. Unmapped areas go last.
+  for (const entries of Object.values(grouped)) {
+    entries.sort((a, b) => a.order - b.order);
   }
 
   return grouped;

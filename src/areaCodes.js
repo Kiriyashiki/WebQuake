@@ -13,6 +13,7 @@ export { pointInPolygon };
 let _areaCodesPromise = null;
 let _areaNameToCodePromise = null;
 let _areaNameToCodeMap = new Map();
+let _regionsPromise = null;
 let _prefectureCodesPromise = null;
 let _cityNamesPromise = null;
 let _rawCsvPromise = null;
@@ -48,9 +49,10 @@ export function loadAreaCodesRawCsv() {
  * Loads and parses jma-area-codes.csv into a Map keyed by numeric code.
  *
  * CSV format (semicolon-delimited, no header):
- *   100;石狩地方北部;いしかりちほうきたぶ;Northern Part of Ishikari
+ *   100;石狩地方北部;いしかりちほうきたぶ;Northern Part of Ishikari;9910
+ *   The optional fifth column is the region code from regions.csv.
  *
- * Returns: Map<number, { ja: string, kana: string, en: string }>
+ * Returns: Map<number, { ja: string, kana: string, en: string, regionCode: number|null }>
  */
 export function loadAreaCodes() {
   if (!_areaCodesPromise) {
@@ -68,9 +70,12 @@ export function loadAreaCodes() {
           const ja   = parts[1]?.trim() ?? '';
           const kana = parts[2]?.trim() ?? '';
           const en   = parts[3]?.trim() ?? '';
+          const regionRaw = parts[4]?.trim() ?? '';
+          const parsedRegion = regionRaw ? Number.parseInt(regionRaw, 10) : null;
+          const regionCode = Number.isNaN(parsedRegion) ? null : parsedRegion;
 
           if (!Number.isNaN(code)) {
-            map.set(code, { ja, kana, en });
+            map.set(code, { ja, kana, en, regionCode });
             if (ja) {
               _areaNameToCodeMap.set(ja, code);
             }
@@ -84,6 +89,49 @@ export function loadAreaCodes() {
       });
   }
   return _areaCodesPromise;
+}
+
+/**
+ * Loads regions.csv into a Map keyed by numeric region code.
+ *
+ * CSV format (semicolon-delimited, no header):
+ *   9931;関東;かんとう;Kanto
+ *
+ * Returns: Map<number, { name: string, kana: string, en: string }>
+ */
+export function loadRegions() {
+  if (!_regionsPromise) {
+    _regionsPromise = fetch('/regions.csv')
+      .then(res => {
+        if (!res.ok) throw new Error(`Failed to load regions CSV: ${res.status}`);
+        return res.text();
+      })
+      .then(text => {
+        const map = new Map();
+        for (const raw of text.split('\n')) {
+          const line = raw.trim();
+          if (!line || line.startsWith('#')) continue;
+
+          const parts = line.split(';');
+          if (parts.length < 4) continue;
+
+          const code = Number.parseInt(parts[0], 10);
+          const name = parts[1]?.trim() ?? '';
+          const kana = parts[2]?.trim() ?? '';
+          const en   = parts[3]?.trim() ?? '';
+
+          if (!Number.isNaN(code)) {
+            map.set(code, { name, kana, en });
+          }
+        }
+        return map;
+      })
+      .catch(err => {
+        _regionsPromise = null;
+        throw err;
+      });
+  }
+  return _regionsPromise;
 }
 
 /**
