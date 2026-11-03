@@ -9,6 +9,10 @@
   "publish": null,
   "files": [
     "dist/**/*",
+    "!dist/gmpe-test.html",
+    "!dist/about.html",
+    "!dist/demo/**/*",
+    "!dist/assets/about-*",
     "electron/**/*",
     "package.json"
   ],

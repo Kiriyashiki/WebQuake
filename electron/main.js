@@ -194,6 +194,7 @@ async function createWindow() {
       const { build } = await import("vite");
       await build({
         root: rootDir,
+        mode: "desktop",
       });
       console.log("[Electron] Build finished.");
     }

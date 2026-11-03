@@ -4,7 +4,9 @@ Web-based app that displays information from earthquake reports published by the
 
 ![Main app view](./extra/main.png)
 
-Live at [kyoquake.hainaut.xyz](https://kyoquake.hainaut.xyz?utm_source=github)
+[Home Page](https://kyoquake.hainaut.xyz/about.html?utm_source=github)
+
+Live at [kyoquake.hainaut.xyz](https://kyoquake.hainaut.xyz/?utm_source=github)
 
 Desktop apps available in [Releases](https://github.com/Kiriyashiki/WebQuake/releases)
 
@@ -41,6 +43,11 @@ Tauri (Windows, macOS) and Electron (Linux) is used for the desktop apps.
 pnpm install
 pnpm run build
 ```
+
+`pnpm run build` produces the web build, including the about page.
+Use `pnpm run build:desktop` for Tauri/Electron builds; it leaves out the about
+page and its page-only assets.
+
 ## Links
 
 ### Attribution · Sources

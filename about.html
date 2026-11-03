@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en" class="lang-en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KyoQuake — About</title>
+    <meta
+      name="description"
+      content="KyoQuake is a web and desktop viewer for earthquake reports published by the Japan Meteorological Agency (JMA)."
+    />
+    <meta property="og:title" content="KyoQuake" />
+    <meta
+      property="og:description"
+      content="A web and desktop viewer for earthquake reports published by the Japan Meteorological Agency (JMA)."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://kyoquake.hainaut.xyz/demo/banner.png" />
+    <meta name="theme-color" content="#070b0f" />
+    <link rel="icon" href="/img/epicenter.png" type="image/png" />
+
+    <script>
+      // Set the language before the page renders so there is no flash of the
+      // wrong language. A saved choice wins; otherwise use the browser language.
+      (function () {
+        var saved = null;
+        var kana = false;
+        try {
+          saved = localStorage.getItem("kyoquake-about-lang");
+          kana = localStorage.getItem("kyoquake-about-kana") === "1";
+        } catch (err) {
+          // localStorage can be unavailable in private browsing modes.
+        }
+
+        var browserLang =
+          (navigator.languages && navigator.languages[0]) || navigator.language || "";
+        var lang =
+          saved === "ja" || saved === "en"
+            ? saved
+            : /^ja\b/i.test(browserLang)
+              ? "ja"
+              : "en";
+
+        document.documentElement.classList.remove("lang-en", "lang-ja");
+        document.documentElement.classList.add("lang-" + lang);
+        document.documentElement.lang = lang;
+        document.title = lang === "ja" ? "KyoQuake — 概要" : "KyoQuake — About";
+        if (kana) document.documentElement.classList.add("kana-on");
+      })();
+    </script>
+
+    <link rel="stylesheet" href="/styles/about.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a class="brand" href="/">
+          <img src="/img/epicenter.png" alt="" width="24" height="24" />
+          <span>KyoQuake</span>
+        </a>
+        <div class="controls">
+          <button
+            type="button"
+            class="control-btn lang-ja"
+            id="kana-toggle"
+            aria-pressed="false"
+            aria-label="ふりがなを表示"
+            title="Show furigana · ふりがなを表示"
+          >
+            かな
+          </button>
+          <button type="button" class="control-btn" id="lang-toggle" aria-label="Switch language">
+            <span class="lang-en"><ruby>日本語<rt>にほんご</rt></ruby></span>
+            <span class="lang-ja">English</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="banner">
+        <div class="banner-bg" aria-hidden="true"></div>
+        <div class="banner-inner">
+          <img
+            class="banner-icon"
+            src="/img/epicenter.png"
+            alt="KyoQuake icon"
+            width="72"
+            height="72"
+          />
+          <h1>KyoQuake</h1>
+          <p class="banner-desc">
+            <span class="lang-en"
+              >A web and desktop viewer for earthquake reports published by the Japan
+              Meteorological Agency (JMA).</span
+            >
+            <span class="lang-ja"
+              ><ruby>気象庁<rt>きしょうちょう</rt></ruby>が<ruby>発表<rt>はっぴょう</rt></ruby>する<ruby>地震情報<rt>じしんじょうほう</rt></ruby>を<ruby>表示<rt>ひょうじ</rt></ruby>するウェブ・デスクトップアプリです。</span
+            >
+          </p>
+          <div class="actions">
+            <a
+              class="btn btn-primary"
+              href="https://github.com/Kiriyashiki/WebQuake/releases"
+            >
+              <span class="lang-en">Download desktop app</span>
+              <span class="lang-ja">デスクトップアプリをダウンロード</span>
+            </a>
+            <a class="btn" href="/">
+              <span class="lang-en">Open web app</span>
+              <span class="lang-ja"
+                >ウェブアプリを<ruby>開<rt>ひら</rt></ruby>く</span
+              >
+            </a>
+            <a class="btn" href="https://github.com/Kiriyashiki/WebQuake">
+              <span class="lang-en">View on GitHub</span>
+              <span class="lang-ja">GitHubで<ruby>見<rt>み</rt></ruby>る</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <div class="wrap">
+        <aside class="disclaimer">
+          <span class="lang-en"
+            ><strong>Disclaimer:</strong> KyoQuake is not affiliated with the Japan
+            Meteorological Agency (JMA). It is developed by an individual. For faster and
+            more accurate information, please refer to
+            <a href="https://www.data.jma.go.jp/multi/quake/index.html?lang=en" target="_blank"
+              >official JMA information</a
+            >.</span
+          >
+          <span class="lang-ja"
+            ><strong><ruby>免責事項<rt>めんせきじこう</rt></ruby>：</strong>KyoQuakeは<ruby>気象庁<rt>きしょうちょう</rt></ruby>とは<ruby>提携<rt>ていけい</rt></ruby>していません。<ruby>個人<rt>こじん</rt></ruby>によって<ruby>開発<rt>かいはつ</rt></ruby>されています。より<ruby>迅速<rt>じんそく</rt></ruby>で<ruby>正確<rt>せいかく</rt></ruby>な<ruby>情報<rt>じょうほう</rt></ruby>については、<a href="https://www.data.jma.go.jp/multi/quake/index.html?lang=ja" target="_blank"><ruby>気象庁<rt>きしょうちょう</rt></ruby>の<ruby>公式情報<rt>こうしきじょうほう</rt></ruby></a>を<ruby>参照<rt>さんしょう</rt></ruby>してください。</span
+          >
+        </aside>
+
+        <section class="features" id="features">
+          <h2>
+            <span class="lang-en">Features</span>
+            <span class="lang-ja"><ruby>機能<rt>きのう</rt></ruby></span>
+          </h2>
+          <p class="section-lead">
+            <span class="lang-en">The main features included in the app.</span>
+            <span class="lang-ja"
+              >アプリに<ruby>含<rt>ふく</rt></ruby>まれる<ruby>主<rt>おも</rt></ruby>な<ruby>機能<rt>きのう</rt></ruby>です。</span
+            >
+          </p>
+
+          <div class="feature-grid">
+            <article class="feature-card">
+              <img
+                src="/demo/jishin-joho.png"
+                alt="Earthquake information screen showing the epicenter and observed intensities on a map"
+                width="873"
+                height="656"
+              />
+              <div class="feature-body">
+                <h3>
+                  <span class="lang-en">Earthquake information</span>
+                  <span class="lang-ja"
+                    ><ruby>地震情報<rt>じしんじょうほう</rt></ruby></span
+                  >
+                </h3>
+                <p>
+                  <span class="lang-en"
+                    >Shows the epicenter, magnitude, depth, time, maximum intensity and
+                    recorded intensities on a map.</span
+                  >
+                  <span class="lang-ja"
+                    ><ruby>震源<rt>しんげん</rt></ruby>・<ruby>規模<rt>きぼ</rt></ruby>・<ruby>深<rt>ふか</rt></ruby>さ・<ruby>日時<rt>にちじ</rt></ruby>・<ruby>最大震度<rt>さいだいしんど</rt></ruby>と、<ruby>各地<rt>かくち</rt></ruby>の<ruby>観測震度<rt>かんそくしんど</rt></ruby>を<ruby>地図<rt>ちず</rt></ruby>に<ruby>表示<rt>ひょうじ</rt></ruby>します。</span
+                  >
+                </p>
+              </div>
+            </article>
+
+            <article class="feature-card">
+              <img
+                src="/demo/home-basho.png"
+                alt="Home location marker and intensity display on the map"
+                width="872"
+                height="655"
+              />
+              <div class="feature-body">
+                <h3>
+                  <span class="lang-en">Home location</span>
+                  <span class="lang-ja">ホーム<ruby>場所<rt>ばしょ</rt></ruby></span>
+                </h3>
+                <p>
+                  <span class="lang-en"
+                    >Choose a prefecture and city. A marker can be shown on the map, and
+                    the recorded intensity for that city is displayed with each report.</span
+                  >
+                  <span class="lang-ja"
+                    ><ruby>都道府県<rt>とどうふけん</rt></ruby>と<ruby>市区町村<rt>しくちょうそん</rt></ruby>を<ruby>選択<rt>せんたく</rt></ruby>できます。<ruby>地図<rt>ちず</rt></ruby>にマーカーを<ruby>表示<rt>ひょうじ</rt></ruby>し、レポートごとにその<ruby>地域<rt>ちいき</rt></ruby>の<ruby>観測震度<rt>かんそくしんど</rt></ruby>を<ruby>確認<rt>かくにん</rt></ruby>できます。</span
+                  >
+                </p>
+              </div>
+            </article>
+
+            <article class="feature-card">
+              <img
+                src="/demo/color.png"
+                alt="Intensity color preset editor"
+                width="781"
+                height="539"
+              />
+              <div class="feature-body">
+                <h3>
+                  <span class="lang-en">Intensity colors</span>
+                  <span class="lang-ja"
+                    ><ruby>震度<rt>しんど</rt></ruby>の<ruby>配色<rt>はいしょく</rt></ruby></span
+                  >
+                </h3>
+                <p>
+                  <span class="lang-en"
+                    >Choose a built-in intensity color preset or create your own. Presets
+                    can be imported and exported as CSV or JSON.</span
+                  >
+                  <span class="lang-ja"
+                    ><ruby>内蔵<rt>ないぞう</rt></ruby>の<ruby>震度<rt>しんど</rt></ruby>カラープリセットを<ruby>選<rt>えら</rt></ruby>ぶか、<ruby>独自<rt>どくじ</rt></ruby>のプリセットを<ruby>作成<rt>さくせい</rt></ruby>できます。プリセットはCSVまたはJSONで<ruby>入出力<rt>にゅうしゅつりょく</rt></ruby>できます。</span
+                  >
+                </p>
+              </div>
+            </article>
+
+            <article class="feature-card">
+              <img
+                src="/demo/shakemap.png"
+                alt="Shakemap showing individual station observations"
+                width="874"
+                height="655"
+              />
+              <div class="feature-body">
+                <h3>
+                  <span class="lang-en">Shakemap</span>
+                  <span class="lang-ja">Shakemap</span>
+                </h3>
+                <p>
+                  <span class="lang-en"
+                    >Shows individual station intensity records on the map.</span
+                  >
+                  <span class="lang-ja"
+                    ><ruby>各地<rt>かくち</rt></ruby>の<ruby>観測点<rt>かんそくてん</rt></ruby>ごとの<ruby>震度<rt>しんど</rt></ruby>を<ruby>地図<rt>ちず</rt></ruby>に<ruby>表示<rt>ひょうじ</rt></ruby>します。</span
+                  >
+                </p>
+              </div>
+            </article>
+
+            <article class="feature-card">
+              <img
+                src="/demo/eqdb.png"
+                alt="EQDB earthquake history search"
+                width="1020"
+                height="795"
+              />
+              <div class="feature-body">
+                <h3>
+                  <span class="lang-en">History</span>
+                  <span class="lang-ja"><ruby>履歴<rt>りれき</rt></ruby></span>
+                </h3>
+                <p>
+                  <span class="lang-en"
+                    >Search historical earthquake reports from the JMA shindo database
+                    (EQDB) from 2000 onward.</span
+                  >
+                  <span class="lang-ja"
+                    ><ruby>気象庁<rt>きしょうちょう</rt></ruby>の<ruby>震度<rt>しんど</rt></ruby>データベース（EQDB）から、2000<ruby>年<rt>ねん</rt></ruby><ruby>以降<rt>いこう</rt></ruby>の<ruby>過去<rt>かこ</rt></ruby>の<ruby>地震<rt>じしん</rt></ruby>レポートを<ruby>検索<rt>けんさく</rt></ruby>できます。</span
+                  >
+                </p>
+              </div>
+            </article>
+
+            <article class="feature-card">
+              <img
+                src="/demo/chikuchoson-saidai.png"
+                alt="Maximum recorded intensity per municipality shown on a map"
+                width="1001"
+                height="794"
+              />
+              <div class="feature-body">
+                <h3>
+                  <span class="lang-en">Maximum intensity per city</span>
+                  <span class="lang-ja"
+                    ><ruby>市区町村別<rt>しくちょうそんべつ</rt></ruby
+                    ><ruby>最大震度<rt>さいだいしんど</rt></ruby></span
+                  >
+                </h3>
+                <p>
+                  <span class="lang-en"
+                    >Shows the maximum intensity recorded in each municipality from the
+                    EQDB since 2000.</span
+                  >
+                  <span class="lang-ja"
+                    >2000<ruby>年<rt>ねん</rt></ruby><ruby>以降<rt>いこう</rt></ruby>のEQDBから、<ruby>各市区町村<rt>かくしちょうそん</rt></ruby>で<ruby>記録<rt>きろく</rt></ruby>された<ruby>最大震度<rt>さいだいしんど</rt></ruby>を<ruby>表示<rt>ひょうじ</rt></ruby>します。</span
+                  >
+                </p>
+              </div>
+            </article>
+
+            <article class="feature-card">
+              <img
+                src="/demo/eew.png"
+                alt="Earthquake Early Warning display"
+                width="873"
+                height="651"
+              />
+              <div class="feature-body">
+                <h3>
+                  <span class="lang-en">Earthquake Early Warning</span>
+                  <span class="lang-ja"
+                    ><ruby>緊急地震速報<rt>きんきゅうじしんそくほう</rt></ruby></span
+                  >
+                </h3>
+                <p>
+                  <span class="lang-en"
+                    >Shows live Earthquake Early Warning information from JMA through a
+                    connected provider. Experimental; requires connecting a provider.</span
+                  >
+                  <span class="lang-ja"
+                    ><ruby>接続<rt>せつぞく</rt></ruby>した<ruby>配信元<rt>はいしんもと</rt></ruby>を<ruby>通<rt>とお</rt></ruby>して、<ruby>気象庁<rt>きしょうちょう</rt></ruby>の<ruby>緊急地震速報<rt>きんきゅうじしんそくほう</rt></ruby>をリアルタイムで<ruby>表示<rt>ひょうじ</rt></ruby>します。<ruby>実験的<rt>じっけんてき</rt></ruby>な<ruby>機能<rt>きのう</rt></ruby>で、<ruby>配信元<rt>はいしんもと</rt></ruby>への<ruby>接続<rt>せつぞく</rt></ruby>が<ruby>必要<rt>ひつよう</rt></ruby>です。</span
+                  >
+                </p>
+              </div>
+            </article>
+          </div>
+
+          <h3 class="extra-heading">
+            <span class="lang-en">More features</span>
+            <span class="lang-ja"
+              >その<ruby>他<rt>た</rt></ruby>の<ruby>機能<rt>きのう</rt></ruby></span
+            >
+          </h3>
+          <div class="extra-grid">
+            <div class="extra-item">
+              <h4>
+                <span class="lang-en">Live mode</span>
+                <span class="lang-ja">ライブモード</span>
+              </h4>
+              <p>
+                <span class="lang-en"
+                  >Automatically fetches new and updated reports.</span
+                >
+                <span class="lang-ja"
+                  ><ruby>新<rt>あたら</rt></ruby>しいレポートや<ruby>更新<rt>こうしん</rt></ruby>されたレポートを<ruby>自動<rt>じどう</rt></ruby>で<ruby>取得<rt>しゅとく</rt></ruby>します。</span
+                >
+              </p>
+            </div>
+            <div class="extra-item">
+              <h4>
+                <span class="lang-en">Bilingual interface</span>
+                <span class="lang-ja"
+                  >バイリンガル<ruby>表示<rt>ひょうじ</rt></ruby></span
+                >
+              </h4>
+              <p>
+                <span class="lang-en"
+                  >The app interface shows labels in both English and Japanese.</span
+                >
+                <span class="lang-ja"
+                  >アプリの<ruby>表示<rt>ひょうじ</rt></ruby>は<ruby>英語<rt>えいご</rt></ruby>と<ruby>日本語<rt>にほんご</rt></ruby>の<ruby>両方<rt>りょうほう</rt></ruby>で<ruby>表示<rt>ひょうじ</rt></ruby>されます。</span
+                >
+              </p>
+            </div>
+            <div class="extra-item">
+              <h4>
+                <span class="lang-en">Sound effects</span>
+                <span class="lang-ja"><ruby>効果音<rt>こうかおん</rt></ruby></span>
+              </h4>
+              <p>
+                <span class="lang-en"
+                  >Plays a sound when a report is received and when an EEW arrives.</span
+                >
+                <span class="lang-ja"
+                  >レポートの<ruby>受信<rt>じゅしん</rt></ruby><ruby>時<rt>じ</rt></ruby>と<ruby>緊急地震速報<rt>きんきゅうじしんそくほう</rt></ruby>の<ruby>受信<rt>じゅしん</rt></ruby><ruby>時<rt>じ</rt></ruby>に<ruby>効果音<rt>こうかおん</rt></ruby>を<ruby>再生<rt>さいせい</rt></ruby>します。</span
+                >
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="attributions" id="attributions">
+          <h2>
+            <span class="lang-en">Attributions</span>
+            <span class="lang-ja"
+              ><ruby>出典<rt>しゅってん</rt></ruby>・データ<ruby>提供<rt>ていきょう</rt></ruby></span
+            >
+          </h2>
+          <p class="section-lead">
+            <span class="lang-en">Data sources and credits used by this app.</span>
+            <span class="lang-ja"
+              ><ruby>本<rt>ほん</rt></ruby>アプリで<ruby>使用<rt>しよう</rt></ruby>しているデータと<ruby>出典<rt>しゅってん</rt></ruby>です。</span
+            >
+          </p>
+
+          <div class="attr-grid">
+            <div class="attr-item">
+              <h3>
+                <a href="https://www.jma.go.jp/jma/index.html"
+                  >Japan Meteorological Agency (JMA ·
+                  <ruby>気象庁<rt>きしょうちょう</rt></ruby>)</a
+                >
+              </h3>
+              <ul>
+                <li>
+                  <a href="https://www.jma.go.jp/bosai/"
+                    >Bosai · <ruby>防災情報<rt>ぼうさいじょうほう</rt></ruby></a
+                  ><span class="lang-en">: earthquake reports JSON feed</span
+                  ><span class="lang-ja"
+                    >：<ruby>地震情報<rt>じしんじょうほう</rt></ruby>のJSONフィード</span
+                  >
+                </li>
+                <li>
+                  <a href="https://xml.kishou.go.jp/xmlpull.html">XML Pull</a
+                  ><span class="lang-en">: earthquake reports XML feed</span
+                  ><span class="lang-ja"
+                    >：<ruby>地震情報<rt>じしんじょうほう</rt></ruby>のXMLフィード</span
+                  >
+                </li>
+                <li>
+                  <a href="https://www.data.jma.go.jp/developer/gis.html">GIS Area data</a
+                  ><span class="lang-en">: map data of prefectures and forecast areas</span
+                  ><span class="lang-ja"
+                    >：<ruby>都道府県<rt>とどうふけん</rt></ruby>・<ruby>予報区<rt>よほうく</rt></ruby>の<ruby>地図<rt>ちず</rt></ruby>データ</span
+                  >
+                </li>
+                <li>
+                  <a href="https://www.data.jma.go.jp/developer/multilingual.html"
+                    >Area/City names</a
+                  ><span class="lang-en">: area and city code names</span
+                  ><span class="lang-ja"
+                    >：<ruby>地域<rt>ちいき</rt></ruby>・<ruby>市区町村<rt>しちょうそん</rt></ruby><ruby>名<rt>めい</rt></ruby>の<ruby>定義<rt>ていぎ</rt></ruby></span
+                  >
+                </li>
+                <li>
+                  <a href="https://www.data.jma.go.jp/eqdb/data/shindo/">EQDB</a
+                  ><span class="lang-en">: historical earthquake data</span
+                  ><span class="lang-ja"
+                    >：<ruby>過去<rt>かこ</rt></ruby>の<ruby>地震<rt>じしん</rt></ruby>データ</span
+                  >
+                </li>
+                <li>
+                  <a
+                    href="https://www.data.jma.go.jp/eqev/data/bulletin/catalog/appendix/trtime/trt_e.html"
+                    >Travel time tables</a
+                  ><span class="lang-en">: EEW P and S waves</span
+                  ><span class="lang-ja"
+                    >：<ruby>緊急地震速報<rt>きんきゅうじしんそくほう</rt></ruby>のP<ruby>波<rt>は</rt></ruby>・S<ruby>波<rt>は</rt></ruby></span
+                  >
+                </li>
+              </ul>
+            </div>
+
+            <div class="attr-item">
+              <h3>
+                <a href="https://www.bosai.go.jp/"
+                  >NIED (<ruby>防災科研<rt>ぼうさいかがくけん</rt></ruby>)</a
+                >
+              </h3>
+              <ul>
+                <li>
+                  <a href="https://www.j-shis.bosai.go.jp/">J-SHIS</a
+                  ><span class="lang-en">: site amplification factors</span
+                  ><span class="lang-ja"
+                    >：<ruby>地盤<rt>じばん</rt></ruby><ruby>増幅率<rt>ぞうふくりつ</rt></ruby></span
+                  >
+                </li>
+                <li>
+                  <a href="https://www.j-shis.bosai.go.jp/en/labs/mf2013/">J-SHIS Labs</a
+                  ><span class="lang-en">: Morikawa &amp; Fujiwara 2013 GMPE</span
+                  ><span class="lang-ja">：Morikawa &amp; Fujiwara 2013 GMPE</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="attr-item">
+              <h3>
+                <span class="lang-en">Data providers</span>
+                <span class="lang-ja"
+                  >データ<ruby>配信元<rt>はいしんもと</rt></ruby></span
+                >
+              </h3>
+              <ul>
+                <li>
+                  <a href="https://axis.prioris.jp/">AXIS</a
+                  ><span class="lang-en">: EEW and reports source</span
+                  ><span class="lang-ja"
+                    >：<ruby>緊急地震速報<rt>きんきゅうじしんそくほう</rt></ruby>と<ruby>地震情報<rt>じしんじょうほう</rt></ruby>の<ruby>配信元<rt>はいしんもと</rt></ruby></span
+                  >
+                </li>
+                <li>
+                  <a href="https://dmdata.jp/">Project DM-D.S.S</a
+                  ><span class="lang-en">: EEW source</span
+                  ><span class="lang-ja"
+                    >：<ruby>緊急地震速報<rt>きんきゅうじしんそくほう</rt></ruby>の<ruby>配信元<rt>はいしんもと</rt></ruby></span
+                  >
+                </li>
+              </ul>
+            </div>
+
+            <div class="attr-item">
+              <h3>
+                <span class="lang-en">Other credits</span>
+                <span class="lang-ja"
+                  >その<ruby>他<rt>た</rt></ruby>のクレジット</span
+                >
+              </h3>
+              <ul>
+                <li>
+                  <a href="https://jquake.net/">JQuake</a
+                  ><span class="lang-en">: intensity color scale</span
+                  ><span class="lang-ja"
+                    >：<ruby>震度<rt>しんど</rt></ruby>の<ruby>配色<rt>はいしょく</rt></ruby></span
+                  >
+                </li>
+                <li>
+                  <a href="https://www.usgs.gov/products/data/data-releases">USGS Data</a
+                  ><span class="lang-en">: Slab2 models</span
+                  ><span class="lang-ja">：Slab2モデル</span>
+                </li>
+                <li>
+                  <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a
+                  ><span class="lang-en">: map data of lakes</span
+                  ><span class="lang-ja"
+                    >：<ruby>湖<rt>みずうみ</rt></ruby>の<ruby>地図<rt>ちず</rt></ruby>データ</span
+                  >
+                </li>
+                <li>
+                  <a href="https://mplusfonts.github.io/">M PLUS Fonts</a
+                  ><span class="lang-en">: font family used</span
+                  ><span class="lang-ja"
+                    >：<ruby>使用<rt>しよう</rt></ruby>フォント</span
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap footer-inner">
+        <div class="footer-brand">
+          <img src="/img/epicenter.png" alt="" width="40" height="40" />
+          <div>
+            <h2>KyoQuake</h2>
+            <p>
+              <span class="lang-en"
+                >A web and desktop viewer for earthquake reports published by the Japan
+                Meteorological Agency (JMA).</span
+              >
+              <span class="lang-ja"
+                ><ruby>気象庁<rt>きしょうちょう</rt></ruby>が<ruby>発表<rt>はっぴょう</rt></ruby>する<ruby>地震情報<rt>じしんじょうほう</rt></ruby>を<ruby>表示<rt>ひょうじ</rt></ruby>するウェブ・デスクトップアプリです。</span
+              >
+            </p>
+          </div>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/Kiriyashiki/WebQuake" target="_blank">
+            <span class="lang-en">GitHub repository</span>
+            <span class="lang-ja">GitHubリポジトリ</span>
+          </a>
+          <a href="https://github.com/Kiriyashiki" target="_blank">
+            <span class="lang-en">Developer GitHub</span>
+            <span class="lang-ja"
+              ><ruby>開発者<rt>かいはつしゃ</rt></ruby>GitHub</span
+            >
+          </a>
+          <a href="https://bsky.app/profile/hainaut.xyz" target="_blank">Bluesky</a>
+          <a href="https://x.com/kiriyashiki_be" target="_blank">Twitter</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="wrap">
+          <span class="lang-en"
+            >KyoQuake is not affiliated with the Japan Meteorological Agency (JMA).</span
+          >
+          <span class="lang-ja"
+            >KyoQuakeは<ruby>気象庁<rt>きしょうちょう</rt></ruby>と<ruby>提携<rt>ていけい</rt></ruby>していません。</span
+          >
+        </div>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/about.js"></script>
+
+    <script>
+      if (!window.__TAURI_INTERNALS__ && !window.__ELECTRON__ && !window.__DESKTOP__) {
+        const s = document.createElement("script");
+        s.src = "https://stats.hainaut.xyz/api/script.js";
+        s.dataset.siteId = "ab4fba6ddf2e";
+        s.defer = true;
+        document.head.appendChild(s);
+      }
+    </script>
+  </body>
+</html>

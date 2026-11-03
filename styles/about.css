@@ -1,0 +1,471 @@
+/* ── About page ─────────────────────────────────────────────────── */
+/* Page-only stylesheet. It is excluded from desktop builds together
+   with about.html, src/about.js and the public/demo images. */
+
+@import url("./fonts.css");
+
+:root {
+  /* Same palette as styles/variables.css */
+  --bg:         #070b0f;
+  --bg-panel:   #0b1018;
+  --bg-panel2:  #0f1520;
+  --border:     #1a2535;
+  --border-hi:  #243044;
+
+  --text:       #f7f7f7;
+  --text-dim:   #bacbe1;
+  --text-muted: #90afd6;
+
+  --accent:     #e84c3d;
+  --accent2:    #f0a500;
+  --accent-dim: rgba(232, 76, 61, 0.12);
+  --accent2-dim: rgba(240, 165, 0, 0.15);
+  --accent2-glow: rgba(240, 165, 0, 0.08);
+
+  /* Same typography as the app */
+  --font-display: 'M PLUS 1p', 'Syne', sans-serif;
+  --font-mono:    'IBM Plex Mono', 'M PLUS 1p', monospace;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: var(--text-muted);
+  text-decoration: underline;
+}
+
+a:hover {
+  color: var(--accent2);
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ── Language switching ─────────────────────────────────────────── */
+
+html.lang-en .lang-ja,
+html.lang-ja .lang-en {
+  display: none !important;
+}
+
+/* Furigana is off by default and only shown when the かな toggle is on. */
+ruby {
+  ruby-align: center;
+}
+
+rt {
+  display: none;
+  color: var(--text-muted);
+  font-size: 0.55em;
+  font-weight: 400;
+}
+
+html.kana-on.lang-ja rt {
+  display: ruby-text;
+}
+
+a rt {
+  text-decoration: none;
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(7, 11, 15, 0.92);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+.brand:hover {
+  color: var(--text);
+}
+
+.brand img {
+  width: 24px;
+  height: 24px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--border-hi);
+  border-radius: 4px;
+  background: var(--bg-panel);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.control-btn:hover {
+  border-color: var(--accent2);
+  color: var(--text);
+}
+
+.control-btn[aria-pressed="true"] {
+  border-color: var(--accent2);
+  background: var(--accent2-dim);
+  color: var(--accent2);
+}
+
+/* ── Banner ─────────────────────────────────────────────────────── */
+
+.banner {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+}
+
+.banner-bg {
+  position: absolute;
+  inset: 0;
+  background: url("/demo/banner-blur.png") center / cover no-repeat;
+}
+
+.banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(7, 11, 15, 0.35), var(--bg) 96%);
+}
+
+.banner-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 64px 20px 56px;
+}
+
+.banner-icon {
+  width: 72px;
+  height: 72px;
+  padding: 8px;
+  border: 1px solid var(--border-hi);
+  border-radius: 12px;
+  background: var(--bg-panel2);
+}
+
+.banner h1 {
+  margin: 18px 0 10px;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+}
+
+.banner-desc {
+  max-width: 640px;
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 1.05rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border: 1px solid var(--border-hi);
+  border-radius: 4px;
+  background: var(--bg-panel2);
+  color: var(--text);
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+
+.btn:hover {
+  border-color: var(--accent2);
+  color: var(--text);
+}
+
+.btn-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  border-color: #f05a4b;
+  background: #f05a4b;
+  color: #ffffff;
+}
+
+/* ── Disclaimer ─────────────────────────────────────────────────── */
+
+.disclaimer {
+  margin-top: 32px;
+  padding: 16px 18px;
+  border-left: 3px solid var(--accent2);
+  background: var(--accent2-glow);
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+
+.disclaimer strong {
+  color: var(--text);
+}
+
+/* ── Sections ───────────────────────────────────────────────────── */
+
+.features,
+.attributions {
+  padding: 48px 0;
+}
+
+.attributions {
+  border-top: 1px solid var(--border);
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 1.6rem;
+  line-height: 1.3;
+}
+
+.section-lead {
+  margin: 0 0 24px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* ── Feature cards ──────────────────────────────────────────────── */
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+
+.feature-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-panel);
+}
+
+.feature-card img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel2);
+}
+
+.feature-body {
+  padding: 18px;
+}
+
+.feature-body h3 {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+.feature-body p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+
+/* ── Extra features ─────────────────────────────────────────────── */
+
+.extra-heading {
+  margin: 40px 0 16px;
+  font-size: 1.2rem;
+}
+
+.extra-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.extra-item {
+  padding-top: 12px;
+  border-top: 1px solid var(--border-hi);
+}
+
+.extra-item h4 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.extra-item p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+/* ── Attributions ───────────────────────────────────────────────── */
+
+.attr-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+}
+
+.attr-item h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.attr-item ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attr-item li {
+  margin: 4px 0;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────── */
+
+.site-footer {
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-panel);
+}
+
+.footer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 32px;
+  padding-bottom: 32px;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.footer-brand img {
+  width: 40px;
+  height: 40px;
+}
+
+.footer-brand h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.footer-brand p {
+  max-width: 560px;
+  margin: 4px 0 0;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-size: 0.9rem;
+}
+
+.footer-bottom {
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+/* ── Larger screens ─────────────────────────────────────────────── */
+
+@media (min-width: 760px) {
+  .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .extra-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .attr-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .footer-inner {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .footer-links {
+    justify-content: flex-end;
+    max-width: 360px;
+  }
+}

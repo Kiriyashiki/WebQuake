@@ -10,11 +10,12 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
+        "build:desktop": "vite build --mode desktop",
         "preview": "vite preview",
         "tauri": "tauri",
         "electron": "electron . --no-sandbox",
         "electron:dev": "electron . --no-sandbox --dev",
-        "electron:build:linux": "vite build && electron-builder --linux AppImage deb rpm --publish never"
+        "electron:build:linux": "pnpm build:desktop && electron-builder --linux AppImage deb rpm --publish never"
     },
     "dependencies": {
         "@tauri-apps/plugin-http": "^2.7.0",
