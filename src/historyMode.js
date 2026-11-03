@@ -131,20 +131,52 @@ function getDateOneYearAgo() {
   return `${year}-${month}-${day}`;
 }
 
-// ─── EQDB max date (fetched once) ────────────────────────────────────────────
+// ─── EQDB max date (refreshed daily at 03:00 JST) ────────────────────────────
+
+const EQDB_MAX_DATE_URL = 'https://www.data.jma.go.jp/eqdb/data/shindo/js/date.json';
+const EQDB_MAX_DATE_REFRESH_HOUR_JST = 3;
+const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 let _eqdbMaxDate = null;
+let _eqdbMaxDateRefreshTimer = null;
+const _eqdbMaxDateListeners = new Set();
+
+/**
+ * Returns the delay in milliseconds until the next 03:00 JST.
+ * @param {number} [now=Date.now()]
+ * @returns {number}
+ */
+function _getDelayUntilNextEqdbMaxDateRefresh(now = Date.now()) {
+  // Shift into JST so UTC getters represent JST wall-clock time.
+  const jstNow = new Date(now + JST_OFFSET_MS);
+  const nextRefresh =
+    Date.UTC(
+      jstNow.getUTCFullYear(),
+      jstNow.getUTCMonth(),
+      jstNow.getUTCDate(),
+      EQDB_MAX_DATE_REFRESH_HOUR_JST,
+      0,
+      0,
+      0
+    ) - JST_OFFSET_MS;
+
+  const delay = nextRefresh - now;
+  return delay > 0 ? delay : delay + DAY_MS;
+}
 
 /**
  * Fetches the latest available date from the EQDB API.
- * The result is cached after the first successful fetch.
+ * The result is cached until a forced refresh occurs.
+ * @param {Object} [options]
+ * @param {boolean} [options.force=false] - Bypass the cached value
  * @returns {Promise<string>} Date string in YYYY-MM-DD format
  */
-export async function fetchEqdbMaxDate() {
-  if (_eqdbMaxDate) return _eqdbMaxDate;
+export async function fetchEqdbMaxDate({ force = false } = {}) {
+  if (_eqdbMaxDate && !force) return _eqdbMaxDate;
 
   try {
-    const res = await fetch('https://www.data.jma.go.jp/eqdb/data/shindo/js/date.json');
+    const res = await fetch(EQDB_MAX_DATE_URL);
     const data = await res.json();
     if (data.en) {
       _eqdbMaxDate = data.en; // e.g. "2026-07-08"
@@ -153,6 +185,9 @@ export async function fetchEqdbMaxDate() {
   } catch (err) {
     console.warn('[history] Failed to fetch EQDB max date:', err);
   }
+
+  // Keep the last known value if a forced refresh fails.
+  if (_eqdbMaxDate) return _eqdbMaxDate;
 
   // Fallback: 8 days ago in JST (conservative)
   const now = new Date();
@@ -163,6 +198,46 @@ export async function fetchEqdbMaxDate() {
   const day = String(jstNow.getUTCDate()).padStart(2, '0');
   _eqdbMaxDate = `${year}-${month}-${day}`;
   return _eqdbMaxDate;
+}
+
+async function _refreshEqdbMaxDate() {
+  const previous = _eqdbMaxDate;
+  const maxDate = await fetchEqdbMaxDate({ force: true });
+
+  if (maxDate !== previous) {
+    for (const listener of _eqdbMaxDateListeners) {
+      try {
+        listener(maxDate);
+      } catch (err) {
+        console.warn('[history] EQDB max date listener failed:', err);
+      }
+    }
+  }
+}
+
+function _scheduleEqdbMaxDateRefresh() {
+  if (_eqdbMaxDateRefreshTimer !== null) return;
+
+  const delay = _getDelayUntilNextEqdbMaxDateRefresh();
+  _eqdbMaxDateRefreshTimer = setTimeout(() => {
+    _eqdbMaxDateRefreshTimer = null;
+    _refreshEqdbMaxDate()
+      .catch((err) => {
+        console.warn('[history] Failed to refresh EQDB max date:', err);
+      })
+      .finally(_scheduleEqdbMaxDateRefresh);
+  }, delay);
+}
+
+/**
+ * Subscribes to changes of the EQDB max date found by the daily 03:00 JST refresh.
+ * @param {(maxDate: string) => void} listener
+ * @returns {() => void} Unsubscribe function
+ */
+export function onEqdbMaxDateChange(listener) {
+  _eqdbMaxDateListeners.add(listener);
+  _scheduleEqdbMaxDateRefresh();
+  return () => _eqdbMaxDateListeners.delete(listener);
 }
 
 // ─── Search Presets ──────────────────────────────────────────────────────────

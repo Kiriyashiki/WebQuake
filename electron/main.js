@@ -115,10 +115,10 @@ async function isUrlResponding(url) {
 async function createWindow() {
   mainWindow = new BrowserWindow({
     title: "KyoQuake",
-    width: 900,
-    height: 650,
-    minWidth: 400,
-    minHeight: 300,
+    width: 1200,
+    height: 700,
+    minWidth: 700,
+    minHeight: 450,
     resizable: true,
     fullscreen: false,
     icon: fs.existsSync(iconPath) ? iconPath : undefined,

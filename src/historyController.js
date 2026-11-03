@@ -4,6 +4,7 @@ import {
   fetchHistoryReport,
   getSearchPreset,
   fetchEqdbMaxDate,
+  onEqdbMaxDateChange,
   EQDB_MIN_DATE,
 } from "./historyMode.js";
 import { createReportItem, getCityAreasState } from "./sidebarUI.js";
@@ -151,12 +152,13 @@ export function initHistoryController({
     if (sortEl) sortEl.value = params.sort;
   }
 
-  // Fetch EQDB max date, then initialize fields with default preset
-  fetchEqdbMaxDate().then((maxDate) => {
+  /**
+   * Updates the cached EQDB max date, date input constraints, and visible
+   * preset fields without overwriting a custom search.
+   */
+  function _applyEqdbMaxDate(maxDate) {
     _eqdbMaxDate = maxDate;
-    _applyPresetToFields("year");
 
-    // Set date input constraints
     const dateFromEl = document.getElementById("history-date-from");
     const dateToEl = document.getElementById("history-date-to");
     if (dateFromEl) {
@@ -167,6 +169,24 @@ export function initHistoryController({
       dateToEl.min = EQDB_MIN_DATE;
       dateToEl.max = maxDate;
     }
+
+    if (
+      _currentHistoryPreset === "year" ||
+      _currentHistoryPreset === "large" ||
+      _currentHistoryPreset === "deep"
+    ) {
+      _applyPresetToFields(_currentHistoryPreset);
+    }
+  }
+
+  // Keep the EQDB max date fresh while the app stays open (daily at 03:00 JST).
+  onEqdbMaxDateChange((maxDate) => {
+    _applyEqdbMaxDate(maxDate);
+  });
+
+  // Fetch EQDB max date, then initialize fields with default preset
+  fetchEqdbMaxDate().then((maxDate) => {
+    _applyEqdbMaxDate(maxDate);
   });
 
   /**
