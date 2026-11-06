@@ -3,7 +3,13 @@ import { formatTimeJSTWithSeconds, INTENSITY_CONFIG, LPGM_CONFIG } from "../cons
 import { renderIntensityBadge, getIntensityBadgeHtml } from "../intensityBadge.js";
 import { createRubyHtml } from "../areaCodes.js";
 import { getActiveProvider, isPlumEew, isLevelMethodEew } from "../eewProviders.js";
-import { mergeForecasts, getIntVal, cityForecastMap } from "./physics.js";
+import {
+  mergeForecasts,
+  getIntVal,
+  cityForecastMap,
+  isOverIntensity,
+  resolveForecastIntensity,
+} from "./physics.js";
 import { updateMapForEew, clearEewMapDisplay } from "./eewMap.js";
 import {
   updateCityAreasVisibility,
@@ -68,7 +74,7 @@ export function updateHomeIntensityForActiveEews() {
     const homeAreaCodeStr = cityForecastMap?.get(homeCityCode);
     if (homeAreaCodeStr) {
       const forecastArea = mergedForecast.find((f) => f.Code === Number.parseInt(homeAreaCodeStr));
-      const forecastInt = forecastArea ? forecastArea.Intensity.To : null;
+      const forecastInt = forecastArea ? resolveForecastIntensity(forecastArea) : null;
       updateEewHomeLocationDisplay(homeCityCode, forecastInt || null);
     } else {
       updateEewHomeLocationDisplay(homeCityCode, null);
@@ -93,7 +99,7 @@ export function updateEewHomeLocationDisplay(cityCode, intensityStr) {
   const hasIntensity = Boolean(
     intensityStr &&
     intensityStr !== "0" &&
-    intensityStr !== "over" &&
+    !isOverIntensity(intensityStr) &&
     intensityStr !== "不明" &&
     INTENSITY_CONFIG[intensityStr],
   );
@@ -544,13 +550,8 @@ export function renderEewInfoBox(
 
       const forecastByInt = {};
       for (const f of mergedForecast) {
-        let intStr;
-        if (f.Intensity.To === "0" || f.Intensity.To === "不明") continue;
-        if (f.Intensity.To === "over" && f.Intensity.From) {
-          intStr = f.Intensity.From;
-        } else {
-          intStr = f.Intensity.To;
-        }
+        const intStr = resolveForecastIntensity(f);
+        if (!intStr) continue;
         if (!forecastByInt[intStr]) forecastByInt[intStr] = [];
         forecastByInt[intStr].push(f);
       }

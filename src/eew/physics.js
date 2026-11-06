@@ -253,6 +253,50 @@ export function getTravelDistance(depth, time, phase) {
   return 0;
 }
 
+/** Placeholder some providers use when a forecast has no upper intensity bound. */
+const OVER_INTENSITY = "over";
+
+/**
+ * Returns true when an intensity token is the "over" (no upper bound) sentinel.
+ * The comparison is case-insensitive and ignores surrounding whitespace because
+ * providers are not consistent about the spelling (e.g. AXIS may send "OVER").
+ *
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+export function isOverIntensity(value) {
+  return String(value ?? "").trim().toLowerCase() === OVER_INTENSITY;
+}
+
+/**
+ * Resolves the intensity that should be displayed for a forecast area.
+ *
+ * A forecast such as `{ From: "4", To: "over" }` means "intensity 4 or higher";
+ * the lower bound is the meaningful, paintable value. The sentinel is never a
+ * valid intensity, so it must not leak into the observation list or map colors.
+ *
+ * @param {{ Intensity?: { From?: unknown, To?: unknown } } | null | undefined} forecast
+ * @returns {string|null} A usable intensity string, or null when the forecast
+ *   has no displayable intensity (0 / 不明 / over without a lower bound).
+ */
+export function resolveForecastIntensity(forecast) {
+  const intensity = forecast?.Intensity;
+  if (!intensity) return null;
+
+  const from = String(intensity.From ?? "").trim();
+  const to = String(intensity.To ?? "").trim();
+
+  // "over" (or a missing upper bound) is not an intensity: fall back to the
+  // lower bound of the forecast range when it carries a usable value.
+  if (!to || isOverIntensity(to)) {
+    if (!from || from === "0" || from === "不明" || isOverIntensity(from)) return null;
+    return from;
+  }
+
+  if (to === "0" || to === "不明") return null;
+  return to;
+}
+
 /**
  * Converts JMA intensity scale string to comparable numeric rank.
  */
@@ -278,8 +322,10 @@ export function mergeForecasts(eewList) {
       if (!existing) {
         map.set(f.Code, f);
       } else {
-        const existingInt = getIntVal(existing.Intensity.To);
-        const newInt = getIntVal(f.Intensity.To);
+        // Compare the resolved intensities so an "over" forecast is ranked by
+        // its lower bound instead of being treated as intensity 0.
+        const existingInt = getIntVal(resolveForecastIntensity(existing));
+        const newInt = getIntVal(resolveForecastIntensity(f));
         if (newInt > existingInt) {
           map.set(f.Code, f);
         }

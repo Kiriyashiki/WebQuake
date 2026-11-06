@@ -23,6 +23,7 @@ import {
   prepareMf2013Event,
   calculateMf2013Shindo,
   EEW_GMPE_MF2013,
+  resolveForecastIntensity,
 } from "./physics.js";
 import { getActiveProvider, isPlumEew } from "../eewProviders.js";
 
@@ -307,12 +308,9 @@ export function updateMapForEew() {
         finalMapIntensities.set(areaCode, localInt);
       }
       for (const f of mergedForecast) {
-        if (f.Intensity.To === "0" || f.Intensity.To === "不明") continue;
-        if (f.Intensity.To === "over" && f.Intensity.From) {
-          finalMapIntensities.set(String(f.Code), f.Intensity.From);
-          continue;
-        }
-        finalMapIntensities.set(String(f.Code), f.Intensity.To);
+        const intStr = resolveForecastIntensity(f);
+        if (!intStr) continue;
+        finalMapIntensities.set(String(f.Code), intStr);
       }
     }
 
