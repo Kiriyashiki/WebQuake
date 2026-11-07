@@ -1,0 +1,168 @@
+{
+  "channel": "jmx-seismology",
+  "message": {
+    "Control": {
+      "Status": "通常",
+      "DateTime": "2026-11-07T16:13:53+00:00",
+      "PublishingOffice": "気象庁",
+      "EditorialOffice": "気象庁本庁",
+      "Title": "長周期地震動に関する観測情報"
+    },
+    "Body": {
+      "Intensity": {
+        "Observation": {
+          "CodeDefine": {
+            "Type": [
+              {
+                "xpath": "Pref/Code",
+                "valueOf_": "地震情報／都道府県等"
+              },
+              {
+                "xpath": "Pref/Area/Code",
+                "valueOf_": "地震情報／細分区域"
+              },
+              {
+                "xpath": "Pref/Area/IntensityStation/Code",
+                "valueOf_": "長周期地震動観測点"
+              }
+            ]
+          },
+          "MaxInt": "5+",
+          "Pref": [
+            {
+              "Code": "20",
+              "MaxInt": "5-",
+              "Name": "長野県",
+              "Area": [
+                {
+                  "City": [],
+                  "Code": "422",
+                  "MaxInt": "5-",
+                  "Name": "長野県南部"
+                }
+              ]
+            },
+            {
+              "Code": "23",
+              "MaxInt": "5+",
+              "Name": "愛知県",
+              "Area": [
+                {
+                  "City": [],
+                  "Code": "450",
+                  "MaxInt": "5-",
+                  "Name": "愛知県東部"
+                },
+                {
+                  "City": [],
+                  "Code": "451",
+                  "MaxInt": "5+",
+                  "Name": "愛知県西部"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "Earthquake": [
+        {
+          "Magnitude": [
+            {
+              "type_": "Mj",
+              "valueOf_": "5.7",
+              "description": "Ｍ５．７"
+            }
+          ],
+          "OriginTime": "2026-11-08T01:04:00+09:00",
+          "Hypocenter": {
+            "Area": {
+              "Coordinate": [
+                {
+                  "valueOf_": "+34.9+137.7-40000/",
+                  "description": "北緯３４．９度　東経１３７．７度　深さ　４０ｋｍ"
+                }
+              ],
+              "Code": {
+                "type_": "震央地名",
+                "valueOf_": "443"
+              },
+              "Name": "静岡県西部"
+            }
+          },
+          "ArrivalTime": "2026-11-08T01:04:00+09:00"
+        }
+      ],
+      "Comments": {
+        "FreeFormComment": "各長周期地震動階級に対する簡易な現象表現\n 階級１やや大きな揺れ\n 階級２大きな揺れ\n 階級３非常に大きな揺れ\n 階級４極めて大きな揺れ\n波形、スペクトル等、本地震の長周期地震動に関する詳細な情報は気象庁の長周期地震動に関する観測情報のウェブサイト ( https://www.data.jma.go.jp/eew/data/ltpgm/event.php?eventId=20261108010441 ) もあわせてご活用ください。\n",
+        "VarComment": {
+          "Text": "＊印は気象庁以外の長周期地震動観測点についての情報です。",
+          "Code": "0263",
+          "codeType": "固定付加文"
+        },
+        "ForecastComment": {
+          "Text": "この地震について、緊急地震速報を発表しています。",
+          "Code": "0241",
+          "codeType": "固定付加文"
+        }
+      }
+    },
+    "Head": {
+      "EventID": "20261108010441",
+      "TargetDateTime": "2026-11-08T01:13:00+09:00",
+      "InfoType": "発表",
+      "Title": "長周期地震動に関する観測情報",
+      "Headline": {
+        "Text": "０８日０１時０４分ころの地震により、長周期地震動階級１を観測した地域があります。",
+        "Information": [
+          {
+            "Item": [
+              {
+                "Kind": [
+                  {
+                    "Name": "長周期地震動階級１"
+                  }
+                ],
+                "LastKind": [],
+                "Areas": {
+                  "Area": [
+                    {
+                      "Code": "422",
+                      "Name": "長野県南部",
+                      "Coordinate": [],
+                      "Line": [],
+                      "Circle": [],
+                      "Polygon": []
+                    },
+                    {
+                      "Code": "450",
+                      "Name": "愛知県東部",
+                      "Coordinate": [],
+                      "Line": [],
+                      "Circle": [],
+                      "Polygon": []
+                    },
+                    {
+                      "Code": "451",
+                      "Name": "愛知県西部",
+                      "Coordinate": [],
+                      "Line": [],
+                      "Circle": [],
+                      "Polygon": []
+                    }
+                  ],
+                  "codeType": "地震情報／細分区域"
+                }
+              }
+            ],
+            "type_": "長周期地震動に関する観測情報（細分区域）"
+          }
+        ]
+      },
+      "InfoKindVersion": "1.3_0",
+      "InfoKind": "長周期地震動に関する観測情報",
+      "ReportDateTime": "2026-11-08T01:13:00+09:00",
+      "Serial": "1"
+    },
+    "uuid_": "20261107161354_0_VXSE62_010000"
+  }
+}

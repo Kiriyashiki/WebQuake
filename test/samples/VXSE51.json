@@ -1,0 +1,213 @@
+{
+  "channel": "jmx-seismology",
+  "message": {
+    "Control": {
+      "Status": "通常",
+      "DateTime": "2026-11-07T16:06:10+00:00",
+      "PublishingOffice": "気象庁",
+      "EditorialOffice": "気象庁本庁",
+      "Title": "震度速報"
+    },
+    "Body": {
+      "Intensity": {
+        "Observation": {
+          "CodeDefine": {
+            "Type": [
+              {
+                "xpath": "Pref/Code",
+                "valueOf_": "地震情報／都道府県等"
+              },
+              {
+                "xpath": "Pref/Area/Code",
+                "valueOf_": "地震情報／細分区域"
+              }
+            ]
+          },
+          "MaxInt": "5+",
+          "Pref": [
+            {
+              "Code": "23",
+              "MaxInt": "5+",
+              "Name": "愛知県",
+              "Area": [
+                {
+                  "City": [],
+                  "Code": "451",
+                  "MaxInt": "5+",
+                  "Name": "愛知県西部"
+                },
+                {
+                  "City": [],
+                  "Code": "450",
+                  "MaxInt": "5-",
+                  "Name": "愛知県東部"
+                }
+              ]
+            },
+            {
+              "Code": "21",
+              "MaxInt": "5-",
+              "Name": "岐阜県",
+              "Area": [
+                {
+                  "City": [],
+                  "Code": "431",
+                  "MaxInt": "5-",
+                  "Name": "岐阜県美濃東部"
+                }
+              ]
+            },
+            {
+              "Code": "22",
+              "MaxInt": "5-",
+              "Name": "静岡県",
+              "Area": [
+                {
+                  "City": [],
+                  "Code": "443",
+                  "MaxInt": "5-",
+                  "Name": "静岡県西部"
+                },
+                {
+                  "City": [],
+                  "Code": "442",
+                  "MaxInt": "4",
+                  "Name": "静岡県中部"
+                }
+              ]
+            },
+            {
+              "Code": "20",
+              "MaxInt": "4",
+              "Name": "長野県",
+              "Area": [
+                {
+                  "City": [],
+                  "Code": "422",
+                  "MaxInt": "4",
+                  "Name": "長野県南部"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "Earthquake": [],
+      "Comments": {
+        "ForecastComment": {
+          "Text": "今後の情報に注意してください。",
+          "Code": "0217",
+          "codeType": "固定付加文"
+        }
+      }
+    },
+    "Head": {
+      "EventID": "20261108010441",
+      "TargetDateTime": "2026-11-08T01:04:00+09:00",
+      "InfoType": "発表",
+      "Title": "震度速報",
+      "Headline": {
+        "Text": "　８日０１時０４分ころ、地震による強い揺れを感じました。震度３以上が観測された地域をお知らせします。",
+        "Information": [
+          {
+            "Item": [
+              {
+                "Kind": [
+                  {
+                    "Name": "震度５強"
+                  }
+                ],
+                "LastKind": [],
+                "Areas": {
+                  "Area": [
+                    {
+                      "Code": "451",
+                      "Name": "愛知県西部",
+                      "Coordinate": [],
+                      "Line": [],
+                      "Circle": [],
+                      "Polygon": []
+                    }
+                  ],
+                  "codeType": "地震情報／細分区域"
+                }
+              },
+              {
+                "Kind": [
+                  {
+                    "Name": "震度５弱"
+                  }
+                ],
+                "LastKind": [],
+                "Areas": {
+                  "Area": [
+                    {
+                      "Code": "431",
+                      "Name": "岐阜県美濃東部",
+                      "Coordinate": [],
+                      "Line": [],
+                      "Circle": [],
+                      "Polygon": []
+                    },
+                    {
+                      "Code": "443",
+                      "Name": "静岡県西部",
+                      "Coordinate": [],
+                      "Line": [],
+                      "Circle": [],
+                      "Polygon": []
+                    },
+                    {
+                      "Code": "450",
+                      "Name": "愛知県東部",
+                      "Coordinate": [],
+                      "Line": [],
+                      "Circle": [],
+                      "Polygon": []
+                    }
+                  ],
+                  "codeType": "地震情報／細分区域"
+                }
+              },
+              {
+                "Kind": [
+                  {
+                    "Name": "震度４"
+                  }
+                ],
+                "LastKind": [],
+                "Areas": {
+                  "Area": [
+                    {
+                      "Code": "422",
+                      "Name": "長野県南部",
+                      "Coordinate": [],
+                      "Line": [],
+                      "Circle": [],
+                      "Polygon": []
+                    },
+                    {
+                      "Code": "442",
+                      "Name": "静岡県中部",
+                      "Coordinate": [],
+                      "Line": [],
+                      "Circle": [],
+                      "Polygon": []
+                    }
+                  ],
+                  "codeType": "地震情報／細分区域"
+                }
+              }
+            ],
+            "type_": "震度速報"
+          }
+        ]
+      },
+      "InfoKindVersion": "1.0_1",
+      "InfoKind": "震度速報",
+      "ReportDateTime": "2026-11-08T01:06:00+09:00",
+      "Serial": ""
+    },
+    "uuid_": "20261107160611_0_VXSE51_010000"
+  }
+}

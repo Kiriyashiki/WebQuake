@@ -1,0 +1,64 @@
+{
+  "channel": "jmx-seismology",
+  "message": {
+    "Control": {
+      "Status": "通常",
+      "DateTime": "2026-11-07T16:07:21+00:00",
+      "PublishingOffice": "気象庁",
+      "EditorialOffice": "気象庁本庁",
+      "Title": "震源に関する情報"
+    },
+    "Body": {
+      "Earthquake": [
+        {
+          "Magnitude": [
+            {
+              "type_": "Mj",
+              "valueOf_": "5.7",
+              "description": "Ｍ５．７"
+            }
+          ],
+          "OriginTime": "2026-11-08T01:04:00+09:00",
+          "Hypocenter": {
+            "Area": {
+              "Coordinate": [
+                {
+                  "valueOf_": "+34.9+137.7-40000/",
+                  "description": "北緯３４．９度　東経１３７．７度　深さ　４０ｋｍ"
+                }
+              ],
+              "Code": {
+                "type_": "震央地名",
+                "valueOf_": "443"
+              },
+              "Name": "静岡県西部"
+            }
+          },
+          "ArrivalTime": "2026-11-08T01:04:00+09:00"
+        }
+      ],
+      "Comments": {
+        "ForecastComment": {
+          "Text": "この地震による津波の心配はありません。",
+          "Code": "0215",
+          "codeType": "固定付加文"
+        }
+      }
+    },
+    "Head": {
+      "EventID": "20261108010441",
+      "TargetDateTime": "2026-11-08T01:07:00+09:00",
+      "InfoType": "発表",
+      "Title": "震源に関する情報",
+      "Headline": {
+        "Text": "きょう　８日０１時０４分ころ、地震がありました。",
+        "Information": []
+      },
+      "InfoKindVersion": "1.0_1",
+      "InfoKind": "震源速報",
+      "ReportDateTime": "2026-11-08T01:07:00+09:00",
+      "Serial": ""
+    },
+    "uuid_": "20261107160721_0_VXSE52_010000"
+  }
+}

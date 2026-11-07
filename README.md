@@ -74,6 +74,7 @@ page and its page-only assets.
 - [Explaination of the intensity values - JMA](https://www.data.jma.go.jp/multi/quake/quake_advisory.html?lang=en)
 - [Past earthquakes up to 30 days - JMA](https://www.data.jma.go.jp/multi/quake/index.html?lang=en)
 - [About LPGM - JMA (Japanese)](https://www.jma.go.jp/jma/kishou/know/jishin/choshuki/)
+- [Data samples](https://github.com/Kiriyashiki/WebQuake/tree/main/test/samples/)
 
 ### Name
 
