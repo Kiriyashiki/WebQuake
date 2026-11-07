@@ -20,6 +20,7 @@ import {
   setShowTestEew,
   parseJwtPayload,
   getJwtExpiryMs,
+  isWarningEew,
 } from "./eewProviders.js";
 import { ingestAxisMessage } from "./liveMode.js";
 
@@ -633,6 +634,10 @@ export function handleEewMessage(msg, providerInfo = null) {
     // Forecast or Warning
     const isNew = !eewState.activeEews.has(eventId);
     const eew = eewState.activeEews.get(eventId) || { receivedAt: Date.now() };
+    // A warning can be followed by further forecast messages for the same
+    // EventID (AXIS does this). Once an event has been warned, later forecast
+    // updates must not downgrade its UI back to "forecast".
+    eew.isWarning = isWarningEew(msg) || Boolean(eew.isWarning);
     eew.msg = msg;
     eew.providerName = srcName;
     eew.providerId = providerId;

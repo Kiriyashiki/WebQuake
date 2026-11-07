@@ -25,6 +25,7 @@ import {
   displayHomeLocationDirectIntensity,
 } from "./map/homeLocation.js";
 import { eqdbIntensityToShindo } from "./constants.js";
+import { DEBUG_OPTIONS_TOGGLE_COMMAND, toggleDebugOptions } from "./debugOptions.js";
 
 let _editingPresetName = null;
 let _promptResolve = null;
@@ -106,6 +107,7 @@ export function updatePresetDropdown() {
  * @param {string} [options.defaultValue=""] - Initial input text
  * @param {string} [options.label="Enter preset name:"] - Input label
  * @param {boolean} [options.allowOverwrite=false] - Whether existing custom name can be overwritten
+ * @param {boolean} [options.allowDebugOptionsCommand=false] - Treat the debug command as valid
  * @returns {Promise<string|null>} Preset name or null if canceled
  */
 export function promptPresetName(options = {}) {
@@ -114,6 +116,7 @@ export function promptPresetName(options = {}) {
     defaultValue = "",
     label = "Enter preset name · プリセット名を入力:",
     allowOverwrite = false,
+    allowDebugOptionsCommand = false,
   } = options;
 
   const modal = document.getElementById("preset-prompt-modal");
@@ -156,6 +159,13 @@ export function promptPresetName(options = {}) {
       const val = inputEl.value.trim();
       if (!val) {
         showError("Preset name cannot be empty. · 名前を入力してください。");
+        return;
+      }
+
+      // Hidden debug toggle command. It must never create a preset.
+      if (allowDebugOptionsCommand && val === DEBUG_OPTIONS_TOGGLE_COMMAND) {
+        cleanup();
+        resolve(val);
         return;
       }
 
@@ -518,9 +528,16 @@ export function initColorPresetsUI() {
       title: "New Preset · 新規プリセット",
       label: "Preset name · プリセット名:",
       defaultValue: "",
+      allowDebugOptionsCommand: true,
     });
 
     if (!name) return;
+
+    // Secret command: toggle the hidden debug menu without creating a preset.
+    if (name === DEBUG_OPTIONS_TOGGLE_COMMAND) {
+      toggleDebugOptions();
+      return;
+    }
 
     // Copies Default preset
     const def = clonePreset(BUILTIN_PRESETS.Default);

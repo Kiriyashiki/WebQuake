@@ -2,7 +2,12 @@ import { eewState } from "./state.js";
 import { formatTimeJSTWithSeconds, INTENSITY_CONFIG, LPGM_CONFIG } from "../constants.js";
 import { renderIntensityBadge, getIntensityBadgeHtml } from "../intensityBadge.js";
 import { createRubyHtml } from "../areaCodes.js";
-import { getActiveProvider, isPlumEew, isLevelMethodEew } from "../eewProviders.js";
+import {
+  getActiveProvider,
+  isPlumEew,
+  isLevelMethodEew,
+  isWarningEew,
+} from "../eewProviders.js";
 import {
   mergeForecasts,
   getIntVal,
@@ -219,7 +224,7 @@ export function renderCurrentEew() {
   const currentEew = eews[eewState.carouselIndex];
   const msg = currentEew.msg;
   const isCancelled = currentEew.isCancelled;
-  const isWarning = msg.Title.includes("警報");
+  const isWarning = Boolean(currentEew.isWarning || isWarningEew(msg));
   const isPlum = isPlumEew(msg);
   const isLevelMethod = isLevelMethodEew(msg);
   const isLowAccuracy = Boolean(msg.isLowAccuracy);

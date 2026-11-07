@@ -1,7 +1,12 @@
-import { USE_TEST_SERVER, AXIS_REPORT_CHANNEL } from "./constants.js";
+import {
+  USE_TEST_SERVER,
+  AXIS_REPORT_CHANNEL,
+  normalizeIntensityString,
+} from "./constants.js";
 import { loadAreaNameToCodeMap, getAreaCodeByName } from "./areaCodes.js";
 
 import { isDesktop, desktopFetch } from "./desktopBridge.js";
+import { logEewDebugMessage } from "./debugOptions.js";
 
 /**
  * Decodes the payload (claims) of a JWT without verifying its signature.
@@ -126,6 +131,25 @@ export function isSingleStationIpfEew(msg) {
   if (!isUnknownValue(msg.Intensity)) return false;
   const depth = Number.parseFloat(String(msg.Hypocenter?.Depth ?? ""));
   return Number.isFinite(depth) && depth <= 150;
+}
+
+/**
+ * Normalizes the intensity labels inside an EEW area forecast.
+ * AXIS uses Japanese labels such as "5弱" / "5強" in Forecast.Intensity,
+ * while the rest of the app expects the canonical "5-" / "5+" form.
+ */
+function normalizeEewForecast(forecast) {
+  if (!forecast || typeof forecast !== "object") return forecast;
+  const intensity = forecast.Intensity;
+  if (!intensity || typeof intensity !== "object") return forecast;
+  return {
+    ...forecast,
+    Intensity: {
+      ...intensity,
+      From: normalizeIntensityString(intensity.From),
+      To: normalizeIntensityString(intensity.To),
+    },
+  };
 }
 
 /**
@@ -289,14 +313,16 @@ export class BaseEewProvider {
         Depth: String(rawMsg.Hypocenter?.Depth || "--"),
         Description: rawMsg.Hypocenter?.Description || "",
       },
-      Intensity: String(rawMsg.Intensity || "不明"),
+      Intensity: normalizeIntensityString(rawMsg.Intensity || "不明"),
       Magnitude: String(rawMsg.Magnitude ?? "--"),
       Flag: {
         is_final: Boolean(rawMsg.Flag?.is_final),
         is_cancel: Boolean(rawMsg.Flag?.is_cancel),
         is_training: isTest,
       },
-      Forecast: Array.isArray(rawMsg.Forecast) ? rawMsg.Forecast : [],
+      Forecast: Array.isArray(rawMsg.Forecast)
+        ? rawMsg.Forecast.map(normalizeEewForecast)
+        : [],
       Text: rawMsg.Text || "",
       isTest: isTest,
       isLowAccuracy: Boolean(rawMsg.isLowAccuracy),
@@ -433,6 +459,7 @@ export class WebSocketEewProvider extends BaseEewProvider {
   handleIncomingRawMessage(raw) {
     try {
       const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      logEewDebugMessage(data);
       if (data?.channel === "eew" && data.message) {
         const normalized = this.normalizeMessage(data.message);
         if (normalized) {
@@ -979,6 +1006,7 @@ export class DmdssEewProvider extends WebSocketEewProvider {
   handleIncomingRawMessage(raw) {
     try {
       const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      logEewDebugMessage(data);
       if (!data?.type) return;
 
       if (data.type === "start") {
@@ -1040,7 +1068,7 @@ export class DmdssEewProvider extends WebSocketEewProvider {
 
     const forecasts = Array.isArray(data.regionForecasts)
       ? data.regionForecasts.map((rf) => {
-          const maxIntStr = String(rf.maxInt || rf.to || "0");
+          const maxIntStr = normalizeIntensityString(rf.maxInt || rf.to || "0");
           return {
             Code: Number(rf.code) || rf.code,
             Intensity: {
@@ -1055,12 +1083,12 @@ export class DmdssEewProvider extends WebSocketEewProvider {
     let intensityStr = "不明";
     if (data.maxInt?.to) {
       if (data.maxInt.to === "over" && data.maxInt.from) {
-        intensityStr = data.maxInt.from;
+        intensityStr = normalizeIntensityString(data.maxInt.from);
       } else {
-        intensityStr = data.maxInt.to;
+        intensityStr = normalizeIntensityString(data.maxInt.to);
       }
     } else if (data.maxInt && typeof data.maxInt === "string") {
-      intensityStr = data.maxInt;
+      intensityStr = normalizeIntensityString(data.maxInt);
     }
 
     let lpgmStr = "";
@@ -1106,7 +1134,17 @@ export class DmdssEewProvider extends WebSocketEewProvider {
       // source does not report it, so level method is inferred from the magnitude.
       isLevelOver: data.isLevelOver ?? null,
       isLowAccuracy: false,
-      pointForecast: data.pointForecast || null,
+      pointForecast: data.pointForecast
+        ? {
+            ...data.pointForecast,
+            intensity: data.pointForecast.intensity
+              ? {
+                  ...data.pointForecast.intensity,
+                  int: normalizeIntensityString(data.pointForecast.intensity.int),
+                }
+              : data.pointForecast.intensity,
+          }
+        : null,
       maxLgInt: lpgmStr,
       accuracy: data.accuracy || null,
     };

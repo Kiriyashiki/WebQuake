@@ -3,7 +3,7 @@ import {
   loadStationsCsvText,
   loadAreaNameToCodeMap,
 } from "../areaCodes.js";
-import { ENABLE_SM1999_GMPE } from "../constants.js";
+import { ENABLE_SM1999_GMPE, normalizeIntensityString } from "../constants.js";
 import { createSlabModel } from "./slabs.js";
 import { prepareEvent, shindoAtSite } from "./mf2013.js";
 
@@ -283,8 +283,8 @@ export function resolveForecastIntensity(forecast) {
   const intensity = forecast?.Intensity;
   if (!intensity) return null;
 
-  const from = String(intensity.From ?? "").trim();
-  const to = String(intensity.To ?? "").trim();
+  const from = normalizeIntensityString(intensity.From) ?? "";
+  const to = normalizeIntensityString(intensity.To) ?? "";
 
   // "over" (or a missing upper bound) is not an intensity: fall back to the
   // lower bound of the forecast range when it carries a usable value.
@@ -301,12 +301,13 @@ export function resolveForecastIntensity(forecast) {
  * Converts JMA intensity scale string to comparable numeric rank.
  */
 export function getIntVal(v) {
-  if (v === "7") return 70;
-  if (v === "6+") return 65;
-  if (v === "6-") return 60;
-  if (v === "5+") return 55;
-  if (v === "5-") return 50;
-  const parsed = Number.parseInt(v);
+  const value = normalizeIntensityString(v) ?? v;
+  if (value === "7") return 70;
+  if (value === "6+") return 65;
+  if (value === "6-") return 60;
+  if (value === "5+") return 55;
+  if (value === "5-") return 50;
+  const parsed = Number.parseInt(value);
   return Number.isNaN(parsed) ? 0 : parsed * 10;
 }
 

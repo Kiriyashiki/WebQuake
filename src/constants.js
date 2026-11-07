@@ -50,6 +50,33 @@ export const INTENSITY_CONFIG = {
   7: { color: "#5D0092", fontColor: "#FFFFFF" },
 };
 
+/**
+ * Normalizes an intensity string from a provider to the canonical JMA form
+ * used throughout the app ("5-", "5+", "6-", ...).
+ *
+ * AXIS EEW forecasts use Japanese labels such as "5弱" / "5強"; providers may
+ * also send full-width digits.  Without this normalization those values do not
+ * match INTENSITY_CONFIG and are rendered as unknown/gray areas.
+ *
+ * @param {unknown} value
+ * @returns {string|null}
+ */
+export function normalizeIntensityString(value) {
+  if (value == null) return null;
+  let result = String(value).trim();
+  // Full-width digits -> ASCII digits.
+  result = result.replace(/[０-９]/g, (ch) =>
+    String.fromCharCode(ch.charCodeAt(0) - 0xfee0),
+  );
+  // Japanese intensity suffixes and full-width signs -> canonical tokens.
+  result = result
+    .replace(/弱/g, "-")
+    .replace(/強/g, "+")
+    .replace(/[＋]/g, "+")
+    .replace(/[−–—]/g, "-");
+  return result;
+}
+
 // ─── Observation Conditions ──────────────────────────────────────────────────
 /**
  * Cities may report a Condition (e.g. "震度５弱以上未入電") instead of a
