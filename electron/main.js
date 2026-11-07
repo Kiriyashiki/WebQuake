@@ -36,6 +36,7 @@ fs.mkdirSync(logDir, { recursive: true });
 
 const latestLogFile = path.join(logDir, "latest.log");
 const oldLogFile = path.join(logDir, "old.log");
+const debugLogFile = path.join(logDir, "debug.log");
 
 if (fs.existsSync(latestLogFile)) {
   try {
@@ -53,6 +54,24 @@ function writeLog(level, message) {
     fs.appendFileSync(latestLogFile, line, "utf8");
   } catch (err) {
     console.error("[Electron] Failed to write to log file:", err);
+  }
+}
+
+// Debug log: intentionally not rotated or reset on startup. Cleared only by
+// the user from the hidden debug options menu.
+function writeDebugLog(message) {
+  try {
+    fs.appendFileSync(debugLogFile, `${message}\n`, "utf8");
+  } catch (err) {
+    console.error("[Electron] Failed to write to debug log file:", err);
+  }
+}
+
+function clearDebugLog() {
+  try {
+    fs.writeFileSync(debugLogFile, "", "utf8");
+  } catch (err) {
+    console.error("[Electron] Failed to clear debug log file:", err);
   }
 }
 
@@ -214,6 +233,15 @@ app.whenReady().then(() => {
   // IPC: Logging
   ipcMain.handle("desktop:log", (event, level, message) => {
     writeLog(level, message);
+  });
+
+  // IPC: Raw EEW debug logging
+  ipcMain.handle("desktop:debugLog", (event, message) => {
+    writeDebugLog(String(message));
+  });
+
+  ipcMain.handle("desktop:clearDebugLog", () => {
+    clearDebugLog();
   });
 
   // IPC: Desktop HTTP bypass

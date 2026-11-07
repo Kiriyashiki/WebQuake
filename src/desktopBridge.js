@@ -98,6 +98,35 @@ export async function desktopLog(level, message) {
 }
 
 /**
+ * Appends one line to the desktop debug log file (debug.log).
+ * The file lives in the same folder as the regular logs and is never rotated.
+ *
+ * @param {string} message Minified JSON line to append.
+ */
+export async function desktopDebugLog(message) {
+  if (checkIsTauri() && window.__TAURI_INTERNALS__?.invoke) {
+    return window.__TAURI_INTERNALS__.invoke("debug_log", { message });
+  }
+
+  if (checkIsElectron() && window.__ELECTRON_API__?.debugLog) {
+    return window.__ELECTRON_API__.debugLog(message);
+  }
+}
+
+/**
+ * Empties the desktop debug log file without deleting it.
+ */
+export async function desktopClearDebugLog() {
+  if (checkIsTauri() && window.__TAURI_INTERNALS__?.invoke) {
+    return window.__TAURI_INTERNALS__.invoke("clear_debug_log");
+  }
+
+  if (checkIsElectron() && window.__ELECTRON_API__?.clearDebugLog) {
+    return window.__ELECTRON_API__.clearDebugLog();
+  }
+}
+
+/**
  * Universal external URL opener.
  * Opens the URL in the operating system's default web browser.
  *

@@ -1,12 +1,46 @@
 use std::fs;
 
+/// Directory shared by the rotating session logs and the debug log.
+fn get_log_dir() -> std::path::PathBuf {
+  let mut log_dir = dirs::data_local_dir().unwrap_or_default();
+  log_dir.push("xyz.hainaut.kyoquake");
+  log_dir.push("logs");
+  log_dir
+}
+
+/// Appends one minified JSON message to debug.log.
+///
+/// This file is intentionally never rotated or reset at startup; it is only
+/// cleared by the user through the hidden debug options menu.
+#[tauri::command]
+fn debug_log(message: String) -> Result<(), String> {
+  use std::io::Write;
+
+  let log_dir = get_log_dir();
+  fs::create_dir_all(&log_dir).map_err(|err| err.to_string())?;
+
+  let mut file = fs::OpenOptions::new()
+    .create(true)
+    .append(true)
+    .open(log_dir.join("debug.log"))
+    .map_err(|err| err.to_string())?;
+
+  writeln!(file, "{}", message).map_err(|err| err.to_string())
+}
+
+/// Empties debug.log without deleting it.
+#[tauri::command]
+fn clear_debug_log() -> Result<(), String> {
+  let log_dir = get_log_dir();
+  fs::create_dir_all(&log_dir).map_err(|err| err.to_string())?;
+  fs::write(log_dir.join("debug.log"), "").map_err(|err| err.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   // ─── Log file rotation ────────────────────────────────────────────
   // Calculate the explicit log directory based on the identifier
-  let mut log_dir = dirs::data_local_dir().unwrap_or_default();
-  log_dir.push("xyz.hainaut.kyoquake");
-  log_dir.push("logs");
+  let log_dir = get_log_dir();
   let _ = fs::create_dir_all(&log_dir);
 
   let latest = log_dir.join("latest.log");
@@ -61,6 +95,7 @@ pub fn run() {
     )
     .plugin(tauri_plugin_http::init())
     .plugin(tauri_plugin_opener::init())
+    .invoke_handler(tauri::generate_handler![debug_log, clear_debug_log])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
