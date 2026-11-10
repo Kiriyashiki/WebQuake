@@ -36,6 +36,7 @@ import {
 import { startWaveAnimation } from "./eew/waveAnimation.js";
 import { onMapInteract, updateMapForEew } from "./eew/eewMap.js";
 import { clearEewRemoval, scheduleEewRemoval } from "./eew/removal.js";
+import { extractWarningAreaCodes } from "./eew/warningAreas.js";
 import {
   updateEewUI,
   updateHomeIntensityForActiveEews,
@@ -650,11 +651,13 @@ export function handleEewMessage(msg, providerInfo = null) {
   let srcName = "";
   let providerId = "";
   let disableGmpe = false;
+  let supportsWarningAreas = false;
 
   if (providerInfo && typeof providerInfo === "object") {
     srcName = providerInfo.name;
     providerId = providerInfo.id;
     disableGmpe = Boolean(providerInfo.disableGmpe);
+    supportsWarningAreas = Boolean(providerInfo.supportsWarningAreas);
   } else if (typeof providerInfo === "string") {
     srcName = providerInfo;
     const matched =
@@ -662,6 +665,7 @@ export function handleEewMessage(msg, providerInfo = null) {
     if (matched) {
       providerId = matched.id;
       disableGmpe = Boolean(matched.disableGmpe);
+      supportsWarningAreas = Boolean(matched.supportsWarningAreas);
     } else if (
       providerInfo.toLowerCase().includes("dmdss") ||
       providerInfo.toLowerCase().includes("client")
@@ -673,6 +677,7 @@ export function handleEewMessage(msg, providerInfo = null) {
     srcName = activeProv.name;
     providerId = activeProv.id;
     disableGmpe = Boolean(activeProv.disableGmpe);
+    supportsWarningAreas = Boolean(activeProv.supportsWarningAreas);
   }
 
   const isTest = Boolean(
@@ -694,6 +699,7 @@ export function handleEewMessage(msg, providerInfo = null) {
       const eew = eewState.activeEews.get(eventId);
       const wasCancelled = Boolean(eew.isCancelled);
       eew.isCancelled = true;
+      eew.warningAreaCodes = [];
       eew.msg = msg;
       eew.providerName = srcName;
       eew.providerId = providerId;
@@ -723,7 +729,13 @@ export function handleEewMessage(msg, providerInfo = null) {
     // A warning can be followed by further forecast messages for the same
     // EventID (AXIS does this). Once an event has been warned, later forecast
     // updates must not downgrade its UI back to "forecast".
-    eew.isWarning = isWarningEew(msg) || Boolean(eew.isWarning);
+    const msgIsWarning = isWarningEew(msg);
+    eew.isWarning = msgIsWarning || Boolean(eew.isWarning);
+    // Warning areas come from the warning message itself. Keep the last known
+    // set when later forecast updates for the same event arrive.
+    if (msgIsWarning) {
+      eew.warningAreaCodes = supportsWarningAreas ? extractWarningAreaCodes(msg) : [];
+    }
     eew.msg = msg;
     eew.providerName = srcName;
     eew.providerId = providerId;

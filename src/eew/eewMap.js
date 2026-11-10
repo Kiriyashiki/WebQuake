@@ -26,6 +26,101 @@ import {
   resolveForecastIntensity,
 } from "./physics.js";
 import { getActiveProvider, isPlumEew } from "../eewProviders.js";
+import { buildWarningAreaOutline, collectWarningAreaCodes } from "./warningAreas.js";
+
+const EMPTY_FEATURE_COLLECTION = { type: "FeatureCollection", features: [] };
+
+let forecastAreasPromise = null;
+let forecastAreasCache = null;
+let warningOutlineCache = null; // { key, data }
+let warningOutlinePending = null; // { key, promise }
+
+/**
+ * Loads forecast_areas.geojson once and reuses it for warning-area unions.
+ * @returns {Promise<Object>}
+ */
+function loadForecastAreas() {
+  if (forecastAreasCache) return Promise.resolve(forecastAreasCache);
+
+  if (!forecastAreasPromise) {
+    forecastAreasPromise = fetch("/forecast_areas.geojson")
+      .then((res) => {
+        if (!res.ok) throw new Error(`Failed to load forecast_areas.geojson: ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        forecastAreasCache = data;
+        return data;
+      })
+      .catch((err) => {
+        forecastAreasPromise = null;
+        throw err;
+      });
+  }
+
+  return forecastAreasPromise;
+}
+
+/**
+ * Updates the merged warning-area outline source.
+ *
+ * The merged polygon is cached by the active warning-area code set, so it is
+ * only rebuilt when the warning areas change or all warning EEWs expire.
+ */
+export async function updateWarningAreaOutline() {
+  const map = eewState.mapInstance;
+  if (!map) return;
+
+  if (
+    !eewState.isEewMapActive ||
+    eewState.activeEews.size === 0 ||
+    document.querySelector(".eq-item.active")
+  ) {
+    return;
+  }
+
+  const codes = collectWarningAreaCodes(eewState.activeEews.values());
+  const source = map.getSource?.("eew-warning-areas");
+  if (codes.length === 0) {
+    if (source) source.setData(EMPTY_FEATURE_COLLECTION);
+    return;
+  }
+
+  const key = codes.join(",");
+  if (warningOutlineCache?.key === key) {
+    if (source) source.setData(warningOutlineCache.data);
+    return;
+  }
+
+  let promise;
+  if (warningOutlinePending?.key === key) {
+    promise = warningOutlinePending.promise;
+  } else {
+    promise = loadForecastAreas().then((areas) => buildWarningAreaOutline(areas, codes));
+    warningOutlinePending = { key, promise };
+  }
+
+  try {
+    const outline = await promise;
+    if (warningOutlinePending?.key === key) warningOutlinePending = null;
+
+    // The EEW may have expired, been cancelled, or changed while we were
+    // merging, so only publish the outline when it is still current.
+    const currentCodes = collectWarningAreaCodes(eewState.activeEews.values());
+    if (
+      eewState.isEewMapActive &&
+      !document.querySelector(".eq-item.active") &&
+      currentCodes.join(",") === key
+    ) {
+      warningOutlineCache = { key, data: outline };
+      const currentSource = map.getSource?.("eew-warning-areas");
+      if (currentSource) currentSource.setData(outline);
+    }
+  } catch (err) {
+    if (warningOutlinePending?.key === key) warningOutlinePending = null;
+    console.warn("[EEW] Failed to build warning-area outline:", err);
+  }
+}
 
 /**
  * Tracks user map interaction to avoid snapping camera view.
@@ -129,8 +224,10 @@ export function clearEewMapDisplay() {
   if (eewState.mapInstance) {
     const pSrc = eewState.mapInstance.getSource("eew-p-wave");
     const sSrc = eewState.mapInstance.getSource("eew-s-wave");
+    const warningSrc = eewState.mapInstance.getSource("eew-warning-areas");
     if (pSrc) pSrc.setData({ type: "FeatureCollection", features: [] });
     if (sSrc) sSrc.setData({ type: "FeatureCollection", features: [] });
+    if (warningSrc) warningSrc.setData(EMPTY_FEATURE_COLLECTION);
   }
 }
 
@@ -148,6 +245,8 @@ export function updateMapForEew() {
     console.debug("[eq-viewer-eew] updateMapForEew: aborted early (not active)");
     return;
   }
+
+  updateWarningAreaOutline();
 
   console.debug("[eq-viewer-eew] updateMapForEew: removing old markers");
   for (const marker of eewState.eewEpicenterMarkers) marker.remove();

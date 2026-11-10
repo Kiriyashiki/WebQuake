@@ -1,7 +1,4 @@
-import {
-  MAP_COLORS,
-  buildIntensityColorExpression,
-} from "../constants.js";
+import { MAP_COLORS, buildIntensityColorExpression } from "../constants.js";
 
 const C = MAP_COLORS;
 
@@ -48,6 +45,10 @@ export function buildStyle(useCityAreas = true) {
         data: { type: "FeatureCollection", features: [] },
       },
       "eew-s-wave": {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      },
+      "eew-warning-areas": {
         type: "geojson",
         data: { type: "FeatureCollection", features: [] },
       },
@@ -255,6 +256,30 @@ export function buildStyle(useCityAreas = true) {
         },
       },
       {
+        id: "epicenter-box-line",
+        type: "line",
+        source: "epicenter-box",
+        minzoom: 10,
+        paint: {
+          "line-color": "#74849a",
+          "line-width": 1.5,
+          "line-dasharray": [3, 4],
+        },
+      },
+      {
+        id: "eew-warning-area-outline",
+        type: "line",
+        source: "eew-warning-areas",
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+        },
+        paint: {
+          "line-color": "#ea2b1a",
+          "line-width": 3.0,
+        },
+      },
+      {
         id: "eew-p-wave-layer",
         type: "line",
         source: "eew-p-wave",
@@ -272,17 +297,6 @@ export function buildStyle(useCityAreas = true) {
           "line-color": "#e74c3c", // Red for S wave
           "line-width": 2,
           "line-opacity": ["get", "opacity"],
-        },
-      },
-      {
-        id: "epicenter-box-line",
-        type: "line",
-        source: "epicenter-box",
-        minzoom: 10,
-        paint: {
-          "line-color": "#74849a",
-          "line-width": 1.5,
-          "line-dasharray": [3, 4],
         },
       },
     ],

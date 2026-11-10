@@ -4,6 +4,11 @@
   margin-bottom: 4px;
 }
 
+#home-intensity-display.eew-warning-home {
+  background-color: #5c1010;
+  border-color: #e84c3d;
+}
+
 
 #eew-test-banner {
   position: absolute;

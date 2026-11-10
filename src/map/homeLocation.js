@@ -183,6 +183,7 @@ export function displayHomeLocationIntensity(cityCode, observations, cityNames) 
   display.style.borderTopColor = config.color;
   display.querySelector(".tooltip-code").style.color = config.color;
 
+  display.classList.remove("eew-warning-home");
   display.classList.remove("hidden");
 }
 
@@ -222,6 +223,7 @@ export function displayHomeLocationDirectIntensity(cityCode, intensity, cityName
   const codeEl = display.querySelector(".tooltip-code");
   if (codeEl) codeEl.style.color = config.color;
 
+  display.classList.remove("eew-warning-home");
   display.classList.remove("hidden");
 }
 
@@ -231,6 +233,7 @@ export function displayHomeLocationDirectIntensity(cityCode, intensity, cityName
 export function hideHomeLocationIntensity() {
   const display = document.getElementById("home-intensity-display");
   if (display) {
+    display.classList.remove("eew-warning-home");
     display.classList.add("hidden");
   }
 }

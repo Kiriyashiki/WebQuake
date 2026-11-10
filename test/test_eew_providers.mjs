@@ -83,6 +83,11 @@ const {
   parseJwtPayload,
   getJwtExpiryMs,
 } = await import("../src/eewProviders.js");
+const {
+  extractWarningAreaCodes,
+  collectWarningAreaCodes,
+  buildWarningAreaOutline,
+} = await import("../src/eew/warningAreas.js");
 
 console.log("=== Running EEW Providers Unit Tests ===");
 
@@ -98,6 +103,8 @@ assert.strictEqual(testProvider.id, "test");
 assert.strictEqual(testProvider.name, "TEST");
 assert.strictEqual(testProvider.requiresToken, false);
 assert.strictEqual(testProvider.disableGmpe, false);
+assert.strictEqual(axisProvider.supportsWarningAreas, true);
+assert.strictEqual(testProvider.supportsWarningAreas, true);
 
 assert.strictEqual(getProvider("axis"), axisProvider);
 assert.strictEqual(getProvider("test"), testProvider);
@@ -336,6 +343,11 @@ assert.strictEqual(dmdssProvider.requiresPort, true);
 assert.strictEqual(dmdssProvider.defaultPort, "11311");
 assert.strictEqual(dmdssProvider.tauriOnly, true);
 assert.strictEqual(dmdssProvider.disableGmpe, true, "DMDSS provider should have disableGmpe: true");
+assert.strictEqual(
+  dmdssProvider.supportsWarningAreas,
+  false,
+  "DMDSS has no warning-area data",
+);
 assert.strictEqual(getProvider("dmdss"), dmdssProvider);
 
 // Port Isolation
@@ -362,6 +374,47 @@ assert.strictEqual(formatEewDepth("10KM"), "10 km");
 assert.strictEqual(formatEewDepth(null), "--");
 assert.strictEqual(formatEewDepth(""), "--");
 assert.strictEqual(formatEewDepth("   "), "--");
+
+// Warning areas
+const warningForecast = [
+  { Code: 451, Name: "愛知県西部", Intensity: { From: "5弱", To: "5弱" } },
+  { Code: 443, Name: "静岡県西部", Intensity: { From: "4", To: "4" } },
+  { Code: 450, Name: "愛知県東部", Intensity: { From: "4", To: "4" } },
+  { Code: 442, Name: "静岡県中部", Intensity: { From: "3", To: "4" } },
+  { Code: 431, Name: "岐阜県美濃東部", Intensity: { From: "3", To: "4" } },
+];
+const axisWarning = axisProvider.normalizeMessage({
+  ...rawAxisMsg,
+  Title: "緊急地震速報（警報）",
+  Forecast: warningForecast,
+});
+assert.deepStrictEqual(extractWarningAreaCodes(axisWarning), [431, 442, 443, 450, 451]);
+assert.deepStrictEqual(
+  extractWarningAreaCodes(rawAxisMsg),
+  [],
+  "Forecast messages do not carry warning areas",
+);
+assert.deepStrictEqual(
+  collectWarningAreaCodes([
+    { isWarning: true, warningAreaCodes: [450, 451] },
+    { isWarning: true, isCancelled: true, warningAreaCodes: [442] },
+    { isWarning: false, warningAreaCodes: [443] },
+    { isWarning: true, warningAreaCodes: [451, 431] },
+  ]),
+  [431, 450, 451],
+);
+
+const forecastAreas = JSON.parse(
+  fs.readFileSync(path.resolve(process.cwd(), "public/forecast_areas.geojson"), "utf8"),
+);
+const warningOutline = buildWarningAreaOutline(forecastAreas, [431, 442, 443, 450, 451]);
+assert.strictEqual(warningOutline.type, "FeatureCollection");
+assert.strictEqual(warningOutline.features.length, 1, "Warning areas should merge into one feature");
+assert.ok(
+  ["Polygon", "MultiPolygon"].includes(warningOutline.features[0].geometry.type),
+  "Merged outline should be polygonal",
+);
+assert.strictEqual(buildWarningAreaOutline(forecastAreas, []).features.length, 0);
 
 // Low-accuracy tests
 const rawDmdssForecast = {

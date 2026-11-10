@@ -17,6 +17,7 @@ import {
   resolveForecastIntensity,
 } from "./physics.js";
 import { updateMapForEew, clearEewMapDisplay } from "./eewMap.js";
+import { collectWarningAreaCodes } from "./warningAreas.js";
 import {
   updateCityAreasVisibility,
   highlightObservations,
@@ -58,6 +59,12 @@ export function updateHomeIntensityForActiveEews() {
   const provider = getActiveProvider();
   const isHomeSyncOn = Boolean(provider?.supportsHomeSync && provider.getHomeSync());
 
+  const warningAreaCodes = new Set(collectWarningAreaCodes(activeEewList));
+  const homeForecastAreaCode = cityForecastMap?.get(homeCityCode);
+  const homeIsInWarningArea =
+    homeForecastAreaCode != null &&
+    warningAreaCodes.has(Number.parseInt(homeForecastAreaCode, 10));
+
   if (isHomeSyncOn) {
     let maxIntVal = -1;
     let maxIntStr = null;
@@ -74,16 +81,16 @@ export function updateHomeIntensityForActiveEews() {
       }
     }
 
-    updateEewHomeLocationDisplay(homeCityCode, maxIntStr);
+    updateEewHomeLocationDisplay(homeCityCode, maxIntStr, homeIsInWarningArea);
   } else {
     const mergedForecast = mergeForecasts(activeEewList);
     const homeAreaCodeStr = cityForecastMap?.get(homeCityCode);
     if (homeAreaCodeStr) {
       const forecastArea = mergedForecast.find((f) => f.Code === Number.parseInt(homeAreaCodeStr));
       const forecastInt = forecastArea ? resolveForecastIntensity(forecastArea) : null;
-      updateEewHomeLocationDisplay(homeCityCode, forecastInt || null);
+      updateEewHomeLocationDisplay(homeCityCode, forecastInt || null, homeIsInWarningArea);
     } else {
-      updateEewHomeLocationDisplay(homeCityCode, null);
+      updateEewHomeLocationDisplay(homeCityCode, null, homeIsInWarningArea);
     }
   }
 }
@@ -91,7 +98,7 @@ export function updateHomeIntensityForActiveEews() {
 // Hook into shared state for phase 3 map callbacks
 eewState.updateHomeIntensity = updateHomeIntensityForActiveEews;
 
-export function updateEewHomeLocationDisplay(cityCode, intensityStr) {
+export function updateEewHomeLocationDisplay(cityCode, intensityStr, isInWarningArea = false) {
   const display = document.getElementById("home-intensity-display");
   if (!display) return;
 
@@ -122,6 +129,7 @@ export function updateEewHomeLocationDisplay(cityCode, intensityStr) {
   display.style.borderTopColor = config.color;
   display.querySelector(".tooltip-code").style.color = config.color;
 
+  display.classList.toggle("eew-warning-home", isInWarningArea);
   display.classList.remove("hidden");
 }
 

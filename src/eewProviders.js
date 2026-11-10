@@ -222,6 +222,7 @@ export class BaseEewProvider {
     disableGmpe = false,
     supportsHomeSync = false,
     hasAccuracyInfo = false,
+    supportsWarningAreas = false,
   }) {
     this.id = id;
     this.name = name;
@@ -236,6 +237,7 @@ export class BaseEewProvider {
     this.disableGmpe = disableGmpe;
     this.supportsHomeSync = supportsHomeSync;
     this.hasAccuracyInfo = hasAccuracyInfo;
+    this.supportsWarningAreas = supportsWarningAreas;
     this.callbacks = null;
   }
 
@@ -567,6 +569,7 @@ export class AxisEewProvider extends WebSocketEewProvider {
       id: "axis",
       name: "AXIS",
       requiresToken: true,
+      supportsWarningAreas: true,
       tokenLabel: "AXIS Token • トークン:",
       tokenPlaceholder: "Bearer Token",
     });
@@ -895,6 +898,7 @@ export class TestEewProvider extends WebSocketEewProvider {
       id: "test",
       name: "TEST",
       requiresToken: false,
+      supportsWarningAreas: true,
     });
   }
 
