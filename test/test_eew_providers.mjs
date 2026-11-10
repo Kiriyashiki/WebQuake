@@ -62,7 +62,7 @@ globalThis.fetch = async (url) => {
 };
 
 // Import module
-const { USE_TEST_SERVER } = await import("../src/constants.js");
+const { isUseTestServerEnabled } = await import("../src/debugOptions.js");
 const {
   axisProvider,
   testProvider,
@@ -109,13 +109,13 @@ assert.strictEqual(testProvider.supportsWarningAreas, true);
 assert.strictEqual(getProvider("axis"), axisProvider);
 assert.strictEqual(getProvider("test"), testProvider);
 
-// Check testProvider availability dynamically based on USE_TEST_SERVER
+// Check testProvider availability dynamically based on the debug switch
 const avail = getAvailableProviders();
 assert.ok(avail.some(p => p.id === "axis"), "AXIS should be available");
-if (USE_TEST_SERVER) {
-  assert.ok(avail.some(p => p.id === "test"), "TEST should be available when USE_TEST_SERVER is true");
+if (isUseTestServerEnabled()) {
+  assert.ok(avail.some(p => p.id === "test"), "TEST should be available when the debug switch is on");
 } else {
-  assert.ok(!avail.some(p => p.id === "test"), "TEST should not be available when USE_TEST_SERVER is false");
+  assert.ok(!avail.some(p => p.id === "test"), "TEST should not be available when the debug switch is off");
 }
 
 // When testProvider is available override

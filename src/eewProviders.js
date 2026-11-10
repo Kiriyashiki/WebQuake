@@ -1,12 +1,8 @@
-import {
-  USE_TEST_SERVER,
-  AXIS_REPORT_CHANNEL,
-  normalizeIntensityString,
-} from "./constants.js";
+import { AXIS_REPORT_CHANNEL, normalizeIntensityString } from "./constants.js";
 import { loadAreaNameToCodeMap, getAreaCodeByName } from "./areaCodes.js";
 
 import { isDesktop, desktopFetch } from "./desktopBridge.js";
-import { logEewDebugMessage } from "./debugOptions.js";
+import { isUseTestServerEnabled, logEewDebugMessage } from "./debugOptions.js";
 
 /**
  * Decodes the payload (claims) of a JWT without verifying its signature.
@@ -903,7 +899,7 @@ export class TestEewProvider extends WebSocketEewProvider {
   }
 
   isAvailable() {
-    return Boolean(USE_TEST_SERVER);
+    return isUseTestServerEnabled();
   }
 
   async getWebSocketUrl() {

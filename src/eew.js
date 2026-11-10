@@ -1,9 +1,8 @@
+import { AXIS_REPORT_CHANNEL, AXIS_REPORTS_SETTING_KEY } from "./constants.js";
 import {
-  USE_TEST_SERVER,
-  ENABLE_SM1999_GMPE,
-  AXIS_REPORT_CHANNEL,
-  AXIS_REPORTS_SETTING_KEY,
-} from "./constants.js";
+  DEBUG_SETTINGS_CHANGED_EVENT,
+  isUseTestServerEnabled,
+} from "./debugOptions.js";
 import { playAudioEvent, EEW_AUDIO_EVENTS, getEewPlayLowAccuracy } from "./audio.js";
 import {
   displayHomeMarker,
@@ -25,14 +24,7 @@ import {
 import { ingestAxisMessage } from "./liveMode.js";
 
 import { eewState } from "./eew/state.js";
-import {
-  loadEewDependencies,
-  getIntVal,
-  getEewGmpe,
-  setEewGmpe,
-  EEW_GMPE_SM1999,
-  EEW_GMPE_MF2013,
-} from "./eew/physics.js";
+import { loadEewDependencies, getIntVal } from "./eew/physics.js";
 import { startWaveAnimation } from "./eew/waveAnimation.js";
 import { onMapInteract, updateMapForEew } from "./eew/eewMap.js";
 import { clearEewRemoval, scheduleEewRemoval } from "./eew/removal.js";
@@ -180,17 +172,13 @@ export function initEewSettings(map, bounds, cities, areas) {
   const axisInfoEl = document.getElementById("eew-axis-info");
   const axisReportsGroupEl = document.getElementById("axis-reports-group");
   const axisReportsToggleEl = document.getElementById("axis-reports-toggle");
-  const gmpeGroupEl = document.getElementById("eew-gmpe-group");
-  const gmpeSelectEl = document.getElementById("eew-gmpe-select");
 
   if (!toggleEl) return;
 
-  const availableProviders = getAvailableProviders();
-
-  // Populate provider selector dropdown
-  if (providerSelectEl) {
+  function populateProviderSelect(available) {
+    if (!providerSelectEl) return;
     providerSelectEl.innerHTML = "";
-    for (const provider of availableProviders) {
+    for (const provider of available) {
       const option = document.createElement("option");
       option.value = provider.id;
       option.textContent = provider.name;
@@ -199,15 +187,17 @@ export function initEewSettings(map, bounds, cities, areas) {
   }
 
   // Determine active provider
+  const availableProviders = getAvailableProviders();
   const savedProviderId = localStorage.getItem("eew-provider");
   let currentProvider = availableProviders.find((p) => p.id === savedProviderId);
   if (!currentProvider) {
-    if (USE_TEST_SERVER && availableProviders.some((p) => p.id === "test")) {
+    if (isUseTestServerEnabled() && availableProviders.some((p) => p.id === "test")) {
       currentProvider = availableProviders.find((p) => p.id === "test");
     } else {
       currentProvider = availableProviders[0] || getProvider("axis");
     }
   }
+  populateProviderSelect(availableProviders);
   setActiveProvider(currentProvider);
   if (providerSelectEl) {
     providerSelectEl.value = currentProvider.id;
@@ -265,6 +255,28 @@ export function initEewSettings(map, bounds, cities, areas) {
   }
 
   updateProviderSettingsUI();
+
+  function refreshProviderAvailability() {
+    const available = getAvailableProviders();
+    populateProviderSelect(available);
+
+    let provider = getActiveProvider();
+    if (!available.some((p) => p.id === provider?.id)) {
+      const wasConnected = toggleEl.checked;
+      if (wasConnected) disconnectEew();
+
+      provider = available[0] || getProvider("axis");
+      setActiveProvider(provider);
+      localStorage.setItem("eew-provider", provider.id);
+
+      if (wasConnected && (!provider.requiresToken || provider.getToken())) {
+        connectEew();
+      }
+    }
+
+    if (providerSelectEl) providerSelectEl.value = provider.id;
+    updateProviderSettingsUI();
+  }
 
   if (axisReportsToggleEl) {
     axisReportsToggleEl.addEventListener("change", (e) => {
@@ -425,30 +437,25 @@ export function initEewSettings(map, bounds, cities, areas) {
     });
   }
 
-  // GMPE selection (only when SM 1999 support is compiled in; MF 2013 is the default)
-  if (ENABLE_SM1999_GMPE && gmpeGroupEl && gmpeSelectEl) {
-    const gmpeOptions = [
-      { value: EEW_GMPE_MF2013, label: "MF 2013 (Morikawa & Fujiwara)" },
-      { value: EEW_GMPE_SM1999, label: "SM 1999 (Si & Midorikawa)" },
-    ];
-    gmpeSelectEl.innerHTML = "";
-    for (const opt of gmpeOptions) {
-      const option = document.createElement("option");
-      option.value = opt.value;
-      option.textContent = opt.label;
-      gmpeSelectEl.appendChild(option);
-    }
-    gmpeSelectEl.value = getEewGmpe();
-    gmpeGroupEl.classList.remove("hidden");
+  const handleDebugSettingsChanged = (event) => {
+    const { name } = event.detail || {};
 
-    gmpeSelectEl.addEventListener("change", (e) => {
-      const selected = setEewGmpe(e.target.value);
-      e.target.value = selected;
-      // Recompute the displayed intensities with the newly selected GMPE.
-      if (eewState.isEewMapActive && eewState.activeEews.size > 0) {
-        updateMapForEew();
-      }
-    });
+    if (name === "useTestServer") {
+      refreshProviderAvailability();
+      return;
+    }
+
+    if (
+      (name === "enableSm1999Gmpe" || name === "testGmpeOverride") &&
+      eewState.isEewMapActive &&
+      eewState.activeEews.size > 0
+    ) {
+      updateMapForEew();
+    }
+  };
+
+  if (typeof window !== "undefined") {
+    window.addEventListener(DEBUG_SETTINGS_CHANGED_EVENT, handleDebugSettingsChanged);
   }
 
   // Track map interactions to pause fitBounds

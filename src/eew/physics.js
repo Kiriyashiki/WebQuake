@@ -3,7 +3,8 @@ import {
   loadStationsCsvText,
   loadAreaNameToCodeMap,
 } from "../areaCodes.js";
-import { ENABLE_SM1999_GMPE, normalizeIntensityString } from "../constants.js";
+import { normalizeIntensityString } from "../constants.js";
+import { isSm1999GmpeEnabled } from "../debugOptions.js";
 import { createSlabModel } from "./slabs.js";
 import { prepareEvent, shindoAtSite } from "./mf2013.js";
 
@@ -15,33 +16,16 @@ let _eewDependenciesPromise = null;
 // ─── Ground Motion Prediction Equation (GMPE) selection ──────────────────────
 export const EEW_GMPE_SM1999 = "sm1999";
 export const EEW_GMPE_MF2013 = "mf2013";
-const EEW_GMPE_STORAGE_KEY = "eew-gmpe";
 
 let _slabModel = null;
 
 /**
  * Returns the GMPE selected for EEW intensity estimates.
- * MF 2013 is the default; SM 1999 is only selectable when enabled.
+ * The debug menu switch toggles directly between MF 2013 (default) and SM 1999.
  * @returns {string} One of EEW_GMPE_SM1999 / EEW_GMPE_MF2013
  */
 export function getEewGmpe() {
-  if (!ENABLE_SM1999_GMPE) return EEW_GMPE_MF2013;
-  const saved =
-    typeof localStorage !== "undefined" ? localStorage.getItem(EEW_GMPE_STORAGE_KEY) : null;
-  return saved === EEW_GMPE_SM1999 ? EEW_GMPE_SM1999 : EEW_GMPE_MF2013;
-}
-
-/**
- * Persists the GMPE selection. Invalid ids (or SM 1999 when disabled) become MF 2013.
- * @param {string} id
- * @returns {string} The normalized selection
- */
-export function setEewGmpe(id) {
-  const value = ENABLE_SM1999_GMPE && id === EEW_GMPE_SM1999 ? EEW_GMPE_SM1999 : EEW_GMPE_MF2013;
-  if (typeof localStorage !== "undefined") {
-    localStorage.setItem(EEW_GMPE_STORAGE_KEY, value);
-  }
-  return value;
+  return isSm1999GmpeEnabled() ? EEW_GMPE_SM1999 : EEW_GMPE_MF2013;
 }
 
 /**

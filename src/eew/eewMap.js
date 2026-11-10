@@ -1,6 +1,7 @@
 import * as maplibregl from "maplibre-gl";
 import { eewState } from "./state.js";
-import { haversineDistance, TEST_GMPE_OVERRIDE } from "../constants.js";
+import { haversineDistance } from "../constants.js";
+import { isTestGmpeOverrideEnabled } from "../debugOptions.js";
 import {
   clearEpicenter,
   updateCityAreasVisibility,
@@ -286,6 +287,7 @@ export function updateMapForEew() {
 
     // Select the GMPE: MF 2013 (default) needs the slab model, otherwise fall back to SM 1999.
     const selectedGmpe = getEewGmpe();
+    const testGmpeOverride = isTestGmpeOverrideEnabled();
     let useMf2013 = selectedGmpe === EEW_GMPE_MF2013;
     if (useMf2013 && !getSlabModel()) {
       console.warn(
@@ -311,7 +313,7 @@ export function updateMapForEew() {
       let depthLim = useMf2013 ? 400 : 150;
       if (Number.isNaN(depthKm) || depthKm >= depthLim) continue;
 
-      if (!TEST_GMPE_OVERRIDE && eew.disableGmpe && depthKm <= 150) {
+      if (!testGmpeOverride && eew.disableGmpe && depthKm <= 150) {
         console.debug(
           "[eq-viewer-eew] updateMapForEew Phase 2: skipping GMPE calculation (disabled for provider)",
         );
@@ -346,7 +348,7 @@ export function updateMapForEew() {
 
         let finalShindo = shindoStr;
 
-        if (!TEST_GMPE_OVERRIDE) {
+        if (!testGmpeOverride) {
           if (getIntVal(finalShindo) > getIntVal("3")) {
             finalShindo = "3";
           }
@@ -397,7 +399,7 @@ export function updateMapForEew() {
     console.debug("[eq-viewer-eew] updateMapForEew Phase 2: merging GMPE and forecast");
     const finalMapIntensities = new Map();
 
-    if (TEST_GMPE_OVERRIDE) {
+    if (testGmpeOverride) {
       for (const [areaCode, localInt] of localPredictions.entries()) {
         console.info(areaCode, localInt);
         finalMapIntensities.set(areaCode, localInt);
