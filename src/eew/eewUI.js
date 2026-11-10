@@ -4,6 +4,7 @@ import { renderIntensityBadge, getIntensityBadgeHtml } from "../intensityBadge.j
 import { createRubyHtml } from "../areaCodes.js";
 import {
   getActiveProvider,
+  formatEewDepth,
   isPlumEew,
   isLevelMethodEew,
   isWarningEew,
@@ -451,7 +452,7 @@ export function renderEewInfoBox(
   const hasAssumedHypocenter = isPlumMethod || isLevelMethod;
 
   magnitude.textContent = hasAssumedHypocenter ? "--" : `M ${msg.Magnitude}`;
-  depth.textContent = hasAssumedHypocenter ? "--" : (msg.Hypocenter?.Depth ?? "--");
+  depth.textContent = hasAssumedHypocenter ? "--" : formatEewDepth(msg.Hypocenter?.Depth);
 
   if (isPlumMethod) {
     const coordsLabel = coordinates.previousElementSibling;

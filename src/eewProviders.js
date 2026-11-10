@@ -86,6 +86,17 @@ export function isPlumEew(msg) {
   return isDummyMag && isDummyDepth;
 }
 
+/**
+ * Formats an EEW depth value with a space before the "km" unit.
+ * AXIS and test providers send values like "10km", while DMDSS sends
+ * "10 km". Returns "--" for empty values.
+ */
+export function formatEewDepth(depthValue) {
+  const text = String(depthValue ?? "").trim();
+  if (!text) return "--";
+  return text.replace(/\s*km$/i, " km");
+}
+
 /** Values that mean a normalized EEW field carries no usable information. */
 const UNKNOWN_FIELD_VALUES = new Set(["", "--", "不明", "unknown", "null", "undefined", "nan"]);
 
@@ -310,7 +321,7 @@ export class BaseEewProvider {
         Coordinate: Array.isArray(rawMsg.Hypocenter?.Coordinate)
           ? [Number(rawMsg.Hypocenter.Coordinate[0]), Number(rawMsg.Hypocenter.Coordinate[1])]
           : null,
-        Depth: String(rawMsg.Hypocenter?.Depth || "--"),
+        Depth: formatEewDepth(rawMsg.Hypocenter?.Depth),
         Description: rawMsg.Hypocenter?.Description || "",
       },
       Intensity: normalizeIntensityString(rawMsg.Intensity || "不明"),
@@ -1116,7 +1127,7 @@ export class DmdssEewProvider extends WebSocketEewProvider {
           Array.isArray(data.epicenterLocation) && data.epicenterLocation.length >= 2
             ? [Number(data.epicenterLocation[0]), Number(data.epicenterLocation[1])]
             : null,
-        Depth: data.depth != null ? `${data.depth}km` : "--",
+        Depth: formatEewDepth(data.depth != null ? `${data.depth}km` : null),
         Description: "",
       },
       Intensity: intensityStr,

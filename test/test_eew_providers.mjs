@@ -74,6 +74,7 @@ const {
   BaseEewProvider,
   WebSocketEewProvider,
   isPlumEew,
+  formatEewDepth,
   isLevelMethodEew,
   isSingleStationIpfEew,
   isWarningEew,
@@ -246,7 +247,7 @@ assert.strictEqual(normalized.EventID, "20260913230000");
 assert.strictEqual(normalized.Serial, 1);
 assert.strictEqual(normalized.Hypocenter.Name, "京都府北部");
 assert.deepStrictEqual(normalized.Hypocenter.Coordinate, [135.3, 35.3]);
-assert.strictEqual(normalized.Hypocenter.Depth, "10km");
+assert.strictEqual(normalized.Hypocenter.Depth, "10 km");
 assert.strictEqual(normalized.Intensity, "3");
 assert.strictEqual(normalized.Magnitude, "4.5");
 assert.strictEqual(normalized.Flag.is_final, false);
@@ -353,6 +354,15 @@ assert.strictEqual(isPlumEew({ Magnitude: 1.0, Hypocenter: { Depth: 10 } }), tru
 assert.strictEqual(isPlumEew({ Magnitude: "5.0", Hypocenter: { Depth: "10km" } }), false);
 assert.strictEqual(isPlumEew(null), false);
 
+// Depth formatting
+assert.strictEqual(formatEewDepth("10km"), "10 km");
+assert.strictEqual(formatEewDepth("110km"), "110 km");
+assert.strictEqual(formatEewDepth("10 km"), "10 km");
+assert.strictEqual(formatEewDepth("10KM"), "10 km");
+assert.strictEqual(formatEewDepth(null), "--");
+assert.strictEqual(formatEewDepth(""), "--");
+assert.strictEqual(formatEewDepth("   "), "--");
+
 // Low-accuracy tests
 const rawDmdssForecast = {
   type: "eew",
@@ -397,7 +407,7 @@ assert.strictEqual(normLowAcc.isPlumOnly, false);
 assert.strictEqual(normLowAcc.Hypocenter.Name, "石川県能登地方");
 assert.strictEqual(normLowAcc.Hypocenter.Code, 390, "Hypocenter.Code should be looked up from CSV (390 for 石川県能登地方)");
 assert.deepStrictEqual(normLowAcc.Hypocenter.Coordinate, [137.2, 37.5]);
-assert.strictEqual(normLowAcc.Hypocenter.Depth, "10km");
+assert.strictEqual(normLowAcc.Hypocenter.Depth, "10 km");
 assert.strictEqual(normLowAcc.Intensity, "5+");
 assert.strictEqual(normLowAcc.Forecast.length, 2);
 assert.strictEqual(normLowAcc.Forecast[0].Code, 390);
