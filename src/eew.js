@@ -4,7 +4,7 @@ import {
   AXIS_REPORT_CHANNEL,
   AXIS_REPORTS_SETTING_KEY,
 } from "./constants.js";
-import { playAudio } from "./audio.js";
+import { playAudioEvent, EEW_AUDIO_EVENTS, getEewPlayLowAccuracy } from "./audio.js";
 import {
   displayHomeMarker,
   setCustomHomeCoordinates,
@@ -567,6 +567,81 @@ function disconnectEew() {
   clearAllEews();
 }
 
+function _eewSerialNumber(value) {
+  if (value == null || value === "") return null;
+  const parsed = Number.parseInt(String(value), 10);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function _isSerialIncreased(current, previous) {
+  const currentSerial = _eewSerialNumber(current);
+  const previousSerial = _eewSerialNumber(previous);
+  if (currentSerial == null || previousSerial == null) return false;
+  return currentSerial > previousSerial;
+}
+
+function _isEewAudioSuppressed(msg) {
+  return Boolean(msg?.isLowAccuracy) && !getEewPlayLowAccuracy();
+}
+
+function _ensureEewAudioState(eew) {
+  if (!eew.audio || typeof eew.audio !== "object") {
+    eew.audio = {
+      forecastPlayed: false,
+      forecastSuppressed: false,
+      warningPlayed: false,
+    };
+  }
+  return eew.audio;
+}
+
+function _playEewAudio(eventId, eventType) {
+  playAudioEvent(eventType, { key: `eew:${eventId}:${eventType}` });
+}
+
+function _handleNewEewAudio(eventId, msg, audioState) {
+  if (_isEewAudioSuppressed(msg)) {
+    audioState.forecastSuppressed = true;
+    return;
+  }
+
+  audioState.forecastPlayed = true;
+  audioState.forecastSuppressed = false;
+  _playEewAudio(eventId, EEW_AUDIO_EVENTS.FORECAST);
+}
+
+function _handleUpdatedEewAudio(
+  eventId,
+  msg,
+  eew,
+  audioState,
+  { previousSerial, wasWarning, wasCancelled },
+) {
+  if (wasCancelled) return;
+
+  if (_isEewAudioSuppressed(msg)) {
+    if (!audioState.forecastPlayed) audioState.forecastSuppressed = true;
+    return;
+  }
+
+  // A low-accuracy first report had its forecast sound suppressed.  Play it
+  // as soon as the EEW becomes accurate enough.
+  if (!audioState.forecastPlayed) {
+    audioState.forecastPlayed = true;
+    audioState.forecastSuppressed = false;
+    _playEewAudio(eventId, EEW_AUDIO_EVENTS.FORECAST);
+  }
+
+  if (_isSerialIncreased(msg.Serial, previousSerial)) {
+    _playEewAudio(eventId, EEW_AUDIO_EVENTS.UPDATE);
+  }
+
+  if (eew.isWarning && !wasWarning) {
+    audioState.warningPlayed = true;
+    _playEewAudio(eventId, EEW_AUDIO_EVENTS.WARNING);
+  }
+}
+
 export function handleEewMessage(msg, providerInfo = null) {
   if (!msg?.Title) return;
 
@@ -617,12 +692,17 @@ export function handleEewMessage(msg, providerInfo = null) {
   if (msg.Flag?.is_cancel) {
     if (eewState.activeEews.has(eventId)) {
       const eew = eewState.activeEews.get(eventId);
+      const wasCancelled = Boolean(eew.isCancelled);
       eew.isCancelled = true;
       eew.msg = msg;
       eew.providerName = srcName;
       eew.providerId = providerId;
       eew.disableGmpe = disableGmpe;
       eew.isTest = isTest;
+
+      if (!wasCancelled) {
+        _playEewAudio(eventId, EEW_AUDIO_EVENTS.CANCEL);
+      }
 
       scheduleEewRemoval(eew, msg, () => removeEew(eventId));
       updateEewUI(false);
@@ -632,8 +712,14 @@ export function handleEewMessage(msg, providerInfo = null) {
     }
   } else {
     // Forecast or Warning
-    const isNew = !eewState.activeEews.has(eventId);
-    const eew = eewState.activeEews.get(eventId) || { receivedAt: Date.now() };
+    const existing = eewState.activeEews.get(eventId);
+    const isNew = !existing;
+    const eew = existing || { receivedAt: Date.now() };
+    const audioState = _ensureEewAudioState(eew);
+    const previousSerial = existing?.msg?.Serial;
+    const wasWarning = Boolean(existing?.isWarning);
+    const wasCancelled = Boolean(existing?.isCancelled);
+
     // A warning can be followed by further forecast messages for the same
     // EventID (AXIS does this). Once an event has been warned, later forecast
     // updates must not downgrade its UI back to "forecast".
@@ -660,7 +746,13 @@ export function handleEewMessage(msg, providerInfo = null) {
       if (liveTab && !liveTab.classList.contains("active")) {
         liveTab.click();
       }
-      playAudio("/sfx/eew.wav");
+      _handleNewEewAudio(eventId, msg, audioState);
+    } else {
+      _handleUpdatedEewAudio(eventId, msg, eew, audioState, {
+        previousSerial,
+        wasWarning,
+        wasCancelled,
+      });
     }
 
     updateEewUI(isNew);

@@ -51,7 +51,7 @@ import {
   syncLiveModeToggleVisuals,
 } from "./sidebarUI.js";
 import { startLivePolling, stopLivePolling } from "./liveMode.js";
-import { playAudio, preloadAudio } from "./audio.js";
+import { playReportAudio, seedReportAudioState } from "./audio.js";
 import {
   initEewSettings,
   handlePossibleEewReport,
@@ -398,11 +398,6 @@ async function boot() {
   // Initialize EEW
   initEewSettings(map, featureBounds, cityNames, areaCodes);
 
-  // Preload audio files so they don't hang fetch() during OS sleep/resume
-  preloadAudio("/sfx/ping.wav");
-  preloadAudio("/sfx/eew.wav");
-  preloadAudio("/sfx/flash.wav");
-
   // Fetch initial reports
   _updateStatus("loading");
   updateSidebarLoading(0, "...");
@@ -429,11 +424,8 @@ async function boot() {
     hideSidebarLoadingPopup();
     _updateStatus("live");
 
-    const playedNormalReports = new Set();
     for (const report of reports) {
-      if (!report.isFlashReport) {
-        playedNormalReports.add(report.eventId);
-      }
+      seedReportAudioState(report);
     }
 
     // Initialize live mode
@@ -448,12 +440,7 @@ async function boot() {
             onNewEntry: (entry, report) => {
               console.info("[eq-viewer] New entry:", report.eventId);
 
-              if (report.isFlashReport) {
-                playAudio("/sfx/flash.wav");
-              } else if (!playedNormalReports.has(report.eventId)) {
-                playedNormalReports.add(report.eventId);
-                playAudio("/sfx/ping.wav");
-              }
+              playReportAudio(entry, report);
 
               const added = addReportToSidebar(report, onReportSelect);
               if (added) {
@@ -484,12 +471,7 @@ async function boot() {
             onUpdatedEntry: (entry, report) => {
               console.info("[eq-viewer] Updated entry:", report.eventId);
 
-              if (report.isFlashReport) {
-                playAudio("/sfx/flash.wav");
-              } else if (!playedNormalReports.has(report.eventId)) {
-                playedNormalReports.add(report.eventId);
-                playAudio("/sfx/ping.wav");
-              }
+              playReportAudio(entry, report);
 
               const updated = updateReportInSidebar(report, onReportSelect);
               if (updated) {

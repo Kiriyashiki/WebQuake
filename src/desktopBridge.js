@@ -127,6 +127,63 @@ export async function desktopClearDebugLog() {
 }
 
 /**
+ * Returns the absolute path of the desktop audio/ folder.
+ *
+ * @returns {Promise<string|null>}
+ */
+export async function desktopGetAudioDirPath() {
+  if (checkIsTauri() && window.__TAURI_INTERNALS__?.invoke) {
+    return window.__TAURI_INTERNALS__.invoke("get_audio_dir_path");
+  }
+
+  if (checkIsElectron() && window.__ELECTRON_API__?.getAudioDirPath) {
+    return window.__ELECTRON_API__.getAudioDirPath();
+  }
+
+  return null;
+}
+
+/**
+ * Lists audio files in the desktop audio/ folder (next to the logs folder).
+ *
+ * @returns {Promise<string[]>}
+ */
+export async function desktopListAudioFiles() {
+  if (checkIsTauri() && window.__TAURI_INTERNALS__?.invoke) {
+    return window.__TAURI_INTERNALS__.invoke("list_audio_files");
+  }
+
+  if (checkIsElectron() && window.__ELECTRON_API__?.listAudioFiles) {
+    return window.__ELECTRON_API__.listAudioFiles();
+  }
+
+  return [];
+}
+
+/**
+ * Reads one audio file from the desktop audio/ folder.
+ *
+ * @param {string} fileName
+ * @returns {Promise<Uint8Array|ArrayBuffer|null>}
+ */
+export async function desktopReadAudioFile(fileName) {
+  if (checkIsTauri() && window.__TAURI_INTERNALS__?.invoke) {
+    const bytes = await window.__TAURI_INTERNALS__.invoke("read_audio_file", {
+      name: fileName,
+    });
+    return bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  }
+
+  if (checkIsElectron() && window.__ELECTRON_API__?.readAudioFile) {
+    const bytes = await window.__ELECTRON_API__.readAudioFile(fileName);
+    if (!bytes) return null;
+    return bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  }
+
+  return null;
+}
+
+/**
  * Universal external URL opener.
  * Opens the URL in the operating system's default web browser.
  *

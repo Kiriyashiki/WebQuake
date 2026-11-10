@@ -465,6 +465,13 @@
                         <input type="file" id="preset-import-file" accept=".csv,.json" style="display: none;" aria-label="Import preset file" />
                       </div>
                     </div>
+                    <div class="settings-divider"></div>
+                    <div class="settings-section">
+                      <div class="home-location-header">Audio • 音声</div>
+                      <div class="preset-btn-row">
+                        <button type="button" id="audio-open-btn" class="preset-action-btn" title="Open audio settings • 音声設定を開く">Audio Settings · 音声設定</button>
+                      </div>
+                    </div>
                   </div>
                   <div class="settings-right">
                     <div class="credits-section">
@@ -498,6 +505,74 @@
                     - <a href="https://github.com/Kiriyashiki/WebQuake" target="_blank">GitHub</a>
                   </p>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Audio settings popup -->
+          <div id="audio-popup" class="hidden">
+            <div class="audio-popup-content">
+              <div class="settings-popup-header">
+                <span class="mono">Audio Settings · 音声設定</span>
+                <button id="audio-close-btn" aria-label="Close">✕</button>
+              </div>
+              <div class="audio-popup-body">
+                <div class="audio-section">
+                  <div class="home-location-header">Event Sounds · イベント音</div>
+                  <p class="audio-note">
+                    Report sounds play once per report type and earthquake event. The optional update sound plays when another report of the same type is received for that event.<br>
+                    レポート音は種類ごとに1回だけ再生されます。更新時の音は、同じイベントの同種レポートを再受信したときに再生されます。
+                  </p>
+                  <div id="audio-event-list" class="audio-event-list"></div>
+                  <label class="live-mode-toggle popup-setting" data-tooltip="Play EEW audio even when the EEW is low-accuracy • 1点計算の緊急地震速報でも音を鳴らす">
+                    <input type="checkbox" id="audio-eew-low-accuracy-toggle" />
+                    <span class="toggle-label">Play Low-Accuracy EEW Audio<br>1点計算EEWも再生</span>
+                    <span class="toggle-switch"></span>
+                  </label>
+                </div>
+
+                <div class="audio-divider"></div>
+
+                <div class="audio-section">
+                  <div class="home-location-header">Audio Sources · 音声ソース</div>
+                  <p class="audio-note">
+                    Desktop local files are read from the audio/ folder. Remote URLs are loaded by the browser when played.<br>
+                    デスクトップ版のローカルファイルはaudio/フォルダから読み込みます。リモートURLは再生時にブラウザが読み込みます。
+                  </p>
+                  <p id="audio-folder-path" class="audio-note audio-folder-path hidden"></p>
+                  <div id="audio-source-list" class="audio-source-list"></div>
+
+                  <div class="audio-add-source">
+                    <div class="dropdown-group">
+                      <label for="audio-add-type">Add source · ソースを追加:</label>
+                      <select id="audio-add-type"></select>
+                    </div>
+                    <div class="dropdown-group">
+                      <label for="audio-add-name">Name · 名前 (optional · 任意):</label>
+                      <input type="text" id="audio-add-name" class="search-input" placeholder="Defaults to filename · ファイル名" />
+                    </div>
+                    <div id="audio-add-upload" class="dropdown-group audio-add-field">
+                      <label for="audio-add-upload-input">Audio file · 音声ファイル (max 3 MB / 30 s):</label>
+                      <input type="file" id="audio-add-upload-input" accept="audio/*" />
+                    </div>
+                    <div id="audio-add-local" class="dropdown-group audio-add-field hidden">
+                      <label for="audio-add-local-select">File in audio/ folder · audio/内のファイル:</label>
+                      <div class="audio-local-row">
+                        <select id="audio-add-local-select"></select>
+                        <button type="button" id="audio-refresh-local" class="preset-action-btn audio-refresh-btn">Refresh</button>
+                      </div>
+                    </div>
+                    <div id="audio-add-remote" class="dropdown-group audio-add-field hidden">
+                      <label for="audio-add-url">Audio URL · 音声URL:</label>
+                      <input type="url" id="audio-add-url" class="search-input" placeholder="https://example.com/sound.wav" />
+                      <span class="audio-note">Note: some browsers may require HTTPS.</span>
+                    </div>
+                    <div class="preset-btn-row">
+                      <button type="button" id="audio-add-btn" class="preset-action-btn">Add Source</button>
+                    </div>
+                    <div id="audio-add-status" class="audio-status"></div>
                   </div>
                 </div>
               </div>

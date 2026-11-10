@@ -34,6 +34,22 @@ function getLogDir() {
 const logDir = getLogDir();
 fs.mkdirSync(logDir, { recursive: true });
 
+// User-provided local audio files live next to the logs folder.
+const audioDir = path.join(path.dirname(logDir), "audio");
+fs.mkdirSync(audioDir, { recursive: true });
+const AUDIO_EXTENSIONS = new Set([
+  ".wav",
+  ".mp3",
+  ".ogg",
+  ".oga",
+  ".m4a",
+  ".aac",
+  ".flac",
+  ".opus",
+  ".webm",
+  ".weba",
+]);
+
 const latestLogFile = path.join(logDir, "latest.log");
 const oldLogFile = path.join(logDir, "old.log");
 const debugLogFile = path.join(logDir, "debug.log");
@@ -242,6 +258,34 @@ app.whenReady().then(() => {
 
   ipcMain.handle("desktop:clearDebugLog", () => {
     clearDebugLog();
+  });
+
+  // IPC: Local audio folder
+  ipcMain.handle("desktop:getAudioDirPath", () => audioDir);
+
+  ipcMain.handle("desktop:listAudioFiles", () => {
+    try {
+      return fs
+        .readdirSync(audioDir, { withFileTypes: true })
+        .filter((entry) => entry.isFile())
+        .map((entry) => entry.name)
+        .filter((name) => AUDIO_EXTENSIONS.has(path.extname(name).toLowerCase()))
+        .sort((a, b) => a.localeCompare(b));
+    } catch (err) {
+      console.error("[Electron] Failed to list audio files:", err);
+      return [];
+    }
+  });
+
+  ipcMain.handle("desktop:readAudioFile", (event, fileName) => {
+    const safeName = path.basename(String(fileName || ""));
+    if (!safeName || safeName !== fileName) {
+      throw new Error("Invalid audio file name.");
+    }
+    if (!AUDIO_EXTENSIONS.has(path.extname(safeName).toLowerCase())) {
+      throw new Error("Invalid audio file type.");
+    }
+    return fs.readFileSync(path.join(audioDir, safeName));
   });
 
   // IPC: Desktop HTTP bypass
