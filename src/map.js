@@ -722,16 +722,6 @@ export function clearShakemapHighlights(map) {
  * @param {boolean} isLpgm - If true, uses maxLgInt instead of maxInt
  */
 export function highlightObservations(map, observations, isLpgm = false) {
-  // Guard: do not touch feature states if the style hasn't fully loaded yet.
-  if (!map.isStyleLoaded()) {
-    // Defer until the map is idle (style loaded + rendered)
-    const handler = () => {
-      highlightObservations(map, observations, isLpgm);
-    };
-    map.once("idle", handler);
-    return;
-  }
-
   // Bulk-reset every currently highlighted feature across forecast_areas and cities
   try {
     if (map.getSource("forecast_areas")) {

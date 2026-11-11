@@ -226,7 +226,6 @@ export function updateEewUI(isNewEew = false) {
 }
 
 export function renderCurrentEew() {
-  console.debug("[eq-viewer-eew] renderCurrentEew: START");
   const eews = Array.from(eewState.activeEews.values()).sort((a, b) => a.receivedAt - b.receivedAt);
   if (eews.length === 0) return;
 
@@ -362,7 +361,6 @@ export function renderCurrentEew() {
     );
     console.debug("[eq-viewer-eew] renderCurrentEew: updating map for EEW");
     updateMapForEew();
-    console.debug("[eq-viewer-eew] renderCurrentEew: COMPLETE");
   }
 }
 

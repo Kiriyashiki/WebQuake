@@ -236,34 +236,28 @@ export function clearEewMapDisplay() {
  * Updates the map display for active EEWs (epicenter markers, GMPE shindo predictions, camera framing).
  */
 export function updateMapForEew() {
-  console.debug("[eq-viewer-eew] updateMapForEew: START");
   if (!eewState.mapInstance) return;
   if (
     !eewState.isEewMapActive ||
     eewState.activeEews.size === 0 ||
     document.querySelector(".eq-item.active")
   ) {
-    console.debug("[eq-viewer-eew] updateMapForEew: aborted early (not active)");
     return;
   }
 
   updateWarningAreaOutline();
 
-  console.debug("[eq-viewer-eew] updateMapForEew: removing old markers");
   for (const marker of eewState.eewEpicenterMarkers) marker.remove();
   eewState.eewEpicenterMarkers = [];
 
-  console.debug("[eq-viewer-eew] updateMapForEew: clearing normal UI elements");
   clearEpicenter(eewState.mapInstance); // Clear normal epicenter
   updateCityAreasVisibility(eewState.mapInstance, false); // Force Cities off temporarily
   updateShakemapVisibility(eewState.mapInstance, false); // Force Shakemap off temporarily
   updateLpgmVisibility(eewState.mapInstance, false); // Force LPGM off temporarily
   updateMapLegend(false); // Restore standard legend
 
-  console.debug("[eq-viewer-eew] updateMapForEew: scheduling phase 2 via setTimeout");
   // Give MapLibre a moment to apply layout property changes before setting feature states.
   setTimeout(() => {
-    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: START");
     // Guard: EEW state may have changed during the delay
     if (
       !eewState.isEewMapActive ||
@@ -273,7 +267,6 @@ export function updateMapForEew() {
       return;
     }
 
-    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: preparing map intensities");
     const mergedForecast = mergeForecasts(Array.from(eewState.activeEews.values()));
     const eews = Array.from(eewState.activeEews.values()).sort(
       (a, b) => a.receivedAt - b.receivedAt,
@@ -281,7 +274,6 @@ export function updateMapForEew() {
 
     const localPredictions = new Map();
 
-    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: calculating GMPE");
     // Track the highest estimated intensity for each individual station across all EEWs
     const stationMaxInts = new Int32Array(stationsData.length).fill(0);
 
@@ -298,9 +290,6 @@ export function updateMapForEew() {
 
     for (const eew of eews) {
       if (eew.isCancelled) {
-        console.debug(
-          "[eq-viewer-eew] updateMapForEew Phase 2: skipping GMPE calculation (cancelled)",
-        );
         continue;
       }
       const msg = eew.msg;
@@ -314,9 +303,6 @@ export function updateMapForEew() {
       if (Number.isNaN(depthKm) || depthKm >= depthLim) continue;
 
       if (!testGmpeOverride && eew.disableGmpe && depthKm <= 150) {
-        console.debug(
-          "[eq-viewer-eew] updateMapForEew Phase 2: skipping GMPE calculation (disabled for provider)",
-        );
         continue;
       }
 
@@ -396,7 +382,6 @@ export function updateMapForEew() {
       }
     }
 
-    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: merging GMPE and forecast");
     const finalMapIntensities = new Map();
 
     if (testGmpeOverride) {
@@ -430,15 +415,9 @@ export function updateMapForEew() {
     }
     eewState.lastMockObservations = mockObservations;
 
-    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: highlighting observations");
     highlightObservations(eewState.mapInstance, mockObservations);
-    console.debug("[eq-viewer-eew] updateMapForEew Phase 2: highlights applied");
 
-    console.debug("[eq-viewer-eew] updateMapForEew: scheduling phase 3 via rAF");
-    // Defer marker placement and camera movement to the next animation frame
-    // to avoid overwhelming WebKit2GTK's WebGL context
     requestAnimationFrame(() => {
-      console.debug("[eq-viewer-eew] updateMapForEew Phase 3: START");
       // Guard: EEW state may have changed by the time this frame fires
       if (
         !eewState.isEewMapActive ||
@@ -453,7 +432,6 @@ export function updateMapForEew() {
       }
 
       // Add EEW epicenters
-      console.debug("[eq-viewer-eew] updateMapForEew Phase 3: placing markers");
       let minLng = Infinity,
         minLat = Infinity,
         maxLng = -Infinity,
@@ -506,7 +484,6 @@ export function updateMapForEew() {
         ? { longitude: minLng, latitude: minLat }
         : null;
 
-      console.debug("[eq-viewer-eew] updateMapForEew Phase 3: fitting bounds");
       if (!eewState.isUserInteractingWithMap && eewState.featureBounds) {
         fitBoundsToObservations(
           eewState.mapInstance,
@@ -518,7 +495,6 @@ export function updateMapForEew() {
           6.5,
         );
       }
-      console.debug("[eq-viewer-eew] updateMapForEew Phase 3: COMPLETE");
     });
-  }, 50);
+  }, 20);
 }

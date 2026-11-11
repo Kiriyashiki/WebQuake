@@ -8,19 +8,11 @@ let waveInterval = null;
  * Starts 250ms animation loop updating P and S wave propagation circles.
  */
 export function startWaveAnimation() {
-  console.debug("[eq-viewer-eew] startWaveAnimation: START");
   if (waveInterval) return;
 
-  console.debug("[eq-viewer-eew] startWaveAnimation: setting interval");
   waveInterval = setInterval(updateWaves, 250);
 
-  // Defer the initial wave update to avoid interacting with MapLibre sources
-  // synchronously in the same tick as layout property changes, which can
-  // crash WebKit2GTK's WebGL context.
-  setTimeout(() => {
-    console.debug("[eq-viewer-eew] startWaveAnimation: initial updateWaves");
-    updateWaves();
-  }, 50);
+  updateWaves();
 }
 
 /**
