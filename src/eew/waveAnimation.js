@@ -99,7 +99,7 @@ export function updateWaves() {
             properties: { opacity },
             geometry: {
               type: "Polygon",
-              coordinates: [getCircleCoords(lat, lng, pRad, 96)],
+              coordinates: [getCircleCoords(lat, lng, pRad, 128)],
             },
           });
         }
@@ -109,7 +109,7 @@ export function updateWaves() {
             properties: { opacity },
             geometry: {
               type: "Polygon",
-              coordinates: [getCircleCoords(lat, lng, sRad, 64)],
+              coordinates: [getCircleCoords(lat, lng, sRad, 96)],
             },
           });
         }

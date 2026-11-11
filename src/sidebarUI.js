@@ -109,6 +109,7 @@ export function createReportItem(report, onReportSelect, customClickHandler) {
             <span class="eq-mag-label">M</span>
             ${typeof report.magnitude === "number" ? report.magnitude.toFixed(1) : "--"}
           </div>
+          <div class="eq-depth">${typeof report.depth === "number" ? report.depth : "--"} <span class="eq-mag-label">km</span></div>
           <div class="eq-time">${timeStr}</div>
         </div>
       </div>

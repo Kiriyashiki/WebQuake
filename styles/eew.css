@@ -33,7 +33,7 @@
 .eew-list-item {
   background: var(--bg-panel2);
   border-radius: 5px;
-  padding: 12px 14px;
+  padding: 8px 10px;
   cursor: pointer;
   transition: background 0.15s;
 }

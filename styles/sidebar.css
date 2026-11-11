@@ -21,7 +21,7 @@
 
 .sidebar-tab {
   flex: 1;
-  padding: 10px 8px;
+  padding: 8px 6px;
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
@@ -312,7 +312,7 @@
 }
 
 .sidebar-section {
-  padding: 18px 16px 12px;
+  padding: 8px;
   flex: 1;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -338,7 +338,7 @@
 }
 
 .eq-item {
-  padding: 12px 14px;
+  padding: 8px 10px;
   border-radius: 5px;
   border: 3px solid transparent;
   cursor: pointer;
@@ -393,7 +393,6 @@
   display: flex;
   gap: 8px;
   align-items: center;
-  margin-top: 4px;
 }
 
 .eq-item.placeholder {
@@ -411,11 +410,24 @@
   font-size: 14px;
 }
 
+.eq-depth {
+  font-weight: 500;
+  line-height: 1;
+  color: var(--text);
+  font-size: 13px;
+}
+
 .eq-mag-label {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-dim);
   margin-left: 2px;
+}
+
+.eq-depth-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
 }
 
 .eq-intensity-container {
@@ -462,7 +474,7 @@
 
 .eq-time {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-dim);
   white-space: nowrap;
   flex-shrink: 0;
@@ -477,12 +489,6 @@
   background: var(--bg-panel2);
   border: 1px solid var(--border-hi);
   color: var(--text-dim);
-}
-
-.eq-depth {
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: var(--text-muted);
 }
 
 .load-older-btn {
@@ -518,7 +524,7 @@
 /* ── Live Mode Toggle ─────────────────────────────────────────────── */
 
 .sidebar-footer {
-  padding: 8px;
+  padding: 6px;
   border-top: 1px solid var(--border);
   background: var(--bg-panel);
   display: flex;
