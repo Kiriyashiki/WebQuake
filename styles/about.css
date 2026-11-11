@@ -35,6 +35,10 @@
   box-sizing: border-box;
 }
 
+.hidden {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -229,13 +233,23 @@ a rt {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   padding: 10px 16px;
   border: 1px solid var(--border-hi);
   border-radius: 4px;
   background: var(--bg-panel2);
   color: var(--text);
+  font-family: inherit;
   font-size: 0.95rem;
   text-decoration: none;
+  cursor: pointer;
+}
+
+.btn-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  opacity: 0.92;
 }
 
 .btn:hover {
@@ -253,6 +267,197 @@ a rt {
   border-color: #f05a4b;
   background: #f05a4b;
   color: #ffffff;
+}
+
+/* ── Desktop downloader ─────────────────────────────────────────── */
+
+.downloader {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--border-hi);
+  border-radius: 8px;
+  background: rgba(11, 16, 24, 0.9);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(8px);
+}
+
+.downloader-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.downloader-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.downloader-icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  opacity: 0.92;
+}
+
+.downloader-title {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.downloader-sub {
+  margin: 3px 0 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.downloader-version {
+  flex-shrink: 0;
+  color: var(--accent2);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.os-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.os-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 1px solid var(--border-hi);
+  border-radius: 4px;
+  background: var(--bg-panel2);
+  color: var(--text-dim);
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.os-btn img {
+  width: 22px;
+  height: 22px;
+  opacity: 0.9;
+}
+
+.os-btn:hover {
+  border-color: var(--accent2);
+  color: var(--text);
+}
+
+.os-btn.active {
+  border-color: var(--accent2);
+  background: var(--accent2-dim);
+  color: var(--text);
+  box-shadow: inset 0 -2px 0 var(--accent2);
+}
+
+.downloader-status {
+  margin-top: 16px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.downloader-status-link {
+  margin-left: 2px;
+}
+
+.download-options {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.download-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-panel2);
+  color: var(--text);
+  text-decoration: none;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.download-row:hover {
+  border-color: var(--accent2);
+  background: var(--bg-panel);
+  color: var(--text);
+}
+
+.download-row-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.download-row-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.download-row-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.download-row-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.download-badge {
+  padding: 1px 5px;
+  border: 1px solid rgba(240, 165, 0, 0.5);
+  border-radius: 3px;
+  background: var(--accent2-dim);
+  color: var(--accent2);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.download-row-meta {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
+}
+
+.download-row-note {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+.download-row-action {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--accent2);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.downloader-note {
+  margin: 12px 0 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
 }
 
 /* ── Disclaimer ─────────────────────────────────────────────────── */

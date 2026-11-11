@@ -98,14 +98,25 @@
             >
           </p>
           <div class="actions">
-            <a
+            <button
+              type="button"
               class="btn btn-primary"
-              href="https://github.com/Kiriyashiki/WebQuake/releases"
+              id="download-toggle"
+              aria-expanded="false"
+              aria-controls="downloader"
             >
+              <img
+                class="btn-icon"
+                src="/demo/download.png"
+                alt=""
+                width="18"
+                height="18"
+              />
               <span class="lang-en">Download desktop app</span>
               <span class="lang-ja">デスクトップアプリをダウンロード</span>
-            </a>
+            </button>
             <a class="btn" href="/">
+              <img class="btn-icon" src="/demo/web.png" alt="" width="18" height="18" />
               <span class="lang-en">Open web app</span>
               <span class="lang-ja"
                 >ウェブアプリを<ruby>開<rt>ひら</rt></ruby>く</span
@@ -116,6 +127,116 @@
               <span class="lang-ja">GitHubで<ruby>見<rt>み</rt></ruby>る</span>
             </a>
           </div>
+
+          <section
+            class="downloader hidden"
+            id="downloader"
+            aria-labelledby="downloader-title"
+          >
+            <div class="downloader-head">
+              <div class="downloader-heading">
+                <img
+                  class="downloader-icon"
+                  src="/demo/download.png"
+                  alt=""
+                  width="26"
+                  height="26"
+                />
+                <div>
+                  <h2 class="downloader-title" id="downloader-title">
+                    <span class="lang-en">Download KyoQuake for desktop</span>
+                    <span class="lang-ja"
+                      >デスクトップ<ruby>版<rt>ばん</rt></ruby> KyoQuake をダウンロード</span
+                    >
+                  </h2>
+                  <p class="downloader-sub">
+                    <span class="lang-en"
+                      >Choose your operating system and download the latest release.</span
+                    >
+                    <span class="lang-ja"
+                      >お<ruby>使<rt>つか</rt></ruby>いの OS を<ruby>選択<rt>せんたく</rt></ruby>して、<ruby>最新<rt>さいしん</rt></ruby>リリースをダウンロードしてください。</span
+                    >
+                  </p>
+                </div>
+              </div>
+              <span class="downloader-version mono" id="downloader-version"></span>
+            </div>
+
+            <div
+              class="os-picker"
+              id="os-picker"
+              role="tablist"
+              aria-label="Operating system"
+            >
+              <button
+                type="button"
+                class="os-btn"
+                data-os="linux"
+                role="tab"
+                aria-selected="false"
+              >
+                <img
+                  src="/demo/linux-platform.png"
+                  alt=""
+                  width="22"
+                  height="22"
+                />
+                <span>Linux</span>
+              </button>
+              <button
+                type="button"
+                class="os-btn"
+                data-os="windows"
+                role="tab"
+                aria-selected="false"
+              >
+                <img
+                  src="/demo/windows-platform.png"
+                  alt=""
+                  width="22"
+                  height="22"
+                />
+                <span>Windows</span>
+              </button>
+              <button
+                type="button"
+                class="os-btn"
+                data-os="macos"
+                role="tab"
+                aria-selected="false"
+              >
+                <img
+                  src="/demo/apple-platform.png"
+                  alt=""
+                  width="22"
+                  height="22"
+                />
+                <span>macOS</span>
+              </button>
+            </div>
+
+            <div
+              class="downloader-status"
+              id="downloader-status"
+              role="status"
+              aria-live="polite"
+            >
+              <span class="lang-en">Loading the latest release…</span>
+              <span class="lang-ja"><ruby>最新<rt>さいしん</rt></ruby>リリースを<ruby>読<rt>よ</rt></ruby>み<ruby>込<rt>こ</rt></ruby>み<ruby>中<rt>ちゅう</rt></ruby>…</span>
+            </div>
+
+            <div class="download-options" id="download-options"></div>
+
+            <p class="downloader-note">
+              <span class="lang-en"
+                >Downloads are hosted on GitHub. The recommended file is selected
+                automatically for your device.</span
+              >
+              <span class="lang-ja"
+                >ダウンロードは GitHub でホストされています。お<ruby>使<rt>つか</rt></ruby>いの<ruby>端末<rt>たんまつ</rt></ruby>に<ruby>推奨<rt>すいしょう</rt></ruby>されるファイルが<ruby>自動的<rt>じどうてき</rt></ruby>に<ruby>選択<rt>せんたく</rt></ruby>されます。</span
+              >
+            </p>
+          </section>
         </div>
       </section>
 

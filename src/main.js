@@ -62,6 +62,7 @@ import {
 import { initHistoryController } from "./historyController.js";
 import { initSettingsModal } from "./settingsManager.js";
 import { initDebugOptions } from "./debugOptions.js";
+import { initUpdateChecker } from "./updateChecker.js";
 import { displayMapInfoBox, updateMapLegend } from "./mapInfoBox.js";
 import { isDesktop, desktopOpenUrl } from "./desktopBridge.js";
 import { applyActiveColorPreset } from "./colorPresetsUI.js";
@@ -125,6 +126,7 @@ async function boot() {
   // Setup settings modal and color presets controls
   initSettingsModal();
   initDebugOptions();
+  initUpdateChecker();
 
   // Setup sidebar toggle button
   const sidebarToggleBtn = document.getElementById("sidebar-toggle-btn");

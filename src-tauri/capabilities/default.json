@@ -15,6 +15,9 @@
         },
         {
           "url": "https://www.data.jma.go.jp/developer/xml/*"
+        },
+        {
+          "url": "https://api.github.com/repos/Kiriyashiki/WebQuake/releases/*"
         }
       ]
     },

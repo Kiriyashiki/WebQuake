@@ -1,10 +1,11 @@
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readdirSync, rmSync } from "node:fs";
+import { readFileSync, readdirSync, rmSync } from "node:fs";
 import { defineConfig } from "vite";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
 const distDir = resolve(root, "dist");
+const packageJson = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8"));
 
 /**
  * Exclude content not reachable in the desktop version.
@@ -39,6 +40,9 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    define: {
+      __APP_VERSION__: JSON.stringify(packageJson.version),
+    },
     plugins: isDesktopBuild
       ? [
           {

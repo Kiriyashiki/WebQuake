@@ -34,6 +34,17 @@
           </span>
           <span id="status-dot" class="dot-idle"></span>
           <span id="status-text" class="mono">Idle</span>
+          <button
+            id="update-btn"
+            class="hidden"
+            type="button"
+            aria-haspopup="dialog"
+            aria-controls="update-popup"
+            title="Update available"
+          >
+            <span class="update-btn-icon" aria-hidden="true">↑</span>
+            <span>Update · 更新</span>
+          </button>
         </div>
       </header>
 
@@ -619,6 +630,41 @@
               <div class="preset-prompt-footer">
                 <button type="button" id="preset-prompt-cancel-btn" class="preset-editor-btn-secondary">Cancel</button>
                 <button type="button" id="preset-prompt-confirm-btn" class="preset-editor-btn-primary">Confirm</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Update popup -->
+          <div
+            id="update-popup"
+            class="hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="update-popup-title"
+          >
+            <div class="update-popup-content">
+              <div class="settings-popup-header">
+                <span class="mono" id="update-popup-title"
+                  >Update Available · アップデートがあります</span
+                >
+                <button id="update-close-btn" type="button" aria-label="Close">✕</button>
+              </div>
+              <div class="update-popup-body">
+                <div class="update-popup-version mono" id="update-version"></div>
+                <div class="update-notes" id="update-notes"></div>
+              </div>
+              <div class="update-popup-footer">
+                <a
+                  id="update-release-link"
+                  class="update-release-link"
+                  href="https://github.com/Kiriyashiki/WebQuake/releases"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >View release · リリースを見る</a
+                >
+                <button id="update-action-btn" class="update-action-btn" type="button">
+                  Reload page · 再読み込み
+                </button>
               </div>
             </div>
           </div>
