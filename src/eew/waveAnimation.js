@@ -4,6 +4,19 @@ import { isPlumEew } from "../eewProviders.js";
 
 let waveInterval = null;
 
+// Waves are drawn up to this radius and fade out between the two values
+const WAVE_MAX_RADIUS = 2000;
+const WAVE_FADE_START = 1750;
+
+/**
+ * Returns the opacity of a wave circle based on its own propagation radius.
+ */
+function getWaveOpacity(radius) {
+  if (radius <= WAVE_FADE_START) return 1.0;
+  const opacity = 1.0 - (radius - WAVE_FADE_START) / (WAVE_MAX_RADIUS - WAVE_FADE_START);
+  return Math.max(0, opacity);
+}
+
 /**
  * Starts 250ms animation loop updating P and S wave propagation circles.
  */
@@ -76,16 +89,18 @@ export function updateWaves() {
     const pRad = getTravelDistance(depth, t, "P");
     const sRad = getTravelDistance(depth, t, "S");
 
-    if (pRad >= 2000) {
+    // Each wave fades out on its own radius, so the slower S wave keeps
+    // animating after the P wave has already disappeared
+    const pVisible = pRad > 0 && pRad < WAVE_MAX_RADIUS;
+    const sVisible = sRad > 0 && sRad < WAVE_MAX_RADIUS;
+
+    if (!pVisible && !sVisible) {
       continue;
     }
     allFinished = false;
 
-    let opacity = 1.0;
-    if (pRad > 1750) {
-      opacity = 1.0 - (pRad - 1750) / 250;
-      if (opacity < 0) opacity = 0;
-    }
+    const pOpacity = getWaveOpacity(pRad);
+    const sOpacity = getWaveOpacity(sRad);
 
     const coords = msg.Hypocenter.Coordinate;
     if (coords && coords.length >= 2) {
@@ -93,20 +108,20 @@ export function updateWaves() {
       const lat = Number.parseFloat(coords[1]);
 
       if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
-        if (pRad > 0) {
+        if (pVisible) {
           pFeatures.push({
             type: "Feature",
-            properties: { opacity },
+            properties: { opacity: pOpacity },
             geometry: {
               type: "Polygon",
               coordinates: [getCircleCoords(lat, lng, pRad, 128)],
             },
           });
         }
-        if (sRad > 0) {
+        if (sVisible) {
           sFeatures.push({
             type: "Feature",
-            properties: { opacity },
+            properties: { opacity: sOpacity },
             geometry: {
               type: "Polygon",
               coordinates: [getCircleCoords(lat, lng, sRad, 96)],
