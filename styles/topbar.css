@@ -47,11 +47,25 @@
   color: var(--text-dim);
 }
 
-#eew-status-container {
+.external-status-list {
   display: flex;
   align-items: center;
+  gap: 12px;
   margin-right: 12px;
-  cursor: pointer;
+}
+
+.external-status-list.hidden {
+  display: none;
+}
+
+.external-status-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 .dot-idle  { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); }

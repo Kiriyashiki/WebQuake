@@ -1,5 +1,5 @@
 import { union } from "@turf/turf";
-import { isWarningEew } from "../eewProviders.js";
+import { isWarningEew } from "../externalProviders.js";
 
 const EMPTY_FEATURE_COLLECTION = { type: "FeatureCollection", features: [] };
 

@@ -34,7 +34,7 @@ Under 'チャンネル選択', select `eew` from the dropdown, and click '変更
 
 <img src="./img-channel.png" width=600>
 
-If you also want to receive earthquake reports from AXIS, add the `jmx-seismology` channel to the same token. These reports are used only when **Use AXIS Reports** is enabled in Settings and **Live Mode** is also on. When AXIS reports are enabled, KyoQuake warns you under the token field if the token does not include `jmx-seismology`.
+If you also want to receive earthquake reports from AXIS, add the `jmx-seismology` channel to the same token. To use the reports, select AXIS as the **Earthquake Reports Source** under **External Services** in Settings and enable the connection. **Live Mode** must also be on. KyoQuake warns you under the token field if the token does not include the channels required by the sources you selected.
 
 ### Get token
 
@@ -44,7 +44,7 @@ Click 'Access Token' on the top bar. Under 'AXIS Access Token', you can find a l
 
 <img src="./img-token.png" width=500>
 
-Now you can just paste it under 'AXIS Token • トークン' in KyoQuake settings, and enable EEWs.
+Now paste it under the AXIS token field in the **External Services** settings, then select AXIS as the **EEW Source** and/or **Earthquake Reports Source** and enable the connection.
 
 *If an error occurs, make sure you correctly copy/pasted the token.*
 

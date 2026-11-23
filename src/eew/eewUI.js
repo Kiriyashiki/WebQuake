@@ -3,12 +3,12 @@ import { formatTimeJSTWithSeconds, INTENSITY_CONFIG, LPGM_CONFIG } from "../cons
 import { renderIntensityBadge, getIntensityBadgeHtml } from "../intensityBadge.js";
 import { createRubyHtml } from "../areaCodes.js";
 import {
-  getActiveProvider,
+  getEewSourceProvider,
   formatEewDepth,
   isPlumEew,
   isLevelMethodEew,
   isWarningEew,
-} from "../eewProviders.js";
+} from "../externalProviders.js";
 import {
   mergeForecasts,
   getIntVal,
@@ -56,7 +56,7 @@ export function updateHomeIntensityForActiveEews() {
     return;
   }
 
-  const provider = getActiveProvider();
+  const provider = getEewSourceProvider();
   const isHomeSyncOn = Boolean(provider?.supportsHomeSync && provider.getHomeSync());
 
   const warningAreaCodes = new Set(collectWarningAreaCodes(activeEewList));
@@ -237,7 +237,7 @@ export function renderCurrentEew() {
   const isLevelMethod = isLevelMethodEew(msg);
   const isLowAccuracy = Boolean(msg.isLowAccuracy);
   const isTest = Boolean(currentEew.isTest || msg.isTest || msg.Flag?.is_training);
-  const providerName = currentEew.providerName || getActiveProvider()?.name;
+  const providerName = currentEew.providerName || getEewSourceProvider()?.name;
 
   let hypoCodeNum = Number.parseInt(msg.Hypocenter?.Code);
   if ((!hypoCodeNum || Number.isNaN(hypoCodeNum)) && msg.Hypocenter?.Name && eewState.areaCodes) {

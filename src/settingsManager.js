@@ -1,5 +1,6 @@
 import { initColorPresetsUI } from "./colorPresetsUI.js";
 import { initAudioSettings } from "./audioSettings.js";
+import { initExternalSettings } from "./externalSettings.js";
 
 /**
  * Initializes the Settings & Credits modal popup event handlers.
@@ -32,4 +33,7 @@ export function initSettingsModal() {
 
   // Initialize audio settings popup
   initAudioSettings();
+
+  // Initialize external services settings popup
+  initExternalSettings();
 }

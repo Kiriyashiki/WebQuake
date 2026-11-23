@@ -227,8 +227,7 @@
   text-align: left;
 }
 
-.settings-section > .dropdown-group,
-#eew-provider-info {
+.settings-section > .dropdown-group {
   margin-top: 10px;
 }
 
@@ -307,29 +306,6 @@
   outline: none;
   border-color: var(--border-hi);
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
-}
-
-/* ── EEW Token Status ───────────────────────────────────────────── */
-.eew-token-status {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-top: 2px;
-  font-size: 11px;
-  line-height: 1.4;
-}
-
-.eew-token-expiry {
-  color: var(--text-muted);
-}
-
-.eew-token-expiry.is-expired {
-  color: var(--accent);
-}
-
-.eew-token-warning {
-  color: var(--accent2);
-  white-space: pre-line;
 }
 
 /* ── Map Info Box ───────────────────────────────────────────────── */

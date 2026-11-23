@@ -155,7 +155,7 @@ function isLoggableEewMessage(data) {
   if (!data || typeof data !== "object") return false;
   if (data.channel === "eew" && data.message) return true;
   if (data.channel === AXIS_REPORT_CHANNEL && data.message) return true;
-  // DMDSS EEW Client sends its EEW payloads directly as { type: "eew", ... }.
+  // EEW Client sends its EEW payloads directly as { type: "eew", ... }.
   if (data.type === "eew") return true;
   return false;
 }

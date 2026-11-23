@@ -29,7 +29,7 @@ const {
   EEW_GMPE_MF2013,
   EEW_GMPE_SM1999,
 } = await import("../src/eew/physics.js");
-const { testProvider } = await import("../src/eewProviders.js");
+const { testProvider } = await import("../src/externalProviders.js");
 
 console.log("=== Running Debug Options Unit Tests ===");
 

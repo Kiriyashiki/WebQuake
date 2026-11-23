@@ -116,9 +116,6 @@ export const POLL_INTERVAL = 10000;
 /** AXIS WebSocket channel carrying JMA seismology reports. */
 export const AXIS_REPORT_CHANNEL = "jmx-seismology";
 
-/** localStorage key for the “Use AXIS Reports” setting. */
-export const AXIS_REPORTS_SETTING_KEY = "axis-reports-enabled";
-
 // ─── Sidebar Pruning Thresholds ──────────────────────────────────────────────
 export const PRUNE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 export const PRUNE_MAX_REPORTS = 300;

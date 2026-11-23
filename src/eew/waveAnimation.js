@@ -1,6 +1,6 @@
 import { eewState } from "./state.js";
 import { getCircleCoords, getTravelDistance } from "./physics.js";
-import { isPlumEew } from "../eewProviders.js";
+import { isPlumEew } from "../externalProviders.js";
 
 let waveInterval = null;
 

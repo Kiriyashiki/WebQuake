@@ -66,13 +66,17 @@ const { isUseTestServerEnabled } = await import("../src/debugOptions.js");
 const {
   axisProvider,
   testProvider,
-  dmdssProvider,
+  eewClientProvider,
+  jmaXmlProvider,
+  EXTERNAL_CAPABILITY,
   getProvider,
   getAllProviders,
   getAvailableProviders,
+  getSelectableProviders,
+  migrateExternalServiceSettings,
   registerProvider,
-  BaseEewProvider,
-  WebSocketEewProvider,
+  BaseExternalProvider,
+  WebSocketExternalProvider,
   isPlumEew,
   formatEewDepth,
   isLevelMethodEew,
@@ -82,7 +86,7 @@ const {
   computeIsLowAccuracy,
   parseJwtPayload,
   getJwtExpiryMs,
-} = await import("../src/eewProviders.js");
+} = await import("../src/externalProviders.js");
 const {
   extractWarningAreaCodes,
   collectWarningAreaCodes,
@@ -129,6 +133,39 @@ assert.ok(!availWithoutTest.some(p => p.id === "test"), "TEST should not be avai
 testProvider.isAvailable = origIsAvailable;
 console.log("✓ Test 1 passed");
 
+// 1b. Capabilities and legacy settings migration
+console.log("Test 1b: Provider capabilities and legacy settings migration");
+assert.strictEqual(axisProvider.supports(EXTERNAL_CAPABILITY.EEW), true);
+assert.strictEqual(axisProvider.supports(EXTERNAL_CAPABILITY.REPORTS), true);
+assert.strictEqual(testProvider.supports(EXTERNAL_CAPABILITY.EEW), true);
+assert.strictEqual(testProvider.supports(EXTERNAL_CAPABILITY.REPORTS), false);
+assert.strictEqual(eewClientProvider.supports(EXTERNAL_CAPABILITY.EEW), true);
+assert.strictEqual(eewClientProvider.supports(EXTERNAL_CAPABILITY.REPORTS), false);
+assert.strictEqual(jmaXmlProvider.selectable, false, "JMA XML is documentation-only");
+assert.deepStrictEqual(
+  getSelectableProviders(EXTERNAL_CAPABILITY.REPORTS).map((provider) => provider.id),
+  ["axis"],
+  "Only AXIS is selectable as an earthquake reports source",
+);
+
+localStorage.clear();
+localStorage.setItem("eew-provider", "dmdss");
+localStorage.setItem("eew-enabled", "true");
+localStorage.setItem("eew-port-dmdss", "1234");
+localStorage.setItem("eew-sync-home-dmdss", "false");
+localStorage.setItem("axis-reports-enabled", "true");
+migrateExternalServiceSettings();
+assert.strictEqual(localStorage.getItem("external-eew-source"), "eewclient");
+assert.strictEqual(localStorage.getItem("external-eew-enabled"), "true");
+assert.strictEqual(localStorage.getItem("external-port-eewclient"), "1234");
+assert.strictEqual(localStorage.getItem("external-sync-home-eewclient"), "false");
+assert.strictEqual(localStorage.getItem("external-reports-source"), "axis");
+assert.strictEqual(localStorage.getItem("external-reports-enabled"), "true");
+assert.strictEqual(localStorage.getItem("eew-provider"), null);
+assert.strictEqual(localStorage.getItem("axis-reports-enabled"), null);
+localStorage.clear();
+console.log("✓ Test 1b passed");
+
 // 2. Token Storage Separation
 console.log("Test 2: Per-provider Token Isolation");
 localStorage.clear();
@@ -156,7 +193,7 @@ assert.strictEqual(axisProvider.getStoredLastRefreshCheck(), null);
 assert.strictEqual(axisProvider.getStoredExpiryAlerted(), false);
 
 // Another provider token should not collide
-const otherProvider = new BaseEewProvider({ id: "other", name: "Other", requiresToken: true });
+const otherProvider = new BaseExternalProvider({ id: "other", name: "Other", requiresToken: true });
 otherProvider.setToken("other_token");
 assert.strictEqual(otherProvider.getToken(), "other_token");
 assert.strictEqual(axisProvider.getToken(), "new_axis_token");
@@ -264,7 +301,7 @@ console.log("✓ Test 3 passed");
 
 // 4. Custom Provider Registration
 console.log("Test 4: Extensibility with Custom Providers");
-class CustomTestProvider extends BaseEewProvider {
+class CustomTestProvider extends BaseExternalProvider {
   constructor() {
     super({ id: "custom_ext", name: "Custom Ext" });
   }
@@ -328,7 +365,7 @@ assert.strictEqual(receivedMessage.EventID, "20260913230000");
 assert.strictEqual(receivedMessage.Hypocenter.Name, "京都府北部");
 
 testProvider.disconnect();
-assert.strictEqual(statusHistory.at(-1), "error", "Disconnect should set status to 'error'");
+assert.strictEqual(statusHistory.at(-1), "disconnected", "Disconnect should set status to 'disconnected'");
 
 wss.close();
 testProvider.getWebSocketUrl = origGetUrl;
@@ -336,27 +373,27 @@ console.log("✓ Test 5 passed");
 
 // 6. DMDSS Provider Unit Tests
 console.log("Test 6: DMDSS EEW Client Provider properties and normalization");
-assert.strictEqual(dmdssProvider.id, "dmdss");
-assert.strictEqual(dmdssProvider.name, "DMDSS EEW Client");
-assert.strictEqual(dmdssProvider.requiresToken, false);
-assert.strictEqual(dmdssProvider.requiresPort, true);
-assert.strictEqual(dmdssProvider.defaultPort, "11311");
-assert.strictEqual(dmdssProvider.tauriOnly, true);
-assert.strictEqual(dmdssProvider.disableGmpe, true, "DMDSS provider should have disableGmpe: true");
+assert.strictEqual(eewClientProvider.id, "eewclient");
+assert.strictEqual(eewClientProvider.name, "DMDSS EEW Client");
+assert.strictEqual(eewClientProvider.requiresToken, false);
+assert.strictEqual(eewClientProvider.requiresPort, true);
+assert.strictEqual(eewClientProvider.defaultPort, "11311");
+assert.strictEqual(eewClientProvider.tauriOnly, true);
+assert.strictEqual(eewClientProvider.disableGmpe, true, "DMDSS provider should have disableGmpe: true");
 assert.strictEqual(
-  dmdssProvider.supportsWarningAreas,
+  eewClientProvider.supportsWarningAreas,
   false,
   "DMDSS has no warning-area data",
 );
-assert.strictEqual(getProvider("dmdss"), dmdssProvider);
+assert.strictEqual(getProvider("eewclient"), eewClientProvider);
 
 // Port Isolation
 localStorage.clear();
-assert.strictEqual(dmdssProvider.getPort(), "11311");
-dmdssProvider.setPort("12345");
-assert.strictEqual(dmdssProvider.getPort(), "12345");
-assert.strictEqual(localStorage.getItem("eew-port-dmdss"), "12345");
-dmdssProvider.setPort("11311"); // Reset
+assert.strictEqual(eewClientProvider.getPort(), "11311");
+eewClientProvider.setPort("12345");
+assert.strictEqual(eewClientProvider.getPort(), "12345");
+assert.strictEqual(localStorage.getItem("external-port-eewclient"), "12345");
+eewClientProvider.setPort("11311"); // Reset
 
 // isPlumEew tests
 assert.strictEqual(isPlumEew({ isPlumOnly: true, Magnitude: "5.0", Hypocenter: { Depth: "30km" } }), true);
@@ -451,9 +488,9 @@ const rawDmdssForecast = {
 };
 
 // Load area codes into DMDSS provider
-await dmdssProvider.loadAreaCodes();
+await eewClientProvider.loadAreaCodes();
 
-const normLowAcc = dmdssProvider.normalizeDmdssEew(rawDmdssForecast);
+const normLowAcc = eewClientProvider.normalizeEewClientEew(rawDmdssForecast);
 assert.strictEqual(normLowAcc.isLowAccuracy, true, "Forecast with epicenters containing '1' should be low accuracy");
 assert.strictEqual(normLowAcc.isTest, false);
 assert.strictEqual(normLowAcc.isPlumOnly, false);
@@ -469,16 +506,16 @@ assert.ok(normLowAcc.pointForecast, "pointForecast should be preserved");
 
 // Hypocenter Code lookups for other names and fallback
 const rawKyotoForecast = { ...rawDmdssForecast, epicenterName: "京都府北部" };
-const normKyoto = dmdssProvider.normalizeDmdssEew(rawKyotoForecast);
+const normKyoto = eewClientProvider.normalizeEewClientEew(rawKyotoForecast);
 assert.strictEqual(normKyoto.Hypocenter.Code, 510, "Hypocenter.Code should be 510 for 京都府北部");
 
 const rawUnknownForecast = { ...rawDmdssForecast, epicenterName: "未知地域" };
-const normUnknown = dmdssProvider.normalizeDmdssEew(rawUnknownForecast);
+const normUnknown = eewClientProvider.normalizeEewClientEew(rawUnknownForecast);
 assert.strictEqual(normUnknown.Hypocenter.Code, 0, "Hypocenter.Code should fallback to 0 for unknown area");
 
 // Warning should NEVER be low accuracy
 const rawDmdssWarning = { ...rawDmdssForecast, isWarning: true };
-const normWarning = dmdssProvider.normalizeDmdssEew(rawDmdssWarning);
+const normWarning = eewClientProvider.normalizeEewClientEew(rawDmdssWarning);
 assert.strictEqual(normWarning.isLowAccuracy, false, "Warning should NEVER be low accuracy");
 
 // Normal forecast without '1' in epicenters
@@ -486,18 +523,18 @@ const rawNormalForecast = {
   ...rawDmdssForecast,
   accuracy: { epicenters: ["4", "4"] }
 };
-const normNormal = dmdssProvider.normalizeDmdssEew(rawNormalForecast);
+const normNormal = eewClientProvider.normalizeEewClientEew(rawNormalForecast);
 assert.strictEqual(normNormal.isLowAccuracy, false, "Forecast with epicenters ['4','4'] should not be low accuracy");
 
 // Test data
 const rawTestEew = { ...rawDmdssForecast, isTest: true };
-const normTest = dmdssProvider.normalizeDmdssEew(rawTestEew);
+const normTest = eewClientProvider.normalizeEewClientEew(rawTestEew);
 assert.strictEqual(normTest.isTest, true);
 assert.strictEqual(normTest.Flag.is_training, true);
 
 // PLUM only
 const rawPlumEew = { ...rawDmdssForecast, isPlumOnly: true, magnitude: null, depth: 10 };
-const normPlum = dmdssProvider.normalizeDmdssEew(rawPlumEew);
+const normPlum = eewClientProvider.normalizeEewClientEew(rawPlumEew);
 assert.strictEqual(normPlum.isPlumOnly, true);
 assert.strictEqual(isPlumEew(normPlum), true);
 
@@ -684,7 +721,7 @@ const rawDmdssLevel = {
   maxInt: { from: "5-", to: "5-" },
   accuracy: { epicenters: ["4", "4"] },
 };
-const normDmdssLevel = dmdssProvider.normalizeDmdssEew(rawDmdssLevel);
+const normDmdssLevel = eewClientProvider.normalizeEewClientEew(rawDmdssLevel);
 assert.strictEqual(normDmdssLevel.Magnitude, "--");
 assert.strictEqual(normDmdssLevel.Intensity, "5-");
 assert.strictEqual(isLevelMethodEew(normDmdssLevel), true);
@@ -695,7 +732,7 @@ assert.strictEqual(
 );
 
 // ...but a warning with the same values is not low accuracy
-const normDmdssLevelWarning = dmdssProvider.normalizeDmdssEew({ ...rawDmdssLevel, isWarning: true });
+const normDmdssLevelWarning = eewClientProvider.normalizeEewClientEew({ ...rawDmdssLevel, isWarning: true });
 assert.strictEqual(normDmdssLevelWarning.isLowAccuracy, false);
 
 // DMDSS reports level-method usage natively via isLevelOver
@@ -708,7 +745,7 @@ const rawDmdssLevelOverTrue = {
   maxInt: { from: "4", to: "4" },
   accuracy: { epicenters: ["4", "4"] },
 };
-const normDmdssLevelOverTrue = dmdssProvider.normalizeDmdssEew(rawDmdssLevelOverTrue);
+const normDmdssLevelOverTrue = eewClientProvider.normalizeEewClientEew(rawDmdssLevelOverTrue);
 assert.strictEqual(normDmdssLevelOverTrue.isLevelOver, true);
 assert.strictEqual(isLevelMethodEew(normDmdssLevelOverTrue), true);
 assert.strictEqual(
@@ -726,7 +763,7 @@ const rawDmdssLevelOverFalse = {
   maxInt: { from: "4", to: "4" },
   accuracy: { epicenters: ["4", "4"] },
 };
-const normDmdssLevelOverFalse = dmdssProvider.normalizeDmdssEew(rawDmdssLevelOverFalse);
+const normDmdssLevelOverFalse = eewClientProvider.normalizeEewClientEew(rawDmdssLevelOverFalse);
 assert.strictEqual(normDmdssLevelOverFalse.isLevelOver, false);
 assert.strictEqual(
   isLevelMethodEew(normDmdssLevelOverFalse),
@@ -736,7 +773,7 @@ assert.strictEqual(
 assert.strictEqual(normDmdssLevelOverFalse.isLowAccuracy, false);
 
 // A warning using the level method is still never low accuracy
-const normDmdssLevelOverWarning = dmdssProvider.normalizeDmdssEew({
+const normDmdssLevelOverWarning = eewClientProvider.normalizeEewClientEew({
   ...rawDmdssLevelOverTrue,
   isWarning: true,
 });
@@ -748,7 +785,7 @@ console.log("✓ Test 6 passed");
 // 7. DMDSS server-status callback handling
 console.log("Test 7: DMDSS server-status message handling");
 let dmdssStatus = null;
-dmdssProvider.callbacks = {
+eewClientProvider.callbacks = {
   onStatusChange: (status) => {
     dmdssStatus = status;
   },
@@ -756,20 +793,20 @@ dmdssProvider.callbacks = {
 };
 
 // server-status: open -> connected
-dmdssProvider.handleIncomingRawMessage(JSON.stringify({ type: "server-status", status: "open" }));
+eewClientProvider.handleIncomingRawMessage(JSON.stringify({ type: "server-status", status: "open" }));
 assert.strictEqual(dmdssStatus, "connected");
 
 // server-status: no-auth -> upstream-disconnected
-dmdssProvider.handleIncomingRawMessage(JSON.stringify({ type: "server-status", status: "no-auth" }));
+eewClientProvider.handleIncomingRawMessage(JSON.stringify({ type: "server-status", status: "no-auth" }));
 assert.strictEqual(dmdssStatus, "upstream-disconnected");
 
 // server-status: no-contract -> upstream-disconnected
-dmdssProvider.handleIncomingRawMessage(JSON.stringify({ type: "server-status", status: "no-contract" }));
+eewClientProvider.handleIncomingRawMessage(JSON.stringify({ type: "server-status", status: "no-contract" }));
 assert.strictEqual(dmdssStatus, "upstream-disconnected");
 
 // user-point
-dmdssProvider.handleIncomingRawMessage(JSON.stringify({ type: "user-point", location: [135.5, 34.7] }));
-assert.deepStrictEqual(dmdssProvider.userPoint, [135.5, 34.7]);
+eewClientProvider.handleIncomingRawMessage(JSON.stringify({ type: "user-point", location: [135.5, 34.7] }));
+assert.deepStrictEqual(eewClientProvider.userPoint, [135.5, 34.7]);
 
 console.log("✓ Test 7 passed");
 
@@ -777,8 +814,8 @@ console.log("✓ Test 7 passed");
 console.log("Test 8: Live WebSocket connection to EEW Client daemon");
 const dmdssWss = new WebSocketServer({ port: 0 });
 const dmdssPort = String(dmdssWss.address().port);
-const origDmdssPort = dmdssProvider.getPort();
-dmdssProvider.setPort(dmdssPort);
+const origDmdssPort = eewClientProvider.getPort();
+eewClientProvider.setPort(dmdssPort);
 
 dmdssWss.on("connection", (ws) => {
   ws.send(JSON.stringify({ type: "start", version: "1.4.0" }));
@@ -791,7 +828,7 @@ await new Promise((resolve, reject) => {
     reject(new Error("DMDSS connection timed out"));
   }, 4000);
 
-  dmdssProvider.connect({
+  eewClientProvider.connect({
     onStatusChange: (status) => {
       dmdssStatuses.push(status);
       if (status === "connected" || status === "upstream-disconnected") {
@@ -812,44 +849,44 @@ assert.ok(
   dmdssStatuses.includes("connected") || dmdssStatuses.includes("upstream-disconnected"),
   "Should report 'connected' or 'upstream-disconnected'"
 );
-dmdssProvider.disconnect();
-assert.strictEqual(dmdssStatuses.at(-1), "error");
+eewClientProvider.disconnect();
+assert.strictEqual(dmdssStatuses.at(-1), "disconnected");
 dmdssWss.close();
-dmdssProvider.setPort(origDmdssPort);
+eewClientProvider.setPort(origDmdssPort);
 console.log("✓ Test 8 passed");
 
 // 9. Home Sync Provider Settings & Defaults
 console.log("Test 9: Home Location Sync Provider Settings");
 assert.strictEqual(axisProvider.supportsHomeSync, false);
 assert.strictEqual(testProvider.supportsHomeSync, false);
-assert.strictEqual(dmdssProvider.supportsHomeSync, true);
+assert.strictEqual(eewClientProvider.supportsHomeSync, true);
 
 // Enabled by default
-localStorage.removeItem("eew-sync-home-dmdss");
-assert.strictEqual(dmdssProvider.getHomeSync(), true);
+localStorage.removeItem("external-sync-home-eewclient");
+assert.strictEqual(eewClientProvider.getHomeSync(), true);
 
-dmdssProvider.setHomeSync(false);
-assert.strictEqual(dmdssProvider.getHomeSync(), false);
-assert.strictEqual(localStorage.getItem("eew-sync-home-dmdss"), "false");
+eewClientProvider.setHomeSync(false);
+assert.strictEqual(eewClientProvider.getHomeSync(), false);
+assert.strictEqual(localStorage.getItem("external-sync-home-eewclient"), "false");
 
-dmdssProvider.setHomeSync(true);
-assert.strictEqual(dmdssProvider.getHomeSync(), true);
-assert.strictEqual(localStorage.getItem("eew-sync-home-dmdss"), "true");
+eewClientProvider.setHomeSync(true);
+assert.strictEqual(eewClientProvider.getHomeSync(), true);
+assert.strictEqual(localStorage.getItem("external-sync-home-eewclient"), "true");
 console.log("✓ Test 9 passed");
 
 // 10. onUserPoint Callback in DMDSS Provider
 console.log("Test 10: onUserPoint Callback in DMDSS Provider");
 let receivedUserPoint = null;
-dmdssProvider.callbacks = {
+eewClientProvider.callbacks = {
   onStatusChange: () => {},
   onMessage: () => {},
   onUserPoint: (point) => {
     receivedUserPoint = point;
   },
 };
-dmdssProvider.handleIncomingRawMessage(JSON.stringify({ type: "user-point", location: [135.7482, 35.01392] }));
+eewClientProvider.handleIncomingRawMessage(JSON.stringify({ type: "user-point", location: [135.7482, 35.01392] }));
 assert.deepStrictEqual(receivedUserPoint, [135.7482, 35.01392]);
-assert.deepStrictEqual(dmdssProvider.userPoint, [135.7482, 35.01392]);
+assert.deepStrictEqual(eewClientProvider.userPoint, [135.7482, 35.01392]);
 console.log("✓ Test 10 passed");
 
 // 11. Coordinate Mapping (findCityForCoordinates)
@@ -967,7 +1004,7 @@ console.log("✓ Test 13 passed");
 
 // 14. Test EEW Display Setting & Filtering Logic
 console.log("Test 14: Test EEWs display setting & filtering logic");
-const { getShowTestEew, setShowTestEew } = await import("../src/eewProviders.js");
+const { getShowTestEew, setShowTestEew } = await import("../src/externalProviders.js");
 
 localStorage.removeItem("eew-show-test");
 assert.strictEqual(getShowTestEew(), false, "Test EEWs should be disabled by default");

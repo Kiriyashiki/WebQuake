@@ -84,7 +84,7 @@ export function isPlumEew(msg) {
 
 /**
  * Formats an EEW depth value with a space before the "km" unit.
- * AXIS and test providers send values like "10km", while DMDSS sends
+ * AXIS and test providers send values like "10km", while EEW Client sends
  * "10 km". Returns "--" for empty values.
  */
 export function formatEewDepth(depthValue) {
@@ -117,7 +117,7 @@ export function isWarningEew(msg) {
  * Level method (レベル法), also known as the 100gal method: the magnitude could
  * not be determined from a single station's record.
  *
- * Providers that report the method explicitly (DMDSS `isLevelOver`) take
+ * Providers that report the method explicitly (EEW Client `isLevelOver`) take
  * precedence; otherwise the method is inferred from an unknown magnitude.
  * This is a pure method check (like `isPlumEew`) and is evaluated for every
  * provider; the warning/low-accuracy gates live in `computeIsLowAccuracy`.
@@ -200,13 +200,24 @@ export function computeIsLowAccuracy(
   return isPlumEew(msg) || isLevelMethodEew(msg) || isSingleStationIpfEew(msg);
 }
 
+/** Data capabilities an external service can provide. */
+export const EXTERNAL_CAPABILITY = {
+  EEW: "eew",
+  REPORTS: "reports",
+};
+
 /**
- * Base EEW Data Provider
+ * Base External Data Provider.
+ *
+ * A provider is a data service that can supply one or more capabilities (EEW,
+ * earthquake reports). Providers that only exist for documentation (the base
+ * JMA XML feed) set `selectable` and `configurable` to false.
  */
-export class BaseEewProvider {
+export class BaseExternalProvider {
   constructor({
     id,
     name,
+    capabilities = [],
     requiresToken = false,
     requiresPort = false,
     defaultPort = "",
@@ -214,14 +225,17 @@ export class BaseEewProvider {
     tokenPlaceholder = "Bearer Token",
     tauriOnly = false,
     desktopOnly = false,
-    infoHtml = null,
     disableGmpe = false,
     supportsHomeSync = false,
     hasAccuracyInfo = false,
     supportsWarningAreas = false,
+    selectable = true,
+    configurable = true,
+    detail = null,
   }) {
     this.id = id;
     this.name = name;
+    this.capabilities = capabilities;
     this.requiresToken = requiresToken;
     this.requiresPort = requiresPort;
     this.defaultPort = defaultPort;
@@ -229,24 +243,38 @@ export class BaseEewProvider {
     this.tokenPlaceholder = tokenPlaceholder;
     this.desktopOnly = desktopOnly || tauriOnly;
     this.tauriOnly = this.desktopOnly;
-    this.infoHtml = infoHtml;
     this.disableGmpe = disableGmpe;
     this.supportsHomeSync = supportsHomeSync;
     this.hasAccuracyInfo = hasAccuracyInfo;
     this.supportsWarningAreas = supportsWarningAreas;
+    this.selectable = selectable;
+    this.configurable = configurable;
+    this.detail = detail;
     this.callbacks = null;
+  }
+
+  supports(capability) {
+    return this.capabilities.includes(capability);
+  }
+
+  supportsEew() {
+    return this.supports(EXTERNAL_CAPABILITY.EEW);
+  }
+
+  supportsReports() {
+    return this.supports(EXTERNAL_CAPABILITY.REPORTS);
   }
 
   getHomeSync() {
     if (typeof localStorage === "undefined") return true;
-    const val = localStorage.getItem(`eew-sync-home-${this.id}`);
+    const val = localStorage.getItem(`external-sync-home-${this.id}`);
     if (val === null) return true; // Enabled by default
     return val === "true";
   }
 
   setHomeSync(enabled) {
     if (typeof localStorage === "undefined") return;
-    localStorage.setItem(`eew-sync-home-${this.id}`, enabled ? "true" : "false");
+    localStorage.setItem(`external-sync-home-${this.id}`, enabled ? "true" : "false");
   }
 
   isAvailable() {
@@ -255,27 +283,27 @@ export class BaseEewProvider {
 
   getToken() {
     if (typeof localStorage === "undefined") return "";
-    return localStorage.getItem(`eew-token-${this.id}`) || "";
+    return localStorage.getItem(`external-token-${this.id}`) || "";
   }
 
   setToken(token) {
     if (typeof localStorage === "undefined") return;
-    localStorage.setItem(`eew-token-${this.id}`, token);
+    localStorage.setItem(`external-token-${this.id}`, token);
   }
 
   removeToken() {
     if (typeof localStorage === "undefined") return;
-    localStorage.removeItem(`eew-token-${this.id}`);
+    localStorage.removeItem(`external-token-${this.id}`);
   }
 
   getPort() {
     if (typeof localStorage === "undefined") return this.defaultPort;
-    return localStorage.getItem(`eew-port-${this.id}`) || this.defaultPort;
+    return localStorage.getItem(`external-port-${this.id}`) || this.defaultPort;
   }
 
   setPort(port) {
     if (typeof localStorage === "undefined") return;
-    localStorage.setItem(`eew-port-${this.id}`, String(port));
+    localStorage.setItem(`external-port-${this.id}`, String(port));
   }
 
   resetTokenState() {
@@ -352,9 +380,9 @@ export class BaseEewProvider {
 }
 
 /**
- * Base provider for WebSocket-based EEW services.
+ * Base provider for WebSocket-based external services.
  */
-export class WebSocketEewProvider extends BaseEewProvider {
+export class WebSocketExternalProvider extends BaseExternalProvider {
   constructor(options) {
     super(options);
     this.socket = null;
@@ -395,27 +423,28 @@ export class WebSocketEewProvider extends BaseEewProvider {
     try {
       wsUrl = await this.getWebSocketUrl();
     } catch (err) {
-      console.warn(`[EEW][${this.name}] Failed to resolve WebSocket URL:`, err);
+      console.warn(`[EXTERNAL][${this.name}] Failed to resolve WebSocket URL:`, err);
     }
 
     if (!wsUrl) {
-      // If getWebSocketUrl returned null (e.g. auth failed or no token), abort connection
+      // If getWebSocketUrl returned null (e.g. auth failed or no token), abort
+      this.callbacks?.onStatusChange?.("error");
       return;
     }
 
     if (this.isManualDisconnect) return;
 
-    console.info(`[EEW][${this.name}] Connecting to ${wsUrl}`);
+    console.info(`[EXTERNAL][${this.name}] Connecting to ${wsUrl}`);
     try {
       this.socket = new WebSocket(wsUrl);
     } catch (err) {
-      console.warn(`[EEW][${this.name}] WebSocket creation error:`, err);
+      console.warn(`[EXTERNAL][${this.name}] WebSocket creation error:`, err);
       this.retryConnection();
       return;
     }
 
     this.socket.onopen = () => {
-      console.info(`[EEW][${this.name}] WebSocket Connected.`);
+      console.info(`[EXTERNAL][${this.name}] WebSocket Connected.`);
       if (!this.expectsHello) {
         this.hasConnectedOnce = true;
         this.retrySec = 100;
@@ -423,7 +452,7 @@ export class WebSocketEewProvider extends BaseEewProvider {
         if (this.useHeartbeat) this.startHeartbeat();
         this.onConnectionEstablished?.();
       } else {
-        console.info(`[EEW][${this.name}] Waiting for hello...`);
+        console.info(`[EXTERNAL][${this.name}] Waiting for hello...`);
       }
     };
 
@@ -432,7 +461,7 @@ export class WebSocketEewProvider extends BaseEewProvider {
       if (typeof message === "string") {
         if (this.expectsHello && message === "hello") {
           console.info(
-            `[EEW][${this.name}] Received hello from server. Connection fully established.`,
+            `[EXTERNAL][${this.name}] Received hello from server. Connection fully established.`,
           );
           this.hasConnectedOnce = true;
           this.callbacks?.onStatusChange?.("connected");
@@ -451,7 +480,7 @@ export class WebSocketEewProvider extends BaseEewProvider {
 
     this.socket.onclose = (event) => {
       console.info(
-        `[EEW][${this.name}] Connection closed (code: ${event.code}, reason: ${event.reason})`,
+        `[EXTERNAL][${this.name}] Connection closed (code: ${event.code}, reason: ${event.reason})`,
       );
       this.socket = null;
       this.stopHeartbeat();
@@ -461,7 +490,7 @@ export class WebSocketEewProvider extends BaseEewProvider {
     };
 
     this.socket.onerror = (err) => {
-      console.warn(`[EEW][${this.name}] WebSocket error occurred`, err);
+      console.warn(`[EXTERNAL][${this.name}] WebSocket error occurred`, err);
     };
   }
 
@@ -510,29 +539,29 @@ export class WebSocketEewProvider extends BaseEewProvider {
     if (!this.hasConnectedOnce && this.retryCount > 5) {
       if (this.requiresToken) {
         console.warn(
-          `[EEW][${this.name}] Failed to connect after 5 retries. Assuming invalid token.`,
+          `[EXTERNAL][${this.name}] Failed to connect after 5 retries. Assuming invalid token.`,
         );
         this.callbacks?.onAuthError?.(
           "EEW connection failed: Token may be invalid. Please check your token in Settings.\n接続に失敗しました：トークンが無効である可能性があります。「設定」でトークンを確認してください。",
         );
       } else if (this.requiresPort) {
         console.warn(
-          `[EEW][${this.name}] Failed to connect to local websocket on port ${this.getPort()}.`,
+          `[EXTERNAL][${this.name}] Failed to connect to local websocket on port ${this.getPort()}.`,
         );
         this.callbacks?.onAuthError?.(
-          "EEW connection failed: Unable to connect to DMDSS EEW Client.\n" +
+          "EEW connection failed: Unable to connect to EEW Client.\n" +
             "Please check if the port is correct in Settings and if EEW Client is running with external services enabled.\n\n" +
-            "接続に失敗しました：DMDSS EEW Clientに接続できません。\n" +
+            "接続に失敗しました：EEW Clientに接続できません。\n" +
             "「設定」でポート番号を確認し、EEW Clientの外部連携機能が有効になっているか確認してください。",
         );
       } else {
-        console.warn(`[EEW][${this.name}] Failed to connect after 5 retries.`);
+        console.warn(`[EXTERNAL][${this.name}] Failed to connect after 5 retries.`);
         this.callbacks?.onStatusChange?.("error");
       }
       return;
     }
 
-    console.info(`[EEW][${this.name}] Retry: ${this.retryCount} (delay ${this.retrySec}ms)`);
+    console.info(`[EXTERNAL][${this.name}] Retry: ${this.retryCount} (delay ${this.retrySec}ms)`);
     this.callbacks?.onStatusChange?.("connecting");
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
     this.reconnectTimer = setTimeout(() => this.connectSocket(), this.retrySec);
@@ -550,24 +579,119 @@ export class WebSocketEewProvider extends BaseEewProvider {
       this.socket.close();
       this.socket = null;
     }
-    this.callbacks?.onStatusChange?.("error");
+    this.callbacks?.onStatusChange?.("disconnected");
     super.disconnect();
   }
 }
 
 /**
- * AXIS EEW Provider
- * Handles AXIS server list resolution, 401 detection, and monthly token refresh on Tauri.
+ * AXIS External Provider
+ * Provides EEW and earthquake reports. Handles AXIS server list resolution,
+ * 401 detection, and monthly token refresh on desktop.
  */
-export class AxisEewProvider extends WebSocketEewProvider {
+export class AxisProvider extends WebSocketExternalProvider {
   constructor() {
     super({
       id: "axis",
       name: "AXIS",
+      capabilities: [EXTERNAL_CAPABILITY.EEW, EXTERNAL_CAPABILITY.REPORTS],
       requiresToken: true,
       supportsWarningAreas: true,
       tokenLabel: "AXIS Token • トークン:",
       tokenPlaceholder: "Bearer Token",
+      detail: {
+        descriptionEn:
+          "Receives both EEW and earthquake reports. Requires the appropriate channels to be configured.",
+        descriptionJa:
+          "緊急地震速報と地震情報の両方を受信します。適切なチャンネルの設定が必要です。",
+        importantEn: [
+          "AXIS is a service in Beta testing. Issues may arise.",
+          "EEW data is for personal use only: videos, streams and screenshots including data received via AXIS should not be posted to social media. This does not apply to earthquake reports.",
+        ],
+        importantJa: [
+          "AXISはベータテスト中のサービスです。問題が発生する可能性があります。",
+          "緊急地震速報のデータは個人利用のみです。AXISで受信したデータを含む動画・配信・スクリーンショットをSNSに投稿しないでください。これは地震情報には適用されません。",
+        ],
+        docs: {
+          en: "https://github.com/Kiriyashiki/WebQuake/blob/main/doc/AXIS-about-en.md",
+          ja: "https://github.com/Kiriyashiki/WebQuake/blob/main/doc/AXIS-about-ja.md",
+        },
+        sections: [
+          {
+            titleEn: "EEW",
+            titleJa: "緊急地震速報",
+            rows: [
+              { label: "Speed", labelJa: "速度", value: "Fast", valueJa: "速い" },
+              { label: "Stability", labelJa: "安定性", value: "Great", valueJa: "とても良好" },
+              { label: "Hypo details", labelJa: "震源詳細", value: "Yes", valueJa: "はい" },
+              { label: "Forecast areas", labelJa: "予報区域", value: "Yes", valueJa: "はい" },
+              { label: "Warning areas", labelJa: "警報区域", value: "Yes", valueJa: "はい" },
+              {
+                label: "Low-accuracy EEW",
+                labelJa: "1点計算EEW",
+                value: "Yes, inferred",
+                valueJa: "はい（推定）",
+              },
+              { label: "LPGM", labelJa: "長周期地震動", value: "No", valueJa: "いいえ" },
+              {
+                label: "Home location forecast",
+                labelJa: "ホーム場所の予報",
+                value: "No",
+                valueJa: "いいえ",
+              },
+              { label: "Drills / Tests", labelJa: "訓練・テスト", value: "No", valueJa: "いいえ" },
+            ],
+          },
+          {
+            titleEn: "Reports",
+            titleJa: "地震情報",
+            rows: [
+              { label: "Speed", labelJa: "速度", value: "Average", valueJa: "普通" },
+              { label: "Stability", labelJa: "安定性", value: "Great", valueJa: "とても良好" },
+              {
+                label: "震度速報 - Intensity Flash",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label: "震源速報 / 震源に関する情報 - Epicenter Flash",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label:
+                  "震源・震度情報 / 震源・震度に関する情報 - Intensity & Epicenter Information",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label:
+                  "顕著な地震の震源要素更新のお知らせ - Epicenter update for Notable Earthquake",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label:
+                  "長周期地震動に関する観測情報 - Long-period ground motion (LPGM) Information",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label:
+                  "推計震度分布図250mメッシュ - Estimated Intensity 250m mesh map",
+                labelJa: "",
+                value: "No",
+                valueJa: "いいえ",
+              },
+            ],
+          },
+        ],
+      },
     });
     this.tokenRefreshTimer = null;
   }
@@ -689,7 +813,7 @@ export class AxisEewProvider extends WebSocketEewProvider {
   async getWebSocketUrl() {
     const token = this.getToken();
     if (!token) {
-      console.warn("[EEW][AXIS] No token provided.");
+      console.warn("[EXTERNAL][AXIS] No token provided.");
       return null;
     }
 
@@ -708,18 +832,18 @@ export class AxisEewProvider extends WebSocketEewProvider {
           targetServer = data.servers[0];
         }
       } else if (res.status === 401) {
-        console.warn("[EEW][AXIS] 401 Unauthorized. Invalid token.");
+        console.warn("[EXTERNAL][AXIS] 401 Unauthorized. Invalid token.");
         this.callbacks?.onAuthError?.(
           "EEW connection failed: Invalid Token (401). Please check your token in Settings.\n接続に失敗しました：トークンが無効である可能性があります。「設定」でトークンを確認してください。",
         );
         return null;
       } else {
         console.warn(
-          `[EEW][AXIS] Failed to get server list, HTTP ${res.status}. Falling back to default server.`,
+          `[EXTERNAL][AXIS] Failed to get server list, HTTP ${res.status}. Falling back to default server.`,
         );
       }
     } catch (err) {
-      console.warn("[EEW][AXIS] Fetch error (likely CORS). Falling back to default server.", err);
+      console.warn("[EXTERNAL][AXIS] Fetch error (likely CORS). Falling back to default server.", err);
     }
 
     return targetServer.endsWith("/socket")
@@ -738,7 +862,7 @@ export class AxisEewProvider extends WebSocketEewProvider {
     const expiry = this.getTokenExpiry();
     if (!expiry) {
       console.warn(
-        "[EEW][AXIS] Could not read the token expiry (exp) claim; automatic token refresh is disabled.",
+        "[EXTERNAL][AXIS] Could not read the token expiry (exp) claim; automatic token refresh is disabled.",
       );
       if (this.tokenRefreshTimer) {
         clearTimeout(this.tokenRefreshTimer);
@@ -751,7 +875,7 @@ export class AxisEewProvider extends WebSocketEewProvider {
     if (!storedExpiry || storedExpiry !== expiry) {
       this.setStoredExpiry(expiry);
       console.debug(
-        "[EEW][AXIS] Token expiry read from token:",
+        "[EXTERNAL][AXIS] Token expiry read from token:",
         new Date(expiry).toISOString(),
       );
       if (typeof localStorage !== "undefined") {
@@ -788,26 +912,26 @@ export class AxisEewProvider extends WebSocketEewProvider {
 
     const lastCheck = this.getStoredLastRefreshCheck();
     if (lastCheck === todayStr) {
-      console.debug("[EEW][AXIS] Token refresh already checked today, skipping.");
+      console.debug("[EXTERNAL][AXIS] Token refresh already checked today, skipping.");
       return;
     }
 
     const expiry = this.getTokenExpiry();
     if (!expiry) {
-      console.debug("[EEW][AXIS] Token expiry unavailable, skipping refresh check.");
+      console.debug("[EXTERNAL][AXIS] Token expiry unavailable, skipping refresh check.");
       return;
     }
     const msUntilExpiry = expiry - now.getTime();
     const daysUntilExpiry = msUntilExpiry / (1000 * 60 * 60 * 24);
     if (daysUntilExpiry > 7) {
       console.debug(
-        `[EEW][AXIS] Token expiry in ${Math.round(daysUntilExpiry)} days, no refresh needed yet.`,
+        `[EXTERNAL][AXIS] Token expiry in ${Math.round(daysUntilExpiry)} days, no refresh needed yet.`,
       );
       return;
     }
 
     console.info(
-      `[EEW][AXIS] Token expiry in ${Math.round(daysUntilExpiry)} days, attempting refresh...`,
+      `[EXTERNAL][AXIS] Token expiry in ${Math.round(daysUntilExpiry)} days, attempting refresh...`,
     );
 
     try {
@@ -820,13 +944,13 @@ export class AxisEewProvider extends WebSocketEewProvider {
       this.setStoredLastRefreshCheck(todayStr);
 
       if (res.status === 402) {
-        console.warn("[EEW][AXIS] Token refresh failed: contract has expired (402).");
+        console.warn("[EXTERNAL][AXIS] Token refresh failed: contract has expired (402).");
         this.alertTokenExpiry();
         return;
       }
 
       if (!res.ok) {
-        console.warn(`[EEW][AXIS] Token refresh failed with HTTP ${res.status}.`);
+        console.warn(`[EXTERNAL][AXIS] Token refresh failed with HTTP ${res.status}.`);
         this.alertTokenExpiry();
         return;
       }
@@ -834,16 +958,16 @@ export class AxisEewProvider extends WebSocketEewProvider {
       const data = await res.json();
 
       if (data.status === "generate a new token" && data.token) {
-        console.info("[EEW][AXIS] Token refreshed successfully.");
+        console.info("[EXTERNAL][AXIS] Token refreshed successfully.");
         this.setToken(data.token);
         this.setStoredExpiryAlerted(false);
 
         const newExpiry = this.getTokenExpiry();
         if (newExpiry) {
           this.setStoredExpiry(newExpiry);
-          console.debug("[EEW][AXIS] New token expiry:", new Date(newExpiry).toISOString());
+          console.debug("[EXTERNAL][AXIS] New token expiry:", new Date(newExpiry).toISOString());
         } else {
-          console.warn("[EEW][AXIS] Refreshed token has no readable expiry (exp) claim.");
+          console.warn("[EXTERNAL][AXIS] Refreshed token has no readable expiry (exp) claim.");
           if (typeof localStorage !== "undefined") {
             localStorage.removeItem("eew-token-expiry-axis");
             localStorage.removeItem("eew-token-expiry");
@@ -856,13 +980,13 @@ export class AxisEewProvider extends WebSocketEewProvider {
         this.disconnect();
         this.connect(this.callbacks);
       } else if (data.status === "not due for refresh yet") {
-        console.debug("[EEW][AXIS] Token refresh not due yet, will retry tomorrow.");
+        console.debug("[EXTERNAL][AXIS] Token refresh not due yet, will retry tomorrow.");
       } else {
-        console.warn("[EEW][AXIS] Unexpected token refresh response:", data);
+        console.warn("[EXTERNAL][AXIS] Unexpected token refresh response:", data);
         this.alertTokenExpiry();
       }
     } catch (err) {
-      console.warn("[EEW][AXIS] Token refresh request failed:", err);
+      console.warn("[EXTERNAL][AXIS] Token refresh request failed:", err);
     }
   }
 
@@ -885,16 +1009,22 @@ export class AxisEewProvider extends WebSocketEewProvider {
 }
 
 /**
- * TEST Server EEW Provider
- * Behaves like AXIS provider but connects to ws://localhost:8565 without tokens or serverlist requests.
+ * TEST Server Provider
+ * Behaves like AXIS but connects to ws://localhost:8565 without tokens or
+ * server list requests. Intended for development.
  */
-export class TestEewProvider extends WebSocketEewProvider {
+export class TestProvider extends WebSocketExternalProvider {
   constructor() {
     super({
       id: "test",
       name: "TEST",
+      capabilities: [EXTERNAL_CAPABILITY.EEW],
       requiresToken: false,
       supportsWarningAreas: true,
+      detail: {
+        descriptionEn: "Allows usage of a test server for EEWs. Intended for developer use.",
+        descriptionJa: "緊急地震速報のテストサーバーを使用できます。開発者向けです。",
+      },
     });
   }
 
@@ -917,14 +1047,16 @@ export class TestEewProvider extends WebSocketEewProvider {
 }
 
 /**
- * DMDSS EEW Client Provider
- * Connects to local websocket running in EEW Client on 127.0.0.1:<port> (Tauri only).
+ * EEW Client Provider (Project DM-D.S.S)
+ * Connects to a local websocket running in EEW Client on 127.0.0.1:<port>
+ * (desktop only).
  */
-export class DmdssEewProvider extends WebSocketEewProvider {
+export class EewClientProvider extends WebSocketExternalProvider {
   constructor() {
     super({
-      id: "dmdss",
+      id: "eewclient",
       name: "DMDSS EEW Client",
+      capabilities: [EXTERNAL_CAPABILITY.EEW],
       requiresToken: false,
       requiresPort: true,
       defaultPort: "11311",
@@ -935,6 +1067,66 @@ export class DmdssEewProvider extends WebSocketEewProvider {
       disableGmpe: true,
       supportsHomeSync: true,
       hasAccuracyInfo: true,
+      detail: {
+        descriptionEn:
+          "Receives EEW. Requires having the EEW Client application running, with a subscription active.",
+        descriptionJa:
+          "緊急地震速報を受信します。EEW Clientアプリケーションを起動し、サブスクリプションを有効にしておく必要があります。",
+        importantEn: [
+          "Videos, streams and screenshots including data received via EEW Client can be posted to social media, but require the application's name to be included (for example, in video descriptions).",
+        ],
+        importantJa: [
+          "EEW Clientで受信したデータを含む動画・配信・スクリーンショットはSNSに投稿できますが、アプリケーション名を記載する必要があります（例：動画の説明欄）。",
+        ],
+        docs: {
+          en: "https://github.com/Kiriyashiki/WebQuake/blob/main/doc/EEWC-about-en.md",
+          ja: "https://github.com/Kiriyashiki/WebQuake/blob/main/doc/EEWC-about-ja.md",
+        },
+        sections: [
+          {
+            titleEn: "EEW",
+            titleJa: "緊急地震速報",
+            rows: [
+              { label: "Speed", labelJa: "速度", value: "Fast", valueJa: "速い" },
+              { label: "Stability", labelJa: "安定性", value: "Good", valueJa: "良好" },
+              { label: "Hypo details", labelJa: "震源詳細", value: "Yes", valueJa: "はい" },
+              {
+                label: "Forecast areas",
+                labelJa: "予報区域",
+                value: "Yes *1",
+                valueJa: "はい *1",
+              },
+              { label: "Warning areas", labelJa: "警報区域", value: "No", valueJa: "いいえ" },
+              { label: "Low-accuracy EEW", labelJa: "1点計算EEW", value: "Yes", valueJa: "はい" },
+              { label: "LPGM", labelJa: "長周期地震動", value: "Yes", valueJa: "はい" },
+              {
+                label: "Home location forecast",
+                labelJa: "ホーム場所の予報",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label: "Drills / Tests",
+                labelJa: "訓練・テスト",
+                value: "No *2",
+                valueJa: "いいえ *2",
+              },
+            ],
+          },
+        ],
+        footnotes: [
+          {
+            marker: "*1",
+            en: "Forecast areas are calculated by EEW Client and not the JMA issued ones; so discrepancies can occur.",
+            ja: "予報区域はEEW Clientが計算したものであり、気象庁が発表したものではないため、相違が生じる場合があります。",
+          },
+          {
+            marker: "*2",
+            en: "Official EEW drills are not included, but you can run tests from EEW Client's settings.",
+            ja: "気象庁の公式な訓練は含まれませんが、EEW Clientの設定からテストを実行できます。",
+          },
+        ],
+      },
     });
     this.userPoint = null;
     this.lastServerStatus = null;
@@ -969,7 +1161,7 @@ export class DmdssEewProvider extends WebSocketEewProvider {
         this.nameToCodeMap.set(name, code);
       }
     } catch (err) {
-      console.warn("[EEW][DMDSS] Could not load area codes CSV:", err);
+      console.warn("[EXTERNAL][EEW Client] Could not load area codes CSV:", err);
     }
     return this.nameToCodeMap;
   }
@@ -1021,20 +1213,20 @@ export class DmdssEewProvider extends WebSocketEewProvider {
       if (!data?.type) return;
 
       if (data.type === "start") {
-        console.info(`[EEW][DMDSS] Connected to EEW Client v${data.version}`);
+        console.info(`[EXTERNAL][EEW Client] Connected to EEW Client v${data.version}`);
         return;
       }
 
       if (data.type === "user-point") {
         this.userPoint = data.location;
-        console.debug("[EEW][DMDSS] Received user-point:", data.location);
+        console.debug("[EXTERNAL][EEW Client] Received user-point:", data.location);
         this.callbacks?.onUserPoint?.(data.location);
         return;
       }
 
       if (data.type === "server-status") {
         this.lastServerStatus = data.status;
-        console.info(`[EEW][DMDSS] Upstream server status: ${data.status}`);
+        console.info(`[EXTERNAL][EEW Client] Upstream server status: ${data.status}`);
         if (data.status === "open") {
           this.callbacks?.onStatusChange?.("connected");
         } else {
@@ -1044,17 +1236,17 @@ export class DmdssEewProvider extends WebSocketEewProvider {
       }
 
       if (data.type === "eew") {
-        const normalized = this.normalizeDmdssEew(data);
+        const normalized = this.normalizeEewClientEew(data);
         if (normalized) {
           this.callbacks?.onMessage?.(normalized);
         }
       }
     } catch (err) {
-      console.warn("[EEW][DMDSS] Error parsing message:", err);
+      console.warn("[EXTERNAL][EEW Client] Error parsing message:", err);
     }
   }
 
-  normalizeDmdssEew(data) {
+  normalizeEewClientEew(data) {
     const isWarning = Boolean(data.isWarning);
     const isCancel = Boolean(data.isCanceled);
     const isFinal = Boolean(data.isLastInfo);
@@ -1174,12 +1366,92 @@ export class DmdssEewProvider extends WebSocketEewProvider {
   }
 }
 
+/**
+ * JMA XML Provider
+ *
+ * The base earthquake report feed is always used and cannot be connected or
+ * configured. This entry exists so the provider list documents the app's base
+ * data source.
+ */
+export class JmaXmlProvider extends BaseExternalProvider {
+  constructor() {
+    super({
+      id: "jma-xml",
+      name: "JMA XML",
+      capabilities: [EXTERNAL_CAPABILITY.REPORTS],
+      selectable: false,
+      configurable: false,
+      detail: {
+        descriptionEn:
+          "Receives earthquake reports. The base data source of the app, always used, without any configuration needed.",
+        descriptionJa:
+          "地震情報を受信します。このアプリの基本データソースであり、設定なしで常に使用されます。",
+        sections: [
+          {
+            titleEn: "Reports",
+            titleJa: "地震情報",
+            rows: [
+              { label: "Speed", labelJa: "速度", value: "Slow", valueJa: "遅い" },
+              { label: "Stability", labelJa: "安定性", value: "Good", valueJa: "良好" },
+              {
+                label: "震度速報 - Intensity Flash",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label: "震源速報 / 震源に関する情報 - Epicenter Flash",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label:
+                  "震源・震度情報 / 震源・震度に関する情報 - Intensity & Epicenter Information",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label:
+                  "顕著な地震の震源要素更新のお知らせ - Epicenter update for Notable Earthquake",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label:
+                  "長周期地震動に関する観測情報 - Long-period ground motion (LPGM) Information",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label:
+                  "推計震度分布図250mメッシュ - Estimated Intensity 250m mesh map",
+                labelJa: "",
+                value: "No",
+                valueJa: "いいえ",
+              },
+            ],
+          },
+        ],
+      },
+    });
+  }
+
+  isAvailable() {
+    return true;
+  }
+}
+
 // ─── Provider Registry ───────────────────────────────────────────────────────
 const providers = new Map();
 
-export const axisProvider = new AxisEewProvider();
-export const testProvider = new TestEewProvider();
-export const dmdssProvider = new DmdssEewProvider();
+export const axisProvider = new AxisProvider();
+export const testProvider = new TestProvider();
+export const eewClientProvider = new EewClientProvider();
+export const jmaXmlProvider = new JmaXmlProvider();
 
 export function registerProvider(provider) {
   providers.set(provider.id, provider);
@@ -1187,7 +1459,8 @@ export function registerProvider(provider) {
 
 registerProvider(axisProvider);
 registerProvider(testProvider);
-registerProvider(dmdssProvider);
+registerProvider(eewClientProvider);
+registerProvider(jmaXmlProvider);
 
 export function getProvider(id) {
   return providers.get(id);
@@ -1201,25 +1474,124 @@ export function getAvailableProviders() {
   return Array.from(providers.values()).filter((p) => p.isAvailable());
 }
 
-let activeProvider = null;
-
-export function getActiveProvider() {
-  if (!activeProvider) {
-    const available = getAvailableProviders();
-    const savedId =
-      typeof localStorage !== "undefined" ? localStorage.getItem("eew-provider") : null;
-    activeProvider = available.find((p) => p.id === savedId) || available[0] || axisProvider;
-  }
-  return activeProvider;
+/** Providers that can be chosen as a source for the given capability. */
+export function getSelectableProviders(capability) {
+  return getAvailableProviders().filter((p) => p.selectable && p.supports(capability));
 }
 
-export function setActiveProvider(providerOrId) {
-  if (typeof providerOrId === "string") {
-    activeProvider = getProvider(providerOrId) || activeProvider;
-  } else if (providerOrId) {
-    activeProvider = providerOrId;
+// ─── External source selection ──────────────────────────────────────────────
+const EXTERNAL_STORAGE_KEYS = {
+  [EXTERNAL_CAPABILITY.EEW]: {
+    source: "external-eew-source",
+    enabled: "external-eew-enabled",
+  },
+  [EXTERNAL_CAPABILITY.REPORTS]: {
+    source: "external-reports-source",
+    enabled: "external-reports-enabled",
+  },
+};
+
+/**
+ * Copies legacy EEW settings to the generalized external-service keys.
+ * Safe to call repeatedly.
+ */
+export function migrateExternalServiceSettings() {
+  if (typeof localStorage === "undefined") return;
+
+  const read = (key) => localStorage.getItem(key);
+  const copy = (newKey, oldKey) => {
+    if (read(newKey) == null && read(oldKey) != null) {
+      localStorage.setItem(newKey, read(oldKey));
+    }
+  };
+
+  copy(EXTERNAL_STORAGE_KEYS[EXTERNAL_CAPABILITY.EEW].source, "eew-provider");
+  copy(EXTERNAL_STORAGE_KEYS[EXTERNAL_CAPABILITY.EEW].enabled, "eew-enabled");
+
+  const eewSource = read(EXTERNAL_STORAGE_KEYS[EXTERNAL_CAPABILITY.EEW].source);
+  if (eewSource === "dmdss") {
+    localStorage.setItem(EXTERNAL_STORAGE_KEYS[EXTERNAL_CAPABILITY.EEW].source, "eewclient");
   }
-  return activeProvider;
+
+  // The old app defaulted to AXIS when EEW was enabled without an explicit
+  // provider selection.
+  if (
+    read(EXTERNAL_STORAGE_KEYS[EXTERNAL_CAPABILITY.EEW].enabled) === "true" &&
+    !read(EXTERNAL_STORAGE_KEYS[EXTERNAL_CAPABILITY.EEW].source)
+  ) {
+    localStorage.setItem(EXTERNAL_STORAGE_KEYS[EXTERNAL_CAPABILITY.EEW].source, "axis");
+  }
+
+  copy("external-port-eewclient", "eew-port-dmdss");
+  copy("external-sync-home-eewclient", "eew-sync-home-dmdss");
+
+  if (read("axis-reports-enabled") === "true") {
+    if (read(EXTERNAL_STORAGE_KEYS[EXTERNAL_CAPABILITY.REPORTS].source) == null) {
+      localStorage.setItem(EXTERNAL_STORAGE_KEYS[EXTERNAL_CAPABILITY.REPORTS].source, "axis");
+    }
+    if (read(EXTERNAL_STORAGE_KEYS[EXTERNAL_CAPABILITY.REPORTS].enabled) == null) {
+      localStorage.setItem(EXTERNAL_STORAGE_KEYS[EXTERNAL_CAPABILITY.REPORTS].enabled, "true");
+    }
+  }
+
+  // Retire migrated legacy keys.
+  localStorage.removeItem("eew-provider");
+  localStorage.removeItem("eew-enabled");
+  localStorage.removeItem("eew-port-dmdss");
+  localStorage.removeItem("eew-sync-home-dmdss");
+  localStorage.removeItem("axis-reports-enabled");
+}
+
+/** Stored provider id for a capability, or "" when no source is selected. */
+export function getExternalSourceId(capability) {
+  const keys = EXTERNAL_STORAGE_KEYS[capability];
+  if (!keys || typeof localStorage === "undefined") return "";
+  return localStorage.getItem(keys.source) || "";
+}
+
+/** Persists the provider id selected for a capability. */
+export function setExternalSourceId(capability, providerId) {
+  const keys = EXTERNAL_STORAGE_KEYS[capability];
+  if (!keys || typeof localStorage === "undefined") return;
+  if (providerId) localStorage.setItem(keys.source, providerId);
+  else localStorage.removeItem(keys.source);
+}
+
+/** Whether the connection for a capability is enabled. */
+export function isExternalSourceEnabled(capability) {
+  const keys = EXTERNAL_STORAGE_KEYS[capability];
+  if (!keys || typeof localStorage === "undefined") return false;
+  return localStorage.getItem(keys.enabled) === "true";
+}
+
+/** Enables or disables the connection for a capability. */
+export function setExternalSourceEnabled(capability, enabled) {
+  const keys = EXTERNAL_STORAGE_KEYS[capability];
+  if (!keys || typeof localStorage === "undefined") return;
+  localStorage.setItem(keys.enabled, enabled ? "true" : "false");
+}
+
+/**
+ * Resolves the provider currently selected for a capability. Returns null when
+ * no provider is selected, the provider is unavailable, or it does not provide
+ * the requested capability.
+ */
+export function getExternalSourceProvider(capability) {
+  const provider = getProvider(getExternalSourceId(capability));
+  if (
+    !provider ||
+    !provider.selectable ||
+    !provider.isAvailable() ||
+    !provider.supports(capability)
+  ) {
+    return null;
+  }
+  return provider;
+}
+
+/** Provider selected as the EEW source, used by the EEW rendering pipeline. */
+export function getEewSourceProvider() {
+  return getExternalSourceProvider(EXTERNAL_CAPABILITY.EEW);
 }
 
 export function getShowTestEew() {
@@ -1231,3 +1603,6 @@ export function setShowTestEew(enabled) {
   if (typeof localStorage === "undefined") return;
   localStorage.setItem("eew-show-test", enabled ? "true" : "false");
 }
+
+// Migrate the legacy EEW settings as soon as the module is loaded.
+migrateExternalServiceSettings();

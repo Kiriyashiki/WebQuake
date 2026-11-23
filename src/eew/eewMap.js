@@ -26,7 +26,7 @@ import {
   EEW_GMPE_MF2013,
   resolveForecastIntensity,
 } from "./physics.js";
-import { getActiveProvider, isPlumEew } from "../eewProviders.js";
+import { isPlumEew } from "../externalProviders.js";
 import { buildWarningAreaOutline, collectWarningAreaCodes } from "./warningAreas.js";
 
 const EMPTY_FEATURE_COLLECTION = { type: "FeatureCollection", features: [] };

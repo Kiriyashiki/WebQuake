@@ -53,12 +53,12 @@ import {
 import { startLivePolling, stopLivePolling } from "./liveMode.js";
 import { playReportAudio, seedReportAudioState } from "./audio.js";
 import {
-  initEewSettings,
   handlePossibleEewReport,
   clearEewMapDisplay,
   updateHomeIntensityForActiveEews,
   getIsEewMapActive,
 } from "./eew.js";
+import { initExternalServices } from "./externalServices.js";
 import { initHistoryController } from "./historyController.js";
 import { initSettingsModal } from "./settingsManager.js";
 import { initDebugOptions } from "./debugOptions.js";
@@ -83,33 +83,12 @@ if (isDesktop) {
 export { updateMapLegend };
 
 /**
- * Updates the status indicator in the top-right.
- * @param {'idle' | 'loading' | 'live' | 'error'} state
- */
-function _updateStatus(state) {
-  const dot = document.getElementById("status-dot");
-  const text = document.getElementById("status-text");
-  if (!dot || !text) return;
-
-  dot.className = `dot-${state === "mapError" ? "error" : state}`;
-  const labels = {
-    idle: "Idle",
-    loading: "Fetching reports...",
-    live: "Loaded",
-    error: "Error",
-    mapError: "Map unavailable",
-  };
-  text.textContent = labels[state] || state;
-}
-
-/**
  * Shows the WebGL fallback and updates the surrounding UI state.
  * @param {string} [detail] - Optional technical detail from the browser.
  */
 function _handleMapUnavailable(detail = "") {
   showMapUnavailable(detail);
   showSidebarMessage("Map unavailable — WebGL 2 is not supported");
-  _updateStatus("mapError");
 }
 
 /**
@@ -118,7 +97,6 @@ function _handleMapUnavailable(detail = "") {
 async function boot() {
   await initLogger();
   syncLiveModeToggleVisuals();
-  _updateStatus("loading");
 
   // Apply saved color preset to INTENSITY_CONFIG / LPGM_CONFIG and update legend
   applyActiveColorPreset();
@@ -143,12 +121,11 @@ async function boot() {
   const mapEl = document.getElementById("map");
   if (!mapEl) {
     console.error("[eq-viewer] Map element not found");
-    _updateStatus("error");
     return;
   }
 
   // MapLibre GL requires WebGL 2. Check up front so we can explain the problem
-  // instead of leaving the UI stuck on "Fetching reports...".
+  // instead of leaving an empty map.
   if (!isWebGL2Supported()) {
     console.error("[eq-viewer] WebGL 2 is not available; the map cannot be initialised");
     _handleMapUnavailable();
@@ -168,7 +145,6 @@ async function boot() {
       ]);
   } catch (err) {
     console.error("[eq-viewer] Failed to load essential metadata:", err);
-    _updateStatus("error");
     return;
   }
 
@@ -397,11 +373,10 @@ async function boot() {
     displayHomeMarker(map, initialHomeLocation.cityCode, featureBounds);
   }
 
-  // Initialize EEW
-  initEewSettings(map, featureBounds, cityNames, areaCodes);
+  // Initialize external services (EEW and earthquake report providers)
+  initExternalServices(map, featureBounds, cityNames, areaCodes);
 
   // Fetch initial reports
-  _updateStatus("loading");
   updateSidebarLoading(0, "...");
   updateSidebarLoadingPopup(0, "...");
 
@@ -424,7 +399,6 @@ async function boot() {
     );
 
     hideSidebarLoadingPopup();
-    _updateStatus("live");
 
     for (const report of reports) {
       seedReportAudioState(report);
@@ -497,7 +471,6 @@ async function boot() {
     });
   } catch (err) {
     console.error("[eq-viewer] Failed to fetch initial reports:", err);
-    _updateStatus("error");
     hideSidebarLoadingPopup();
   }
 }

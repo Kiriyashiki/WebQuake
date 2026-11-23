@@ -28,12 +28,7 @@
           <span class="topbar-sub">地震情報 • Earthquake Information</span>
         </div>
         <div id="topbar-right">
-          <span id="eew-status-container" class="hidden">
-            <span id="eew-status-dot" class="dot-error"></span>
-            <span id="eew-status-text" class="mono">EEW: Disconnected</span>
-          </span>
-          <span id="status-dot" class="dot-idle"></span>
-          <span id="status-text" class="mono">Idle</span>
+          <div id="external-status-list" class="external-status-list hidden"></div>
           <button
             id="update-btn"
             class="hidden"
@@ -377,55 +372,9 @@
                 </div>
                 <div class="settings-divider"></div>
                 <div class="settings-section">
-                  <div class="home-location-header">EEW (Earthquake Early Warning) • 緊急地震速報</div>
-                  <label class="live-mode-toggle popup-setting" data-tooltip="Enable receiving EEWs • 緊急地震速報を受信する">
-                    <input type="checkbox" id="eew-toggle" />
-                    <span class="toggle-label">Enable EEW<br>有効にする</span>
-                    <span class="toggle-switch"></span>
-                  </label>
-                  <div class="dropdown-group">
-                    <label for="eew-provider-select">Provider • 配信元:</label>
-                    <select id="eew-provider-select"></select>
-                  </div>
-                  <div id="axis-reports-group" class="dropdown-group hidden">
-                    <label class="live-mode-toggle popup-setting" data-tooltip="Use earthquake reports received over the AXIS jmx-seismology channel (requires Live Mode) • AXISのjmx-seismologyチャンネルで受信した地震情報を使用します（ライブモードが必要）">
-                      <input type="checkbox" id="axis-reports-toggle" />
-                      <span class="toggle-label">Use AXIS Reports<br>AXISレポートを使用</span>
-                      <span class="toggle-switch"></span>
-                    </label>
-                  </div>
-                  <div id="eew-token-group" class="dropdown-group">
-                    <label id="eew-token-label" for="eew-token-input">AXIS Token • トークン:</label>
-                    <input type="password" id="eew-token-input" class="search-input" placeholder="Bearer Token" />
-                    <div id="eew-token-status" class="eew-token-status hidden">
-                      <div id="eew-token-expiry" class="eew-token-expiry"></div>
-                      <div id="eew-token-channel-warning" class="eew-token-warning hidden"></div>
-                    </div>
-                  </div>
-                  <div id="eew-port-group" class="dropdown-group hidden">
-                    <label id="eew-port-label" for="eew-port-input">Port Number • ポート番号:</label>
-                    <input type="number" id="eew-port-input" class="search-input" placeholder="11311" />
-                  </div>
-                  <div id="eew-home-sync-group" class="dropdown-group hidden">
-                    <label class="live-mode-toggle popup-setting" data-tooltip="Sync home location with EEW Client • ホーム場所をEEW Clientと同期する">
-                      <input type="checkbox" id="eew-home-sync-toggle" checked />
-                      <span class="toggle-label">Sync Home Location<br>ホーム場所を同期</span>
-                      <span class="toggle-switch"></span>
-                    </label>
-                  </div>
-                  <div id="eew-test-group" class="dropdown-group">
-                    <label class="live-mode-toggle popup-setting" data-tooltip="Display test/drill EEWs • 訓練・テストの緊急地震速報を表示する">
-                      <input type="checkbox" id="eew-test-toggle" />
-                      <span class="toggle-label">Show Test EEWs<br>訓練表示</span>
-                      <span class="toggle-switch"></span>
-                    </label>
-                  </div>
-                  <div id="eew-provider-info">
-                    <p id="eew-axis-info">
-                      Important information about AXIS EEW and how to use it<br>
-                      AXIS緊急地震速報に関する重要な情報と使用方法<br>
-                      <a href="https://github.com/Kiriyashiki/WebQuake/blob/main/doc/AXIS-about-en.md" target="_blank">Please click here</a> • <a href="https://github.com/Kiriyashiki/WebQuake/blob/main/doc/AXIS-about-ja.md" target="_blank">ここでクリックしてください</a> 
-                    </p>
+                  <div class="home-location-header">External Services • 外部サービス</div>
+                  <div class="preset-btn-row">
+                    <button type="button" id="external-open-btn" class="preset-action-btn" title="Open external services settings • 外部サービス設定を開く">External Services · 外部サービス</button>
                   </div>
                 </div>
                 <div class="settings-divider"></div>
@@ -580,6 +529,73 @@
                       <button type="button" id="audio-add-btn" class="preset-action-btn">Add Source</button>
                     </div>
                     <div id="audio-add-status" class="audio-status"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- External services popup -->
+          <div id="external-popup" class="hidden">
+            <div class="external-popup-content">
+              <div class="settings-popup-header">
+                <span class="mono">External Services · 外部サービス</span>
+                <button id="external-close-btn" aria-label="Close">✕</button>
+              </div>
+              <div class="external-popup-body">
+                <div class="external-columns">
+                  <div class="external-left">
+                    <div class="external-block">
+                      <div class="home-location-header">Providers • 配信元</div>
+                      <div id="external-provider-list" class="external-provider-list"></div>
+                    </div>
+
+                    <div class="external-divider"></div>
+
+                    <div class="external-block">
+                      <div class="home-location-header">EEW Source • 緊急地震速報の配信元</div>
+                      <div class="dropdown-group">
+                        <label for="external-eew-source-select">Source • 配信元:</label>
+                        <select id="external-eew-source-select"></select>
+                      </div>
+                      <label class="live-mode-toggle popup-setting" data-tooltip="Enable the connection to the selected EEW provider • 選択した緊急地震速報の配信元への接続を有効にする">
+                        <input type="checkbox" id="external-eew-enabled-toggle" />
+                        <span class="toggle-label">Connect<br>接続する</span>
+                        <span class="toggle-switch"></span>
+                      </label>
+                      <div id="external-eew-status" class="external-status hidden"></div>
+                      <div class="dropdown-group">
+                        <label class="live-mode-toggle popup-setting" data-tooltip="Display test/drill EEWs • 訓練・テストの緊急地震速報を表示する">
+                          <input type="checkbox" id="external-show-test-toggle" />
+                          <span class="toggle-label">Show Test EEWs<br>訓練表示</span>
+                          <span class="toggle-switch"></span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="external-divider"></div>
+
+                    <div class="external-block">
+                      <div class="home-location-header">Earthquake Reports Source • 地震情報の配信元</div>
+                      <div class="dropdown-group">
+                        <label for="external-reports-source-select">Source • 配信元:</label>
+                        <select id="external-reports-source-select"></select>
+                      </div>
+                      <label class="live-mode-toggle popup-setting" data-tooltip="Enable the connection to the selected earthquake report provider • 選択した地震情報の配信元への接続を有効にする">
+                        <input type="checkbox" id="external-reports-enabled-toggle" />
+                        <span class="toggle-label">Connect<br>接続する</span>
+                        <span class="toggle-switch"></span>
+                      </label>
+                      <div id="external-reports-status" class="external-status hidden"></div>
+                      <p class="external-note">
+                        The base JMA XML feed is always polled. Reports from an external source are used in addition, whichever arrives first. Requires Live Mode.<br>
+                        基本のJMA XMLフィードは常に取得されます。外部ソースの地震情報は追加で使用され、先に到着した方が使われます。ライブモードが必要です。
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="external-right">
+                    <div id="external-provider-detail" class="external-provider-detail"></div>
                   </div>
                 </div>
               </div>

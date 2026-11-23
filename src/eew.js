@@ -1,30 +1,17 @@
-import { AXIS_REPORT_CHANNEL, AXIS_REPORTS_SETTING_KEY } from "./constants.js";
-import {
-  DEBUG_SETTINGS_CHANGED_EVENT,
-  isUseTestServerEnabled,
-} from "./debugOptions.js";
+import { DEBUG_SETTINGS_CHANGED_EVENT } from "./debugOptions.js";
 import { playAudioEvent, EEW_AUDIO_EVENTS, getEewPlayLowAccuracy } from "./audio.js";
-import {
-  displayHomeMarker,
-  setCustomHomeCoordinates,
-} from "./map.js";
+import { displayHomeMarker, setCustomHomeCoordinates } from "./map.js";
 import { findCityForCoordinates } from "./areaCodes.js";
-import { setHomeLocationUI, getHomeLocation, getLiveModeState } from "./sidebarUI.js";
+import { setHomeLocationUI, getHomeLocation } from "./sidebarUI.js";
 import {
   getProvider,
-  getAvailableProviders,
-  getActiveProvider,
-  setActiveProvider,
+  getEewSourceProvider,
   getShowTestEew,
-  setShowTestEew,
-  parseJwtPayload,
-  getJwtExpiryMs,
   isWarningEew,
-} from "./eewProviders.js";
-import { ingestAxisMessage } from "./liveMode.js";
+} from "./externalProviders.js";
 
 import { eewState } from "./eew/state.js";
-import { loadEewDependencies, getIntVal } from "./eew/physics.js";
+import { getIntVal } from "./eew/physics.js";
 import { startWaveAnimation } from "./eew/waveAnimation.js";
 import { onMapInteract, updateMapForEew } from "./eew/eewMap.js";
 import { clearEewRemoval, scheduleEewRemoval } from "./eew/removal.js";
@@ -34,416 +21,24 @@ import {
   updateHomeIntensityForActiveEews,
 } from "./eew/eewUI.js";
 
-export { isPlumEew } from "./eewProviders.js";
+export { isPlumEew } from "./externalProviders.js";
 export { clearEewMapDisplay, getIsEewMapActive, fitBoundsForActiveEew } from "./eew/eewMap.js";
-export { getShowTestEew, setShowTestEew, updateHomeIntensityForActiveEews };
-
-function formatTokenExpiry(expiryMs) {
-  const date = new Date(expiryMs);
-  const pad = (value) => String(value).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
+export { getShowTestEew, setShowTestEew } from "./externalProviders.js";
+export { updateHomeIntensityForActiveEews };
 
 /**
- * Whether reports received over the AXIS jmx-seismology channel should be
- * passed to live mode.  Off by default.
- * @returns {boolean}
+ * Initializes the EEW runtime (shared state, map interaction handling and
+ * debug-driven map updates). Connections and provider selection are handled by
+ * the external services manager.
  */
-export function getAxisReportsEnabled() {
-  if (typeof localStorage === "undefined") return false;
-  return localStorage.getItem(AXIS_REPORTS_SETTING_KEY) === "true";
-}
-
-/**
- * Enables or disables AXIS report ingestion.
- * @param {boolean} enabled
- */
-export function setAxisReportsEnabled(enabled) {
-  if (typeof localStorage === "undefined") return;
-  localStorage.setItem(AXIS_REPORTS_SETTING_KEY, enabled ? "true" : "false");
-}
-
-/**
- * Updates the token expiry and channel hint shown under the token input.
- * The token is only decoded locally for display; nothing here validates or
- * disables EEW reception.
- */
-function updateTokenStatusUI(provider = getActiveProvider()) {
-  const statusEl = document.getElementById("eew-token-status");
-  if (!statusEl) return;
-
-  const expiryEl = document.getElementById("eew-token-expiry");
-  const warningEl = document.getElementById("eew-token-channel-warning");
-  const token = provider?.getToken?.() || "";
-
-  if (!token) {
-    statusEl.classList.add("hidden");
-    if (expiryEl) {
-      expiryEl.textContent = "";
-      expiryEl.classList.remove("is-expired");
-    }
-    if (warningEl) {
-      warningEl.textContent = "";
-      warningEl.classList.add("hidden");
-    }
-    return;
-  }
-
-  statusEl.classList.remove("hidden");
-
-  const claims =
-    typeof provider?.getTokenClaims === "function"
-      ? provider.getTokenClaims()
-      : parseJwtPayload(token);
-  const expiry =
-    typeof provider?.getTokenExpiry === "function"
-      ? provider.getTokenExpiry()
-      : getJwtExpiryMs(token);
-
-  if (expiryEl) {
-    expiryEl.classList.remove("is-expired");
-    if (expiry != null && Number.isFinite(expiry)) {
-      const isExpired = expiry < Date.now();
-      expiryEl.textContent =
-        `Expiry • 有効期限: ${formatTokenExpiry(expiry)}` +
-        (isExpired ? " (expired • 期限切れ)" : "");
-      if (isExpired) expiryEl.classList.add("is-expired");
-    } else {
-      expiryEl.textContent =
-        "Expiry • 有効期限: unknown • トークンから有効期限を読み取れませんでした";
-    }
-  }
-
-  if (warningEl) {
-    const channels = Array.isArray(claims?.channels)
-      ? claims.channels.map((channel) => String(channel))
-      : null;
-    const warnings = [];
-    const supportsAxisReports = provider?.id === "axis" || provider?.id === "test";
-
-    if (channels && !channels.includes("eew")) {
-      warnings.push(
-        '⚠ This token does not include the "eew" channel, which is required to receive EEWs.\n' +
-          "⚠ このトークンには「eew」チャンネルが含まれていません。EEWの受信には必要です。",
-      );
-    }
-
-    if (
-      channels &&
-      supportsAxisReports &&
-      getAxisReportsEnabled() &&
-      !channels.includes(AXIS_REPORT_CHANNEL)
-    ) {
-      warnings.push(
-        `⚠ This token does not include the "${AXIS_REPORT_CHANNEL}" channel, which is required to receive AXIS reports.\n` +
-          `⚠ このトークンには「${AXIS_REPORT_CHANNEL}」チャンネルが含まれていません。AXISレポートの受信には必要です。`,
-      );
-    }
-
-    if (warnings.length > 0) {
-      warningEl.textContent = warnings.join("\n");
-      warningEl.classList.remove("hidden");
-    } else {
-      warningEl.textContent = "";
-      warningEl.classList.add("hidden");
-    }
-  }
-}
-
-/**
- * Initializes the EEW settings and connects if enabled.
- */
-export function initEewSettings(map, bounds, cities, areas) {
+export function initEewRuntime(map, bounds, cities, areas) {
   eewState.mapInstance = map;
   eewState.featureBounds = bounds;
   eewState.cityNames = cities;
   eewState.areaCodes = areas;
 
-  const toggleEl = document.getElementById("eew-toggle");
-  const providerSelectEl = document.getElementById("eew-provider-select");
-  const tokenGroupEl = document.getElementById("eew-token-group");
-  const tokenLabelEl = document.getElementById("eew-token-label");
-  const tokenInputEl = document.getElementById("eew-token-input");
-  const portGroupEl = document.getElementById("eew-port-group");
-  const portInputEl = document.getElementById("eew-port-input");
-  const homeSyncGroupEl = document.getElementById("eew-home-sync-group");
-  const homeSyncToggleEl = document.getElementById("eew-home-sync-toggle");
-  const testToggleEl = document.getElementById("eew-test-toggle");
-  const axisInfoEl = document.getElementById("eew-axis-info");
-  const axisReportsGroupEl = document.getElementById("axis-reports-group");
-  const axisReportsToggleEl = document.getElementById("axis-reports-toggle");
-
-  if (!toggleEl) return;
-
-  function populateProviderSelect(available) {
-    if (!providerSelectEl) return;
-    providerSelectEl.innerHTML = "";
-    for (const provider of available) {
-      const option = document.createElement("option");
-      option.value = provider.id;
-      option.textContent = provider.name;
-      providerSelectEl.appendChild(option);
-    }
-  }
-
-  // Determine active provider
-  const availableProviders = getAvailableProviders();
-  const savedProviderId = localStorage.getItem("eew-provider");
-  let currentProvider = availableProviders.find((p) => p.id === savedProviderId);
-  if (!currentProvider) {
-    if (isUseTestServerEnabled() && availableProviders.some((p) => p.id === "test")) {
-      currentProvider = availableProviders.find((p) => p.id === "test");
-    } else {
-      currentProvider = availableProviders[0] || getProvider("axis");
-    }
-  }
-  populateProviderSelect(availableProviders);
-  setActiveProvider(currentProvider);
-  if (providerSelectEl) {
-    providerSelectEl.value = currentProvider.id;
-  }
-
-  function updateProviderSettingsUI() {
-    const p = getActiveProvider();
-    if (!p) return;
-
-    if (p.requiresToken) {
-      if (tokenGroupEl) tokenGroupEl.classList.remove("hidden");
-      if (tokenLabelEl) tokenLabelEl.textContent = p.tokenLabel || `${p.name} Token • トークン:`;
-      if (tokenInputEl) {
-        tokenInputEl.placeholder = p.tokenPlaceholder || "Bearer Token";
-        tokenInputEl.value = p.getToken();
-      }
-    } else if (tokenGroupEl) {
-      tokenGroupEl.classList.add("hidden");
-    }
-
-    updateTokenStatusUI(p);
-
-    if (p.requiresPort) {
-      if (portGroupEl) portGroupEl.classList.remove("hidden");
-      if (portInputEl) {
-        portInputEl.value = p.getPort();
-        portInputEl.placeholder = p.defaultPort || "11311";
-      }
-    } else if (portGroupEl) {
-      portGroupEl.classList.add("hidden");
-    }
-
-    if (p.supportsHomeSync) {
-      if (homeSyncGroupEl) homeSyncGroupEl.classList.remove("hidden");
-      if (homeSyncToggleEl) homeSyncToggleEl.checked = p.getHomeSync();
-    } else if (homeSyncGroupEl) {
-      homeSyncGroupEl.classList.add("hidden");
-    }
-
-    if (axisInfoEl) {
-      if (p.id === "axis") {
-        axisInfoEl.classList.remove("hidden");
-      } else {
-        axisInfoEl.classList.add("hidden");
-      }
-    }
-
-    if (axisReportsGroupEl) {
-      const supportsAxisReports = p.id === "axis" || p.id === "test";
-      axisReportsGroupEl.classList.toggle("hidden", !supportsAxisReports);
-    }
-    if (axisReportsToggleEl) {
-      axisReportsToggleEl.checked = getAxisReportsEnabled();
-    }
-  }
-
-  updateProviderSettingsUI();
-
-  function refreshProviderAvailability() {
-    const available = getAvailableProviders();
-    populateProviderSelect(available);
-
-    let provider = getActiveProvider();
-    if (!available.some((p) => p.id === provider?.id)) {
-      const wasConnected = toggleEl.checked;
-      if (wasConnected) disconnectEew();
-
-      provider = available[0] || getProvider("axis");
-      setActiveProvider(provider);
-      localStorage.setItem("eew-provider", provider.id);
-
-      if (wasConnected && (!provider.requiresToken || provider.getToken())) {
-        connectEew();
-      }
-    }
-
-    if (providerSelectEl) providerSelectEl.value = provider.id;
-    updateProviderSettingsUI();
-  }
-
-  if (axisReportsToggleEl) {
-    axisReportsToggleEl.addEventListener("change", (e) => {
-      setAxisReportsEnabled(e.target.checked);
-      updateTokenStatusUI(getActiveProvider());
-    });
-  }
-
-  const savedEnabled = localStorage.getItem("eew-enabled") === "true";
-  toggleEl.checked = savedEnabled;
-
-  if (savedEnabled) {
-    const p = getActiveProvider();
-    if (!p.requiresToken || p.getToken()) {
-      connectEew();
-    }
-  }
-
-  toggleEl.addEventListener("change", (e) => {
-    const isEnabled = e.target.checked;
-    localStorage.setItem("eew-enabled", isEnabled ? "true" : "false");
-    if (isEnabled) {
-      const p = getActiveProvider();
-      if (p.requiresToken && !p.getToken()) {
-        alert(
-          "Please enter a token in Settings before enabling EEW.\nEEWを有効にする前に、「設定」でトークンを入力してください。",
-        );
-        toggleEl.checked = false;
-        localStorage.setItem("eew-enabled", "false");
-        return;
-      }
-      connectEew();
-    } else {
-      disconnectEew();
-    }
-  });
-
-  if (providerSelectEl) {
-    providerSelectEl.addEventListener("change", (e) => {
-      const newProviderId = e.target.value;
-      const newProvider = getProvider(newProviderId);
-      if (!newProvider) return;
-
-      localStorage.setItem("eew-provider", newProviderId);
-      const wasConnected = toggleEl.checked;
-
-      if (wasConnected) {
-        disconnectEew();
-      }
-
-      setActiveProvider(newProvider);
-      updateProviderSettingsUI();
-
-      if (!newProvider.supportsHomeSync || !newProvider.getHomeSync()) {
-        setCustomHomeCoordinates(null);
-        const homeLoc = getHomeLocation();
-        if (homeLoc.showMarker && eewState.featureBounds) {
-          displayHomeMarker(eewState.mapInstance, homeLoc.cityCode, eewState.featureBounds);
-        }
-      } else if (
-        newProvider.supportsHomeSync &&
-        newProvider.getHomeSync() &&
-        newProvider.userPoint
-      ) {
-        applyEewClientUserPoint(newProvider.userPoint);
-      }
-
-      if (wasConnected) {
-        if (!newProvider.requiresToken || newProvider.getToken()) {
-          connectEew();
-        } else {
-          alert(
-            `Please enter a token for ${newProvider.name} in Settings.\n「設定」で${newProvider.name}のトークンを入力してください。`,
-          );
-          toggleEl.checked = false;
-          localStorage.setItem("eew-enabled", "false");
-        }
-      }
-    });
-  }
-
-  if (tokenInputEl) {
-    tokenInputEl.addEventListener("change", (e) => {
-      const p = getActiveProvider();
-      if (!p) return;
-      const token = e.target.value.trim();
-      p.setToken(token);
-      p.resetTokenState?.();
-      updateTokenStatusUI(p);
-
-      if (toggleEl.checked) {
-        disconnectEew();
-        if (token) {
-          connectEew();
-        }
-      }
-    });
-  }
-
-  if (portInputEl) {
-    portInputEl.addEventListener("change", (e) => {
-      const p = getActiveProvider();
-      if (!p) return;
-      const port = e.target.value.trim() || p.defaultPort || "11311";
-      p.setPort(port);
-
-      if (toggleEl.checked) {
-        disconnectEew();
-        connectEew();
-      }
-    });
-  }
-
-  if (homeSyncToggleEl) {
-    homeSyncToggleEl.addEventListener("change", async (e) => {
-      const p = getActiveProvider();
-      if (!p?.supportsHomeSync) return;
-      const enabled = e.target.checked;
-      p.setHomeSync(enabled);
-
-      if (!enabled) {
-        setCustomHomeCoordinates(null);
-        const homeLoc = getHomeLocation();
-        if (homeLoc.showMarker && eewState.featureBounds) {
-          displayHomeMarker(eewState.mapInstance, homeLoc.cityCode, eewState.featureBounds);
-        }
-      } else if (p.userPoint) {
-        await applyEewClientUserPoint(p.userPoint);
-      }
-
-      if (eewState.isEewMapActive && eewState.activeEews.size > 0) {
-        updateHomeIntensityForActiveEews();
-      }
-    });
-  }
-
-  if (testToggleEl) {
-    testToggleEl.checked = getShowTestEew();
-    testToggleEl.addEventListener("change", (e) => {
-      const enabled = e.target.checked;
-      setShowTestEew(enabled);
-      if (!enabled) {
-        let changed = false;
-        for (const [id, eew] of eewState.activeEews.entries()) {
-          if (eew.isTest) {
-            clearEewRemoval(eew);
-            eewState.activeEews.delete(id);
-            changed = true;
-          }
-        }
-        if (changed) {
-          updateEewUI(false);
-          if (eewState.isEewMapActive && eewState.activeEews.size > 0) {
-            updateHomeIntensityForActiveEews();
-          }
-        }
-      }
-    });
-  }
-
   const handleDebugSettingsChanged = (event) => {
     const { name } = event.detail || {};
-
-    if (name === "useTestServer") {
-      refreshProviderAvailability();
-      return;
-    }
 
     if (
       (name === "enableSm1999Gmpe" || name === "testGmpeOverride") &&
@@ -470,109 +65,88 @@ export function initEewSettings(map, bounds, cities, areas) {
   map.on("moveend", (e) => {
     if (e.originalEvent) onMapInteract();
   });
+}
 
-  const eewStatusContainer = document.getElementById("eew-status-container");
-  if (eewStatusContainer) {
-    eewStatusContainer.addEventListener("click", () => {
-      if (toggleEl.checked) {
-        console.info("[EEW] Manual reconnect triggered");
-        disconnectEew();
-        connectEew();
-      }
-    });
+/**
+ * Updates home-location state when the EEW source changes.
+ */
+export function onEewSourceChanged(provider) {
+  const homeSyncOn = Boolean(provider?.supportsHomeSync && provider.getHomeSync());
+
+  if (!homeSyncOn) {
+    setCustomHomeCoordinates(null);
+    const homeLoc = getHomeLocation();
+    if (homeLoc.showMarker && eewState.featureBounds) {
+      displayHomeMarker(eewState.mapInstance, homeLoc.cityCode, eewState.featureBounds);
+    }
+  } else if (provider.userPoint) {
+    applyEewClientUserPoint(provider.userPoint);
+  }
+
+  if (eewState.isEewMapActive && eewState.activeEews.size > 0) {
+    updateHomeIntensityForActiveEews();
   }
 }
 
-export function updateEewStatus(state) {
-  const container = document.getElementById("eew-status-container");
-  const dot = document.getElementById("eew-status-dot");
-  const text = document.getElementById("eew-status-text");
+/**
+ * Applies the provider's home-location sync setting.
+ */
+export async function setEewHomeSync(provider, enabled) {
+  if (!provider?.supportsHomeSync) return;
+  provider.setHomeSync(enabled);
 
-  if (!container || !dot || !text) return;
-
-  const toggleEl = document.getElementById("eew-toggle");
-  if (!toggleEl?.checked) {
-    container.classList.add("hidden");
-    return;
+  if (!enabled) {
+    setCustomHomeCoordinates(null);
+    const homeLoc = getHomeLocation();
+    if (homeLoc.showMarker && eewState.featureBounds) {
+      displayHomeMarker(eewState.mapInstance, homeLoc.cityCode, eewState.featureBounds);
+    }
+  } else if (provider.userPoint) {
+    await applyEewClientUserPoint(provider.userPoint);
   }
-  container.classList.remove("hidden");
 
-  if (state === "connecting") {
-    dot.className = "dot-loading";
-    text.textContent = " EEW: Connecting";
-  } else if (state === "connected") {
-    dot.className = "dot-live";
-    text.textContent = " EEW: Connected";
-  } else if (state === "upstream-disconnected") {
-    dot.className = "dot-loading";
-    text.textContent = " EEW: Upstream disconnected";
-  } else if (state === "error") {
-    dot.className = "dot-error";
-    text.textContent = " EEW: Disconnected";
+  if (eewState.isEewMapActive && eewState.activeEews.size > 0) {
+    updateHomeIntensityForActiveEews();
   }
 }
 
-async function connectEew() {
-  const provider = getActiveProvider();
-  if (!provider) return;
+/**
+ * Clears all active EEWs, used when the EEW source is disabled or changed.
+ */
+export function clearEewState() {
+  // Only restore the normal report when the EEW UI was actually showing
+  // something. Re-rendering unconditionally can re-render the open report's
+  // observations list a second time.
+  const shouldUpdateUi = eewState.activeEews.size > 0 || eewState.isEewMapActive;
 
-  if (provider.requiresToken && !provider.getToken()) {
-    console.warn(`[EEW] Provider ${provider.name} requires a token, but none is set.`);
-    return;
+  for (const eew of eewState.activeEews.values()) {
+    clearEewRemoval(eew);
   }
+  eewState.activeEews.clear();
 
-  disconnectEew();
-
-  await loadEewDependencies();
-
-  updateEewStatus("connecting");
-
-  provider.connect({
-    onStatusChange: (status) => {
-      updateEewStatus(status);
-    },
-    onMessage: (normalizedMsg) => {
-      handleEewMessage(normalizedMsg, provider);
-    },
-    onSeismologyMessage: (message) => {
-      if (provider.id !== "axis" && provider.id !== "test") return;
-      if (!getAxisReportsEnabled()) return;
-      if (!getLiveModeState()) return;
-      ingestAxisMessage(message);
-    },
-    onUserPoint: async (location) => {
-      const p = getActiveProvider();
-      if (p?.supportsHomeSync && p.getHomeSync()) {
-        await applyEewClientUserPoint(location);
-      }
-    },
-    onAuthError: (errorMessage) => {
-      alert(errorMessage);
-      disconnectEew();
-      const toggleEl = document.getElementById("eew-toggle");
-      if (toggleEl) {
-        toggleEl.checked = false;
-        localStorage.setItem("eew-enabled", "false");
-        updateEewStatus("error");
-      }
-    },
-    onTokenUpdated: (newToken) => {
-      const tokenInputEl = document.getElementById("eew-token-input");
-      if (tokenInputEl && provider.requiresToken) {
-        tokenInputEl.value = newToken;
-        updateTokenStatusUI(provider);
-      }
-    },
-  });
+  if (shouldUpdateUi) {
+    updateEewUI(false);
+  }
 }
 
-function disconnectEew() {
-  updateEewStatus("error");
-  const provider = getActiveProvider();
-  if (provider) {
-    provider.disconnect();
+/**
+ * Removes all test/drill EEWs from the active list.
+ */
+export function clearTestEews() {
+  let changed = false;
+  for (const [id, eew] of eewState.activeEews.entries()) {
+    if (eew.isTest) {
+      clearEewRemoval(eew);
+      eewState.activeEews.delete(id);
+      changed = true;
+    }
   }
-  clearAllEews();
+  if (changed) {
+    updateEewUI(false);
+    if (eewState.isEewMapActive && eewState.activeEews.size > 0) {
+      updateHomeIntensityForActiveEews();
+    }
+  }
 }
 
 function _eewSerialNumber(value) {
@@ -654,7 +228,7 @@ export function handleEewMessage(msg, providerInfo = null) {
   if (!msg?.Title) return;
 
   const eventId = msg.EventID;
-  const activeProv = getActiveProvider();
+  const activeProv = getEewSourceProvider();
   let srcName = "";
   let providerId = "";
   let disableGmpe = false;
@@ -674,10 +248,10 @@ export function handleEewMessage(msg, providerInfo = null) {
       disableGmpe = Boolean(matched.disableGmpe);
       supportsWarningAreas = Boolean(matched.supportsWarningAreas);
     } else if (
-      providerInfo.toLowerCase().includes("dmdss") ||
+      providerInfo.toLowerCase().includes("eewclient") ||
       providerInfo.toLowerCase().includes("client")
     ) {
-      providerId = "dmdss";
+      providerId = "eewclient";
       disableGmpe = true;
     }
   } else if (activeProv) {
@@ -788,22 +362,6 @@ function removeEew(eventId) {
     if (eewState.isEewMapActive && eewState.activeEews.size > 0) {
       updateHomeIntensityForActiveEews();
     }
-  }
-}
-
-function clearAllEews() {
-  // Only restore the normal report when the EEW UI was actually showing
-  // something. Re-rendering unconditionally on connect/provider switch causes
-  // the open report's observations list to be rendered a second time.
-  const shouldUpdateUi = eewState.activeEews.size > 0 || eewState.isEewMapActive;
-
-  for (const eew of eewState.activeEews.values()) {
-    clearEewRemoval(eew);
-  }
-  eewState.activeEews.clear();
-
-  if (shouldUpdateUi) {
-    updateEewUI(false);
   }
 }
 

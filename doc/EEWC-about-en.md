@@ -29,7 +29,7 @@ If it's working properly, it should show 'WebSocket URL' with a red button.
 
 **Important:** EEW Client needs to remain running to be able to send off EEWs to KyoQuake. If it is closed, the local WebSocket connection will also be closed.<br>
 
-Now, you can copy the port number to KyoQuake's settings and enable EEW.
+Now, enter the port number under **External Services** in KyoQuake's settings, select EEW Client as the **EEW Source**, and enable the connection.
 
 ### Subscription and Account
 
