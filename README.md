@@ -62,8 +62,9 @@ page and its page-only assets.
 - [NIED (防災科研)](https://www.bosai.go.jp/)<br>
     - <a href="https://www.j-shis.bosai.go.jp/">J-SHIS</a>: Site amplification factors
     - <a href="https://www.j-shis.bosai.go.jp/en/labs/mf2013/">J-SHIS Labs</a>: Morikawa & Fujiwara 2013 GMPE
-- <a href="https://axis.prioris.jp/">AXIS</a>: EEW and reports source
-- <a href="https://dmdata.jp/">Project DM-D.S.S</a>: EEW source
+- <a href="https://axis.prioris.jp/">AXIS</a>: External service
+- <a href="https://dmdata.jp/">Project DM-D.S.S</a>: External service
+- <a href="https://wolfx.jp/">Wolfx</a>: External service
 - <a href="https://jquake.net/">JQuake</a>: Intensity color scale
 - <a href="https://www.usgs.gov/products/data/data-releases">USGS Data</a>: Slab2 models
 - <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>: Map data of lakes

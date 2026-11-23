@@ -17,8 +17,9 @@ export function extractWarningAreaCodes(msg) {
 
   const codes = new Set();
   for (const forecast of msg.Forecast || []) {
+    if (forecast?.isWarningArea === false) continue;
     const code = Number.parseInt(forecast?.Code, 10);
-    if (Number.isFinite(code)) codes.add(code);
+    if (Number.isFinite(code) && code > 0) codes.add(code);
   }
   return Array.from(codes).sort((a, b) => a - b);
 }

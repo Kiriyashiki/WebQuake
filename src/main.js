@@ -204,13 +204,10 @@ async function boot() {
         return;
       }
       try {
-        console.debug("[eq-viewer] Map update: clearing old highlights");
         highlightObservations(map, report.observations);
-        console.debug("[eq-viewer] Map update: highlights applied");
 
         requestAnimationFrame(() => {
           try {
-            console.debug("[eq-viewer] Map update: fitting bounds");
             const isDistant = !!(
               report.isDistantEarthquake ||
               report.headTitle?.includes("遠地地震に関する情報") ||
@@ -227,18 +224,15 @@ async function boot() {
               report.coordinates,
               zoom,
             );
-            console.debug("[eq-viewer] Map update: bounds fitted =", boundsFitted);
 
             if (report.coordinates) {
               displayEpicenter(map, report.coordinates);
-              console.debug("[eq-viewer] Map update: epicenter placed");
               if (!boundsFitted) {
                 map.flyTo({
                   center: [report.coordinates.longitude, report.coordinates.latitude],
                   zoom: isDistant ? 4.5 : 6,
                   essential: true,
                 });
-                console.debug("[eq-viewer] Map update: flyTo issued");
               }
             } else {
               clearEpicenter(map);
@@ -252,7 +246,6 @@ async function boot() {
             } else {
               hideHomeLocationIntensity();
             }
-            console.debug("[eq-viewer] Map update: complete");
           } catch (err) {
             console.error("[eq-viewer] Error in map camera update:", err);
           }

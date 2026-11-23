@@ -251,6 +251,7 @@ export class BaseExternalProvider {
     this.configurable = configurable;
     this.detail = detail;
     this.callbacks = null;
+    this.nameToCodeMap = new Map();
   }
 
   supports(capability) {
@@ -304,6 +305,66 @@ export class BaseExternalProvider {
   setPort(port) {
     if (typeof localStorage === "undefined") return;
     localStorage.setItem(`external-port-${this.id}`, String(port));
+  }
+
+  setAreaCodesFromCsv(csvText) {
+    if (!csvText) return;
+    this.nameToCodeMap.clear();
+    for (const raw of csvText.split("\n")) {
+      const line = raw.trim();
+      if (!line || line.startsWith("#")) continue;
+      const parts = line.split(";");
+      if (parts.length < 2) continue;
+      const code = Number.parseInt(parts[0], 10);
+      const ja = parts[1]?.trim();
+      if (!Number.isNaN(code) && ja) {
+        this.nameToCodeMap.set(ja, code);
+      }
+    }
+  }
+
+  async loadAreaCodes(csvText = null) {
+    if (csvText) {
+      this.setAreaCodesFromCsv(csvText);
+      return this.nameToCodeMap;
+    }
+    if (this.nameToCodeMap.size > 0) return this.nameToCodeMap;
+    try {
+      const map = await loadAreaNameToCodeMap();
+      for (const [name, code] of map.entries()) {
+        this.nameToCodeMap.set(name, code);
+      }
+    } catch (err) {
+      console.warn(`[EXTERNAL][${this.name}] Could not load area codes CSV:`, err);
+    }
+    return this.nameToCodeMap;
+  }
+
+  getAreaCode(name) {
+    if (!name) return 0;
+    const trimmed = name.trim();
+    const candidates = [trimmed, `${trimmed}地方`];
+
+    for (const candidate of candidates) {
+      if (this.nameToCodeMap.has(candidate)) {
+        return this.nameToCodeMap.get(candidate);
+      }
+      const cached = getAreaCodeByName(candidate);
+      if (cached != null) {
+        this.nameToCodeMap.set(candidate, cached);
+        return cached;
+      }
+    }
+
+    if (typeof globalThis !== "undefined" && globalThis.__areaCodes) {
+      for (const [code, info] of globalThis.__areaCodes.entries()) {
+        if (candidates.includes(info.ja)) {
+          for (const candidate of candidates) this.nameToCodeMap.set(candidate, code);
+          return code;
+        }
+      }
+    }
+    return 0;
   }
 
   resetTokenState() {
@@ -1046,6 +1107,204 @@ export class TestProvider extends WebSocketExternalProvider {
   }
 }
 
+const WOLF_LOW_ACCURACY_TEXT = "P 波／S 波レベル超え、IPF 法（1 点）、または仮定震源要素";
+const WOLF_LEVEL_METHOD_CODETYPE = "最大予測震度のみの緊急地震速報";
+
+/**
+ * Converts a Wolfx JST timestamp ("YYYY/MM/DD HH:mm:ss") to an ISO string with
+ * an explicit +09:00 offset so it is parsed consistently in every timezone.
+ */
+function formatWolfxTime(value) {
+  const match = String(value ?? "").match(
+    /^(\d{4})\/(\d{2})\/(\d{2})[ T](\d{2}):(\d{2}):(\d{2})$/,
+  );
+  if (!match) return String(value ?? "");
+  return `${match[1]}-${match[2]}-${match[3]}T${match[4]}:${match[5]}:${match[6]}+09:00`;
+}
+
+/**
+ * Wolfx Provider
+ * Connects to the free public Wolfx EEW WebSocket. No configuration required.
+ */
+export class WolfxProvider extends WebSocketExternalProvider {
+  constructor() {
+    super({
+      id: "wolfx",
+      name: "Wolfx",
+      capabilities: [EXTERNAL_CAPABILITY.EEW],
+      requiresToken: false,
+      expectsHello: false,
+      useHeartbeat: false,
+      supportsWarningAreas: true,
+      detail: {
+        descriptionEn:
+          "Receives EEW. Wolfx is a free, open service. It requires no extra configuration.",
+        descriptionJa:
+          "緊急地震速報を受信します。Wolfxは無料のオープンサービスです。追加の設定は必要ありません。",
+        sections: [
+          {
+            titleEn: "EEW",
+            titleJa: "緊急地震速報",
+            rows: [
+              { label: "Speed", labelJa: "速度", value: "Fast", valueJa: "速い" },
+              { label: "Stability", labelJa: "安定性", value: "Average", valueJa: "普通" },
+              { label: "Hypo details", labelJa: "震源詳細", value: "Yes", valueJa: "はい" },
+              { label: "Forecast areas", labelJa: "予報区域", value: "Yes", valueJa: "はい" },
+              { label: "Warning areas", labelJa: "警報区域", value: "Yes", valueJa: "はい" },
+              {
+                label: "Low-accuracy EEW",
+                labelJa: "1点計算EEW",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              { label: "LPGM", labelJa: "長周期地震動", value: "No", valueJa: "いいえ" },
+              {
+                label: "Home location forecast",
+                labelJa: "ホーム場所の予報",
+                value: "No",
+                valueJa: "いいえ",
+              },
+              { label: "Drills / Tests", labelJa: "訓練・テスト", value: "Yes", valueJa: "はい" },
+            ],
+          },
+        ],
+      },
+    });
+  }
+
+  async connect(callbacks) {
+    await this.loadAreaCodes().catch(() => {});
+    return super.connect(callbacks);
+  }
+
+  async getWebSocketUrl() {
+    return "wss://ws-api.wolfx.jp/jma_eew";
+  }
+
+  onConnectionEstablished() {
+    this.callbacks?.onStatusChange?.("connected");
+  }
+
+  handleIncomingRawMessage(raw) {
+    try {
+      const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      logEewDebugMessage(data);
+
+      if (data?.type === "heartbeat") {
+        this.sendPong();
+        return;
+      }
+      if (data?.type === "pong") return;
+      if (data?.type && data.type !== "jma_eew") return;
+      if (!data?.Title && !data?.EventID) return;
+
+      const normalized = this.normalizeWolfxEew(data);
+      if (normalized) this.callbacks?.onMessage?.(normalized);
+    } catch (err) {
+      console.warn("[EXTERNAL][Wolfx] Error parsing message:", err);
+    }
+  }
+
+  sendPong() {
+    if (typeof WebSocket === "undefined") return;
+    if (this.socket?.readyState !== WebSocket.OPEN) return;
+    try {
+      this.socket.send(JSON.stringify({ type: "pong", timestamp: String(Date.now()) }));
+    } catch (err) {
+      console.warn("[EXTERNAL][Wolfx] Failed to send pong:", err);
+    }
+  }
+
+  normalizeWolfxEew(data) {
+    if (!data?.Title) return null;
+
+    const title = String(data.Title);
+    const isWarning = Boolean(data.isWarn) || title.includes("警報");
+    const isCancel = Boolean(data.isCancel);
+    const isFinal = Boolean(data.isFinal);
+    const isTest =
+      Boolean(data.isTraining) || title.includes("訓練") || title.includes("テスト");
+
+    const magnitudeValue = data.Magnitude ?? data.Magunitude;
+    const magnitudeNumber = Number(magnitudeValue);
+    const magnitude =
+      magnitudeValue == null ||
+      magnitudeValue === "" ||
+      !Number.isFinite(magnitudeNumber) ||
+      magnitudeNumber === 0
+        ? "--"
+        : String(magnitudeValue);
+
+    const depthValue = data.Depth != null ? `${data.Depth}km` : null;
+    const isPlum = magnitudeNumber === 1 && Number(data.Depth) === 10;
+
+    const latitude = Number(data.Latitude);
+    const longitude = Number(data.Longitude);
+
+    const forecasts = Array.isArray(data.WarnArea)
+      ? data.WarnArea.map((area) => {
+          const from = normalizeIntensityString(area.Shindo2 || "不明") || "不明";
+          const to = normalizeIntensityString(area.Shindo1 || "不明") || "不明";
+          return {
+            Code: this.getAreaCode(area.Chiiki),
+            Name: area.Chiiki || "",
+            Intensity: {
+              From: from,
+              To: to,
+              Description: `最大震度${to}`,
+            },
+            isWarningArea: area.Type === "警報" || area.Type === "Warning",
+          };
+        })
+      : [];
+
+    const accuracyText = String(data.Accuracy?.Epicenter || "");
+    const isLowAccuracyByAccuracy =
+      accuracyText === WOLF_LOW_ACCURACY_TEXT ||
+      accuracyText.includes("IPF 法（1 点）") ||
+      accuracyText.includes("レベル超え") ||
+      accuracyText.includes("仮定震源要素");
+    const isLevelMethod = String(data.CodeType || "").includes(WOLF_LEVEL_METHOD_CODETYPE);
+
+    const normalized = {
+      Title: title,
+      EventID: String(data.EventID || ""),
+      Serial: Number(data.Serial) || data.Serial || 1,
+      OriginDateTime: formatWolfxTime(data.OriginTime),
+      ReportDateTime: formatWolfxTime(data.AnnouncedTime),
+      Hypocenter: {
+        Code: this.getAreaCode(data.Hypocenter),
+        Name: data.Hypocenter || "不明",
+        Coordinate:
+          Number.isFinite(latitude) && Number.isFinite(longitude)
+            ? [longitude, latitude]
+            : null,
+        Depth: formatEewDepth(depthValue),
+        Description: "",
+      },
+      Intensity: normalizeIntensityString(data.MaxIntensity || "不明") || "不明",
+      Magnitude: magnitude,
+      Flag: {
+        is_final: isFinal,
+        is_cancel: isCancel,
+        is_training: isTest,
+      },
+      Forecast: forecasts,
+      Text: data.OriginalText || "",
+      isTest,
+      isWarning,
+      isPlumOnly: isPlum,
+      isLowAccuracy: false,
+      accuracy: data.Accuracy || null,
+    };
+
+    normalized.isLowAccuracy =
+      !isWarning && !isCancel && (isLowAccuracyByAccuracy || isLevelMethod);
+
+    return normalized;
+  }
+}
+
 /**
  * EEW Client Provider (Project DM-D.S.S)
  * Connects to a local websocket running in EEW Client on 127.0.0.1:<port>
@@ -1130,62 +1389,6 @@ export class EewClientProvider extends WebSocketExternalProvider {
     });
     this.userPoint = null;
     this.lastServerStatus = null;
-    this.nameToCodeMap = new Map();
-  }
-
-  setAreaCodesFromCsv(csvText) {
-    if (!csvText) return;
-    this.nameToCodeMap.clear();
-    for (const raw of csvText.split("\n")) {
-      const line = raw.trim();
-      if (!line || line.startsWith("#")) continue;
-      const parts = line.split(";");
-      if (parts.length < 2) continue;
-      const code = Number.parseInt(parts[0], 10);
-      const ja = parts[1]?.trim();
-      if (!Number.isNaN(code) && ja) {
-        this.nameToCodeMap.set(ja, code);
-      }
-    }
-  }
-
-  async loadAreaCodes(csvText = null) {
-    if (csvText) {
-      this.setAreaCodesFromCsv(csvText);
-      return this.nameToCodeMap;
-    }
-    if (this.nameToCodeMap.size > 0) return this.nameToCodeMap;
-    try {
-      const map = await loadAreaNameToCodeMap();
-      for (const [name, code] of map.entries()) {
-        this.nameToCodeMap.set(name, code);
-      }
-    } catch (err) {
-      console.warn("[EXTERNAL][EEW Client] Could not load area codes CSV:", err);
-    }
-    return this.nameToCodeMap;
-  }
-
-  getAreaCode(name) {
-    if (!name) return 0;
-    const trimmed = name.trim();
-    if (this.nameToCodeMap.has(trimmed)) {
-      return this.nameToCodeMap.get(trimmed);
-    }
-    const cached = getAreaCodeByName(trimmed);
-    if (cached != null) {
-      this.nameToCodeMap.set(trimmed, cached);
-      return cached;
-    }
-    if (typeof globalThis !== "undefined" && globalThis.__areaCodes) {
-      for (const [code, info] of globalThis.__areaCodes.entries()) {
-        if (info.ja === trimmed) {
-          this.nameToCodeMap.set(trimmed, code);
-          return code;
-        }
-      }
-    }
-    return 0;
   }
 
   async connect(callbacks) {
@@ -1450,6 +1653,7 @@ const providers = new Map();
 
 export const axisProvider = new AxisProvider();
 export const testProvider = new TestProvider();
+export const wolfxProvider = new WolfxProvider();
 export const eewClientProvider = new EewClientProvider();
 export const jmaXmlProvider = new JmaXmlProvider();
 
@@ -1459,6 +1663,7 @@ export function registerProvider(provider) {
 
 registerProvider(axisProvider);
 registerProvider(testProvider);
+registerProvider(wolfxProvider);
 registerProvider(eewClientProvider);
 registerProvider(jmaXmlProvider);
 

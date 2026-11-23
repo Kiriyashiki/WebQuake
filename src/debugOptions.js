@@ -157,6 +157,8 @@ function isLoggableEewMessage(data) {
   if (data.channel === AXIS_REPORT_CHANNEL && data.message) return true;
   // EEW Client sends its EEW payloads directly as { type: "eew", ... }.
   if (data.type === "eew") return true;
+  // Wolfx sends EEW payloads as { type: "jma_eew", ... }.
+  if (data.type === "jma_eew") return true;
   return false;
 }
 
@@ -320,8 +322,8 @@ function createDebugPopup() {
   const logSetting = createToggleSetting({
     id: "debug-log-toggle",
     tooltip:
-      "Append raw EEW websocket messages to debug.log • 受信したEEWの生データをdebug.logに保存",
-    label: "Log EEW Data<br>EEWデータを記録",
+      "Append raw websocket messages to debug.log • 受信したWebsocketの生データをdebug.logに保存",
+    label: "Log websocket Data<br>Websocketデータを記録",
     checked: isDebugLoggingEnabled(),
   });
   const logToggle = logSetting.querySelector("input");
@@ -329,7 +331,7 @@ function createDebugPopup() {
   const note = document.createElement("p");
   note.className = "debug-note";
   note.textContent =
-    "Raw EEW websocket messages and AXIS jmx-seismology reports are written as minified JSON to debug.log in the logs folder, one message per line. · 受信したEEWの生データをログフォルダのdebug.logに1行ずつ保存します。";
+    "Raw websocket messages are written as minified JSON to debug.log in the logs folder, one message per line. · 受信したWebsocketの生データをログフォルダのdebug.logに1行ずつ保存します。";
 
   const clearBtn = document.createElement("button");
   clearBtn.type = "button";

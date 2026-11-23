@@ -66,6 +66,7 @@ const { isUseTestServerEnabled } = await import("../src/debugOptions.js");
 const {
   axisProvider,
   testProvider,
+  wolfxProvider,
   eewClientProvider,
   jmaXmlProvider,
   EXTERNAL_CAPABILITY,
@@ -141,6 +142,10 @@ assert.strictEqual(testProvider.supports(EXTERNAL_CAPABILITY.EEW), true);
 assert.strictEqual(testProvider.supports(EXTERNAL_CAPABILITY.REPORTS), false);
 assert.strictEqual(eewClientProvider.supports(EXTERNAL_CAPABILITY.EEW), true);
 assert.strictEqual(eewClientProvider.supports(EXTERNAL_CAPABILITY.REPORTS), false);
+assert.strictEqual(wolfxProvider.supports(EXTERNAL_CAPABILITY.EEW), true);
+assert.strictEqual(wolfxProvider.supports(EXTERNAL_CAPABILITY.REPORTS), false);
+assert.strictEqual(wolfxProvider.isAvailable(), true, "Wolfx is available on web and desktop");
+assert.strictEqual(getProvider("wolfx"), wolfxProvider);
 assert.strictEqual(jmaXmlProvider.selectable, false, "JMA XML is documentation-only");
 assert.deepStrictEqual(
   getSelectableProviders(EXTERNAL_CAPABILITY.REPORTS).map((provider) => provider.id),
@@ -781,6 +786,215 @@ assert.strictEqual(isLevelMethodEew(normDmdssLevelOverWarning), true);
 assert.strictEqual(normDmdssLevelOverWarning.isLowAccuracy, false);
 
 console.log("✓ Test 6 passed");
+
+// 6b. Wolfx Provider
+console.log("Test 6b: Wolfx provider normalization");
+assert.strictEqual(
+  await wolfxProvider.getWebSocketUrl(),
+  "wss://ws-api.wolfx.jp/jma_eew",
+  "Wolfx WebSocket endpoint",
+);
+await wolfxProvider.loadAreaCodes();
+
+const wolfxInlineWarning = {
+  Title: "緊急地震速報（警報）",
+  CodeType: "Ｍ、最大予測震度及び主要動到達予測時刻の緊急地震速報",
+  EventID: "20240101000000",
+  Serial: 2,
+  AnnouncedTime: "2024/01/01 00:00:02",
+  OriginTime: "2024/01/01 00:00:00",
+  Hypocenter: "石川県能登",
+  Latitude: 37.6,
+  Longitude: 137.2,
+  Magnitude: 7.0,
+  Depth: 10,
+  MaxIntensity: "6弱",
+  Accuracy: { Epicenter: "IPF 法（5 点以上）" },
+  WarnArea: [
+    { Chiiki: "石川県能登", Shindo1: "6弱", Shindo2: "5強", Type: "警報" },
+    { Chiiki: "富山県西部", Shindo1: "4", Shindo2: "3", Type: "予報" },
+  ],
+  isWarn: true,
+  isTraining: false,
+  isFinal: false,
+  isCancel: false,
+};
+const wInline = wolfxProvider.normalizeWolfxEew(wolfxInlineWarning);
+assert.strictEqual(wInline.OriginDateTime, "2024-01-01T00:00:00+09:00");
+assert.strictEqual(wInline.ReportDateTime, "2024-01-01T00:00:02+09:00");
+assert.strictEqual(wInline.Hypocenter.Code, 390);
+assert.deepStrictEqual(wInline.Hypocenter.Coordinate, [137.2, 37.6]);
+assert.strictEqual(wInline.Intensity, "6-");
+assert.strictEqual(wInline.isWarning, true);
+assert.strictEqual(wInline.isLowAccuracy, false);
+assert.strictEqual(wInline.Forecast[0].Code, 390);
+assert.strictEqual(wInline.Forecast[0].Intensity.From, "5+");
+assert.strictEqual(wInline.Forecast[0].Intensity.To, "6-");
+assert.strictEqual(wInline.Forecast[0].isWarningArea, true);
+assert.strictEqual(wInline.Forecast[1].isWarningArea, false);
+assert.deepStrictEqual(extractWarningAreaCodes(wInline), [390]);
+
+const wolfxInlineLevel = {
+  ...wolfxInlineWarning,
+  Title: "緊急地震速報（予報）",
+  CodeType: "最大予測震度のみの緊急地震速報",
+  EventID: "20240101000001",
+  Serial: 1,
+  Magnitude: 0,
+  MaxIntensity: "5弱",
+  Accuracy: {
+    Epicenter: "P 波／S 波レベル超え、IPF 法（1 点）、または仮定震源要素",
+  },
+  WarnArea: [],
+  isWarn: false,
+};
+const wInlineLevel = wolfxProvider.normalizeWolfxEew(wolfxInlineLevel);
+assert.strictEqual(wInlineLevel.Magnitude, "--");
+assert.strictEqual(wInlineLevel.Intensity, "5-");
+assert.strictEqual(wInlineLevel.isLowAccuracy, true);
+assert.strictEqual(isLevelMethodEew(wInlineLevel), true);
+
+const wInlineCancelled = wolfxProvider.normalizeWolfxEew({
+  ...wolfxInlineLevel,
+  isCancel: true,
+});
+assert.strictEqual(wInlineCancelled.Flag.is_cancel, true);
+assert.strictEqual(wInlineCancelled.isLowAccuracy, false);
+
+const wolfxSamplesDir = path.resolve(process.cwd(), "test/samples/wolfx");
+if (fs.existsSync(wolfxSamplesDir)) {
+  const wolfxSample = (name) =>
+    JSON.parse(fs.readFileSync(path.resolve(wolfxSamplesDir, `${name}.json`), "utf8"));
+
+  // Every forecast/warning area name used by the samples must resolve.
+  for (const file of fs.readdirSync(wolfxSamplesDir)) {
+    if (!file.endsWith(".json")) continue;
+    const raw = JSON.parse(fs.readFileSync(path.resolve(wolfxSamplesDir, file), "utf8"));
+    for (const area of raw.WarnArea || []) {
+      assert.ok(
+        wolfxProvider.getAreaCode(area.Chiiki) > 0,
+        `${file}: unresolved area name ${area.Chiiki}`,
+      );
+    }
+  }
+
+  const wFirstRaw = wolfxSample("forecast_first");
+  const wFirst = wolfxProvider.normalizeWolfxEew(wFirstRaw);
+  assert.strictEqual(wFirst.Title, "緊急地震速報（予報）");
+  assert.strictEqual(wFirst.EventID, "20261108010441");
+  assert.strictEqual(wFirst.Serial, 1);
+  assert.strictEqual(wFirst.OriginDateTime, "2026-11-08T01:04:38+09:00");
+  assert.strictEqual(wFirst.ReportDateTime, "2026-11-08T01:04:44+09:00");
+  assert.strictEqual(wFirst.Hypocenter.Code, 450);
+  assert.strictEqual(wFirst.Hypocenter.Name, "愛知県東部");
+  assert.deepStrictEqual(wFirst.Hypocenter.Coordinate, [137.7, 35.0]);
+  assert.strictEqual(wFirst.Hypocenter.Depth, "10 km");
+  assert.strictEqual(wFirst.Intensity, "3");
+  assert.strictEqual(wFirst.Magnitude, "4.4");
+  assert.strictEqual(wFirst.Flag.is_cancel, false);
+  assert.strictEqual(wFirst.isLowAccuracy, false);
+  assert.strictEqual(wFirst.isWarning, false);
+  assert.strictEqual(wFirst.Forecast.length, 0);
+
+  // The deprecated Magunitude field remains a fallback.
+  const wMagFallback = { ...wFirstRaw };
+  delete wMagFallback.Magnitude;
+  assert.strictEqual(wolfxProvider.normalizeWolfxEew(wMagFallback).Magnitude, "4.4");
+
+  const wUpdate = wolfxProvider.normalizeWolfxEew(wolfxSample("forecast_update"));
+  assert.strictEqual(wUpdate.Forecast.length, 1);
+  assert.strictEqual(wUpdate.Forecast[0].Name, "静岡県西部");
+  assert.strictEqual(wUpdate.Forecast[0].Code, wolfxProvider.getAreaCode("静岡県西部"));
+  assert.strictEqual(wUpdate.Forecast[0].Intensity.From, "3");
+  assert.strictEqual(wUpdate.Forecast[0].Intensity.To, "4");
+  assert.strictEqual(wUpdate.Forecast[0].isWarningArea, false);
+  assert.strictEqual(wUpdate.isLowAccuracy, false);
+
+  const wWarningRaw = wolfxSample("warning");
+  const wWarning = wolfxProvider.normalizeWolfxEew(wWarningRaw);
+  assert.strictEqual(wWarning.isWarning, true);
+  assert.strictEqual(wWarning.isLowAccuracy, false);
+  assert.strictEqual(wWarning.Forecast[0].Name, "愛媛県南予");
+  assert.strictEqual(wWarning.Forecast[0].Intensity.From, "6-");
+  assert.strictEqual(wWarning.Forecast[0].Intensity.To, "6-");
+  assert.strictEqual(wWarning.Forecast[0].isWarningArea, true);
+  const wForecastArea = wWarning.Forecast.find((area) => area.Name === "徳島県北部");
+  assert.ok(wForecastArea, "Forecast-only areas are retained in Forecast");
+  assert.strictEqual(wForecastArea.isWarningArea, false);
+  const expectedWarningCodes = [
+    ...new Set(
+      wWarningRaw.WarnArea.filter((area) => area.Type === "警報").map((area) =>
+        wolfxProvider.getAreaCode(area.Chiiki),
+      ),
+    ),
+  ].sort((a, b) => a - b);
+  assert.deepStrictEqual(extractWarningAreaCodes(wWarning), expectedWarningCodes);
+  assert.ok(!extractWarningAreaCodes(wWarning).includes(wForecastArea.Code));
+
+  const wLevel = wolfxProvider.normalizeWolfxEew(wolfxSample("level_method"));
+  assert.strictEqual(wLevel.Magnitude, "--");
+  assert.strictEqual(wLevel.Intensity, "5-");
+  assert.strictEqual(wLevel.isLowAccuracy, true);
+  assert.strictEqual(isLevelMethodEew(wLevel), true);
+
+  const wPlum = wolfxProvider.normalizeWolfxEew(wolfxSample("plum_forecast"));
+  assert.strictEqual(wPlum.isLowAccuracy, true);
+  assert.strictEqual(isPlumEew(wPlum), true);
+  assert.strictEqual(wPlum.Forecast[0].Intensity.From, "不明");
+  assert.strictEqual(wPlum.Forecast[0].Intensity.To, "4");
+
+  const wPlumWarning = wolfxProvider.normalizeWolfxEew(wolfxSample("plum_warning"));
+  assert.strictEqual(wPlumWarning.isWarning, true);
+  assert.strictEqual(wPlumWarning.isLowAccuracy, false);
+
+  const wAssumed = wolfxProvider.normalizeWolfxEew(wolfxSample("assumed_hypocenter"));
+  assert.strictEqual(wAssumed.isLowAccuracy, true);
+  assert.strictEqual(isPlumEew(wAssumed), true);
+
+  const wCancelled = wolfxProvider.normalizeWolfxEew(wolfxSample("cancelled"));
+  assert.strictEqual(wCancelled.Flag.is_cancel, true);
+  assert.strictEqual(wCancelled.isLowAccuracy, false);
+
+  const wSea = wolfxProvider.normalizeWolfxEew(wolfxSample("sea_earthquake"));
+  assert.strictEqual(wSea.isLowAccuracy, false);
+  assert.strictEqual(wSea.Forecast.length, 9);
+} else {
+  console.log("Wolfx sample files not found; skipping sample-based checks");
+}
+
+// WebSocket routing: typed EEW payloads are normalized, heartbeats ignored.
+let wolfxReceived = null;
+const previousWolfxCallbacks = wolfxProvider.callbacks;
+wolfxProvider.callbacks = {
+  onMessage: (message) => {
+    wolfxReceived = message;
+  },
+};
+const wolfxSent = [];
+const previousWolfxSocket = wolfxProvider.socket;
+wolfxProvider.socket = {
+  readyState: WebSocket.OPEN,
+  send: (data) => wolfxSent.push(JSON.parse(data)),
+};
+wolfxProvider.handleIncomingRawMessage(
+  JSON.stringify({ type: "heartbeat", ver: 1, id: "test", timestamp: "0" }),
+);
+assert.strictEqual(wolfxReceived, null, "Heartbeat packets are ignored");
+assert.strictEqual(wolfxSent.length, 1, "Heartbeat packets are answered with a pong");
+assert.strictEqual(wolfxSent[0].type, "pong");
+assert.ok(wolfxSent[0].timestamp, "Pong carries a timestamp");
+wolfxProvider.socket = previousWolfxSocket;
+wolfxProvider.handleIncomingRawMessage(JSON.stringify({ type: "pong", timestamp: "0" }));
+assert.strictEqual(wolfxReceived, null, "Pong packets are ignored");
+wolfxProvider.handleIncomingRawMessage(
+  JSON.stringify({ type: "jma_eew", ...wolfxInlineWarning }),
+);
+assert.strictEqual(wolfxReceived.EventID, "20240101000000");
+wolfxReceived = null;
+wolfxProvider.handleIncomingRawMessage(JSON.stringify(wolfxInlineWarning));
+assert.ok(wolfxReceived, "Payloads without a type field are still accepted");
+wolfxProvider.callbacks = previousWolfxCallbacks;
+console.log("✓ Test 6b passed");
 
 // 7. DMDSS server-status callback handling
 console.log("Test 7: DMDSS server-status message handling");
