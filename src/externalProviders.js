@@ -1306,6 +1306,157 @@ export class WolfxProvider extends WebSocketExternalProvider {
 }
 
 /**
+ * KyoQuake Service Provider
+ * Connects to the hosted DM-D.S.S. proxy and receives earthquake reports.
+ */
+export class KyoQuakeServiceProvider extends WebSocketExternalProvider {
+  constructor() {
+    super({
+      id: "kyoquake-service",
+      name: "KyoQuake Service",
+      capabilities: [EXTERNAL_CAPABILITY.REPORTS],
+      requiresToken: false,
+      expectsHello: false,
+      useHeartbeat: false,
+      detail: {
+        descriptionEn:
+          "Receives earthquake reports. This free service is a mirror of Project DM-D.S.S, provided for use with KyoQuake without any extra configuration needed.",
+        descriptionJa:
+          "地震情報を受信します。この無料サービスはProject DM-D.S.Sのミラーで、追加の設定なしでKyoQuakeから利用できます。",
+        importantEn: [
+          "This service is offered on a best-effort basis.",
+          "It is to be used with KyoQuake only. Any unauthorized usage will be blocked. Continued misuse of the service will lead to its removal.",
+        ],
+        importantJa: [
+          "このサービスはベストエフォートで提供されます。",
+          "このサービスはKyoQuake専用です。不正な使用はブロックされます。悪用が続く場合はサービスが削除されます。",
+        ],
+        sections: [
+          {
+            titleEn: "Reports",
+            titleJa: "地震情報",
+            rows: [
+              { label: "Speed", labelJa: "速度", value: "Great", valueJa: "とても良好" },
+              { label: "Stability", labelJa: "安定性", value: "Good", valueJa: "良好" },
+              {
+                label: "震度速報 - Intensity Flash",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label: "震源速報 / 震源に関する情報 - Epicenter Flash",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label:
+                  "震源・震度情報 / 震源・震度に関する情報 - Intensity & Epicenter Information",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label:
+                  "顕著な地震の震源要素更新のお知らせ - Epicenter update for Notable Earthquake",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label:
+                  "長周期地震動に関する観測情報 - Long-period ground motion (LPGM) Information",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+              {
+                label:
+                  "推計震度分布図250mメッシュ - Estimated Intensity 250m mesh map",
+                labelJa: "",
+                value: "Yes",
+                valueJa: "はい",
+              },
+            ],
+          },
+        ],
+      },
+    });
+    this.statusTimer = null;
+  }
+
+  async getWebSocketUrl() {
+    return "wss://ws.kyoquake.hainaut.xyz/eq";
+  }
+
+  onConnectionEstablished() {
+    this.clearStatusTimer();
+    // The proxy sends a status frame immediately. If it is lost, fall back to
+    // "connected" once the socket has stayed open.
+    this.statusTimer = setTimeout(() => {
+      this.statusTimer = null;
+      if (this.socket?.readyState === WebSocket.OPEN) {
+        this.callbacks?.onStatusChange?.("connected");
+      }
+    }, 10000);
+  }
+
+  handleIncomingRawMessage(raw) {
+    try {
+      const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+
+      if (data?.type === "status") {
+        this.clearStatusTimer();
+        this.callbacks?.onStatusChange?.(
+          data.status === "ok" ? "connected" : "upstream-disconnected",
+        );
+        return;
+      }
+
+      if (data?.type === "ping") {
+        this.sendPong(data.pingId);
+        return;
+      }
+
+      if (data?.type === "pong") return;
+      if (data?.type === "data") {
+        this.callbacks?.onReportMessage?.(data);
+      }
+    } catch (err) {
+      console.warn("[EXTERNAL][KyoQuake Service] Error parsing message:", err);
+    }
+  }
+
+  sendPong(pingId) {
+    if (typeof WebSocket === "undefined") return;
+    if (this.socket?.readyState !== WebSocket.OPEN) return;
+    try {
+      this.socket.send(JSON.stringify({ type: "pong", pingId }));
+    } catch (err) {
+      console.warn("[EXTERNAL][KyoQuake Service] Failed to send pong:", err);
+    }
+  }
+
+  clearStatusTimer() {
+    if (this.statusTimer) {
+      clearTimeout(this.statusTimer);
+      this.statusTimer = null;
+    }
+  }
+
+  retryConnection() {
+    this.clearStatusTimer();
+    super.retryConnection();
+  }
+
+  disconnect() {
+    this.clearStatusTimer();
+    super.disconnect();
+  }
+}
+
+/**
  * EEW Client Provider (Project DM-D.S.S)
  * Connects to a local websocket running in EEW Client on 127.0.0.1:<port>
  * (desktop only).
@@ -1654,6 +1805,7 @@ const providers = new Map();
 export const axisProvider = new AxisProvider();
 export const testProvider = new TestProvider();
 export const wolfxProvider = new WolfxProvider();
+export const kyoQuakeServiceProvider = new KyoQuakeServiceProvider();
 export const eewClientProvider = new EewClientProvider();
 export const jmaXmlProvider = new JmaXmlProvider();
 
@@ -1664,6 +1816,7 @@ export function registerProvider(provider) {
 registerProvider(axisProvider);
 registerProvider(testProvider);
 registerProvider(wolfxProvider);
+registerProvider(kyoQuakeServiceProvider);
 registerProvider(eewClientProvider);
 registerProvider(jmaXmlProvider);
 

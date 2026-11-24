@@ -26,7 +26,7 @@ import {
   onEewSourceChanged,
 } from "./eew.js";
 import { loadEewDependencies } from "./eew/physics.js";
-import { ingestAxisMessage } from "./liveMode.js";
+import { ingestAxisMessage, ingestTelegramMessage } from "./liveMode.js";
 
 const CAPABILITIES = [EXTERNAL_CAPABILITY.EEW, EXTERNAL_CAPABILITY.REPORTS];
 
@@ -340,6 +340,14 @@ async function _connectProvider(provider, record, session) {
       if (!isExternalSourceEnabled(EXTERNAL_CAPABILITY.REPORTS)) return;
       if (getExternalSourceId(EXTERNAL_CAPABILITY.REPORTS) !== provider.id) return;
       ingestAxisMessage(message);
+    },
+    onReportMessage: (message) => {
+      if (!record.capabilities.has(EXTERNAL_CAPABILITY.REPORTS)) return;
+      if (!isExternalSourceEnabled(EXTERNAL_CAPABILITY.REPORTS)) return;
+      if (getExternalSourceId(EXTERNAL_CAPABILITY.REPORTS) !== provider.id) return;
+      ingestTelegramMessage(message).catch((err) => {
+        console.warn("[external] Telegram ingestion failed:", err);
+      });
     },
     onUserPoint: async (location) => {
       if (!provider.supportsHomeSync || !provider.getHomeSync()) return;

@@ -285,6 +285,39 @@ async function _fetchAndNormalizeXmlEntry(atomEntry, options = {}) {
 }
 
 /**
+ * Normalizes an already-parsed JMA XML report into the same entry shape used
+ * by the Atom feed poller. Used by external providers that deliver JMA XML
+ * telegrams (for example the KyoQuake Service proxy).
+ *
+ * @param {Document} doc Parsed JMA XML report.
+ * @param {{ttl?: string, rdt?: string, isDistant?: boolean}} [options]
+ * @returns {Object|null}
+ */
+export function normalizeXmlDocEntry(doc, { ttl, rdt = null, isDistant = false } = {}) {
+  const eventId = _xmlText(doc, 'EventID');
+  if (!eventId) return null;
+
+  const reportDateTime = _xmlText(doc, 'ReportDateTime');
+  const serial = _xmlText(doc, 'Serial');
+
+  const baseEntry = {
+    eid: eventId,
+    ttl,
+    rdt: rdt || reportDateTime || null,
+    reportDateTime: reportDateTime || rdt || null,
+    serial: serial || null,
+    isDistantEarthquake: isDistant || undefined,
+    _xmlDoc: doc,
+    _xmlUrl: null,
+  };
+
+  if (ttl === FLASH_INTENSITY_TITLE) return _normalizeVXSE51Entry(baseEntry, doc);
+  if (ttl === FLASH_EPICENTER_TITLE) return _normalizeVXSE52Entry(baseEntry, doc);
+  if (ttl === SPECIAL_TITLE) return _normalizeVXSE61Entry(baseEntry, doc);
+  return baseEntry;
+}
+
+/**
  * Normalizes a VXSE53 (震源・震度に関する情報) XML report.
  * This is the main full report – we store the XML doc reference for
  * later parsing by JMAEarthquakeReport.fromXmlDoc().

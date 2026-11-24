@@ -2,6 +2,7 @@ import assert from "node:assert";
 import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
+import zlib from "node:zlib";
 
 const require = createRequire(import.meta.url);
 const WebSocket = require("ws");
@@ -67,6 +68,7 @@ const {
   axisProvider,
   testProvider,
   wolfxProvider,
+  kyoQuakeServiceProvider,
   eewClientProvider,
   jmaXmlProvider,
   EXTERNAL_CAPABILITY,
@@ -93,6 +95,17 @@ const {
   collectWarningAreaCodes,
   buildWarningAreaOutline,
 } = await import("../src/eew/warningAreas.js");
+const { getTelegramTtl, isEqTelegram, decodeTelegramXmlText } = await import(
+  "../src/dmdataTelegram.js"
+);
+const {
+  FLASH_INTENSITY_TITLE,
+  FLASH_EPICENTER_TITLE,
+  NORMAL_TITLE,
+  DISTANT_EARTHQUAKE_TITLE,
+  SPECIAL_TITLE,
+  LPGM_TITLE,
+} = await import("../src/reportUtils.js");
 
 console.log("=== Running EEW Providers Unit Tests ===");
 
@@ -149,8 +162,8 @@ assert.strictEqual(getProvider("wolfx"), wolfxProvider);
 assert.strictEqual(jmaXmlProvider.selectable, false, "JMA XML is documentation-only");
 assert.deepStrictEqual(
   getSelectableProviders(EXTERNAL_CAPABILITY.REPORTS).map((provider) => provider.id),
-  ["axis"],
-  "Only AXIS is selectable as an earthquake reports source",
+  ["axis", "kyoquake-service"],
+  "AXIS and KyoQuake Service are selectable as earthquake reports sources",
 );
 
 localStorage.clear();
@@ -995,6 +1008,127 @@ wolfxProvider.handleIncomingRawMessage(JSON.stringify(wolfxInlineWarning));
 assert.ok(wolfxReceived, "Payloads without a type field are still accepted");
 wolfxProvider.callbacks = previousWolfxCallbacks;
 console.log("✓ Test 6b passed");
+
+// 6c. KyoQuake Service Provider
+console.log("Test 6c: KyoQuake Service provider");
+assert.strictEqual(kyoQuakeServiceProvider.id, "kyoquake-service");
+assert.strictEqual(kyoQuakeServiceProvider.name, "KyoQuake Service");
+assert.strictEqual(kyoQuakeServiceProvider.supports(EXTERNAL_CAPABILITY.EEW), false);
+assert.strictEqual(kyoQuakeServiceProvider.supports(EXTERNAL_CAPABILITY.REPORTS), true);
+assert.strictEqual(kyoQuakeServiceProvider.isAvailable(), true);
+assert.strictEqual(
+  await kyoQuakeServiceProvider.getWebSocketUrl(),
+  "wss://ws.kyoquake.hainaut.xyz/eq",
+  "KyoQuake Service WebSocket endpoint",
+);
+assert.strictEqual(getProvider("kyoquake-service"), kyoQuakeServiceProvider);
+assert.ok(
+  getSelectableProviders(EXTERNAL_CAPABILITY.REPORTS).some(
+    (provider) => provider.id === "kyoquake-service",
+  ),
+);
+
+const serviceStatuses = [];
+const serviceReports = [];
+const serviceSent = [];
+const previousServiceCallbacks = kyoQuakeServiceProvider.callbacks;
+const previousServiceSocket = kyoQuakeServiceProvider.socket;
+kyoQuakeServiceProvider.callbacks = {
+  onStatusChange: (status) => serviceStatuses.push(status),
+  onReportMessage: (message) => serviceReports.push(message),
+};
+kyoQuakeServiceProvider.socket = {
+  readyState: WebSocket.OPEN,
+  send: (data) => serviceSent.push(JSON.parse(data)),
+};
+kyoQuakeServiceProvider.handleIncomingRawMessage(
+  JSON.stringify({ type: "status", status: "ok", message: "Connected" }),
+);
+assert.deepStrictEqual(serviceStatuses, ["connected"]);
+kyoQuakeServiceProvider.handleIncomingRawMessage(
+  JSON.stringify({ type: "status", status: "error", message: "Disconnected" }),
+);
+assert.strictEqual(serviceStatuses.at(-1), "upstream-disconnected");
+kyoQuakeServiceProvider.handleIncomingRawMessage(
+  JSON.stringify({ type: "ping", pingId: "p1" }),
+);
+assert.deepStrictEqual(serviceSent.at(-1), { type: "pong", pingId: "p1" });
+kyoQuakeServiceProvider.handleIncomingRawMessage(
+  JSON.stringify({ type: "pong", pingId: "p1" }),
+);
+assert.strictEqual(serviceStatuses.at(-1), "upstream-disconnected");
+kyoQuakeServiceProvider.handleIncomingRawMessage(
+  JSON.stringify({ type: "data", head: { type: "VXSE53" }, format: "xml", body: "x" }),
+);
+assert.strictEqual(serviceReports.length, 1);
+assert.strictEqual(serviceReports[0].head.type, "VXSE53");
+kyoQuakeServiceProvider.socket = previousServiceSocket;
+kyoQuakeServiceProvider.callbacks = previousServiceCallbacks;
+
+assert.strictEqual(getTelegramTtl({ head: { type: "VXSE51" } }), FLASH_INTENSITY_TITLE);
+assert.strictEqual(getTelegramTtl({ head: { type: "VXSE52" } }), FLASH_EPICENTER_TITLE);
+assert.strictEqual(
+  getTelegramTtl({ head: { type: "VXSE53" }, xmlReport: { head: { title: NORMAL_TITLE } } }),
+  NORMAL_TITLE,
+);
+assert.strictEqual(
+  getTelegramTtl({
+    head: { type: "VXSE53" },
+    xmlReport: { head: { title: DISTANT_EARTHQUAKE_TITLE } },
+  }),
+  DISTANT_EARTHQUAKE_TITLE,
+);
+assert.strictEqual(getTelegramTtl({ head: { type: "VXSE61" } }), SPECIAL_TITLE);
+assert.strictEqual(getTelegramTtl({ head: { type: "VXSE62" } }), LPGM_TITLE);
+assert.strictEqual(getTelegramTtl({ head: { type: "IXAC41" } }), null);
+assert.strictEqual(isEqTelegram({ type: "data", head: { type: "VXSE53" } }), true);
+assert.strictEqual(isEqTelegram({ type: "data", head: { type: "IXAC41" } }), true);
+assert.strictEqual(isEqTelegram({ type: "data", head: { type: "VTSE41" } }), false);
+
+const xmlSample =
+  '<?xml version="1.0" encoding="UTF-8"?><Report><Control><Title>震度速報</Title></Control><Head><EventID>20240101000000</EventID><ReportDateTime>2024-01-01T00:00:00+09:00</ReportDateTime><Serial>1</Serial></Head></Report>';
+const xmlBody = zlib.gzipSync(Buffer.from(xmlSample, "utf8")).toString("base64");
+const decodedXml = await decodeTelegramXmlText({
+  format: "xml",
+  compression: "gzip",
+  encoding: "base64",
+  body: xmlBody,
+});
+assert.ok(decodedXml?.includes("<EventID>20240101000000</EventID>"));
+assert.strictEqual(
+  await decodeTelegramXmlText({ format: "binary", encoding: "base64", body: xmlBody }),
+  null,
+);
+
+const serviceSamplesDir = path.resolve(process.cwd(), "service/samples");
+if (fs.existsSync(serviceSamplesDir)) {
+  for (const file of fs.readdirSync(serviceSamplesDir)) {
+    if (!file.endsWith(".websocket.json")) continue;
+    const frame = JSON.parse(fs.readFileSync(path.resolve(serviceSamplesDir, file), "utf8"));
+    if (!isEqTelegram(frame)) continue;
+    if (frame.format !== "xml") {
+      assert.strictEqual(frame.head.type, "IXAC41");
+      continue;
+    }
+    assert.ok(getTelegramTtl(frame), `${file}: telegram ttl`);
+    const text = await decodeTelegramXmlText(frame);
+    assert.ok(text?.startsWith("<?xml"), `${file}: decoded XML`);
+  }
+
+  const distantFrame = JSON.parse(
+    fs.readFileSync(
+      path.resolve(
+        serviceSamplesDir,
+        "VXSE53_RJTD_20261009182600_cb7a15f.websocket.json",
+      ),
+      "utf8",
+    ),
+  );
+  assert.strictEqual(getTelegramTtl(distantFrame), DISTANT_EARTHQUAKE_TITLE);
+} else {
+  console.log("KyoQuake Service samples not found; skipping sample-based checks");
+}
+console.log("✓ Test 6c passed");
 
 // 7. DMDSS server-status callback handling
 console.log("Test 7: DMDSS server-status message handling");

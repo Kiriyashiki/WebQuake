@@ -38,7 +38,16 @@ import {
   parseAxisLpgm,
 } from "./axisReports.js";
 import JMAEarthquakeReport from "./jmaEarthquakeReport.js";
-import { fetchXmlFeedEntries, parseFlashIntensityXml } from "./xmlFeedParser.js";
+import {
+  fetchXmlFeedEntries,
+  normalizeXmlDocEntry,
+  parseFlashIntensityXml,
+} from "./xmlFeedParser.js";
+import {
+  decodeTelegramXml,
+  getTelegramTtl,
+  isEqTelegram,
+} from "./dmdataTelegram.js";
 import { isDesktop, desktopFetch } from "./desktopBridge.js";
 
 /**
@@ -88,10 +97,11 @@ let _latestSpecialEntries = new Map();
 let _latestLpgmEntries = new Map();
 
 /**
- * AXIS messages received while live mode is enabled but not initialized yet
- * (for example while the initial JSON reports are still loading).
+ * External report entries received while live mode is enabled but not
+ * initialized yet (for example while the initial JSON reports are still
+ * loading). Used by AXIS reports and KyoQuake Service telegrams.
  */
-let _pendingAxisEntries = [];
+let _pendingExternalEntries = [];
 
 let _pollingTimeoutId = null;
 let _currentInterval = POLL_INTERVAL;
@@ -248,8 +258,8 @@ export function startLivePolling(areaCodes, callbacks = {}, initialReports = [])
 
   _currentInterval = POLL_INTERVAL;
 
-  // Process AXIS reports that arrived before the initial load finished.
-  _flushPendingAxisEntries();
+  // Process external reports that arrived before the initial load finished.
+  _flushPendingExternalEntries();
 
   if (_pollingTimeoutId === null) {
     if (isDesktop) {
@@ -270,7 +280,7 @@ export function stopLivePolling() {
   _isActive = false;
   _areaCodes = null;
   _callbacks = null;
-  _pendingAxisEntries = [];
+  _pendingExternalEntries = [];
   if (_pollingTimeoutId !== null) {
     clearTimeout(_pollingTimeoutId);
     _pollingTimeoutId = null;
@@ -300,8 +310,8 @@ export function pruneTrackedEntries(eventIdsToRemove) {
     _latestSpecialEntries.delete(id);
     _latestLpgmEntries.delete(id);
   }
-  if (_pendingAxisEntries.length > 0) {
-    _pendingAxisEntries = _pendingAxisEntries.filter(
+  if (_pendingExternalEntries.length > 0) {
+    _pendingExternalEntries = _pendingExternalEntries.filter(
       (entry) => !eventIdsToRemove.has(entry.eid),
     );
   }
@@ -313,14 +323,25 @@ document.addEventListener("reports-pruned", (e) => {
   }
 });
 
-// ─── AXIS ingestion ─────────────────────────────────────────────────────────
+// ─── External report ingestion ──────────────────────────────────────────────
+
+function _queueExternalEntry(entry) {
+  if (!_isActive || !_areaCodes || !_callbacks) {
+    _pendingExternalEntries.push(entry);
+    if (_pendingExternalEntries.length > 100) _pendingExternalEntries.shift();
+    return;
+  }
+
+  const areaCodes = _areaCodes;
+  const callbacks = _callbacks;
+  _enqueueLiveTask(() => _processExternalEntry(entry, areaCodes, callbacks));
+}
 
 /**
  * Ingests a `jmx-seismology` AXIS message into live mode.
  *
- * The EEW module only calls this when the AXIS reports setting and Live Mode
- * are both enabled.  Messages received before live mode has finished starting
- * are buffered briefly and processed during startLivePolling().
+ * Messages received before live mode has finished starting are buffered
+ * briefly and processed during startLivePolling().
  *
  * @param {Object} message - AXIS `message` payload
  * @returns {boolean} True when the message was accepted for processing
@@ -328,26 +349,59 @@ document.addEventListener("reports-pruned", (e) => {
 export function ingestAxisMessage(message) {
   const entry = normalizeAxisMessage(message);
   if (!entry) return false;
-
-  if (!_isActive || !_areaCodes || !_callbacks) {
-    _pendingAxisEntries.push(entry);
-    if (_pendingAxisEntries.length > 100) _pendingAxisEntries.shift();
-    return true;
-  }
-
-  const areaCodes = _areaCodes;
-  const callbacks = _callbacks;
-  _enqueueLiveTask(() => _processExternalEntry(entry, areaCodes, callbacks));
+  _queueExternalEntry(entry);
   return true;
 }
 
-function _flushPendingAxisEntries() {
-  if (!_pendingAxisEntries.length || !_isActive || !_areaCodes || !_callbacks) {
+/**
+ * Ingests a KyoQuake Service (DM-D.S.S.) telegram into live mode.
+ *
+ * XML telegrams are decompressed and fed through the existing JMA XML report
+ * pipeline. Other formats are ignored, and IXAC41 is accepted but not yet
+ * processed.
+ *
+ * @param {Object} message - DM-D.S.S. `data` frame forwarded by the proxy
+ * @returns {Promise<boolean>} True when the message was accepted
+ */
+export async function ingestTelegramMessage(message) {
+  if (!isEqTelegram(message)) return false;
+
+  if (message.head?.type === "IXAC41") {
+    // TODO: process the estimated intensity 250m mesh once implemented.
+    console.debug("[live-mode] IXAC41 received; processing not implemented yet");
+    return true;
+  }
+
+  if (message.format !== "xml") return false;
+
+  try {
+    const doc = await decodeTelegramXml(message);
+    if (!doc) return false;
+
+    const ttl = getTelegramTtl(message, doc);
+    if (!ttl) return false;
+
+    const entry = normalizeXmlDocEntry(doc, {
+      ttl,
+      isDistant: ttl === DISTANT_EARTHQUAKE_TITLE,
+    });
+    if (!entry) return false;
+
+    _queueExternalEntry(entry);
+    return true;
+  } catch (err) {
+    console.warn("[live-mode] Failed to ingest telegram:", err);
+    return false;
+  }
+}
+
+function _flushPendingExternalEntries() {
+  if (!_pendingExternalEntries.length || !_isActive || !_areaCodes || !_callbacks) {
     return;
   }
   const areaCodes = _areaCodes;
   const callbacks = _callbacks;
-  const pending = _pendingAxisEntries.splice(0);
+  const pending = _pendingExternalEntries.splice(0);
   for (const entry of pending) {
     _enqueueLiveTask(() => _processExternalEntry(entry, areaCodes, callbacks));
   }
