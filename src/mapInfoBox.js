@@ -15,8 +15,11 @@ import {
   clearShakemapHighlights,
   highlightShakemapObservations,
   isLpgmVisible,
+  clearIxac41MeshDisplay,
+  updateIxac41Visibility,
 } from "./map.js";
 import { getCityAreasState } from "./sidebarUI.js";
+import { getIxac41MeshForReport } from "./ixac41/store.js";
 
 /**
  * Checks if a report contains station-level observation data.
@@ -59,9 +62,18 @@ export function updateMapLegend(isLpgm) {
  * @param {Object} report
  * @param {Object} map
  */
+let _lastDisplayedEventId = null;
+
 export function displayMapInfoBox(report, map) {
   const infoBox = document.getElementById("map-info-box");
   if (!infoBox) return;
+
+  const previousMeshActive =
+    _lastDisplayedEventId != null &&
+    _lastDisplayedEventId === report.eventId &&
+    infoBox.querySelector(".ixac41-toggle-wrapper")?.classList.contains("active");
+  _lastDisplayedEventId = report.eventId;
+  if (!previousMeshActive) clearIxac41MeshDisplay(map);
 
   // Populate location
   const locationJa = infoBox.querySelector(".info-box-location-ja");
@@ -272,6 +284,10 @@ export function displayMapInfoBox(report, map) {
           if (shakemapWrapper?.classList.contains("active")) {
             shakemapWrapper.querySelector(".shakemap-toggle-header").click();
           }
+          const ixac41Wrapper = infoBox.querySelector(".ixac41-toggle-wrapper");
+          if (ixac41Wrapper?.classList.contains("active")) {
+            ixac41Wrapper.querySelector(".ixac41-toggle-header").click();
+          }
 
           lpgmWrapper.classList.add("active");
           updateLpgmVisibility(map, true);
@@ -288,6 +304,52 @@ export function displayMapInfoBox(report, map) {
           setTimeout(() => {
             highlightObservations(map, report.lpgmInfo.observations, true);
           }, 50);
+        }
+      });
+    }
+  }
+
+  // Setup IXAC41 estimated intensity mesh toggle
+  const ixac41Wrapper = infoBox.querySelector(".ixac41-toggle-wrapper");
+  const ixac41Mesh = getIxac41MeshForReport(report);
+  let ixac41Available = false;
+  if (ixac41Wrapper) {
+    if (!ixac41Mesh) {
+      ixac41Wrapper.classList.add("hidden");
+      ixac41Wrapper.classList.remove("active");
+      if (previousMeshActive) updateIxac41Visibility(map, null, false);
+    } else {
+      ixac41Available = true;
+      ixac41Wrapper.classList.remove("hidden");
+      ixac41Wrapper.classList.toggle("active", Boolean(previousMeshActive));
+      if (previousMeshActive) updateIxac41Visibility(map, ixac41Mesh, true);
+
+      const ixac41Header = ixac41Wrapper.querySelector(".ixac41-toggle-header");
+      const newIxac41Header = ixac41Header.cloneNode(true);
+      ixac41Header.parentNode.replaceChild(newIxac41Header, ixac41Header);
+
+      newIxac41Header.addEventListener("click", () => {
+        const isCurrentlyActive = ixac41Wrapper.classList.contains("active");
+
+        if (isCurrentlyActive) {
+          ixac41Wrapper.classList.remove("active");
+          updateIxac41Visibility(map, null, false);
+
+          setTimeout(() => {
+            highlightObservations(map, report.observations);
+          }, 50);
+        } else {
+          const shakemapWrapper = infoBox.querySelector(".shakemap-toggle-wrapper");
+          if (shakemapWrapper?.classList.contains("active")) {
+            shakemapWrapper.querySelector(".shakemap-toggle-header").click();
+          }
+          const lpgmWrapper = infoBox.querySelector(".lpgm-toggle-wrapper");
+          if (lpgmWrapper?.classList.contains("active")) {
+            lpgmWrapper.querySelector(".lpgm-toggle-header").click();
+          }
+
+          ixac41Wrapper.classList.add("active");
+          updateIxac41Visibility(map, ixac41Mesh, true);
         }
       });
     }
@@ -331,6 +393,10 @@ export function displayMapInfoBox(report, map) {
           if (lpgmWrapper?.classList.contains("active")) {
             lpgmWrapper.querySelector(".lpgm-toggle-header").click();
           }
+          const ixac41Wrapper = infoBox.querySelector(".ixac41-toggle-wrapper");
+          if (ixac41Wrapper?.classList.contains("active")) {
+            ixac41Wrapper.querySelector(".ixac41-toggle-header").click();
+          }
 
           shakemapWrapper.classList.add("active");
           updateShakemapVisibility(map, true);
@@ -344,7 +410,7 @@ export function displayMapInfoBox(report, map) {
   }
 
   if (mapTogglesWrapper) {
-    if (!shakemapAvailable && !lpgmAvailable) {
+    if (!shakemapAvailable && !lpgmAvailable && !ixac41Available) {
       mapTogglesWrapper.classList.add("hidden");
     } else {
       mapTogglesWrapper.classList.remove("hidden");
@@ -436,4 +502,12 @@ export function refreshInfoBoxColors() {
   _refreshInfoBoxIntensity(infoBox, report);
   _refreshInfoBoxLpgm(infoBox, report);
   _refreshInfoBoxObservations(infoBox, report);
+
+  if (
+    infoBox.querySelector(".ixac41-toggle-wrapper")?.classList.contains("active") &&
+    globalThis.__eqMap
+  ) {
+    const mesh = getIxac41MeshForReport(report);
+    if (mesh) updateIxac41Visibility(globalThis.__eqMap, mesh, true);
+  }
 }

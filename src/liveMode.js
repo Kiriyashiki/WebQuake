@@ -48,6 +48,15 @@ import {
   getTelegramTtl,
   isEqTelegram,
 } from "./dmdataTelegram.js";
+import { ingestIxac41Message } from "./ixac41/parser.js";
+import {
+  addPendingIxac41Mesh,
+  attachIxac41ToEvent,
+  findBestIxac41EventId,
+  getIxac41MeshForReport,
+  pruneExpiredIxac41Meshes,
+  pruneIxac41Meshes,
+} from "./ixac41/store.js";
 import { isDesktop, desktopFetch } from "./desktopBridge.js";
 
 /**
@@ -206,6 +215,8 @@ function _enqueueLiveTask(task) {
  * @param {Object} callbacks - Callback functions:
  *   - onNewEntry(entry, report): Called when a new entry is detected
  *   - onUpdatedEntry(entry, report): Called when an entry is updated
+ *   - onReportMetadataUpdate({eventId}): Called when metadata (for example an
+ *     IXAC41 mesh) becomes available for an existing report
  *   - onError(err): Called if polling fails
  * @param {Array} initialReports - Initial reports already loaded (for tracking purposes)
  */
@@ -315,6 +326,7 @@ export function pruneTrackedEntries(eventIdsToRemove) {
       (entry) => !eventIdsToRemove.has(entry.eid),
     );
   }
+  pruneIxac41Meshes(eventIdsToRemove);
 }
 
 document.addEventListener("reports-pruned", (e) => {
@@ -353,12 +365,56 @@ export function ingestAxisMessage(message) {
   return true;
 }
 
+function _attachIxac41Mesh(eventId, mesh) {
+  const stored = attachIxac41ToEvent(eventId, mesh);
+  if (stored === mesh) {
+    _callbacks?.onReportMetadataUpdate?.({ eventId });
+  }
+}
+
+function _markIxac41OnReport(report) {
+  if (!report) return;
+  const mesh = getIxac41MeshForReport(report);
+  if (mesh) report.hasIxac41Mesh = true;
+}
+
+function _handleIxac41Message(message) {
+  pruneExpiredIxac41Meshes();
+
+  const result = ingestIxac41Message(message);
+  if (result.status === "incomplete") {
+    console.debug(
+      "[live-mode] IXAC41 incomplete:",
+      result.joinedBytes,
+      "/",
+      result.declaredBytes,
+    );
+    return;
+  }
+  if (result.status !== "parsed") return;
+
+  const mesh = result.mesh;
+  const eventIds = new Set([..._trackedEntries.keys(), ..._trackedFlashEntries.keys()]);
+  const bestEventId = findBestIxac41EventId(
+    mesh,
+    eventIds,
+    (eventId) => _trackedEntries.get(eventId)?.report || null,
+  );
+
+  if (!bestEventId) {
+    addPendingIxac41Mesh(mesh);
+    return;
+  }
+
+  _attachIxac41Mesh(bestEventId, mesh);
+}
+
 /**
  * Ingests a KyoQuake Service (DM-D.S.S.) telegram into live mode.
  *
  * XML telegrams are decompressed and fed through the existing JMA XML report
- * pipeline. Other formats are ignored, and IXAC41 is accepted but not yet
- * processed.
+ * pipeline. IXAC41 telegrams are decoded into the 250 m intensity mesh and
+ * matched to their event. Other formats are ignored.
  *
  * @param {Object} message - DM-D.S.S. `data` frame forwarded by the proxy
  * @returns {Promise<boolean>} True when the message was accepted
@@ -367,8 +423,7 @@ export async function ingestTelegramMessage(message) {
   if (!isEqTelegram(message)) return false;
 
   if (message.head?.type === "IXAC41") {
-    // TODO: process the estimated intensity 250m mesh once implemented.
-    console.debug("[live-mode] IXAC41 received; processing not implemented yet");
+    _handleIxac41Message(message);
     return true;
   }
 
@@ -659,6 +714,7 @@ async function _handleNormalEntry({
   if (!report) return;
 
   _applyLatestOverridesToReport(report, eventId, version);
+  _markIxac41OnReport(report);
 
   _trackedEntries.set(eventId, {
     version,
@@ -821,6 +877,7 @@ async function _handleSingleFlashEvent(
       cachedIntensityData,
     );
     if (flashReport) {
+      _markIxac41OnReport(flashReport);
       _trackedFlashEntries.set(eid, {
         intensityVersion,
         epicenterVersion,
@@ -855,6 +912,7 @@ async function _handleSingleFlashEvent(
       cachedIntensityData,
     );
     if (flashReport) {
+      _markIxac41OnReport(flashReport);
       _trackedFlashEntries.set(eid, {
         intensityVersion:
           intensityVersion || trackedFlash.intensityVersion || null,

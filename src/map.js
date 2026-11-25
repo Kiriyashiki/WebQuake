@@ -17,6 +17,11 @@ import {
 } from "./constants.js";
 import { renderIntensityBadge } from "./intensityBadge.js";
 import { buildStyle } from "./map/mapStyle.js";
+import {
+  hideIxac41Mesh,
+  showIxac41Mesh,
+  updateIxac41BoundaryVisibility,
+} from "./map/ixac41Layer.js";
 
 const C = MAP_COLORS;
 
@@ -324,6 +329,7 @@ export function initMap(
 let _currentCityAreasVisible = true;
 let _pendingCityAreasUpdate = null;
 let _shakemapVisible = false;
+let _ixac41Visible = false;
 
 /**
  * Map of shakemap station name (JP, clean) → { ja, en, intensity }.
@@ -372,6 +378,31 @@ export function updateCityAreasVisibility(map, useCityAreas) {
 }
 
 function _applyCityAreasVisibility(map, useCityAreas) {
+  if (_ixac41Visible) {
+    // Mesh mode hides the intensity fills but keeps area/city boundaries, which
+    // are duplicated above the mesh layer.
+    map.setLayoutProperty("cities-fill", "visibility", "none");
+    map.setLayoutProperty("forecast-fill", "visibility", "none");
+
+    map.setLayoutProperty(
+      "cities-line-bg",
+      "visibility",
+      useCityAreas ? "visible" : "none",
+    );
+    map.setLayoutProperty("forecast-line-bg", "visibility", "visible");
+    map.setLayoutProperty("prefecture-line", "visibility", "visible");
+
+    map.setLayoutProperty(
+      "cities-line",
+      "visibility",
+      useCityAreas ? "visible" : "none",
+    );
+    map.setLayoutProperty("forecast-line", "visibility", "visible");
+
+    updateIxac41BoundaryVisibility(map, useCityAreas);
+    return;
+  }
+
   if (_shakemapVisible) {
     // If shakemap is active, force both city and forecast layers off
     map.setLayoutProperty("cities-fill", "visibility", "none");
@@ -418,6 +449,10 @@ export function isLpgmVisible() {
  * @param {boolean} show
  */
 export function updateLpgmVisibility(map, show) {
+  if (show && _ixac41Visible) {
+    _ixac41Visible = false;
+    hideIxac41Mesh(map);
+  }
   _lpgmVisible = show;
 
   if (show) {
@@ -459,6 +494,55 @@ export function updateLpgmVisibility(map, show) {
   }
 
   // Update layout properties to enforce forecast areas only
+  _applyCityAreasVisibility(map, _currentCityAreasVisible);
+}
+
+// ─── IXAC41 estimated intensity mesh ────────────────────────────────────────
+
+export function isIxac41Visible() {
+  return _ixac41Visible;
+}
+
+/**
+ * Shows or hides the IXAC41 250 m mesh raster.
+ * @param {maplibregl.Map} map
+ * @param {Object|null} mesh
+ * @param {boolean} show
+ */
+export function updateIxac41Visibility(map, mesh, show) {
+  if (!map) return;
+  if (!map.isStyleLoaded()) {
+    map.once("idle", () => updateIxac41Visibility(map, mesh, show));
+    return;
+  }
+
+  if (show) {
+    _ixac41Visible = true;
+    showIxac41Mesh(map, mesh, { cityAreas: _currentCityAreasVisible });
+  } else {
+    _ixac41Visible = false;
+    hideIxac41Mesh(map);
+  }
+
+  _applyCityAreasVisibility(map, _currentCityAreasVisible);
+}
+
+/**
+ * Resets the mesh overlay when leaving a report.
+ * @param {maplibregl.Map} map
+ */
+export function clearIxac41MeshDisplay(map) {
+  if (!map) return;
+  if (!map.isStyleLoaded()) {
+    map.once("idle", () => clearIxac41MeshDisplay(map));
+    return;
+  }
+  hideIxac41Mesh(map);
+  if (typeof document !== "undefined") {
+    document.querySelector(".ixac41-toggle-wrapper")?.classList.remove("active");
+  }
+  if (!_ixac41Visible) return;
+  _ixac41Visible = false;
   _applyCityAreasVisibility(map, _currentCityAreasVisible);
 }
 
@@ -563,6 +647,10 @@ let _pendingShakemapUpdate = null;
  * @param {boolean} show
  */
 export function updateShakemapVisibility(map, show) {
+  if (show && _ixac41Visible) {
+    _ixac41Visible = false;
+    hideIxac41Mesh(map);
+  }
   _shakemapVisible = show;
 
   if (!map.isStyleLoaded()) {

@@ -10,6 +10,7 @@ import {
   highlightObservations,
   fitBoundsToObservations,
   hideHomeLocationIntensity,
+  clearIxac41MeshDisplay,
 } from "../map.js";
 import { updateMapLegend } from "../mapInfoBox.js";
 import {
@@ -251,6 +252,7 @@ export function updateMapForEew() {
   eewState.eewEpicenterMarkers = [];
 
   clearEpicenter(eewState.mapInstance); // Clear normal epicenter
+  clearIxac41MeshDisplay(eewState.mapInstance);
   updateCityAreasVisibility(eewState.mapInstance, false); // Force Cities off temporarily
   updateShakemapVisibility(eewState.mapInstance, false); // Force Shakemap off temporarily
   updateLpgmVisibility(eewState.mapInstance, false); // Force LPGM off temporarily

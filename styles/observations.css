@@ -11,7 +11,8 @@
 .observations-list-header,
 .observations-intensity-header,
 .shakemap-toggle-header,
-.lpgm-toggle-header {
+.lpgm-toggle-header,
+.ixac41-toggle-header {
   display: flex;
   align-items: center;
   padding: 6px 8px;
@@ -29,7 +30,8 @@
 .observations-list-header:hover,
 .observations-intensity-header:hover,
 .shakemap-toggle-header:hover,
-.lpgm-toggle-header:hover {
+.lpgm-toggle-header:hover,
+.ixac41-toggle-header:hover {
   background: var(--accent2-glow);
 }
 
@@ -51,7 +53,8 @@
 .observations-list-label,
 .observations-intensity-label,
 .shakemap-toggle-label,
-.lpgm-toggle-label {
+.lpgm-toggle-label,
+.ixac41-toggle-label {
   color: var(--accent2);
   font-family: var(--font-mono);
   font-weight: 600;
@@ -206,30 +209,35 @@
 }
 
 .shakemap-toggle-wrapper,
-.lpgm-toggle-wrapper {
+.lpgm-toggle-wrapper,
+.ixac41-toggle-wrapper {
   display: flex;
   flex-direction: column;
   flex: 1;
 }
 
-/* Add a right border to the first toggle to separate them */
-.shakemap-toggle-wrapper {
+/* Separate adjacent mode buttons. */
+.shakemap-toggle-wrapper,
+.lpgm-toggle-wrapper {
   border-right: 1px solid var(--border);
 }
 
 .shakemap-toggle-header,
-.lpgm-toggle-header {
+.lpgm-toggle-header,
+.ixac41-toggle-header {
   justify-content: center;
   height: 100%;
 }
 
 .shakemap-toggle-wrapper.active .shakemap-toggle-header,
-.lpgm-toggle-wrapper.active .lpgm-toggle-header {
+.lpgm-toggle-wrapper.active .lpgm-toggle-header,
+.ixac41-toggle-wrapper.active .ixac41-toggle-header {
   background: var(--accent2-dim);
 }
 
 .shakemap-toggle-label,
-.lpgm-toggle-label {
+.lpgm-toggle-label,
+.ixac41-toggle-label {
   text-align: center;
 }
 

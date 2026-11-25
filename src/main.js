@@ -60,6 +60,7 @@ import {
 } from "./eew.js";
 import { initExternalServices } from "./externalServices.js";
 import { initHistoryController } from "./historyController.js";
+import { loadIxac41Archive } from "./ixac41/archive.js";
 import { initSettingsModal } from "./settingsManager.js";
 import { initDebugOptions } from "./debugOptions.js";
 import { initUpdateChecker } from "./updateChecker.js";
@@ -256,6 +257,16 @@ async function boot() {
     }, 50);
   };
 
+  if (typeof window !== "undefined") {
+    window.addEventListener("ixac41-mesh-available", (event) => {
+      const active = globalThis.__currentReport;
+      const eventIds = event.detail?.eventIds;
+      if (active && Array.isArray(eventIds) && eventIds.includes(active.eventId)) {
+        onReportSelect(active);
+      }
+    });
+  }
+
   // Initialize History tab controller
   initHistoryController({
     map,
@@ -397,6 +408,10 @@ async function boot() {
       seedReportAudioState(report);
     }
 
+    // The IXAC41 archive is independent of external services configuration and
+    // is loaded once, after the initial report list is complete.
+    loadIxac41Archive().catch(() => {});
+
     // Initialize live mode
     initLiveModeToggle((isEnabled) => {
       if (isEnabled) {
@@ -449,6 +464,12 @@ async function boot() {
                   console.debug("[eq-viewer] Reloading active report on map");
                   onReportSelect(report);
                 }
+              }
+            },
+            onReportMetadataUpdate: ({ eventId }) => {
+              const active = globalThis.__currentReport;
+              if (active && active.eventId === eventId) {
+                onReportSelect(active);
               }
             },
             onError: (err) => {
