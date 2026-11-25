@@ -22,6 +22,7 @@ Desktop apps available in [Releases](https://github.com/Kiriyashiki/WebQuake/rel
 - Earthquake history with search criteria
 - Earthquake Early Warning (experimental)
 - Long Period Ground Motion (LPGM) data
+- Estimated intensity 250m mesh
 
 ### Desktop app
 
@@ -75,6 +76,7 @@ page and its page-only assets.
 - [Explaination of the intensity values - JMA](https://www.data.jma.go.jp/multi/quake/quake_advisory.html?lang=en)
 - [Past earthquakes up to 30 days - JMA](https://www.data.jma.go.jp/multi/quake/index.html?lang=en)
 - [About LPGM - JMA (Japanese)](https://www.jma.go.jp/jma/kishou/know/jishin/choshuki/)
+- [About Estimated Intensity Map - JMA (Japanese)](https://www.jma.go.jp/jma/kishou/know/jishin/suikei/kaisetsu.html)
 - [Data samples](https://github.com/Kiriyashiki/WebQuake/tree/main/test/samples/)
 
 ### Name
