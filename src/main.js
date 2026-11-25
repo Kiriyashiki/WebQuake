@@ -62,6 +62,7 @@ import { initExternalServices } from "./externalServices.js";
 import { initHistoryController } from "./historyController.js";
 import { loadIxac41Archive } from "./ixac41/archive.js";
 import { initSettingsModal } from "./settingsManager.js";
+import { initOnboarding } from "./onboarding.js";
 import { initDebugOptions } from "./debugOptions.js";
 import { initUpdateChecker } from "./updateChecker.js";
 import { displayMapInfoBox, updateMapLegend } from "./mapInfoBox.js";
@@ -379,6 +380,10 @@ async function boot() {
 
   // Initialize external services (EEW and earthquake report providers)
   initExternalServices(map, featureBounds, cityNames, areaCodes);
+
+  // Show the first-run onboarding dialog once the app is ready to apply its
+  // display-mode and external-service choices.
+  initOnboarding();
 
   // Fetch initial reports
   updateSidebarLoading(0, "...");

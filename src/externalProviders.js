@@ -1850,6 +1850,21 @@ const EXTERNAL_STORAGE_KEYS = {
 };
 
 /**
+ * Whether EEW was enabled through the pre-rewrite legacy keys when this module
+ * loaded. Captured before migrateExternalServiceSettings() retires those keys,
+ * so callers can still tell that the user had configured legacy EEW.
+ */
+const legacyEewEnabledAtModuleLoad = (() => {
+  if (typeof localStorage === "undefined") return false;
+  return localStorage.getItem("eew-enabled") === "true";
+})();
+
+/** Whether the legacy EEW setting was enabled before the providers rewrite. */
+export function wasLegacyEewEnabledBeforeMigration() {
+  return legacyEewEnabledAtModuleLoad;
+}
+
+/**
  * Copies legacy EEW settings to the generalized external-service keys.
  * Safe to call repeatedly.
  */

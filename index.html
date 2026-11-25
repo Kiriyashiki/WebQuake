@@ -473,6 +473,85 @@
             </div>
           </div>
 
+          <!-- First-run onboarding popup -->
+          <div
+            id="onboarding-popup"
+            class="hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="onboarding-title"
+          >
+            <div class="onboarding-popup-content">
+              <div class="settings-popup-header">
+                <span class="mono" id="onboarding-title">Welcome · ようこそ</span>
+              </div>
+              <div class="onboarding-popup-body">
+                <p class="onboarding-lead">
+                  Welcome to KyoQuake, a real-time earthquake report viewer for Japan.
+                  <span class="onboarding-ja" lang="ja">日本国内の地震情報をリアルタイムで表示する KyoQuake へようこそ。</span>
+                </p>
+
+                <div class="onboarding-section">
+                  <div class="home-location-header">Display Modes · 表示モード</div>
+                  <div class="onboarding-toggle-list">
+                    <label class="live-mode-toggle popup-setting" data-tooltip="Automatically open newly received reports • 新しく受信したレポートを自動的に開く">
+                      <input type="checkbox" id="onboarding-auto-toggle" />
+                      <span class="toggle-label">Auto Mode<br>自動モード</span>
+                      <span class="toggle-switch"></span>
+                    </label>
+                    <label class="live-mode-toggle popup-setting" data-tooltip="Use city areas for intensity display (may impact performance) • 震度表示に市区町村エリアを使用します（パフォーマンスに影響する場合があります）">
+                      <input type="checkbox" id="onboarding-cities-toggle" />
+                      <span class="toggle-label">Cities Mode<br>市区町村モード</span>
+                      <span class="toggle-switch"></span>
+                    </label>
+                    <label class="live-mode-toggle popup-setting" data-tooltip="Poll for new and updated reports automatically • 新規・更新されたレポートを自動的に取得する">
+                      <input type="checkbox" id="onboarding-live-toggle" />
+                      <span class="toggle-label">Live Mode<br>ライブモード</span>
+                      <span class="toggle-switch"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div id="onboarding-external-section" class="onboarding-section">
+                  <div class="home-location-header">External Services · 外部サービス</div>
+                  <p class="onboarding-note">
+                    Receive EEW alerts from Wolfx and earthquake reports from KyoQuake Service. Both services require no setup.
+                    <span class="onboarding-ja" lang="ja">Wolfx から緊急地震速報を、KyoQuake Service から地震情報を受信できます。どちらも設定は必要ありません。</span>
+                  </p>
+                  <button
+                    type="button"
+                    id="onboarding-enable-external-btn"
+                    class="onboarding-primary-btn onboarding-external-btn"
+                  >
+                    Enable Recommended Services · 推奨サービスを有効にする
+                  </button>
+                  <p class="onboarding-note onboarding-hint">
+                    To learn more about data providers, open Settings → External Services.
+                    <span class="onboarding-ja" lang="ja">データ提供元の詳細は、「設定」→「外部サービス」をご覧ください。</span>
+                  </p>
+                </div>
+
+                <div id="onboarding-external-legacy" class="onboarding-section hidden">
+                  <div class="home-location-header">External Services · 外部サービス</div>
+                  <p class="onboarding-note onboarding-legacy-note">
+                    External services have been redesigned since your previous EEW setup. Please open Settings → External Services to confirm your configuration.
+                    <span class="onboarding-ja" lang="ja">外部サービスは以前の緊急地震速報設定から刷新されました。「設定」→「外部サービス」を開き、設定をご確認ください。</span>
+                  </p>
+                </div>
+
+                <p class="onboarding-note onboarding-settings-hint">
+                  For home location, audio, intensity colors, and other options, open Settings (⚙) in the sidebar.
+                  <span class="onboarding-ja" lang="ja">ホーム場所・音声・震度配色などその他の設定は、サイドバーの「設定」（⚙）から変更できます。</span>
+                </p>
+              </div>
+              <div class="onboarding-popup-footer">
+                <button type="button" id="onboarding-complete-btn" class="onboarding-primary-btn">
+                  Start Using KyoQuake · KyoQuake をはじめる
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Audio settings popup -->
           <div id="audio-popup" class="hidden">
             <div class="audio-popup-content">
