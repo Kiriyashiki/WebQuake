@@ -20,7 +20,7 @@ const VEL = {
 const FRONTS = {
   NE: {
     lat: [24.0, 31.0, 34.1, 36.1, 37.2, 39.3, 42.6, 43.6, 44.3, 45.9],
-    lon: [141.6, 140.2, 139.7, 138.7, 140.1, 141.0, 141.2, 145.0, 146.9, 150.0],
+    lon: [141.6, 140.2, 139.7, 139.2, 139.9, 140.8, 141.7, 145.0, 146.9, 150.0],
   },
   SW: {
     lat: [24.5, 24.5, 27.9, 29.5, 31.5, 33.4, 34.9, 35.3, 35.3, 36.2, 36.2],
@@ -119,6 +119,7 @@ export function mf2013Pgv(mw, type, X, avs30, d1400, ai = 0, ph = 0) {
 const DEFAULTS = {
   phMaxDepthKm: 60, // J-SHIS page: "shallower than about 60 km"
   nied: true, // NIED variant: NE taper, zone 4/5 rules for SW AI and PH
+  custom: true, // Custom variant: like NIED but no NE taper and AI/no-AI max (overrides nied)
   classifier: {}, // options forwarded to classifyEvent
 };
 
@@ -146,21 +147,28 @@ export function prepareEvent(ev, slabModel, opts = {}) {
 
 // AI and PH terms (log10 units) for one type at one site
 function extraTerms(p, type, site) {
-  if (type < 2 || !p.region) return { ai: 0, ph: 0 }; // crustal: neither term applies
+  if (type < 2 || !p.region) {
+    return { ai: 0, ph: 0, aiApplied: false }; // crustal: neither term applies
+  }
+  const niedLike = p.o.nied || p.o.custom; // custom behaves like NIED unless overridden below
   const h = Math.max(p.depthKm - 30, 0);
   const xvf = signedDistanceToFront(site.lat, site.lon, FRONTS[p.region]);
   let ai = 0,
-    ph = 0;
+    ph = 0,
+    aiApplied = false;
   if (p.region === "NE") {
-    const taper = p.o.nied ? Math.min(Math.max((site.lat - 35.5) / 1.0, 0), 1) : 1;
+    // custom disables the NIED NE taper (fixed to 1) and takes precedence over nied
+    const taper = p.o.custom || !p.o.nied ? 1 : Math.min(Math.max((site.lat - 35.5) / 1.0, 0), 1);
     ai = VEL.gNE * xvf * h * taper;
+    aiApplied = true;
   } else {
     const skip =
-      p.depthKm < 60 || (p.o.nied && site.lon >= 136.9) || (p.o.nied && type === 3 && !p.inZone45);
+      p.depthKm < 60 || (niedLike && site.lon >= 136.9) || (niedLike && type === 3 && !p.inZone45);
+    aiApplied = !skip;
     if (!skip) ai = VEL.gSW * Math.min(xvf, 75) * h;
-    if (type === 3 && p.depthKm < p.o.phMaxDepthKm && !(p.o.nied && p.inZone45)) ph = VEL.ph;
+    if (type === 3 && p.depthKm < p.o.phMaxDepthKm && !(niedLike && p.inZone45)) ph = VEL.ph;
   }
-  return { ai, ph };
+  return { ai, ph, aiApplied };
 }
 
 // site = { lat, lon, avs30, d1400 (null if unknown), epicentralDistanceKm (optional) }
@@ -170,12 +178,22 @@ export function shindoAtSiteDetail(p, site) {
   const hypo = Math.hypot(epi, p.depthKm);
   const X = Math.max(hypo - 10 ** (0.5 * p.mw - 1.85) / 2, 3.0); // pseudo fault distance (approximation)
   const perType = [1, 2, 3].map((t) => {
-    const { ai, ph } = extraTerms(p, t, site);
+    const { ai, ph, aiApplied } = extraTerms(p, t, site);
     const pgv = mf2013Pgv(p.mw, t, X, site.avs30, site.d1400, ai, ph);
-    return { type: t, pgv, ai, ph, shindo: 2.68 + 1.72 * Math.log10(pgv) };
+    return { type: t, pgv, ai, ph, aiApplied, shindo: 2.68 + 1.72 * Math.log10(pgv) };
   });
+  const shindoWithAi = mixOverTypes(p.probs, (t) => perType[t - 1].shindo);
+  let shindo = shindoWithAi;
+  if (p.o.custom && perType.some((x) => x.aiApplied)) {
+    // Custom variant: also evaluate the site without AI and keep the stronger result
+    const shindoNoAi = mixOverTypes(p.probs, (t) => {
+      const { ph } = perType[t - 1];
+      return 2.68 + 1.72 * Math.log10(mf2013Pgv(p.mw, t, X, site.avs30, site.d1400, 0, ph));
+    });
+    shindo = Math.max(shindoWithAi, shindoNoAi);
+  }
   return {
-    shindo: mixOverTypes(p.probs, (t) => perType[t - 1].shindo),
+    shindo,
     probs: p.probs,
     X,
     perType,

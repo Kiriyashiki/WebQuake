@@ -441,9 +441,6 @@
   padding: 2px 8px;
   background: rgba(245, 158, 11, 0.15);
   border: 1px solid rgba(245, 158, 11, 0.5);
-  border-radius: 3px;
-  animation: flash-badge-pulse 2s ease-in-out infinite;
-  will-change: opacity;
 }
 
 .info-box-eew-serial {
@@ -464,11 +461,6 @@
   color: #f59e0b;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-@keyframes flash-badge-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
 }
 
 /* ── Flash Report Observations Notice ──────────────────────────── */

@@ -1,6 +1,6 @@
 {
     "name": "kyoquake",
-    "version": "1.3.1",
+    "version": "1.4.0",
     "description": "Earthquake reports viewer for Japan (JMA)",
     "author": "Kiriyashiki",
     "desktopName": "kyoquake.desktop",

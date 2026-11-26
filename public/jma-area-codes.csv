@@ -239,8 +239,8 @@
 731;長崎県南西部;ながさきけんなんせいぶ;South-Western Part of Nagasaki Pref.;9951
 732;長崎県島原半島;ながさきけんしまばらはんとう;Nagasaki Pref. Shimabara Peninsula;9951
 735;長崎県対馬;ながさきけんつしま;Nagasaki Pref. Tsushima Island;9951
-736;長崎県壱岐;ながさきけんいき;Nagasaki Pref. Iki Island Region;9951
-737;長崎県五島;ながさきけんごとう;Nagasaki Pref. Goto Islands Region;9951
+736;長崎県壱岐;ながさきけんいき;Nagasaki Pref. Iki Island;9951
+737;長崎県五島;ながさきけんごとう;Nagasaki Pref. Goto Islands;9951
 740;熊本県阿蘇地方;くまもとけんあそちほう;Kumamoto Pref. Aso Region;9951
 741;熊本県熊本地方;くまもとけんくまもとちほう;Kumamoto Pref. Kumamoto Region;9951
 742;熊本県球磨地方;くまもとけんくまちほう;Kumamoto Pref. Kuma Region;9951
@@ -283,7 +283,7 @@
 806;沖縄県与那国島;おきなわけんよなぐにじま;Okinawa Pref. Yonaguni Island;9960
 807;沖縄県西表島;おきなわけんいりおもてじま;Okinawa Pref. Iriomote Island;9960
 820;大隅半島東方沖;おおすみはんとうとうほうおき;Off Eastern Coast of Osumi Peninsula;
-821;九州地方南東沖;きゅうしゅうちほうなんとうおき;Off South-Eastern Coast of Kyushu ;
+821;九州地方南東沖;きゅうしゅうちほうなんとうおき;Off South-Eastern Coast of Kyushu;
 822;種子島南東沖;たねがしまなんとうおき;Off South-Eastern Coast of Tanegashima;
 823;奄美大島北東沖;あまみおおしまほくとうおき;Off North-Eastern Coast of Amami Island;
 850;沖縄本島近海;おきなわほんとうきんかい;Sea near Okinawa Main Island;
